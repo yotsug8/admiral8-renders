@@ -47,7 +47,7 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
   box-shadow: 6px 6px 0 var(--acc); }
 .tile img { width: 104px; height: 76px; object-fit: cover; border-radius: 8px; }
 
-#subs { position: absolute; left: 60px; width: 880px; top: 1468px; text-align: center; font: 800 56px/1.2 Manrope; white-space: nowrap; transform-origin: 50% 50%; }
+#subs { position: absolute; left: 140px; width: 800px; top: 1468px; text-align: center; font: 800 56px/1.2 Manrope; white-space: nowrap; transform-origin: 50% 50%; }
 #subs span { display: inline-block; margin: 0 4px; padding: 2px 12px; border-radius: 12px; }
 #subs span.on { background: var(--acc); color: var(--dark); }
 
@@ -451,7 +451,7 @@ function drawSubs(words, lt) {
     return `<span class="${w[1] <= lt && lt < nxt ? "on" : ""}">${w[0]}</span>`;
   }).join("") + `</div>`;
   const inner = document.getElementById("subsin");
-  const fit = Math.min(1, 860 / inner.offsetWidth);       // длинная строка ужимается в поля
+  const fit = Math.min(1, 780 / inner.offsetWidth);       // длинная строка ужимается в поля
   const k = eBack((lt - g[0][1] + 0.05) / 0.18);
   box.style.transform = `scale(${fit * (0.88 + 0.12 * k)})`;
 }

@@ -448,6 +448,7 @@ def mix_audio(segs, total, wav_path):
 
 
 def render(ep, out_path, consts_dir="dotaconstants/build"):
+    apply_voice_settings(ep)
     WORK.mkdir(exist_ok=True)
     items = load_consts("items.json", consts_dir)
     heroes = {v["name"].replace("npc_dota_hero_", ""): v
@@ -469,8 +470,15 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
         print("проверка раскладки: всё в безопасной зоне")
 
 
+def apply_voice_settings(ep):
+    """Настройки голоса из выпуска: fish_temp ниже — ровнее, без срывов голоса."""
+    global FISH_TEMP
+    FISH_TEMP = float(ep.get("fish_temp", FISH_TEMP))
+
+
 def voice_takes(ep, out_dir, n=3):
     """Несколько дублей озвучки каждого факта (и вариантов финала) — выбрать на слух."""
+    apply_voice_settings(ep)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     summary = {}

@@ -24,6 +24,7 @@ from quiz import (CX, FPS, GOLD, GOLD_DARK, GREEN, H, MUTED, RED, W, WHITE, cove
 
 STATS_URL = "https://api.opendota.com/api/heroStats"
 SERIES_TITLE = "ЦИФРЫ НЕ ВРУТ"     # название рубрики в шапке ролика
+MIN_TREND = 2.0           # минимальный рост винрейта (п.п.), чтобы попасть в факты
 MIN_SHARE = 0.4           # герой должен иметь хотя бы 40% от медианы пиков в ранге
 
 # Тайминги (секунды)
@@ -107,7 +108,7 @@ def gen_facts(items, heroes, stats):
             for s in stats if enough(s, "turbo_picks", mt) and enough(s, "pub_pick", mp)]
     a, b, h = max(rows, key=lambda r: r[0] - r[1])
     facts.append(dict(
-        question="Этот герой — имба в Турбо, но в обычных играх проигрывает. Кто?",
+        question="Он имба в Турбо, но в обычных играх проигрывает. Кто это?",
         number=round(a - b, 1), unit="% разницы", title=h["localized_name"],
         bars=[("Турбо", a, GREEN), ("Обычные", b, RED)], caption=src, img=h["img"]))
 
@@ -145,13 +146,14 @@ def gen_facts(items, heroes, stats):
         if len(p) >= 2 and len(p) == len(w) and min(p[0], p[-1]) >= 0.4 * mp / max(1, len(p)):
             rows.append((wr(w[-1], p[-1]) - wr(w[0], p[0]), wr(w[0], p[0]), wr(w[-1], p[-1]),
                          by_id[s["id"]], len(p)))
-    if rows:
-        d, a, b, h, n = max(rows, key=lambda r: r[0])
+    best = max(rows, key=lambda r: r[0]) if rows else None
+    if best and best[0] >= MIN_TREND:      # мелкие колебания — не факт, пропускаем
+        d, a, b, h, n = best
         facts.append(dict(
             question="Какой герой за последние дни тихо стал сильнее всех?",
             number=round(d, 1), unit="% винрейта", title=h["localized_name"],
             bars=[(f"{n} дн. назад", a, RED), ("Сейчас", b, GREEN)],
-            caption="Без громких баффов: просто игроки распробовали.", img=h["img"]))
+            caption="Рост винрейта в пабах по дням, данные OpenDota.", img=h["img"]))
     return facts
 
 

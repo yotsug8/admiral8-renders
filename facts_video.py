@@ -554,8 +554,8 @@ def voices(arg, out_dir):
         return
     # Фраза для прослушки: можно задать своей через FV_VOICE_TEXT
     text = os.environ.get("FV_VOICE_TEXT") or (
-        "[excited] Ловушка для читеров, штраф за жадность и патч из смайликов. [break] Всё — правда. "
-        "[long-break] [curious] Как Вэлв поймали сорок тысяч читеров за раз? [break] [sarcastic] Сами себя и сдали.")
+        "[excited] В Доте был предмет, с которым герой прыгал как тюлень. "
+        "[sarcastic] А лопатой можно было выкопать кобольда. Всё это правда.")
     for vid in arg.split(","):
         try:
             tts_fish(text, out / f"voice_{vid.strip()}.mp3", vid.strip(), align=False)

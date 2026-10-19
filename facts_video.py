@@ -193,13 +193,13 @@ def item_icon(key, items):
 def prepare(ep, heroes, items):
     vals = calc_values(heroes, items)
     segs, t = [], 0.0
-    parts = ep["facts"] + [dict(ep["outro"], outro=True)]
+    parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
     for i, f in enumerate(parts):
         text = f["voice"].format(**vals)
         mp3 = WORK / f"v{i}.mp3"
         words = speak(text, mp3)
         pcm = mp3_to_pcm(mp3)
-        dur = len(pcm) / SR + PAD
+        dur = len(pcm) / SR + PAD + (0.6 if i == len(parts) - 1 else 0)   # в конце чуть дольше пауза
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
         if f.get("outro"):
             thumbs = []

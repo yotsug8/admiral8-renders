@@ -14,7 +14,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 .dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.07) 2px, transparent 2.5px); background-size: 36px 36px; }
 .band { position: absolute; left: -80px; top: 760px; width: 1260px; height: 420px; background: var(--acc); transform: rotate(-8deg);
   border-top: 8px solid var(--dark); border-bottom: 8px solid var(--dark); }
-.head { position: absolute; left: 60px; top: 280px; width: 980px; font: 900 86px/1.06 Unbounded; white-space: nowrap; color: var(--ink);
+.head { position: absolute; left: 60px; top: 250px; width: 980px; font: 900 86px/1.06 Unbounded; white-space: nowrap; color: var(--ink);
   text-transform: uppercase; letter-spacing: -.03em; }
 .head .y { color: var(--acc); }
 /* Рики — наклейка с белым контуром; рамка задаётся из скрипта по пропорциям */
@@ -24,8 +24,8 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 .gem { position: absolute; width: 130px; height: 95px; border-radius: 16px; border: 5px solid var(--dark); box-shadow: 7px 7px 0 var(--ink); }
 .num { position: absolute; left: 50%; top: 1290px; transform: translateX(-50%) rotate(-3deg); padding: 10px 42px 22px; border-radius: 32px;
   background: var(--acc); border: 8px solid var(--dark); box-shadow: 16px 16px 0 var(--ink); white-space: nowrap;
-  font: 900 150px/1 Unbounded; color: var(--dark); letter-spacing: -.05em; }
-.num small { font-size: 64px; letter-spacing: -.02em; }
+  font: 900 120px/1 Unbounded; color: var(--dark); letter-spacing: -.05em; }
+.num small { font-size: 54px; letter-spacing: -.02em; }
 .wm { position: absolute; left: 62px; top: 1560px; font: 800 30px Manrope; color: rgba(244,244,242,.45); }
 </style>
 </head>
@@ -38,7 +38,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 <img class="gem" src="_fv_work/item_gem.png" style="left:850px;top:600px;transform:rotate(12deg)">
 <img class="gem" src="_fv_work/item_gem.png" style="left:880px;top:1090px;transform:rotate(-8deg)">
 <img class="gem" src="_fv_work/item_gem.png" style="left:60px;top:560px;transform:rotate(9deg)">
-<div class="head">Как Valve<br>поймали <span class="y">читеров?</span></div>
+<div class="head">Как Valve<br>поймали<br><span class="y">читеров?</span></div>
 <div class="num">40 000 <small>БАНОВ</small></div>
 <div class="wm">@admiral8dota</div>
 <script>

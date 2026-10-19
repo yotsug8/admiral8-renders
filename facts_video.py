@@ -143,7 +143,11 @@ def align_words(path):
     from faster_whisper import WhisperModel
     if _WHISPER is None:
         _WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
-    segs, _ = _WHISPER.transcribe(str(path), language="ru", word_timestamps=True, vad_filter=False)
+    # Декодируем сами через ffmpeg: встроенный декодер faster-whisper (PyAV) ломается на новых версиях
+    raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "f32le",
+                          "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
+    audio = np.frombuffer(raw, np.float32)
+    segs, _ = _WHISPER.transcribe(audio, language="ru", word_timestamps=True, vad_filter=False)
     words = []
     for sg in segs:
         for w in sg.words or []:
@@ -311,10 +315,7 @@ def mix_audio(segs, total, wav_path):
         if L <= 0:
             break
         tt = np.arange(L) / SR
-        mix[i:i + L] += np.sin(2 * np.pi * 60 * tt) * np.exp(-tt * 30) * 0.16
-        if k % 2:
-            h = min(int(0.03 * SR), n - i)
-            mix[i:i + h] += np.random.default_rng(k).normal(0, 1, h) * 0.025
+        mix[i:i + L] += np.sin(2 * np.pi * 60 * tt) * np.exp(-tt * 30) * 0.10   # мягкая бочка, без шипящего хэта
     for s in segs:
         i = int(s["start"] * SR)
         p = s["_pcm"] * 1.15

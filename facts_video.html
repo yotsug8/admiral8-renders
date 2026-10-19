@@ -209,8 +209,8 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
       $("div", "mark", gg, "bottom:50%");                       // отметка 50%
-      P.gnum = $("div", "big", el, "top:1035px;left:60px;font-size:130px;color:#ff5a4e"); P.gnum.textContent = v.number;
-      P.lab = $("div", "lab", el, "top:1040px;left:400px;width:540px;font-size:32px"); P.lab.textContent = v.label || "";
+      P.gnum = $("div", "big", el, "top:1040px;left:60px;font-size:110px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1038px;left:430px;width:510px;font-size:31px"); P.lab.textContent = v.label || "";
       P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
       const ch = $("div", "chips", el);
       P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });

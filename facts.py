@@ -23,7 +23,7 @@ from quiz import (CX, FPS, GOLD, GOLD_DARK, GREEN, H, MUTED, RED, W, WHITE, cove
                   load_consts, paste_scaled, placeholder, rounded_mask)
 
 STATS_URL = "https://api.opendota.com/api/heroStats"
-MIN_PICKS = 3000          # отсекаем героев с малой выборкой в ранге
+MIN_SHARE = 0.4           # герой должен иметь хотя бы 40% от медианы пиков в ранге
 
 # Тайминги (секунды)
 T_Q = 0.6                 # появление вопроса
@@ -103,10 +103,14 @@ def gen_facts(items, heroes, stats):
 
     if stats:
         by_id = {h["id"]: h for h in hs}
+        # Порог выборки — от медианы пиков в ранге (у OpenDota выборка небольшая)
+        med1 = float(np.median([s.get("1_pick") or 0 for s in stats]))
+        med8 = float(np.median([s.get("8_pick") or 0 for s in stats]))
+        print(f"  heroStats: медиана пиков Herald={med1:.0f}, Immortal={med8:.0f}")
         rows = []
         for s in stats:
             p1, w1, p8, w8 = (s.get(k) or 0 for k in ("1_pick", "1_win", "8_pick", "8_win"))
-            if p1 >= MIN_PICKS and p8 >= MIN_PICKS and s["id"] in by_id:
+            if p1 >= MIN_SHARE * med1 and p8 >= MIN_SHARE * med8 and p1 and p8 and s["id"] in by_id:
                 rows.append((w1 / p1 * 100, w8 / p8 * 100, by_id[s["id"]]))
 
         if not rows:

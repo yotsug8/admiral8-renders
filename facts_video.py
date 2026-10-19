@@ -511,6 +511,22 @@ def voice_takes(ep, out_dir, n=3):
             path = out / f"take_{name}_{t}.mp3"
             tts_fish(text, path, align=False)
             print(f"  {path.name}: {text}")
+            if os.environ.get("FV_TAKES_ANALYZE"):
+                analyze_take(path)
+
+
+def analyze_take(path):
+    """Слова с таймингами и громкость пауз между ними: смех/вздохи видны как «шум» в паузе."""
+    words = align_words(path)
+    pcm = mp3_to_pcm(path)
+    line = []
+    for (w, a, b), nxt in zip(words, words[1:] + [None]):
+        line.append(f"{w}[{a:.2f}-{b:.2f}]")
+        if nxt and nxt[1] - b > 0.12:
+            seg = pcm[int(b * SR):int(nxt[1] * SR)]
+            db = 20 * np.log10(np.sqrt((seg ** 2).mean()) + 1e-9)
+            line.append(f"<пауза {nxt[1] - b:.2f}с {db:.0f}дБ>")
+    print("    " + " ".join(line))
 
 
 if __name__ == "__main__":

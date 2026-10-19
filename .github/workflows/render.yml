@@ -35,8 +35,9 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p out
-          pip install -q pillow numpy
-          python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
+          sudo apt-get install -y -q ffmpeg >/dev/null
+          pip install -q pillow numpy faster-whisper
+          FV_TAKES_ANALYZE=1 python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
       - name: Рендер
         if: ${{ inputs.takes == '' || inputs.takes == null }}
         env:

@@ -21,9 +21,11 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
-          pip install pillow numpy edge-tts "rembg[cpu]" playwright
+          pip install pillow numpy edge-tts "rembg[cpu]" playwright faster-whisper
           python -m playwright install --with-deps chromium
       - name: Рендер
+        env:
+          FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
         run: |
           set -o pipefail
           mkdir -p out

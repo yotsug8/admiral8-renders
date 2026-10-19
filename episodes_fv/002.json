@@ -12,7 +12,12 @@
         "count": 9200,
         "number": "9200 Танго",
         "caption": "≈ 276 000 золота",
-        "note": "Оценка: Пудж ≈ 550 кг вместе с тесаком, Танго ≈ 60 г"
+        "note": "Оценка: Пудж ≈ 550 кг вместе с тесаком, Танго ≈ 60 г",
+        "cues": {
+          "fill": "огромный",
+          "note": "пятьсот",
+          "fill_end": "двести:end"
+        }
       },
       "voice_file": "voice/002/f1.mp3"
     },
@@ -35,7 +40,15 @@
           "assets/teams/gaimin_gladiators.png"
         ],
         "winner": 0,
-        "event_logo": "assets/events/bali_major_2023.png"
+        "event_logo": "assets/events/bali_major_2023.png",
+        "cues": {
+          "clock_done": "минут:end",
+          "label": "самая",
+          "teams": "квест",
+          "icons": "рошана",
+          "icons_end": "раз:end",
+          "win": "вытащили"
+        }
       },
       "voice_file": "voice/002/f2.mp3"
     },
@@ -54,13 +67,16 @@
           "+2 брони",
           "Усилены все 4 способности"
         ],
-        "chips_at": 4.0,
         "ability_icons": [
           "assets/abilities/dawnbreaker_fire_wreath.png",
           "assets/abilities/dawnbreaker_celestial_hammer.png",
           "assets/abilities/dawnbreaker_luminosity.png",
           "assets/abilities/dawnbreaker_solar_guardian.png"
-        ]
+        ],
+        "cues": {
+          "number": "тридцать",
+          "chips": "обновление"
+        }
       },
       "voice_file": "voice/002/f3.mp3"
     }

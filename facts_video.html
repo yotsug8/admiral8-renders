@@ -320,11 +320,11 @@ function draw(g, lt) {
       im.style.opacity = clamp(e * 2);
     });
     // Траектория хука проявляется слева направо, пунктир «бежит»
-    const e = eOut((lt - 1.1) / 0.8);
+    const e = eOut((lt - cueAt(s.visual, "hook", 1.1)) / 0.8);
     P.hookSvg.style.clipPath = `inset(0 ${1080 - (300 + 520 * e)}px 0 0)`;
     P.hookSvg.style.opacity = e > 0 ? 1 : 0;
     P.hookSvg.querySelector("path:not([d^='M0'])").style.strokeDashoffset = -lt * 40;
-    const ep = eBack((lt - 1.4) / 0.4);
+    const ep = eBack((lt - cueAt(s.visual, "pill", 1.4)) / 0.4);
     P.pill.style.transform = `translateY(${(1 - ep) * 40}px) rotate(${(1 - ep) * -4}deg)`; P.pill.style.opacity = clamp(ep * 2);
   }
   if (s.layout === "block") {
@@ -333,19 +333,19 @@ function draw(g, lt) {
     const kh = eBack((lt - 0.45) / 0.55);
     P.hero.style.transform = `translateY(${(1 - kh) * 200}px) scale(${(0.9 + 0.1 * kh) * (1 + 0.004 * lt)})`;
     P.hero.style.opacity = clamp(kh * 2);
-    countUp(P.big, s.visual.number, lt, 0.9);
-    const kl = eOut((lt - 1.3) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateY(${(1 - kl) * 20}px)`;
+    countUp(P.big, s.visual.number, lt, cueAt(s.visual, "number", 0.9));
+    const kl = eOut((lt - cueAt(s.visual, "label", 1.3)) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateY(${(1 - kl) * 20}px)`;
   }
   drawExtra(g, lt);
   if (s.layout === "grid") {
     countUp(P.big, s.visual.number, lt, 0.4);
-    const n = P.tiles.length, step = Math.min(0.11, (s.dur - 3.5) / n);
+    const n = P.tiles.length, t0 = cueAt(s.visual, "icons", 0.9), step = Math.min(0.11, (s.dur - 3.5) / n);
     P.tiles.forEach((tl, m) => {
-      const e = eBack((lt - 0.9 - m * step) / 0.3);
+      const e = eBack((lt - t0 - m * step) / 0.3);
       tl.style.transform = `scale(${e}) rotate(${(1 - e) * (m % 2 ? 14 : -14)}deg)`; tl.style.opacity = clamp(e * 2);
     });
-    if (P.hero) { const kh = eBack((lt - 0.9 - n * step) / 0.5); P.hero.style.transform = `translateY(${(1 - kh) * 160}px)`; P.hero.style.opacity = clamp(kh * 2); }
-    const kl = eOut((lt - 1.1 - n * step) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateX(${(1 - kl) * 40}px)`;
+    if (P.hero) { const kh = eBack((lt - t0 - n * step) / 0.5); P.hero.style.transform = `translateY(${(1 - kh) * 160}px)`; P.hero.style.opacity = clamp(kh * 2); }
+    const kl = eOut((lt - cueAt(s.visual, "label", t0 + 0.2 + n * step)) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateX(${(1 - kl) * 40}px)`;
   }
 }
 
@@ -376,35 +376,42 @@ async function buildMosaic(g) {
   P.ctx = P.cv.getContext("2d");
 }
 
+// Момент, когда диктор произносит слово-метку (cues в выпуске), иначе запасное время
+const cueAt = (v, key, def) => (v && v.at && v.at[key] != null ? v.at[key] : def);
+
 function drawExtra(g, lt) {
-  const P = g.parts, s = g.s, v = s.visual;
+  const P = g.parts, s = g.s, v = s.visual, C = (k, d) => cueAt(v, k, d);
   if (s.layout === "timer") {
-    const e = eOut((lt - 0.3) / 2.2), sec = Math.round(v.timer * e);
+    const tEnd = C("clock_done", 2.5), e = eOut((lt - 0.3) / Math.max(0.8, tEnd - 0.3)), sec = Math.round(v.timer * e);
     P.clock.textContent = `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
     P.clock.style.color = e >= 1 ? "var(--acc)" : "var(--ink)";
-    P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - 2.5) / 0.3) : 0)})`;
-    P.teams.forEach((t, k) => { const q = eBack((lt - 0.8 - k * 0.15) / 0.45); t.style.transform = `translateX(${(1 - q) * (k ? 200 : -200)}px)`; t.style.opacity = clamp(q * 2); });
-    P.vs.querySelectorAll("i").forEach(i => i.style.opacity = clamp((lt - 1.1) / 0.3));
-    if (P.win) { const w = eBack((lt - 3.6) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
-    P.icons.forEach((im, m) => { const q = eBack((lt - 2.6 - m * 0.18) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
-    const q = eOut((lt - 2.8) / 0.4); P.lab.style.opacity = q;
+    P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - tEnd) / 0.3) : 0)})`;
+    const tT = C("teams", 0.8);
+    P.teams.forEach((t, k) => { const q = eBack((lt - tT - k * 0.15) / 0.45); t.style.transform = `translateX(${(1 - q) * (k ? 200 : -200)}px)`; t.style.opacity = clamp(q * 2); });
+    P.vs.querySelectorAll("i").forEach(i => i.style.opacity = clamp((lt - tT - 0.3) / 0.3));
+    if (P.win) { const w = eBack((lt - C("win", 3.6)) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
+    const tI = C("icons", 2.6), stI = Math.max(0.05, (C("icons_end", tI + 0.18 * P.icons.length) - tI) / P.icons.length);
+    P.icons.forEach((im, m) => { const q = eBack((lt - tI - m * stI) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
+    const q = eOut((lt - C("label", 2.8)) / 0.4); P.lab.style.opacity = q;
     if (P.pill.dataset.static) {        // логотип турнира у заголовка: появляется сразу
       const p3 = eBack((lt - 0.5) / 0.4); P.pill.style.opacity = clamp(p3 * 2); P.pill.style.transform = `scale(${0.7 + 0.3 * p3}) rotate(${(1 - p3) * -8}deg)`;
     } else {
-      const p2 = eBack((lt - 3.2) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+      const p2 = eBack((lt - C("pill", 3.2)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
     }
   }
   if (s.layout === "gauge") {
     const kh = eBack((lt - 0.3) / 0.6);
     P.hero.style.transform = `translateX(${(1 - kh) * 300}px)`; P.hero.style.opacity = clamp(kh * 2);
-    const e = eOut((lt - 0.8) / 1.0);
+    const tN = C("number", 0.8), e = eOut((lt - tN) / 1.0);
     P.fill.style.height = (parseFloat(v.number) * e) + "%";
-    countUp(P.gnum, v.number, lt, 0.8);
-    const q = eOut((lt - 1.5) / 0.4); P.lab.style.opacity = q;
-    P.chips.forEach((c, m) => { const k = eBack((lt - v.chips_at - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
+    countUp(P.gnum, v.number, lt, tN);
+    const q = eOut((lt - C("label", tN + 0.7)) / 0.4); P.lab.style.opacity = q;
+    const tC = C("chips", v.chips_at || 4);
+    P.chips.forEach((c, m) => { const k = eBack((lt - tC - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
   }
   if (s.layout === "mosaic" && P.pts) {
-    const n = P.pts.length, e = eInOut((lt - 0.9) / Math.max(2, s.dur - 4.5)), shown = Math.round(n * e);
+    const tF = C("fill", 0.9), tFe = C("fill_end", s.dur - 3.6);
+    const n = P.pts.length, e = eInOut((lt - tF) / Math.max(1.5, tFe - tF)), shown = Math.round(n * e);
     const ctx = P.ctx, c = P.cell;
     ctx.clearRect(0, 0, P.cv.width, P.cv.height);
     ctx.globalAlpha = 0.35; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
@@ -432,8 +439,8 @@ function drawExtra(g, lt) {
     // Счётчик идёт ровно по числу выложенных Танго
     P.big.style.opacity = clamp((lt - 0.6) / 0.3);
     P.big.textContent = String(shown).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009") + " Танго";
-    const p2 = eBack((lt - s.dur + 3.0) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
-    P.note.style.opacity = clamp((lt - s.dur + 2.6) / 0.4);
+    const p2 = eBack((lt - C("pill", tFe + 0.4)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    P.note.style.opacity = clamp((lt - C("note", tFe + 0.8)) / 0.4);
   }
 }
 

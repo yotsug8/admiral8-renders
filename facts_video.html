@@ -58,6 +58,32 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .card b { position: absolute; left: 22px; top: 12px; font: 900 110px/1 Unbounded; }
 .card img { position: absolute; left: 50%; bottom: 0; max-width: 92%; max-height: 300px; transform: translateX(-50%); }
 
+/* «Таймер» */
+.clock { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 190px/1 Unbounded; letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums; }
+.vs { position: absolute; left: 60px; width: 880px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.team { padding: 14px 28px; border-radius: 16px; font: 900 40px Unbounded; }
+.team.a { background: var(--acc); color: var(--dark); box-shadow: 8px 8px 0 var(--ink); }
+.team.b { background: var(--ink); color: var(--dark); box-shadow: 8px 8px 0 var(--acc); }
+.vs i { font: 800 34px Manrope; color: rgba(244,244,242,.6); font-style: normal; }
+.row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.row img { width: 70px; height: 52px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
+/* «Шкала» */
+.gauge { position: absolute; left: 60px; top: 560px; width: 150px; height: 640px; border-radius: 24px; background: rgba(255,255,255,.08);
+  overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
+.gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
+.gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
+.chips { position: absolute; left: 250px; top: 930px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
+.chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
+/* «Весы» */
+.beam { position: absolute; left: 110px; width: 780px; top: 900px; height: 18px; border-radius: 9px; background: var(--ink); transform-origin: 50% 50%; }
+.post { position: absolute; left: 488px; top: 910px; width: 24px; height: 300px; background: var(--ink); border-radius: 12px; }
+.base { position: absolute; left: 350px; top: 1190px; width: 300px; height: 28px; border-radius: 14px; background: var(--ink); box-shadow: 8px 8px 0 var(--acc); }
+.pan { position: absolute; width: 300px; height: 22px; border-radius: 0 0 150px 150px; background: var(--acc); }
+.pile { position: absolute; width: 300px; height: 280px; }
+.pile img { position: absolute; width: 64px; height: 47px; border-radius: 6px; box-shadow: 3px 3px 0 rgba(0,0,0,.4); }
+.note { position: absolute; left: 60px; width: 880px; font: 600 26px Manrope; color: rgba(244,244,242,.55); text-align: center; }
+
 /* Переход: жёлтая шторка с тёмной кромкой */
 #wipe { position: absolute; top: 0; left: 0; width: 1500px; height: 1920px; background: var(--acc); transform: translateX(-1600px); }
 #wipe:before { content: ""; position: absolute; right: -60px; top: 0; width: 60px; height: 100%; background: var(--dark); }
@@ -147,6 +173,47 @@ async function init(data) {
       P.tiles = Array.from({ length: v.icons.count }, () => { const t = $("div", "tile", grid); $("img", null, t).src = v.icons.src; return t; });
       if (v.heroes) { P.hero = $("img", "hero", el); P.hero.src = v.heroes[0]; }
       P.lab = $("div", "lab", el, "left:470px;top:1225px;width:470px;font:900 46px/1.15 Unbounded"); P.lab.innerHTML = v.label || "";
+    } else if (s.layout === "timer") {
+      P.lines = headline(el, s.headline);
+      P.clock = $("div", "clock", el, "top:560px");
+      const vs = $("div", "vs", el, "top:810px");
+      P.teams = v.teams.map((t, k) => { if (k) $("i", null, vs).textContent = "vs"; const d = $("div", "team " + (k ? "b" : "a"), vs); d.textContent = t; return d; });
+      P.vs = vs;
+      const row = $("div", "row", el, "top:960px");
+      P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
+      P.lab = $("div", "lab", el, "top:1120px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
+      P.pill = $("div", "pill", el, "top:1240px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+    } else if (s.layout === "gauge") {
+      P.lines = headline(el, s.headline);
+      const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
+      $("div", "mark", gg, "bottom:50%");                       // отметка 50%
+      P.gnum = $("div", "big", el, "top:1215px;left:60px;font-size:120px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1350px;left:64px;width:860px;font-size:32px"); P.lab.textContent = v.label || "";
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      const ch = $("div", "chips", el);
+      P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
+    } else if (s.layout === "scale") {
+      P.lines = headline(el, s.headline);
+      el.querySelector(".head").style.fontSize = "70px";
+      P.big = $("div", "big y", el, "top:420px;font-size:110px"); P.big.textContent = v.number;
+      $("div", "post", el); $("div", "base", el);
+      P.beam = $("div", "beam", el);
+      P.panL = $("div", "pan", el); P.panR = $("div", "pan", el);
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      P.pile = $("div", "pile", el);
+      P.icons = Array.from({ length: v.icons.count }, (_, k) => {
+        const im = $("img", null, P.pile); im.src = v.icons.src;
+        // Горка: внизу ряд из 8, выше 7, 6… (k считаем снизу)
+        let row = 0, left = k, w = 8;
+        while (left >= w && w > 1) { left -= w; row++; w--; }
+        im.style.left = (150 - 32 + (left - (w - 1) / 2) * 34 + ((k * 37) % 7 - 3)) + "px";
+        im.style.bottom = (row * 28) + "px";
+        im.style.transform = `rotate(${(k * 53) % 40 - 20}deg)`;
+        im.dataset.r = (k * 53) % 40 - 20;
+        return im;
+      }).reverse();
+      P.pill = $("div", "pill", el, "top:1265px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.note = $("div", "note", el, "top:1375px"); P.note.textContent = v.note || "";
     }
     SEGS.push(g);
   });
@@ -160,6 +227,8 @@ async function init(data) {
     const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
     if (s.layout === "block") placeHero(P.hero, 600, 1170, 760, 1170 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
+    if (s.layout === "gauge") placeHero(P.hero, 640, 900, 560, 900 - headBottom);
+    if (s.layout === "scale") placeHero(P.hero, 260, 900, 320, 300);
   });
   return true;
 }
@@ -221,6 +290,7 @@ function draw(g, lt) {
     countUp(P.big, s.visual.number, lt, 0.9);
     const kl = eOut((lt - 1.3) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateY(${(1 - kl) * 20}px)`;
   }
+  drawExtra(g, lt);
   if (s.layout === "grid") {
     countUp(P.big, s.visual.number, lt, 0.4);
     const n = P.tiles.length, step = Math.min(0.11, (s.dur - 3.5) / n);
@@ -233,6 +303,52 @@ function draw(g, lt) {
   }
 }
 
+function drawExtra(g, lt) {
+  const P = g.parts, s = g.s, v = s.visual;
+  if (s.layout === "timer") {
+    const e = eOut((lt - 0.3) / 2.2), sec = Math.round(v.timer * e);
+    P.clock.textContent = `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+    P.clock.style.color = e >= 1 ? "var(--acc)" : "var(--ink)";
+    P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - 2.5) / 0.3) : 0)})`;
+    P.teams.forEach((t, k) => { const q = eBack((lt - 0.8 - k * 0.15) / 0.45); t.style.transform = `translateX(${(1 - q) * (k ? 200 : -200)}px)`; t.style.opacity = clamp(q * 2); });
+    P.vs.querySelectorAll("i").forEach(i => i.style.opacity = clamp((lt - 1.1) / 0.3));
+    P.icons.forEach((im, m) => { const q = eBack((lt - 2.6 - m * 0.18) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
+    const q = eOut((lt - 2.8) / 0.4); P.lab.style.opacity = q;
+    const p2 = eBack((lt - 3.2) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+  }
+  if (s.layout === "gauge") {
+    const kh = eBack((lt - 0.3) / 0.6);
+    P.hero.style.transform = `translateX(${(1 - kh) * 300}px)`; P.hero.style.opacity = clamp(kh * 2);
+    const e = eOut((lt - 0.8) / 1.0);
+    P.fill.style.height = (parseFloat(v.number) * e) + "%";
+    countUp(P.gnum, v.number, lt, 0.8);
+    const q = eOut((lt - 1.5) / 0.4); P.lab.style.opacity = q;
+    P.chips.forEach((c, m) => { const k = eBack((lt - v.chips_at - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
+  }
+  if (s.layout === "scale") {
+    countUp(P.big, v.number, lt, 0.5);
+    const kh = eBack((lt - 0.3) / 0.5);
+    const n = P.icons.length, step = Math.min(0.07, (s.dur - 3.5) / n);
+    const shown = P.icons.filter((_, m) => lt > 1.0 + m * step).length;
+    // Коромысло: сначала перевешивает Пудж, по мере насыпания Танго выравнивается
+    const ang = -9 * (1 - shown / n);
+    P.beam.style.transform = `rotate(${ang}deg)`;
+    const tip = 390 * Math.sin(ang * Math.PI / 180);
+    const yL = 900 - tip, yR = 900 + tip;
+    P.panL.style.cssText = `left:110px;top:${yL + 9}px`;
+    P.panR.style.cssText = `left:590px;top:${yR + 9}px`;
+    P.hero.style.transform = `translateY(${(yL - 900) + (1 - kh) * -300}px)`; P.hero.style.opacity = clamp(kh * 2);
+    P.pile.style.cssText = `left:590px;top:${yR + 9 - 280}px`;
+    P.icons.forEach((im, m) => {
+      const q = eBack((lt - 1.0 - m * step) / 0.25);
+      im.style.opacity = clamp(q * 2);
+      im.style.transform = `translateY(${(1 - q) * -220}px) rotate(${im.dataset.r}deg)`;
+    });
+    const p2 = eBack((lt - 1.2 - n * step) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    P.note.style.opacity = clamp((lt - 1.5 - n * step) / 0.4);
+  }
+}
+
 // Число набегает от нуля; запятая, % и слова после числа сохраняются
 function countUp(el, text, lt, t0) {
   const m = text.match(/^(\d+)(?:,(\d+))?(.*)$/);
@@ -241,8 +357,9 @@ function countUp(el, text, lt, t0) {
   el.style.transform = `translateY(${(1 - eBack((lt - t0) / 0.5)) * 40}px)`;
   if (!m) { el.textContent = text; return; }
   const dec = m[2] ? m[2].length : 0;
-  el.textContent = (e >= 1 ? m[1] + (dec ? "," + m[2] : "") :
-    (parseFloat(m[1] + (dec ? "." + m[2] : "")) * e).toFixed(dec).replace(".", ",")) + m[3];
+  const fmt = x => { const [a, b] = x.split("."); return a.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009") + (b ? "," + b : ""); };
+  el.textContent = fmt(e >= 1 ? m[1] + (dec ? "." + m[2] : "") :
+    (parseFloat(m[1] + (dec ? "." + m[2] : "")) * e).toFixed(dec)) + m[3];
 }
 
 // Субтитры: до 3 слов, новая группа на паузе; одно активное слово на жёлтой плашке
@@ -271,13 +388,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .tile"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .tile, .clock, .team, .chip2, .note"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .clock, .vs, .chip2, .note")].filter(vis);
   const sub = document.getElementById("subsin"); if (sub) texts.push(sub);
   for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) {
     const A = R(texts[a]), B = R(texts[b]);

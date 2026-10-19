@@ -34,7 +34,6 @@ jobs:
             echo "== выпуск $n"
             python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
           done
-          python facts_video.py --samples out 2>&1 | tee -a out/render.log
           for f in episodes_fv/*.json; do
             n=$(basename "$f" .json)
             echo "== Факты $n" | tee -a out/render.log

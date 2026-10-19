@@ -1,4 +1,4 @@
-# Рендер всех выпусков из episodes/*.json в облаке GitHub
+# Рендер всех выпусков из episodes_fv/*.json в облаке GitHub (или дубли озвучки по кнопке)
 name: render
 
 on:
@@ -45,17 +45,11 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p out
-          for f in episodes/*.json; do
-            n=$(basename "$f" .json)
-            echo "== выпуск $n"
-            python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
-          done
           for f in episodes_fv/*.json; do
             n=$(basename "$f" .json)
             echo "== Факты $n" | tee -a out/render.log
             python facts_video.py "$f" "out/facts_$n.mp4" 2>&1 | grep -v "кадр " | tee -a out/render.log
           done
-          echo "иконок в кэше: $(ls cache | wc -l)" | tee -a out/render.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

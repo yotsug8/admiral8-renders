@@ -1,28 +1,28 @@
 """
-Ролик из нескольких фактов о Доте: озвучка, субтитры по словам, графика на HTML/CSS.
+Ролик «несколько фактов о Доте»: озвучка, субтитры по словам, графика на HTML/CSS.
 
-Кадры рисует браузер (Playwright + Chromium) по шаблону facts_video.html,
-Python готовит данные: озвучку (edge-tts), вырезанных героев (rembg), числа из данных игры, звук.
+Кадры рисует браузер (Playwright + Chromium) по шаблону facts_video.html.
+Python готовит данные: озвучку (Fish Audio, запасной — edge-tts), героев и иконки, звук.
 
 Запуск:
-    python facts_video.py episodes_fv/001.json out/facts_001.mp4
-    python facts_video.py --samples out          # пробы голосов
-Голос: переменные окружения FV_VOICE, FV_PITCH, FV_RATE.
+    python facts_video.py episodes_fv/002.json out/facts_002.mp4    # рендер выпуска
+    python facts_video.py --takes episodes_fv/002.json out           # дубли озвучки на выбор
+Локальная проверка вёрстки без сети: FV_QA_ONLY=1 FV_FAKE_TTS=1 FV_QA_DIR=папка
 """
 import asyncio
 import json
 import math
 import os
+import shutil
 import subprocess
 import sys
+import urllib.request
 import wave
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
-
-import quiz as Q
-from quiz import fetch_image, load_consts, placeholder
 
 VOICE = os.environ.get("FV_VOICE", "ru-RU-DmitryNeural")
 PITCH = os.environ.get("FV_PITCH", "-10Hz")
@@ -40,29 +40,59 @@ HERE = Path(__file__).resolve().parent
 WORK = HERE / "_fv_work"
 
 
-# ---------- данные игры ----------
+# ---------- вспомогательное ----------
 
-def plural(n, one, few, many):
-    """Русское склонение: 1 дерево, 2 дерева, 5 деревьев."""
-    n = abs(int(n)) % 100
-    if 11 <= n <= 19:
-        return many
-    n %= 10
-    return one if n == 1 else few if 2 <= n <= 4 else many
+CDN = "https://cdn.cloudflare.steamstatic.com"
+CONSTS_URL = "https://raw.githubusercontent.com/odota/dotaconstants/master/build/"
 
 
-def calc_values(heroes, items):
-    """Числа для текста считаются из данных игры, а не пишутся руками."""
-    pudge, tango = heroes["pudge"], items["tango"]
-    attr = {a["key"]: float(a["value"]) for a in tango["attrib"]}
-    heal = int(attr["health_regen"] * attr["buff_duration"])          # лечение одного Танго
-    charges = int(attr.get("tooltip_charges", 3))
-    hp30 = int(pudge["base_health"] + (pudge["base_str"] + pudge["str_gain"] * 29) * 22)  # 22 HP за силу
-    trees = math.ceil(hp30 / heal)
-    packs = math.ceil(trees / charges)
-    return dict(tango_heal=heal, pudge_hp30=hp30, trees=trees, packs=packs, gold=packs * tango["cost"],
-                trees_word=plural(trees, "дерево", "дерева", "деревьев"),
-                packs_word=plural(packs, "пачка", "пачки", "пачек"))
+def ffmpeg_exe():
+    """ffmpeg из системы, иначе — встроенный из пакета imageio-ffmpeg."""
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    import imageio_ffmpeg
+    return imageio_ffmpeg.get_ffmpeg_exe()
+
+
+def load_consts(name, consts_dir):
+    """Справочник dotaconstants: из локальной папки или с GitHub (с кэшем)."""
+    local = os.path.join(consts_dir, name)
+    if os.path.exists(local):
+        return json.load(open(local, encoding="utf-8"))
+    os.makedirs("cache", exist_ok=True)
+    cached = os.path.join("cache", name)
+    if not os.path.exists(cached):
+        with urllib.request.urlopen(CONSTS_URL + name, timeout=30) as r:
+            data = r.read()
+        with open(cached, "wb") as f:
+            f.write(data)
+    return json.load(open(cached, encoding="utf-8"))
+
+
+def fetch_image(path, cache_dir="cache"):
+    """Картинка с CDN Steam (с кэшем и повтором). None, если не вышло."""
+    os.makedirs(cache_dir, exist_ok=True)
+    local = os.path.join(cache_dir, path.split("?")[0].strip("/").replace("/", "_"))
+    if os.path.exists(local):
+        return Image.open(local).convert("RGBA")
+    for _ in range(2):
+        try:
+            req = urllib.request.Request(CDN + path, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = r.read()
+            with open(local, "wb") as f:
+                f.write(data)
+            return Image.open(BytesIO(data)).convert("RGBA")
+        except Exception:
+            continue
+    print("  нет картинки:", path.split("?")[0])
+    return None
+
+
+def placeholder(w, h):
+    """Запасная серая картинка, если CDN недоступен."""
+    return Image.new("RGBA", (w, h), (70, 84, 104, 255))
 
 
 # ---------- озвучка ----------
@@ -72,7 +102,7 @@ def tts(text, path_mp3, voice=None, pitch=None, rate=None):
     if os.environ.get("FV_FAKE_TTS"):           # локальная проверка вёрстки без интернета
         ws = text.replace(",", "").replace(".", "").replace("?", "").split()
         dur = 0.34 * len(ws)
-        subprocess.run([Q.ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+        subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i",
                         f"anullsrc=r={SR}:cl=mono", "-t", f"{dur:.2f}", str(path_mp3)], check=True)
         return [(w, k * 0.34, k * 0.34 + 0.3) for k, w in enumerate(ws)]
     import edge_tts
@@ -145,7 +175,7 @@ def align_words(path):
     if _WHISPER is None:
         _WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
     # Декодируем сами через ffmpeg: встроенный декодер faster-whisper (PyAV) ломается на новых версиях
-    raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "f32le",
+    raw = subprocess.run([ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "f32le",
                           "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
     audio = np.frombuffer(raw, np.float32)
     segs, _ = _WHISPER.transcribe(audio, language="ru", word_timestamps=True, vad_filter=False)
@@ -202,7 +232,6 @@ def align_to_script(text, asr):
 def speak(text, path_mp3, voice_file=None):
     """Озвучка фрагмента: выбранный дубль, иначе Fish Audio (если есть ключ), иначе edge-tts."""
     if voice_file and (HERE / voice_file).exists() and not os.environ.get("FV_FAKE_TTS"):
-        import shutil
         shutil.copy(HERE / voice_file, path_mp3)
         return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
@@ -213,11 +242,11 @@ def speak(text, path_mp3, voice_file=None):
     elif not FISH_KEY:
         print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
     import re
-    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", text).strip(), path_mp3)
+    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", text).replace("\u0301", "").strip(), path_mp3)
 
 
 def mp3_to_pcm(path):
-    raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "s16le",
+    raw = subprocess.run([ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "s16le",
                           "-ac", "1", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
     return np.frombuffer(raw, np.int16).astype(np.float32) / 32768
 
@@ -232,7 +261,7 @@ def hero_cutout(key, heroes):
     img = fetch_image(f"/apps/dota2/videos/dota_react/heroes/renders/{key}.png")
     if img is None:
         h = heroes[key]
-        img = fetch_image(h["img"]) or placeholder(256, 144, h["localized_name"], 0)
+        img = fetch_image(h["img"]) or placeholder(256, 144)
     if img.getextrema()[3][0] >= 250:              # фон непрозрачный — вырезаем нейросетью
         try:
             from rembg import remove
@@ -249,7 +278,7 @@ def hero_cutout(key, heroes):
 def item_icon(key, items):
     out = WORK / f"item_{key}.png"
     if not out.exists():
-        img = fetch_image(items[key]["img"]) or placeholder(88, 64, items[key]["dname"], 0)
+        img = fetch_image(items[key]["img"]) or placeholder(88, 64)
         img.save(out)
     return out
 
@@ -257,11 +286,10 @@ def item_icon(key, items):
 # ---------- подготовка ----------
 
 def prepare(ep, heroes, items):
-    vals = calc_values(heroes, items)
     segs, t = [], 0.0
     parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
     for i, f in enumerate(parts):
-        text = f["voice"].format(**vals)
+        text = f["voice"]
         mp3 = WORK / f"v{i}.mp3"
         words = speak(text, mp3, f.get("voice_file"))
         pcm = mp3_to_pcm(mp3)
@@ -287,7 +315,7 @@ def prepare(ep, heroes, items):
                 v["heroes"] = [hero_cutout(k, heroes).as_uri() for k in v["heroes"]]
             if v.get("icons"):
                 v["icons"] = dict(src=item_icon(v["icons"], items).as_uri(),
-                                  count=int(str(v["count"]).format(**vals)))
+                                  count=int(v["count"]))
             for key in ("team_logos", "ability_icons"):     # картинки, лежащие в репозитории
                 if v.get(key):
                     v[key] = [(HERE / x).as_uri() if x else None for x in v[key]]
@@ -295,7 +323,7 @@ def prepare(ep, heroes, items):
                 v["event_logo"] = (HERE / v["event_logo"]).as_uri()
             for key in ("number", "label", "caption"):
                 if v.get(key):
-                    v[key] = str(v[key]).format(**vals)
+                    v[key] = str(v[key])
             seg.update(headline=f["headline"], layout=f["layout"], visual=v)
         segs.append(seg)
         print(f"  [{i + 1}] {dur:.1f}с: {text}")
@@ -303,49 +331,14 @@ def prepare(ep, heroes, items):
     return segs, t
 
 
-# ---------- финальный клип ----------
-
-CLIP_BOX = (100, 500, 880)        # x, y, сторона квадрата клипа — внутри безопасной зоны
-SHADOW = 16                       # жёсткая жёлтая тень, как у плашек в шаблоне
-
-
-def clip_frames(src, trim):
-    """Кадры клипа 1080x1920: размытый клип на фоне + клип в рамке с жёсткой тенью."""
-    from PIL import ImageDraw, ImageFilter
-    w = h = 480
-    probe = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-ss", str(trim), "-i", str(src),
-                            "-vf", f"fps={FPS},scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
-                           capture_output=True, check=True).stdout
-    raw = np.frombuffer(probe, np.uint8).reshape(-1, h, w, 3)
-    x0, y0, side = CLIP_BOX
-    # Маска скруглённого квадрата и подложка-тень — одни на все кадры
-    mask = Image.new("L", (side, side), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, side - 1, side - 1), 28, fill=255)
-    for fr in raw:
-        im = Image.fromarray(fr)
-        # Фон: клип, растянутый на весь экран, размытый и затемнённый (размываем в малом размере — быстро)
-        bg = im.resize((240, 240)).crop((52, 0, 187, 240)).filter(ImageFilter.GaussianBlur(6))
-        bg = bg.resize((1080, 1920), Image.BILINEAR).point(lambda v: int(v * 0.45))
-        d = ImageDraw.Draw(bg)
-        d.rounded_rectangle((x0 + SHADOW, y0 + SHADOW, x0 + side + SHADOW, y0 + side + SHADOW), 28, fill=(255, 210, 63))
-        bg.paste(im.resize((side, side), Image.LANCZOS), (x0, y0), mask)
-        yield bg
-
-
-def clip_pcm(src, trim):
-    raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-ss", str(trim), "-i", str(src), "-vn",
-                          "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
-    return np.frombuffer(raw, np.int16).astype(np.float32) / 32768
-
-
 # ---------- рендер кадров в браузере ----------
 
-def render_frames(segs, total, video_path, qa_path, clip=None):
+def render_frames(segs, total, video_path, qa_path):
     from playwright.sync_api import sync_playwright
 
-    data = dict(watermark=WATERMARK, end_at=total if clip else None,
+    data = dict(watermark=WATERMARK,
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
-    ff = subprocess.Popen([Q.ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "mjpeg",
+    ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "mjpeg",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
                            "-crf", "19", "-preset", "medium", str(video_path)], stdin=subprocess.PIPE)
     # Ключевые моменты для проверки и контрольного листа
@@ -380,29 +373,6 @@ def render_frames(segs, total, video_path, qa_path, clip=None):
                 ci += 1
             if fi % 150 == 0:
                 print(f"  кадр {fi}/{n}")
-        if clip:
-            # Поверх клипа: съезжающая шторка в первые кадры, дальше только водяной знак
-            from io import BytesIO
-            static = None
-            for k, fr in enumerate(clip_frames(clip["src"], clip.get("trim", 0))):
-                d = k / FPS
-                if d < 0.4 or static is None:
-                    page.evaluate("d => overlayAt(d)", d)
-                    ov = Image.open(BytesIO(page.screenshot(type="png", omit_background=True))).convert("RGBA")
-                    if d >= 0.4:
-                        static = ov
-                else:
-                    ov = static
-                fr = Image.alpha_composite(fr.convert("RGBA"), ov).convert("RGB")
-                buf = BytesIO()
-                fr.save(buf, "JPEG", quality=92)
-                ff.stdin.write(buf.getvalue())
-                if k in (3, 45, 120):
-                    qa_frames.append(fr.resize((270, 480)))
-                    if os.environ.get("FV_QA_DIR"):
-                        fr.save(os.path.join(os.environ["FV_QA_DIR"], f"clip_{d:04.1f}.jpg"), quality=90)
-                if os.environ.get("FV_QA_ONLY") and k > 120:
-                    break
         br.close()
     ff.stdin.close()
     ff.wait()
@@ -416,10 +386,9 @@ def render_frames(segs, total, video_path, qa_path, clip=None):
     return problems
 
 
-def mix_audio(segs, total, wav_path, clip_audio=None):
-    """Голос + фоновый бит + «вжух» на переходах (+ звук финального клипа после total)."""
-    tail = len(clip_audio) / SR if clip_audio is not None else 0.5
-    n = int((total + tail) * SR)
+def mix_audio(segs, total, wav_path):
+    """Голос + фоновый бит + «вжух» на переходах."""
+    n = int((total + 0.5) * SR)
     mix = np.zeros(n, np.float32)
     beat = 60 / 100
     for k in range(int(total / beat) + 1):
@@ -429,12 +398,6 @@ def mix_audio(segs, total, wav_path, clip_audio=None):
             break
         tt = np.arange(L) / SR
         mix[i:i + L] += np.sin(2 * np.pi * 60 * tt) * np.exp(-tt * 30) * 0.10   # мягкая бочка, без шипящего хэта
-    if clip_audio is not None:
-        i = int(total * SR)
-        mix[i:i + len(clip_audio)] += clip_audio[:n - i] * 0.9
-        L = min(int(0.4 * SR), n - i)        # «вжух» шторки на входе в клип
-        env = np.sin(np.linspace(0, np.pi, L)) * 0.14
-        mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
     for s in segs:
         i = int(s["start"] * SR)
         p = s["_pcm"] * 1.15
@@ -461,14 +424,9 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     out_path = Path(out_path)
     video, wav = WORK / "video.mp4", WORK / "audio.wav"
     qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
-    clip = ep.get("end_clip")
-    if clip:
-        clip = dict(clip, src=HERE / clip["src"])
-    problems = render_frames(segs, total, video, qa, clip)
-    mix_audio(segs, total, wav, clip_pcm(clip["src"], clip.get("trim", 0)) if clip else None)
-    if clip:
-        total += len(clip_pcm(clip["src"], clip.get("trim", 0))) / SR
-    subprocess.run([Q.ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
+    problems = render_frames(segs, total, video, qa)
+    mix_audio(segs, total, wav)
+    subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
     print(f"готово: {out_path} ({total:.1f} с)")
     if problems:
@@ -477,33 +435,6 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
             print("  ", pr)
     else:
         print("проверка раскладки: всё в безопасной зоне")
-
-
-def voice_samples(out_dir):
-    """Пробы голосов одной фразой — выбрать на слух."""
-    text = "Valve однажды тайно усилила героя, без патчноута. За одну ночь её винрейт подскочил с тридцати девяти до пятидесяти одного процента!"
-    if FISH_KEY:
-        fish = [("energichny", "48ec28a45588422b977a86460c11977f"), ("incidenty", "2270bb203a424d1881678ba5e4b82b54"),
-                ("analitik", "868377a7b08f4c0d9acf8c9f059571aa")]
-        for name, vid in fish:
-            try:
-                words = tts_fish(text, Path(out_dir) / f"voice_fish_{name}.mp3", vid)
-                print(f"  fish {name}: {len(words)} слов распознано")
-            except RuntimeError as e:
-                print(f"  fish {name}: ошибка {e}")
-        return
-    variants = [("ru-RU-DmitryNeural", "-25Hz", "+0%"),
-                ("en-US-AndrewMultilingualNeural", "+0Hz", "+5%"),
-                ("en-US-BrianMultilingualNeural", "+0Hz", "+5%"),
-                ("de-DE-FlorianMultilingualNeural", "+0Hz", "+5%"),
-                ("fr-FR-RemyMultilingualNeural", "+0Hz", "+5%"),
-                ("ru-RU-SvetlanaNeural", "+0Hz", "+10%")]
-    for n, (v, p, r) in enumerate(variants, 1):
-        try:
-            tts(text, Path(out_dir) / f"voice_{n}.mp3", v, p, r)
-            print(f"  голос {n}: {v} {p} {r}")
-        except RuntimeError as e:
-            print(f"  голос {n}: {v} недоступен ({e})")
 
 
 def voice_takes(ep, out_dir, n=3):
@@ -546,9 +477,7 @@ def analyze_take(path):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "--samples":
-        voice_samples(sys.argv[2])
-    elif sys.argv[1] == "--takes":
+    if sys.argv[1] == "--takes":
         with open(sys.argv[2], encoding="utf-8") as f:
             voice_takes(json.load(f), sys.argv[3])
     else:

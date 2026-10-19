@@ -51,31 +51,38 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 #subs span { display: inline-block; margin: 0 4px; padding: 2px 12px; border-radius: 12px; }
 #subs span.on { background: var(--acc); color: var(--dark); }
 
-.cards { position: absolute; left: 60px; width: 880px; top: 640px; display: flex; gap: 26px; }
-.card { flex: 1; height: 470px; border-radius: 28px; position: relative; overflow: hidden; }
+.cards { position: absolute; left: 60px; width: 880px; top: 470px; display: flex; gap: 26px; }
+.card { flex: 1; height: 700px; border-radius: 28px; position: relative; overflow: hidden; }
 .card.c0, .card.c2 { background: var(--acc); color: var(--dark); box-shadow: 12px 12px 0 var(--ink); }
 .card.c1 { background: var(--ink); color: var(--dark); box-shadow: 12px 12px 0 var(--acc); }
 .card b { position: absolute; left: 22px; top: 12px; font: 900 110px/1 Unbounded; }
-.card img { position: absolute; left: 50%; bottom: 0; max-width: 92%; max-height: 300px; transform: translateX(-50%); }
+.card img { position: absolute; left: 50%; bottom: 0; height: 560px; max-width: none; transform: translateX(-50%); }
 
 /* «Таймер» */
 .clock { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 190px/1 Unbounded; letter-spacing: -.04em;
   font-variant-numeric: tabular-nums; }
-.vs { position: absolute; left: 60px; width: 880px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.vs { position: absolute; left: 60px; width: 880px; display: flex; justify-content: space-between; align-items: center; }
 .team { padding: 14px 28px; border-radius: 16px; font: 900 40px Unbounded; }
 .team.a { background: var(--acc); color: var(--dark); box-shadow: 8px 8px 0 var(--ink); }
 .team.b { background: var(--ink); color: var(--dark); box-shadow: 8px 8px 0 var(--acc); }
 .team { display: flex; align-items: center; gap: 16px; }
-.team img.logo { width: 76px; height: 76px; object-fit: contain; border-radius: 12px; background: var(--dark); padding: 6px; }
+.tcard { position: relative; width: 390px; height: 330px; border-radius: 28px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 18px; font: 900 40px Unbounded; color: var(--dark); }
+.tcard.a { background: var(--acc); box-shadow: 14px 14px 0 var(--ink); }
+.tcard.b { background: var(--ink); box-shadow: 14px 14px 0 var(--acc); }
+.tlogo { width: 200px; height: 200px; border-radius: 24px; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+.tlogo img { max-width: 160px; max-height: 170px; }
+.win { position: absolute; top: -22px; right: -14px; padding: 8px 18px; border-radius: 12px; background: #2fd36b; color: var(--dark);
+  font: 800 28px Manrope; transform: rotate(6deg); box-shadow: 5px 5px 0 var(--dark); }
 .vs i { font: 800 34px Manrope; color: rgba(244,244,242,.6); font-style: normal; }
 .row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.row img { width: 70px; height: 52px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
+.row img { width: 92px; height: 68px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
 /* «Шкала» */
 .gauge { position: absolute; left: 60px; top: 560px; width: 150px; height: 640px; border-radius: 24px; background: rgba(255,255,255,.08);
   overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
 .gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
 .gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
-.chips { position: absolute; left: 250px; top: 900px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
+.chips { position: absolute; left: 250px; top: 930px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
 .abil { display: flex; gap: 10px; margin-top: 10px; }
 .abil img { width: 54px; height: 54px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
 .chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
@@ -150,11 +157,11 @@ async function init(data) {
         if (src) {
           const im = $("img", null, c); im.src = src;
           // Иконку предмета растягиваем по ширине карточки (она маленькая)
-          if (src.includes("/item_")) im.style.cssText = "width:78%;max-height:none;bottom:70px;border-radius:14px;box-shadow:8px 8px 0 #0d0e12";
+          if (src.includes("/item_")) im.style.cssText = "width:84%;height:auto;bottom:200px;border-radius:14px;box-shadow:8px 8px 0 #0d0e12";
         }
         return c;
       });
-      P.cta = $("div", "lab", el, "top:1240px;left:60px;width:880px;text-align:center;font-size:44px");
+      P.cta = $("div", "lab", el, "top:1230px;left:60px;width:880px;text-align:center;font:900 50px/1.15 Unbounded;text-transform:uppercase");
       P.cta.textContent = s.cta;
     } else if (s.layout === "duo") {
       P.lines = headline(el, s.headline);
@@ -179,21 +186,23 @@ async function init(data) {
       P.lab = $("div", "lab", el, "left:470px;top:1225px;width:470px;font:900 46px/1.15 Unbounded"); P.lab.innerHTML = v.label || "";
     } else if (s.layout === "timer") {
       P.lines = headline(el, s.headline);
-      P.clock = $("div", "clock", el, "top:560px");
-      const vs = $("div", "vs", el, "top:810px");
+      P.clock = $("div", "clock", el, "top:500px");
+      const vs = $("div", "vs", el, "top:770px");
       P.teams = v.teams.map((t, k) => {
         if (k) $("i", null, vs).textContent = "vs";
-        const d = $("div", "team " + (k ? "b" : "a"), vs);
+        const d = $("div", "tcard " + (k ? "b" : "a"), vs);
         const logo = (v.team_logos || [])[k];
-        if (logo) { const im = $("img", "logo", d); im.src = logo; }
+        if (logo) { const box = $("div", "tlogo", d); $("img", null, box).src = logo; }
         $("span", null, d).textContent = t;
+        if (v.winner === k) $("div", "win", d).textContent = "победа";
         return d;
       });
       P.vs = vs;
-      const row = $("div", "row", el, "top:960px");
+      P.win = el.querySelector(".win");
+      const row = $("div", "row", el, "top:1135px;width:640px;left:220px");
       P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
-      P.lab = $("div", "lab", el, "top:1120px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
-      P.pill = $("div", "pill", el, "top:1240px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.lab = $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
+      P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
     } else if (s.layout === "gauge") {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
@@ -212,15 +221,15 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
       P.big = $("div", "big y", el, "top:420px;font-size:110px"); P.big.textContent = v.number;
-      P.cv = $("canvas", null, el, "position:absolute;left:60px;top:560px");
-      P.cv.width = 880; P.cv.height = 680;
+      P.cv = $("canvas", null, el, "position:absolute;left:30px;top:585px");
+      P.cv.width = 1000; P.cv.height = 800;
       // Лупа: показывает крупно, что силуэт выложен именно Танго
       P.lens = $("canvas", null, el, "position:absolute;width:300px;height:300px;border-radius:50%;border:8px solid #ffd23f;box-shadow:12px 12px 0 #f4f4f2;background:#15171c;opacity:0");
       P.lens.width = 300; P.lens.height = 300;
       P.hero = $("img", null, null); P.hero.src = v.heroes[0];
       P.icon = $("img", null, null); P.icon.src = v.icons.src;
-      P.pill = $("div", "pill", el, "top:1265px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
-      P.note = $("div", "note", el, "top:1375px"); P.note.textContent = v.note || "";
+      P.pill = $("div", "pill", el, "top:1395px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.note = $("div", "note", el, "top:540px;text-align:left"); P.note.textContent = v.note || "";
     } else if (s.layout === "scale") {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
@@ -257,7 +266,7 @@ async function init(data) {
     const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
     if (s.layout === "block") placeHero(P.hero, 600, 1170, 760, 1170 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
-    if (s.layout === "gauge") placeHero(P.hero, 640, 900, 560, 900 - headBottom);
+    if (s.layout === "gauge") placeHero(P.hero, 600, 1225, 720, 1225 - headBottom);
     if (s.layout === "scale") placeHero(P.hero, 260, 900, 320, 300);
     if (s.layout === "mosaic") MOS.push(buildMosaic(g));
   });
@@ -288,7 +297,7 @@ function seek(t) {
   // Шторка перед финальным клипом: здесь только заезд, съезд дорисовывается поверх клипа
   if (D.end_at != null && t > D.end_at - WIPE) x = -1600 + eInOut((t - D.end_at + WIPE) / (2 * WIPE)) * 2800;
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
-  drawSubs(segs[i].words, lt);
+  drawSubs(segs[i].outro ? null : segs[i].words, lt);       // в финале текст уже крупно на экране
 }
 
 // Слой поверх финального клипа: прозрачный фон, только водяной знак и съезжающая шторка.
@@ -369,7 +378,7 @@ async function buildMosaic(g) {
   P.pts = pts.slice(0, target);
   let sx = 0, sy = 0; P.pts.forEach(([x, y]) => { sx += x; sy += y; });
   P.lensAt = [sx / P.pts.length, sy / P.pts.length + 40];
-  P.lensPos = [Math.min(W - 160, P.lensAt[0] + 230), Math.max(160, P.lensAt[1] - 170)];
+  P.lensPos = [Math.min(750, P.lensAt[0] + 230), Math.max(160, P.lensAt[1] - 170)];
   P.silhouette = off;
   P.ctx = P.cv.getContext("2d");
 }
@@ -383,6 +392,7 @@ function drawExtra(g, lt) {
     P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - 2.5) / 0.3) : 0)})`;
     P.teams.forEach((t, k) => { const q = eBack((lt - 0.8 - k * 0.15) / 0.45); t.style.transform = `translateX(${(1 - q) * (k ? 200 : -200)}px)`; t.style.opacity = clamp(q * 2); });
     P.vs.querySelectorAll("i").forEach(i => i.style.opacity = clamp((lt - 1.1) / 0.3));
+    if (P.win) { const w = eBack((lt - 3.6) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
     P.icons.forEach((im, m) => { const q = eBack((lt - 2.6 - m * 0.18) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
     const q = eOut((lt - 2.8) / 0.4); P.lab.style.opacity = q;
     const p2 = eBack((lt - 3.2) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
@@ -419,7 +429,7 @@ function drawExtra(g, lt) {
         lc.drawImage(P.icon, (x - cx) * Z + 150 - c * 0.6 * Z, (y - cy) * Z + 150 - c * 0.45 * Z, c * 1.2 * Z, c * 0.9 * Z);
       }
       lc.restore();
-      P.lens.style.left = (60 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (560 + P.lensPos[1] - 150) + "px";
+      P.lens.style.left = (30 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (585 + P.lensPos[1] - 150) + "px";
       P.lens.style.opacity = clamp(la * 2); P.lens.style.transform = `scale(${0.5 + 0.5 * la})`;
     }
     // Счётчик идёт ровно по числу выложенных Танго

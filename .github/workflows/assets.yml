@@ -10,6 +10,12 @@ on:
       items:
         description: "ключи предметов через пробел"
         default: "tango rapier"
+      abilities:
+        description: "ключи способностей через пробел"
+        default: ""
+      teams:
+        description: "названия команд через ; (логотипы из OpenDota)"
+        default: ""
 
 permissions:
   contents: write
@@ -26,12 +32,16 @@ jobs:
         env:
           HEROES: ${{ inputs.heroes }}
           ITEMS: ${{ inputs.items }}
+          ABILITIES: ${{ inputs.abilities }}
+          TEAMS: ${{ inputs.teams }}
         run: |
           mkdir -p a
           python - <<'PY'
           import os, urllib.request, io
           from PIL import Image
           from rembg import remove
+          import sys
+          sys.stdout = open("a/log.txt", "w")      # лог кладём в ветку: логи Actions мне недоступны
           CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2"
           def get(url):
               req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -45,6 +55,24 @@ jobs:
               im.crop(bb).save(f"a/hero_{k}.png")
           for k in os.environ["ITEMS"].split():
               get(f"{CDN}/images/dota_react/items/{k}.png").save(f"a/item_{k}.png")
+          for k in os.environ.get("ABILITIES", "").split():
+              get(f"{CDN}/images/dota_react/abilities/{k}.png").save(f"a/ability_{k}.png")
+          # Логотипы команд: ищем по названию в списке команд OpenDota
+          names = [n.strip() for n in os.environ.get("TEAMS", "").split(";") if n.strip()]
+          if names:
+              import json, re
+              req = urllib.request.Request("https://api.opendota.com/api/teams", headers={"User-Agent": "Mozilla/5.0"})
+              teams = json.loads(urllib.request.urlopen(req, timeout=60).read())
+              for n in names:
+                  hits = [t for t in teams if (t.get("name") or "").lower() == n.lower()] or \
+                         [t for t in teams if n.lower() in (t.get("name") or "").lower()]
+                  for t in hits[:3]:
+                      print("команда", n, "->", t["team_id"], t["name"], t.get("tag"), t.get("logo_url"))
+                  if hits and hits[0].get("logo_url"):
+                      slug = re.sub(r"\W+", "_", n.lower())
+                      get(hits[0]["logo_url"]).save(f"a/team_{slug}.png")
+                  else:
+                      print("команда", n, ": логотип не найден")
           PY
           cd a
           git init -q -b assets && git add -A

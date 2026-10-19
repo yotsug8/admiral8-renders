@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      takes:
+        description: "выпуск для дублей озвучки (пусто — обычный рендер)"
+        default: ""
 
 permissions:
   contents: write
@@ -18,12 +22,22 @@ jobs:
         with:
           python-version: "3.12"
       - name: Зависимости
+        if: ${{ inputs.takes == '' || inputs.takes == null }}
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
           pip install pillow numpy edge-tts "rembg[cpu]" playwright faster-whisper
           python -m playwright install --with-deps chromium
+      - name: Дубли озвучки
+        if: ${{ inputs.takes != '' && inputs.takes != null }}
+        env:
+          FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
+        run: |
+          set -o pipefail
+          mkdir -p out
+          python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
       - name: Рендер
+        if: ${{ inputs.takes == '' || inputs.takes == null }}
         env:
           FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
         run: |
@@ -50,6 +64,7 @@ jobs:
       - name: Публикация в ветку renders
         if: always()          # лог публикуется и при ошибке — чтобы было видно причину
         run: |
+          BR=renders; [ -n "${{ inputs.takes }}" ] && BR=takes
           cd out
           # Страница-папка: список роликов со ссылками на скачивание
           {
@@ -58,10 +73,10 @@ jobs:
             echo "Нажми на ссылку, чтобы скачать. Обновлено: $(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M')"
             echo
             for f in $(ls -r *.mp4 *.mp3 2>/dev/null); do
-              echo "- [$f](https://github.com/${{ github.repository }}/raw/renders/$f)"
+              echo "- [$f](https://github.com/${{ github.repository }}/raw/$BR/$f)"
             done
           } > README.md
           git init -q -b renders
           git add -A
           git -c user.name="render-bot" -c user.email="render-bot@users.noreply.github.com" commit -q -m "Рендер ${GITHUB_SHA::7}"
-          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" renders
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:$BR

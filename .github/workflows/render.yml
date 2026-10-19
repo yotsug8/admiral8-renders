@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
-          pip install pillow numpy edge-tts
+          pip install pillow numpy edge-tts "rembg[cpu]"
       - name: Рендер
         run: |
           set -o pipefail
@@ -31,6 +31,7 @@ jobs:
             echo "== выпуск $n"
             python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
           done
+          python dotapedia.py --samples out 2>&1 | tee -a out/render.log
           for f in episodes_dp/*.json; do
             n=$(basename "$f" .json)
             echo "== Дотапедия $n" | tee -a out/render.log
@@ -52,7 +53,7 @@ jobs:
             echo
             echo "Нажми на ссылку, чтобы скачать. Обновлено: $(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M')"
             echo
-            for f in $(ls -r *.mp4); do
+            for f in $(ls -r *.mp4 *.mp3 2>/dev/null); do
               echo "- [$f](https://github.com/${{ github.repository }}/raw/renders/$f)"
             done
           } > README.md

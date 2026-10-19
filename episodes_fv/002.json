@@ -28,7 +28,11 @@
         "icons": "aegis",
         "count": 11,
         "label": "самая долгая игра на LAN-турнирах Valve",
-        "caption": "Bali Major 2023"
+        "caption": "Bali Major 2023",
+        "team_logos": [
+          "assets/teams/quest.png",
+          "assets/teams/gaimin_gladiators.png"
+        ]
       }
     },
     {
@@ -46,7 +50,13 @@
           "+2 брони",
           "Усилены все 4 способности"
         ],
-        "chips_at": 4.0
+        "chips_at": 4.0,
+        "ability_icons": [
+          "assets/abilities/dawnbreaker_fire_wreath.png",
+          "assets/abilities/dawnbreaker_celestial_hammer.png",
+          "assets/abilities/dawnbreaker_luminosity.png",
+          "assets/abilities/dawnbreaker_solar_guardian.png"
+        ]
       }
     }
   ],
@@ -54,5 +64,10 @@
     "[sarcastic] Подпишись. [break] Тут факты интереснее, чем твоя последняя катка.",
     "[sarcastic] Досмотрел до конца? [break] Значит, терпения у тебя больше, чем у твоих тиммейтов. [break] Подпишись.",
     "[sarcastic] Подпишись. [break] Это быстрее, чем дождаться, пока Пудж попадёт хуком."
-  ]
+  ],
+  "outro": {
+    "question": "Подпишись|*тут факты*",
+    "cta": "интереснее, чем твоя последняя катка",
+    "voice": "[sarcastic] Подпишись. [break] Тут факты интереснее, чем твоя последняя катка."
+  }
 }

@@ -269,8 +269,19 @@ function seek(t) {
     const d = t - s.start;
     if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
   });
+  // Шторка перед финальным клипом: здесь только заезд, съезд дорисовывается поверх клипа
+  if (D.end_at != null && t > D.end_at - WIPE) x = -1600 + eInOut((t - D.end_at + WIPE) / (2 * WIPE)) * 2800;
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
   drawSubs(segs[i].outro ? null : segs[i].words, lt);
+}
+
+// Слой поверх финального клипа: прозрачный фон, только водяной знак и съезжающая шторка.
+// d — время от начала клипа, сек
+function overlayAt(d) {
+  for (const id of ["dots", "segs", "subs", "progress"]) document.getElementById(id).style.display = "none";
+  document.documentElement.style.background = document.body.style.background = "transparent";
+  const x = d < WIPE ? -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800 : -1600;
+  document.getElementById("wipe").style.transform = `translateX(${x}px)`;
 }
 
 function draw(g, lt) {

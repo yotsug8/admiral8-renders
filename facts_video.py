@@ -286,12 +286,47 @@ def prepare(ep, heroes, items):
     return segs, t
 
 
+# ---------- финальный клип ----------
+
+CLIP_BOX = (100, 500, 880)        # x, y, сторона квадрата клипа — внутри безопасной зоны
+SHADOW = 16                       # жёсткая жёлтая тень, как у плашек в шаблоне
+
+
+def clip_frames(src, trim):
+    """Кадры клипа 1080x1920: размытый клип на фоне + клип в рамке с жёсткой тенью."""
+    from PIL import ImageDraw, ImageFilter
+    w = h = 480
+    probe = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-ss", str(trim), "-i", str(src),
+                            "-vf", f"fps={FPS},scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                           capture_output=True, check=True).stdout
+    raw = np.frombuffer(probe, np.uint8).reshape(-1, h, w, 3)
+    x0, y0, side = CLIP_BOX
+    # Маска скруглённого квадрата и подложка-тень — одни на все кадры
+    mask = Image.new("L", (side, side), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, side - 1, side - 1), 28, fill=255)
+    for fr in raw:
+        im = Image.fromarray(fr)
+        # Фон: клип, растянутый на весь экран, размытый и затемнённый (размываем в малом размере — быстро)
+        bg = im.resize((240, 240)).crop((52, 0, 187, 240)).filter(ImageFilter.GaussianBlur(6))
+        bg = bg.resize((1080, 1920), Image.BILINEAR).point(lambda v: int(v * 0.45))
+        d = ImageDraw.Draw(bg)
+        d.rounded_rectangle((x0 + SHADOW, y0 + SHADOW, x0 + side + SHADOW, y0 + side + SHADOW), 28, fill=(255, 210, 63))
+        bg.paste(im.resize((side, side), Image.LANCZOS), (x0, y0), mask)
+        yield bg
+
+
+def clip_pcm(src, trim):
+    raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-ss", str(trim), "-i", str(src), "-vn",
+                          "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.int16).astype(np.float32) / 32768
+
+
 # ---------- рендер кадров в браузере ----------
 
-def render_frames(segs, total, video_path, qa_path):
+def render_frames(segs, total, video_path, qa_path, clip=None):
     from playwright.sync_api import sync_playwright
 
-    data = dict(watermark=WATERMARK,
+    data = dict(watermark=WATERMARK, end_at=total if clip else None,
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
     ff = subprocess.Popen([Q.ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "mjpeg",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
@@ -328,6 +363,29 @@ def render_frames(segs, total, video_path, qa_path):
                 ci += 1
             if fi % 150 == 0:
                 print(f"  кадр {fi}/{n}")
+        if clip:
+            # Поверх клипа: съезжающая шторка в первые кадры, дальше только водяной знак
+            from io import BytesIO
+            static = None
+            for k, fr in enumerate(clip_frames(clip["src"], clip.get("trim", 0))):
+                d = k / FPS
+                if d < 0.4 or static is None:
+                    page.evaluate("d => overlayAt(d)", d)
+                    ov = Image.open(BytesIO(page.screenshot(type="png", omit_background=True))).convert("RGBA")
+                    if d >= 0.4:
+                        static = ov
+                else:
+                    ov = static
+                fr = Image.alpha_composite(fr.convert("RGBA"), ov).convert("RGB")
+                buf = BytesIO()
+                fr.save(buf, "JPEG", quality=92)
+                ff.stdin.write(buf.getvalue())
+                if k in (3, 45, 120):
+                    qa_frames.append(fr.resize((270, 480)))
+                    if os.environ.get("FV_QA_DIR"):
+                        fr.save(os.path.join(os.environ["FV_QA_DIR"], f"clip_{d:04.1f}.jpg"), quality=90)
+                if os.environ.get("FV_QA_ONLY") and k > 120:
+                    break
         br.close()
     ff.stdin.close()
     ff.wait()
@@ -341,9 +399,10 @@ def render_frames(segs, total, video_path, qa_path):
     return problems
 
 
-def mix_audio(segs, total, wav_path):
-    """Голос + фоновый бит + «вжух» на переходах."""
-    n = int((total + 0.5) * SR)
+def mix_audio(segs, total, wav_path, clip_audio=None):
+    """Голос + фоновый бит + «вжух» на переходах (+ звук финального клипа после total)."""
+    tail = len(clip_audio) / SR if clip_audio is not None else 0.5
+    n = int((total + tail) * SR)
     mix = np.zeros(n, np.float32)
     beat = 60 / 100
     for k in range(int(total / beat) + 1):
@@ -353,6 +412,12 @@ def mix_audio(segs, total, wav_path):
             break
         tt = np.arange(L) / SR
         mix[i:i + L] += np.sin(2 * np.pi * 60 * tt) * np.exp(-tt * 30) * 0.10   # мягкая бочка, без шипящего хэта
+    if clip_audio is not None:
+        i = int(total * SR)
+        mix[i:i + len(clip_audio)] += clip_audio[:n - i] * 0.9
+        L = min(int(0.4 * SR), n - i)        # «вжух» шторки на входе в клип
+        env = np.sin(np.linspace(0, np.pi, L)) * 0.14
+        mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
     for s in segs:
         i = int(s["start"] * SR)
         p = s["_pcm"] * 1.15
@@ -379,8 +444,13 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     out_path = Path(out_path)
     video, wav = WORK / "video.mp4", WORK / "audio.wav"
     qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
-    problems = render_frames(segs, total, video, qa)
-    mix_audio(segs, total, wav)
+    clip = ep.get("end_clip")
+    if clip:
+        clip = dict(clip, src=HERE / clip["src"])
+    problems = render_frames(segs, total, video, qa, clip)
+    mix_audio(segs, total, wav, clip_pcm(clip["src"], clip.get("trim", 0)) if clip else None)
+    if clip:
+        total += len(clip_pcm(clip["src"], clip.get("trim", 0))) / SR
     subprocess.run([Q.ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
     print(f"готово: {out_path} ({total:.1f} с)")

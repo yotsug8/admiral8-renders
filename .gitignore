@@ -1,3 +1,5 @@
 cache/
 out/
+_fv_work/
+__pycache__/
 *.mp4

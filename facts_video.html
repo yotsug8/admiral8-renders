@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+/* Шрифты лежат в репозитории (fonts/), интернет при рендере не нужен */
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2) format("woff2"); }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2) format("woff2"); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 600; src: url(fonts/manrope-cyrillic-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Manrope; font-weight: 600; src: url(fonts/manrope-latin-600-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+
+/* Тёмная инфографика: графит, жёлтый акцент, белый текст, жёсткие тени.
+   Безопасная зона TikTok: x 60–940, y 150–1560 */
+:root { --bg: #15171c; --ink: #f4f4f2; --acc: #ffd23f; --dark: #0d0e12; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+#stage { position: absolute; inset: 0; overflow: hidden; color: var(--ink); font-family: Manrope, sans-serif; }
+#dots { position: absolute; inset: -40px; background-image: radial-gradient(rgba(255,255,255,.06) 2px, transparent 2.5px); background-size: 36px 36px; }
+
+#progress { position: absolute; left: 60px; width: 880px; top: 168px; height: 8px; display: flex; gap: 10px; }
+.pg { flex: 1; border-radius: 4px; background: rgba(255,255,255,.15); overflow: hidden; }
+.pg i { display: block; height: 100%; width: 0; background: var(--ink); }
+#wm { position: absolute; left: 62px; top: 190px; font: 600 26px Manrope; color: rgba(244,244,242,.35); }
+
+.seg { position: absolute; inset: 0; visibility: hidden; }
+.head { position: absolute; left: 60px; width: 880px; top: 245px; font: 900 84px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.head .ln { display: block; overflow: hidden; padding-bottom: 4px; }
+.head .ln span { display: inline-block; }
+.y { color: var(--acc); }
+
+.hero { position: absolute; transform-origin: 50% 100%; }
+.big { position: absolute; left: 60px; font: 900 170px/1 Unbounded; letter-spacing: -.04em; white-space: nowrap; }
+.lab { position: absolute; left: 64px; font: 800 36px/1.22 Manrope; color: var(--ink); }
+.pill { position: absolute; left: 60px; padding: 12px 24px; border-radius: 14px; background: var(--ink); color: var(--dark);
+  font: 800 32px Manrope; box-shadow: 8px 8px 0 var(--acc); white-space: nowrap; }
+
+/* «Плашка»: жёлтый прямоугольник с жёсткой тенью, герой выходит за край */
+.block { position: absolute; border-radius: 28px; background: var(--acc); box-shadow: 16px 16px 0 var(--ink); }
+/* «Диагональ»: косая полоса, два героя, траектория хука */
+.band { position: absolute; left: -60px; width: 1200px; height: 380px; background: var(--acc); transform-origin: 0 50%; }
+svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+/* «Сетка» */
+.grid { position: absolute; left: 60px; width: 880px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.tile { height: 102px; border-radius: 16px; background: var(--ink); display: flex; align-items: center; justify-content: center;
+  box-shadow: 6px 6px 0 var(--acc); }
+.tile img { width: 104px; height: 76px; object-fit: cover; border-radius: 8px; }
+
+#subs { position: absolute; left: 60px; width: 880px; top: 1468px; text-align: center; font: 800 56px/1.2 Manrope; white-space: nowrap; transform-origin: 50% 50%; }
+#subs span { display: inline-block; margin: 0 4px; padding: 2px 12px; border-radius: 12px; }
+#subs span.on { background: var(--acc); color: var(--dark); }
+
+.cards { position: absolute; left: 60px; width: 880px; top: 640px; display: flex; gap: 26px; }
+.card { flex: 1; height: 470px; border-radius: 28px; position: relative; overflow: hidden; }
+.card.c0, .card.c2 { background: var(--acc); color: var(--dark); box-shadow: 12px 12px 0 var(--ink); }
+.card.c1 { background: var(--ink); color: var(--dark); box-shadow: 12px 12px 0 var(--acc); }
+.card b { position: absolute; left: 22px; top: 12px; font: 900 110px/1 Unbounded; }
+.card img { position: absolute; left: 50%; bottom: 0; max-width: 92%; max-height: 300px; transform: translateX(-50%); }
+
+/* Переход: жёлтая шторка с тёмной кромкой */
+#wipe { position: absolute; top: 0; left: 0; width: 1500px; height: 1920px; background: var(--acc); transform: translateX(-1600px); }
+#wipe:before { content: ""; position: absolute; right: -60px; top: 0; width: 60px; height: 100%; background: var(--dark); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="dots"></div>
+  <div id="segs"></div>
+  <div id="subs"></div>
+  <div id="progress"></div>
+  <div id="wm"></div>
+  <div id="wipe"></div>
+</div>
+<script>
+// ---------- утилиты ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const eOut = t => 1 - Math.pow(1 - clamp(t), 3);
+const eInOut = t => { t = clamp(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const eBack = t => { t = clamp(t); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const $ = (tag, cls, parent, css) => { const e = document.createElement(tag); if (cls) e.className = cls; if (css) e.style.cssText = css; if (parent) parent.appendChild(e); return e; };
+const WIPE = 0.32;                    // половина длительности шторки, сек
+let D, SEGS = [];
+
+// Заголовок: строки выезжают из-под маски. «|» — перенос, *слово* — жёлтым
+function headline(parent, text) {
+  const h = $("div", "head", parent);
+  return text.split("|").map(line => {
+    const sp = $("span", null, $("span", "ln", h));
+    sp.innerHTML = line.replace(/\*(.+?)\*/g, '<b class="y" style="font-weight:900">$1</b>');
+    return sp;
+  });
+}
+
+// Вписываем героя в рамку w×h, низом на линию bottom, центр по cx
+function placeHero(im, cx, bottom, w, h) {
+  const k = Math.min(w / im.naturalWidth, h / im.naturalHeight);
+  const W = im.naturalWidth * k, H = im.naturalHeight * k;
+  im.style.width = W + "px"; im.style.height = H + "px";
+  im.style.left = (cx - W / 2) + "px"; im.style.top = (bottom - H) + "px";
+}
+
+// ---------- построение ----------
+async function init(data) {
+  D = data;
+  document.getElementById("wm").textContent = data.watermark;
+  const prog = document.getElementById("progress");
+  data.segs.filter(s => !s.outro).forEach(() => $("i", null, $("div", "pg", prog)));
+  const host = document.getElementById("segs");
+  data.segs.forEach(s => {
+    const el = $("div", "seg", host);
+    const g = { s, el, parts: {} };
+    const P = g.parts, v = s.visual || {};
+    if (s.outro) {
+      P.lines = headline(el, s.question);
+      const cards = $("div", "cards", el);
+      P.cards = s.thumbs.map((src, k) => {
+        const c = $("div", "card c" + k, cards);
+        $("b", null, c).textContent = k + 1;
+        if (src) {
+          const im = $("img", null, c); im.src = src;
+          // Иконку предмета растягиваем по ширине карточки (она маленькая)
+          if (src.includes("/item_")) im.style.cssText = "width:78%;max-height:none;bottom:70px;border-radius:14px;box-shadow:8px 8px 0 #0d0e12";
+        }
+        return c;
+      });
+      P.cta = $("div", "lab", el, "top:1240px;left:60px;width:880px;text-align:center;font-size:44px");
+      P.cta.textContent = s.cta;
+    } else if (s.layout === "duo") {
+      P.lines = headline(el, s.headline);
+      P.band = $("div", "band", el, "top:700px");
+      P.heroes = v.heroes.map(src => { const im = $("img", "hero", el); im.src = src; return im; });
+      el.insertAdjacentHTML("beforeend", `<svg class="path" viewBox="0 0 1080 1920"><defs><marker id="ah${data.segs.indexOf(s)}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#f4f4f2"/></marker></defs>
+        <path d="M 330 830 C 470 600, 640 600, 760 760" fill="none" stroke="#f4f4f2" stroke-width="10" stroke-linecap="round" stroke-dasharray="1 26" marker-end="url(#ah${data.segs.indexOf(s)})"/></svg>`);
+      P.hookSvg = el.querySelector("svg.path");
+      P.pill = $("div", "pill", el, "top:1270px"); P.pill.textContent = v.caption || "";
+    } else if (s.layout === "block") {
+      P.lines = headline(el, s.headline);
+      P.block = $("div", "block", el, "left:300px;top:600px;width:600px;height:560px");
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      P.big = $("div", "big", el, "top:1205px"); P.big.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1385px;width:820px"); P.lab.textContent = v.label || "";
+    } else if (s.layout === "grid") {
+      P.lines = headline(el, s.headline);
+      P.big = $("div", "big y", el, "top:480px;font-size:118px"); P.big.textContent = v.number;
+      const grid = $("div", "grid", el, "top:660px");
+      P.tiles = Array.from({ length: v.icons.count }, () => { const t = $("div", "tile", grid); $("img", null, t).src = v.icons.src; return t; });
+      if (v.heroes) { P.hero = $("img", "hero", el); P.hero.src = v.heroes[0]; }
+      P.lab = $("div", "lab", el, "left:470px;top:1225px;width:470px;font:900 46px/1.15 Unbounded"); P.lab.innerHTML = v.label || "";
+    }
+    SEGS.push(g);
+  });
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+  // Раскладка героев по реальным пропорциям картинок
+  SEGS.forEach(g => {
+    const P = g.parts, s = g.s;
+    if (s.layout === "duo") { placeHero(P.heroes[0], 290, 1200, 460, 640); placeHero(P.heroes[1], 720, 1200, 420, 600); }
+    // Верх героя не выше нижней строки заголовка (+20px)
+    const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
+    if (s.layout === "block") placeHero(P.hero, 600, 1170, 760, 1170 - headBottom - 60);   // запас под наезд камеры
+    if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
+  });
+  return true;
+}
+
+// ---------- кадр в момент t ----------
+function seek(t) {
+  const segs = D.segs;
+  let i = 0; while (i + 1 < segs.length && segs[i + 1].start <= t) i++;
+  const lt = t - segs[i].start;
+
+  document.getElementById("dots").style.transform = `translate(${(t * 6) % 36}px, ${(t * 4) % 36}px)`;
+  document.querySelectorAll(".pg i").forEach((bar, k) => {
+    bar.style.width = (segs[i].outro || k < i ? 100 : k === i ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
+  });
+  SEGS.forEach((g, k) => { g.el.style.visibility = k === i ? "visible" : "hidden"; });
+  draw(SEGS[i], lt);
+
+  // Шторка: заезжает слева, на стыке закрывает экран, уезжает вправо
+  let x = -1600;
+  segs.forEach((s, k) => {
+    if (!k) return;
+    const d = t - s.start;
+    if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
+  });
+  document.getElementById("wipe").style.transform = `translateX(${x}px)`;
+  drawSubs(segs[i].outro ? null : segs[i].words, lt);
+}
+
+function draw(g, lt) {
+  const P = g.parts, s = g.s;
+  if (!P.lines) return;
+  P.lines.forEach((sp, j) => { const k = eOut((lt - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
+  if (s.outro) {
+    P.cards.forEach((c, k) => { const e = eBack((lt - 0.3 - k * 0.12) / 0.5); c.style.transform = `translateY(${(1 - e) * 260}px) rotate(${(1 - e) * (k - 1) * 8}deg)`; c.style.opacity = clamp(e * 2); });
+    const e = eOut((lt - 0.9) / 0.4); P.cta.style.opacity = e; P.cta.style.transform = `translateY(${(1 - e) * 30}px)`;
+    return;
+  }
+  if (s.layout === "duo") {
+    P.band.style.transform = `rotate(-7deg) scaleX(${eOut((lt - 0.2) / 0.5)})`;
+    P.heroes.forEach((im, j) => {
+      const e = eBack((lt - 0.35 - j * 0.15) / 0.55);
+      im.style.transform = `translateX(${(1 - e) * (j ? 300 : -300)}px) scale(${(0.8 + 0.2 * e) * (1 + 0.02 * Math.sin(lt * 1.6 + j))})`;
+      im.style.opacity = clamp(e * 2);
+    });
+    // Траектория хука проявляется слева направо, пунктир «бежит»
+    const e = eOut((lt - 1.1) / 0.8);
+    P.hookSvg.style.clipPath = `inset(0 ${1080 - (300 + 520 * e)}px 0 0)`;
+    P.hookSvg.style.opacity = e > 0 ? 1 : 0;
+    P.hookSvg.querySelector("path:not([d^='M0'])").style.strokeDashoffset = -lt * 40;
+    const ep = eBack((lt - 1.4) / 0.4);
+    P.pill.style.transform = `translateY(${(1 - ep) * 40}px) rotate(${(1 - ep) * -4}deg)`; P.pill.style.opacity = clamp(ep * 2);
+  }
+  if (s.layout === "block") {
+    const kb = eBack((lt - 0.2) / 0.5);
+    P.block.style.transform = `scale(${kb}) rotate(${(1 - kb) * -6}deg)`;
+    const kh = eBack((lt - 0.45) / 0.55);
+    P.hero.style.transform = `translateY(${(1 - kh) * 200}px) scale(${(0.9 + 0.1 * kh) * (1 + 0.004 * lt)})`;
+    P.hero.style.opacity = clamp(kh * 2);
+    countUp(P.big, s.visual.number, lt, 0.9);
+    const kl = eOut((lt - 1.3) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateY(${(1 - kl) * 20}px)`;
+  }
+  if (s.layout === "grid") {
+    countUp(P.big, s.visual.number, lt, 0.4);
+    const n = P.tiles.length, step = Math.min(0.11, (s.dur - 3.5) / n);
+    P.tiles.forEach((tl, m) => {
+      const e = eBack((lt - 0.9 - m * step) / 0.3);
+      tl.style.transform = `scale(${e}) rotate(${(1 - e) * (m % 2 ? 14 : -14)}deg)`; tl.style.opacity = clamp(e * 2);
+    });
+    if (P.hero) { const kh = eBack((lt - 0.9 - n * step) / 0.5); P.hero.style.transform = `translateY(${(1 - kh) * 160}px)`; P.hero.style.opacity = clamp(kh * 2); }
+    const kl = eOut((lt - 1.1 - n * step) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateX(${(1 - kl) * 40}px)`;
+  }
+}
+
+// Число набегает от нуля; запятая, % и слова после числа сохраняются
+function countUp(el, text, lt, t0) {
+  const m = text.match(/^(\d+)(?:,(\d+))?(.*)$/);
+  const e = eOut((lt - t0) / 1.0);
+  el.style.opacity = clamp((lt - t0) / 0.2);
+  el.style.transform = `translateY(${(1 - eBack((lt - t0) / 0.5)) * 40}px)`;
+  if (!m) { el.textContent = text; return; }
+  const dec = m[2] ? m[2].length : 0;
+  el.textContent = (e >= 1 ? m[1] + (dec ? "," + m[2] : "") :
+    (parseFloat(m[1] + (dec ? "." + m[2] : "")) * e).toFixed(dec).replace(".", ",")) + m[3];
+}
+
+// Субтитры: до 3 слов, новая группа на паузе; одно активное слово на жёлтой плашке
+function drawSubs(words, lt) {
+  const box = document.getElementById("subs");
+  if (!words || !words.length) { box.innerHTML = ""; return; }
+  const groups = []; let cur = [];
+  words.forEach(w => { if (cur.length && (cur.length >= 3 || w[1] - cur[cur.length - 1][2] > 0.2)) { groups.push(cur); cur = []; } cur.push(w); });
+  if (cur.length) groups.push(cur);
+  let g = null; groups.forEach(gr => { if (gr[0][1] - 0.05 <= lt) g = gr; });
+  if (!g || lt > g[g.length - 1][2] + 0.6) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div id="subsin" style="display:inline-block">` + g.map((w, j) => {
+    const nxt = j + 1 < g.length ? g[j + 1][1] : w[2] + 0.3;
+    return `<span class="${w[1] <= lt && lt < nxt ? "on" : ""}">${w[0]}</span>`;
+  }).join("") + `</div>`;
+  const inner = document.getElementById("subsin");
+  const fit = Math.min(1, 860 / inner.offsetWidth);       // длинная строка ужимается в поля
+  const k = eBack((lt - g[0][1] + 0.05) / 0.18);
+  box.style.transform = `scale(${fit * (0.88 + 0.12 * k)})`;
+}
+
+// Проверка раскладки: выход за безопасную зону и наложение текстов
+function audit() {
+  const bad = [];
+  const seg = SEGS.find(g => g.el.style.visibility === "visible");
+  if (!seg) return bad;
+  const R = e => e.getBoundingClientRect();
+  const vis = e => +getComputedStyle(e).opacity > 0.95;
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .tile"), ...document.querySelectorAll("#subs span")];
+  items.filter(vis).forEach(e => {
+    const r = R(e);
+    if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
+      bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
+  });
+  const texts = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill")].filter(vis);
+  const sub = document.getElementById("subsin"); if (sub) texts.push(sub);
+  for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) {
+    const A = R(texts[a]), B = R(texts[b]);
+    if (A.left < B.right && B.left < A.right && A.top < B.bottom - 4 && B.top < A.bottom - 4)
+      bad.push(`наложение: «${texts[a].textContent.trim().slice(0, 16)}» и «${texts[b].textContent.trim().slice(0, 16)}»`);
+  }
+  // Герои не должны залезать на заголовок
+  const head = seg.el.querySelector(".head");
+  if (head) {
+    const H = R(head);
+    seg.el.querySelectorAll("img.hero").forEach(im => {
+      if (!vis(im)) return;
+      const r = R(im);
+      if (r.top < H.bottom - 6 && r.left < H.right && H.left < r.right) bad.push(`герой залезает на заголовок: верх ${r.top | 0}, заголовок до ${H.bottom | 0}`);
+    });
+  }
+  return bad;
+}
+</script>
+</body>
+</html>

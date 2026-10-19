@@ -1,0 +1,52 @@
+# Скачать рендеры героев, вырезать фон и сложить в ветку assets (для макетов)
+name: assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      heroes:
+        description: "ключи героев через пробел"
+        default: "pudge chen centaur kunkka"
+      items:
+        description: "ключи предметов через пробел"
+        default: "tango rapier"
+
+permissions:
+  contents: write
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow "rembg[cpu]"
+      - name: Скачать и вырезать
+        env:
+          HEROES: ${{ inputs.heroes }}
+          ITEMS: ${{ inputs.items }}
+        run: |
+          mkdir -p a
+          python - <<'PY'
+          import os, urllib.request, io
+          from PIL import Image
+          from rembg import remove
+          CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2"
+          def get(url):
+              req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+              return Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=30).read())).convert("RGBA")
+          for k in os.environ["HEROES"].split():
+              im = get(f"{CDN}/videos/dota_react/heroes/renders/{k}.png")
+              print(k, im.size, "альфа min:", im.getextrema()[3][0])
+              if im.getextrema()[3][0] >= 250:
+                  im = remove(im).convert("RGBA")
+              bb = im.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
+              im.crop(bb).save(f"a/hero_{k}.png")
+          for k in os.environ["ITEMS"].split():
+              get(f"{CDN}/images/dota_react/items/{k}.png").save(f"a/item_{k}.png")
+          PY
+          cd a
+          git init -q -b assets && git add -A
+          git -c user.name=render-bot -c user.email=render-bot@users.noreply.github.com commit -q -m assets
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" assets

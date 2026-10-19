@@ -27,6 +27,11 @@ from quiz import fetch_image, load_consts, placeholder
 VOICE = os.environ.get("FV_VOICE", "ru-RU-DmitryNeural")
 PITCH = os.environ.get("FV_PITCH", "-10Hz")
 RATE = os.environ.get("FV_RATE", "+12%")
+# Fish Audio: живой голос (если задан ключ). Голос «Энергичный Рассказчик» из библиотеки fish.audio
+FISH_KEY = os.environ.get("FISH_API_KEY", "")
+FISH_VOICE = os.environ.get("FISH_VOICE", "48ec28a45588422b977a86460c11977f")
+FISH_MODEL = os.environ.get("FISH_MODEL", "s2.1-pro-free")
+FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.1"))
 WATERMARK = "@admiral8dota"
 SR, FPS = 44100, 30
 PAD = 0.7                     # пауза после факта, сек
@@ -94,6 +99,57 @@ def tts(text, path_mp3, voice=None, pitch=None, rate=None):
     raise RuntimeError(f"озвучка не получилась: {last}")
 
 
+def tts_fish(text, path_mp3, voice=None):
+    """Озвучка через Fish Audio + тайминги слов распознаванием (faster-whisper)."""
+    import urllib.request
+    body = json.dumps({"text": text, "reference_id": voice or FISH_VOICE, "format": "mp3",
+                       "mp3_bitrate": 192, "prosody": {"speed": FISH_SPEED}, "language": "ru",
+                       "normalize": True}).encode()
+    last = None
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request("https://api.fish.audio/v1/tts", data=body, method="POST", headers={
+                "Authorization": f"Bearer {FISH_KEY}", "Content-Type": "application/json", "model": FISH_MODEL})
+            with urllib.request.urlopen(req, timeout=120) as r:
+                data = r.read()
+            if len(data) < 1000:
+                raise RuntimeError(f"слишком короткий ответ: {data[:200]!r}")
+            Path(path_mp3).write_bytes(data)
+            break
+        except Exception as e:
+            last = e
+            print(f"  fish повтор {attempt + 1}: {e}")
+    else:
+        raise RuntimeError(f"Fish Audio не ответил: {last}")
+    return align_words(path_mp3)
+
+
+_WHISPER = None
+
+
+def align_words(path):
+    """Слова с таймингами из готовой озвучки (субтитры совпадают с тем, что звучит)."""
+    global _WHISPER
+    from faster_whisper import WhisperModel
+    if _WHISPER is None:
+        _WHISPER = WhisperModel("small", device="cpu", compute_type="int8")
+    segs, _ = _WHISPER.transcribe(str(path), language="ru", word_timestamps=True, vad_filter=False)
+    words = []
+    for sg in segs:
+        for w in sg.words or []:
+            t = w.word.strip()
+            if t:
+                words.append((t, float(w.start), float(w.end)))
+    return words
+
+
+def speak(text, path_mp3):
+    """Озвучка фрагмента: Fish Audio, если есть ключ, иначе бесплатный edge-tts."""
+    if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
+        return tts_fish(text, path_mp3)
+    return tts(text, path_mp3)
+
+
 def mp3_to_pcm(path):
     raw = subprocess.run([Q.ffmpeg_exe(), "-loglevel", "error", "-i", str(path), "-f", "s16le",
                           "-ac", "1", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
@@ -141,7 +197,7 @@ def prepare(ep, heroes, items):
     for i, f in enumerate(parts):
         text = f["voice"].format(**vals)
         mp3 = WORK / f"v{i}.mp3"
-        words = tts(text, mp3)
+        words = speak(text, mp3)
         pcm = mp3_to_pcm(mp3)
         dur = len(pcm) / SR + PAD
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
@@ -281,7 +337,17 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
 
 def voice_samples(out_dir):
     """Пробы голосов одной фразой — выбрать на слух."""
-    text = "Нави выиграли матч на Интернешнл, утаскивая врагов прямо в свой фонтан."
+    text = "Valve однажды тайно усилила героя, без патчноута. За одну ночь её винрейт подскочил с тридцати девяти до пятидесяти одного процента!"
+    if FISH_KEY:
+        fish = [("energichny", "48ec28a45588422b977a86460c11977f"), ("incidenty", "2270bb203a424d1881678ba5e4b82b54"),
+                ("analitik", "868377a7b08f4c0d9acf8c9f059571aa")]
+        for name, vid in fish:
+            try:
+                words = tts_fish(text, Path(out_dir) / f"voice_fish_{name}.mp3", vid)
+                print(f"  fish {name}: {len(words)} слов распознано")
+            except RuntimeError as e:
+                print(f"  fish {name}: ошибка {e}")
+        return
     variants = [("ru-RU-DmitryNeural", "-25Hz", "+0%"),
                 ("en-US-AndrewMultilingualNeural", "+0Hz", "+5%"),
                 ("en-US-BrianMultilingualNeural", "+0Hz", "+5%"),

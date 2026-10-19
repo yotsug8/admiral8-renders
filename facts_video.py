@@ -501,7 +501,7 @@ def voice_takes(ep, out_dir, n=3):
     """Несколько дублей озвучки каждого факта (и вариантов финала) — выбрать на слух."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1)]
+    jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
     jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
     for name, text, k in jobs:
         for t in range(1, k + 1):

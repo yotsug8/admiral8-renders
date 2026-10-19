@@ -281,6 +281,9 @@ def prepare(ep, heroes, items):
             if v.get("icons"):
                 v["icons"] = dict(src=item_icon(v["icons"], items).as_uri(),
                                   count=int(str(v["count"]).format(**vals)))
+            for key in ("team_logos", "ability_icons"):     # картинки, лежащие в репозитории
+                if v.get(key):
+                    v[key] = [(HERE / x).as_uri() if x else None for x in v[key]]
             for key in ("number", "label", "caption"):
                 if v.get(key):
                     v[key] = str(v[key]).format(**vals)

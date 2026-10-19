@@ -65,6 +65,8 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .team { padding: 14px 28px; border-radius: 16px; font: 900 40px Unbounded; }
 .team.a { background: var(--acc); color: var(--dark); box-shadow: 8px 8px 0 var(--ink); }
 .team.b { background: var(--ink); color: var(--dark); box-shadow: 8px 8px 0 var(--acc); }
+.team { display: flex; align-items: center; gap: 16px; }
+.team img.logo { width: 76px; height: 76px; object-fit: contain; border-radius: 12px; background: var(--dark); padding: 6px; }
 .vs i { font: 800 34px Manrope; color: rgba(244,244,242,.6); font-style: normal; }
 .row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .row img { width: 70px; height: 52px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
@@ -73,7 +75,9 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
   overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
 .gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
 .gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
-.chips { position: absolute; left: 250px; top: 930px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
+.chips { position: absolute; left: 250px; top: 900px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
+.abil { display: flex; gap: 10px; margin-top: 10px; }
+.abil img { width: 54px; height: 54px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
 .chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
 /* «Весы» */
 .beam { position: absolute; left: 110px; width: 780px; top: 900px; height: 18px; border-radius: 9px; background: var(--ink); transform-origin: 50% 50%; }
@@ -177,7 +181,14 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       P.clock = $("div", "clock", el, "top:560px");
       const vs = $("div", "vs", el, "top:810px");
-      P.teams = v.teams.map((t, k) => { if (k) $("i", null, vs).textContent = "vs"; const d = $("div", "team " + (k ? "b" : "a"), vs); d.textContent = t; return d; });
+      P.teams = v.teams.map((t, k) => {
+        if (k) $("i", null, vs).textContent = "vs";
+        const d = $("div", "team " + (k ? "b" : "a"), vs);
+        const logo = (v.team_logos || [])[k];
+        if (logo) { const im = $("img", "logo", d); im.src = logo; }
+        $("span", null, d).textContent = t;
+        return d;
+      });
       P.vs = vs;
       const row = $("div", "row", el, "top:960px");
       P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
@@ -187,11 +198,16 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
       $("div", "mark", gg, "bottom:50%");                       // отметка 50%
-      P.gnum = $("div", "big", el, "top:1215px;left:60px;font-size:120px;color:#ff5a4e"); P.gnum.textContent = v.number;
-      P.lab = $("div", "lab", el, "top:1350px;left:64px;width:860px;font-size:32px"); P.lab.textContent = v.label || "";
+      P.gnum = $("div", "big", el, "top:1240px;left:60px;font-size:120px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1375px;left:64px;width:860px;font-size:32px"); P.lab.textContent = v.label || "";
       P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
       const ch = $("div", "chips", el);
       P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
+      if (v.ability_icons && P.chips.length) {
+        // Иконки способностей — отдельной строкой под последней плашкой
+        const last = P.chips[P.chips.length - 1], row = $("div", "abil", last);
+        v.ability_icons.forEach(src => { $("img", null, row).src = src; });
+      }
     } else if (s.layout === "mosaic") {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
@@ -272,7 +288,7 @@ function seek(t) {
   // Шторка перед финальным клипом: здесь только заезд, съезд дорисовывается поверх клипа
   if (D.end_at != null && t > D.end_at - WIPE) x = -1600 + eInOut((t - D.end_at + WIPE) / (2 * WIPE)) * 2800;
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
-  drawSubs(segs[i].outro ? null : segs[i].words, lt);
+  drawSubs(segs[i].words, lt);
 }
 
 // Слой поверх финального клипа: прозрачный фон, только водяной знак и съезжающая шторка.

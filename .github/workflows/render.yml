@@ -30,6 +30,7 @@ jobs:
             echo "== выпуск $n"
             python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
           done
+          python facts.py out 2>&1 | tee -a out/render.log
           echo "иконок в кэше: $(ls cache | wc -l)" | tee -a out/render.log
       - uses: actions/upload-artifact@v4
         with:

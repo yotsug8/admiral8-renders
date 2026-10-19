@@ -229,14 +229,14 @@ def align_to_script(text, asr):
     return [(w, t[0], t[1]) for w, t in zip(script, times)]
 
 
-def speak(text, path_mp3, voice_file=None):
+def speak(text, path_mp3, voice_file=None, voice=None):
     """Озвучка фрагмента: выбранный дубль, иначе Fish Audio (если есть ключ), иначе edge-tts."""
     if voice_file and (HERE / voice_file).exists() and not os.environ.get("FV_FAKE_TTS"):
         shutil.copy(HERE / voice_file, path_mp3)
         return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
         try:
-            return align_to_script(text.replace("\u0301", ""), tts_fish(text, path_mp3))
+            return align_to_script(text.replace("\u0301", ""), tts_fish(text, path_mp3, voice))
         except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
             print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
     elif not FISH_KEY:
@@ -306,7 +306,7 @@ def prepare(ep, heroes, items):
     for i, f in enumerate(parts):
         text = f["voice"]
         mp3 = WORK / f"v{i}.mp3"
-        words = speak(text, mp3, f.get("voice_file"))
+        words = speak(text, mp3, f.get("voice_file"), ep.get("voice_id"))   # голос — свой у каждого выпуска
         pcm = mp3_to_pcm(mp3)
         dur = len(pcm) / SR + PAD + (0.6 if i == len(parts) - 1 else 0)   # в конце чуть дольше пауза
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
@@ -467,7 +467,7 @@ def voice_takes(ep, out_dir, n=3):
     for name, text, k in jobs:
         for t in range(1, k + 1):
             path = out / f"take_{name}_{t}.mp3"
-            tts_fish(text, path, align=False)
+            tts_fish(text, path, ep.get("voice_id"), align=False)
             print(f"  {path.name}: {text}")
             if os.environ.get("FV_TAKES_ANALYZE"):
                 summary[path.name] = analyze_take(path)

@@ -78,11 +78,11 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .row img { width: 92px; height: 68px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
 /* «Шкала» */
-.gauge { position: absolute; left: 60px; top: 470px; width: 150px; height: 540px; border-radius: 24px; background: rgba(255,255,255,.08);
+.gauge { position: absolute; left: 60px; top: 480px; width: 150px; height: 480px; border-radius: 24px; background: rgba(255,255,255,.08);
   overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
 .gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
 .gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
-.chips { position: absolute; left: 60px; top: 1190px; width: 880px; display: flex; flex-direction: column; gap: 14px; }
+.chips { position: absolute; left: 60px; top: 1150px; width: 880px; display: flex; flex-direction: column; gap: 16px; }
 .abil { display: inline-flex; gap: 8px; margin-left: 16px; vertical-align: middle; }
 .abil img { width: 50px; height: 50px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
 .chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
@@ -98,6 +98,34 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 /* Переход: жёлтая шторка с тёмной кромкой */
 #wipe { position: absolute; top: 0; left: 0; width: 1500px; height: 1920px; background: var(--acc); transform: translateX(-1600px); }
 #wipe:before { content: ""; position: absolute; right: -60px; top: 0; width: 60px; height: 100%; background: var(--dark); }
+
+/* ---------- Массивный стиль: толстые обводки, «наклейки», крупнее мелкий текст ---------- */
+.pill { font-size: 38px; padding: 12px 26px; border: 5px solid var(--dark); }
+.chip2 { font-size: 36px; padding: 8px 22px; border: 5px solid var(--dark); display: inline-flex; align-items: center; }
+.tcard, .card { border: 6px solid var(--dark); }
+.tlogo { box-shadow: inset 0 0 0 5px rgba(255,255,255,.14); }
+.win { font-size: 32px; border: 4px solid var(--dark); }
+.vs i { font-size: 44px; }
+.row img { width: 104px; height: 76px; border: 4px solid var(--ink); border-radius: 12px; box-shadow: 6px 6px 0 var(--acc); }
+.abil img { width: 56px; height: 56px; border: 3px solid var(--dark); }
+.gauge { box-shadow: none; border: 6px solid var(--ink); }
+.note { font-size: 32px; }
+/* Герои — как наклейки: белая обводка по контуру */
+.hero, .card img { filter: drop-shadow(5px 0 0 var(--ink)) drop-shadow(-5px 0 0 var(--ink)) drop-shadow(0 5px 0 var(--ink)) drop-shadow(0 -5px 0 var(--ink)); }
+.card img[src*="/item_"] { filter: none; border: 5px solid var(--dark); }
+#subs span { text-shadow: 0 5px 0 var(--dark); }
+#subs span.on { text-shadow: none; box-shadow: 6px 6px 0 var(--ink); border: 4px solid var(--dark); }
+.evlogo { position: absolute; filter: drop-shadow(6px 6px 0 rgba(0,0,0,.5)); }
+
+/* Финальные карточки: картинка + тёмная плашка с цифрой факта */
+.card img { bottom: 150px; height: 470px; }
+.card img.icon { width: 84%; height: auto; bottom: 250px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); filter: none; }
+.card img.logo { width: 82%; height: auto; max-height: 300px; object-fit: contain; bottom: 230px; filter: drop-shadow(8px 8px 0 var(--dark)); }
+.cstat { position: absolute; left: 0; right: 0; bottom: 0; height: 160px; background: var(--dark); color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-top: 6px solid var(--dark); }
+.cstat strong { font: 900 46px/1 Unbounded; color: var(--acc); white-space: nowrap; letter-spacing: -.03em; }
+.cstat small { font: 800 26px/1.1 Manrope; color: var(--ink); text-align: center; padding: 0 10px; }
+.card b { z-index: 3; left: 16px; top: 16px; padding: 6px 18px 10px; border-radius: 18px; background: var(--dark); color: var(--acc); font-size: 72px; }
 </style>
 </head>
 <body>
@@ -156,9 +184,13 @@ async function init(data) {
         $("b", null, c).textContent = k + 1;
         if (src) {
           const im = $("img", null, c); im.src = src;
-          // Иконку предмета растягиваем по ширине карточки (она маленькая)
-          if (src.includes("/item_")) im.style.cssText = "width:84%;height:auto;bottom:200px;border-radius:14px;box-shadow:8px 8px 0 #0d0e12";
+          // Иконки и логотипы — по ширине карточки, над плашкой с цифрой
+          if (src.includes("/item_")) im.className = "icon";
+          else if (src.includes("/teams/")) im.className = "logo";
         }
+        // Плашка с главной цифрой факта
+        const st = (s.stats || [])[k];
+        if (st) { const b = $("div", "cstat", c); $("strong", null, b).textContent = st[0]; $("small", null, b).textContent = st[1]; }
         return c;
       });
       P.cta = $("div", "lab", el, "top:1230px;left:60px;width:880px;text-align:center;font:900 50px/1.15 Unbounded;text-transform:uppercase");
@@ -186,8 +218,8 @@ async function init(data) {
       P.lab = $("div", "lab", el, "left:470px;top:1225px;width:470px;font:900 46px/1.15 Unbounded"); P.lab.innerHTML = v.label || "";
     } else if (s.layout === "timer") {
       P.lines = headline(el, s.headline);
-      P.clock = $("div", "clock", el, "top:500px");
-      const vs = $("div", "vs", el, "top:770px");
+      P.clock = $("div", "clock", el, "top:470px");
+      const vs = $("div", "vs", el, "top:720px");
       P.teams = v.teams.map((t, k) => {
         if (k) $("i", null, vs).textContent = "vs";
         const d = $("div", "tcard " + (k ? "b" : "a"), vs);
@@ -199,18 +231,19 @@ async function init(data) {
       });
       P.vs = vs;
       P.win = el.querySelector(".win");
-      const row = $("div", "row", el, "top:1125px;width:640px;left:220px");
+      const row = $("div", "row", el, "top:1112px;width:720px;left:150px");
       P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
-      P.lab = $("div", "lab", el, "top:1290px;width:880px;text-align:center;font-size:38px"); P.lab.textContent = v.label || "";
+      P.lab = $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:40px"); P.lab.textContent = v.label || "";
       if (v.event_logo) {        // логотип турнира вместо текстовой плашки
-        P.pill = $("img", null, el, "position:absolute;top:1345px;left:50%;height:88px;transform:translateX(-50%)"); P.pill.src = v.event_logo;
+        P.pill = $("img", "evlogo", el, "top:236px;left:668px;height:112px;transform-origin:50% 50%"); P.pill.src = v.event_logo;
+        P.pill.dataset.static = "1";
       } else { P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || ""; }
     } else if (s.layout === "gauge") {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
       $("div", "mark", gg, "bottom:50%");                       // отметка 50%
-      P.gnum = $("div", "big", el, "top:1040px;left:60px;font-size:110px;color:#ff5a4e"); P.gnum.textContent = v.number;
-      P.lab = $("div", "lab", el, "top:1038px;left:430px;width:510px;font-size:31px"); P.lab.textContent = v.label || "";
+      P.gnum = $("div", "big", el, "top:1000px;left:60px;font-size:110px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:996px;left:430px;width:510px;font-size:33px"); P.lab.textContent = v.label || "";
       P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
       const ch = $("div", "chips", el);
       P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
@@ -223,14 +256,14 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
       P.big = $("div", "big y", el, "top:420px;font-size:110px"); P.big.textContent = v.number;
-      P.cv = $("canvas", null, el, "position:absolute;left:30px;top:585px");
-      P.cv.width = 1000; P.cv.height = 800;
+      P.cv = $("canvas", null, el, "position:absolute;left:30px;top:600px");
+      P.cv.width = 1000; P.cv.height = 730;
       // Лупа: показывает крупно, что силуэт выложен именно Танго
       P.lens = $("canvas", null, el, "position:absolute;width:300px;height:300px;border-radius:50%;border:8px solid #ffd23f;box-shadow:12px 12px 0 #f4f4f2;background:#15171c;opacity:0");
       P.lens.width = 300; P.lens.height = 300;
       P.hero = $("img", null, null); P.hero.src = v.heroes[0];
       P.icon = $("img", null, null); P.icon.src = v.icons.src;
-      P.pill = $("div", "pill", el, "top:1395px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.pill = $("div", "pill", el, "top:1352px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
       P.note = $("div", "note", el, "top:540px;text-align:left"); P.note.textContent = v.note || "";
     } else if (s.layout === "scale") {
       P.lines = headline(el, s.headline);
@@ -268,7 +301,7 @@ async function init(data) {
     const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
     if (s.layout === "block") placeHero(P.hero, 600, 1170, 760, 1170 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
-    if (s.layout === "gauge") placeHero(P.hero, 590, 1010, 680, 1010 - headBottom);
+    if (s.layout === "gauge") placeHero(P.hero, 590, 960, 680, 960 - headBottom);
     if (s.layout === "scale") placeHero(P.hero, 260, 900, 320, 300);
     if (s.layout === "mosaic") MOS.push(buildMosaic(g));
   });
@@ -397,7 +430,11 @@ function drawExtra(g, lt) {
     if (P.win) { const w = eBack((lt - 3.6) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
     P.icons.forEach((im, m) => { const q = eBack((lt - 2.6 - m * 0.18) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
     const q = eOut((lt - 2.8) / 0.4); P.lab.style.opacity = q;
-    const p2 = eBack((lt - 3.2) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    if (P.pill.dataset.static) {        // логотип турнира у заголовка: появляется сразу
+      const p3 = eBack((lt - 0.5) / 0.4); P.pill.style.opacity = clamp(p3 * 2); P.pill.style.transform = `scale(${0.7 + 0.3 * p3}) rotate(${(1 - p3) * -8}deg)`;
+    } else {
+      const p2 = eBack((lt - 3.2) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    }
   }
   if (s.layout === "gauge") {
     const kh = eBack((lt - 0.3) / 0.6);
@@ -431,7 +468,7 @@ function drawExtra(g, lt) {
         lc.drawImage(P.icon, (x - cx) * Z + 150 - c * 0.6 * Z, (y - cy) * Z + 150 - c * 0.45 * Z, c * 1.2 * Z, c * 0.9 * Z);
       }
       lc.restore();
-      P.lens.style.left = (30 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (585 + P.lensPos[1] - 150) + "px";
+      P.lens.style.left = (30 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (600 + P.lensPos[1] - 150) + "px";
       P.lens.style.opacity = clamp(la * 2); P.lens.style.transform = `scale(${0.5 + 0.5 * la})`;
     }
     // Счётчик идёт ровно по числу выложенных Танго
@@ -509,7 +546,7 @@ function audit() {
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .clock, .vs, .chip2, .note")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

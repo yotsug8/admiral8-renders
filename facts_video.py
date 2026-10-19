@@ -31,7 +31,7 @@ RATE = os.environ.get("FV_RATE", "+12%")
 FISH_KEY = os.environ.get("FISH_API_KEY", "")
 FISH_VOICE = os.environ.get("FISH_VOICE", "a0ee3d18e2e244f2b448f322273e4286")
 FISH_MODEL = os.environ.get("FISH_MODEL", "s2.1-pro-free")
-FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.2"))
+FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.15"))
 WATERMARK = "@admiral8dota"
 SR, FPS = 44100, 30
 PAD = 0.7                     # пауза после факта, сек
@@ -165,6 +165,8 @@ def align_to_script(text, asr):
     """Слова для субтитров берём из исходного текста, а тайминги — из распознавания.
     Сопоставляем последовательности (difflib); несовпавшим словам времена интерполируем."""
     import difflib
+    import re
+    text = re.sub(r"\[[^\]]*\]", " ", text)            # теги эмоций/пауз Fish Audio не показываем
     script = [w.strip(",.;:") for w in text.split() if _norm(w)]
     if not asr:
         return [(w, i * 0.35, i * 0.35 + 0.3) for i, w in enumerate(script)]
@@ -200,7 +202,8 @@ def speak(text, path_mp3):
             print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
     elif not FISH_KEY:
         print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
-    return tts(text, path_mp3)
+    import re
+    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", text).strip(), path_mp3)
 
 
 def mp3_to_pcm(path):

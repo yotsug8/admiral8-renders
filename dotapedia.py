@@ -214,7 +214,11 @@ def draw_visual(img, seg, lt, heroes, items, cache):
         if a > 0:
             ck = ("num", num)
             if ck not in cache:
-                cache[ck] = gradient_text(num, 170, (255, 236, 180), GOLD, stroke=6)
+                gt = gradient_text(num, 170, (255, 236, 180), GOLD, stroke=6)
+                if gt.width > 900:                  # длинное число ужимаем под ширину
+                    k = 900 / gt.width
+                    gt = gt.resize((900, int(gt.height * k)), Image.LANCZOS)
+                cache[ck] = gt
                 cache[ck + ("g",)] = glow_layer(cache[ck], 26, (255, 150, 50), 0.8)
             ny = VIS_TOP + 120 if vis.get("number_top") else VIS_BOT - 150
             paste_scaled(img, cache[ck + ("g",)], CX, ny, a)
@@ -254,8 +258,9 @@ def draw_subs(img, words, lt):
         sp = d.textlength(" ", font=f)
         total = sum(widths) + sp * (len(texts) - 1)
     x = CX - total / 2
-    for (tx, s, e), wd in zip(g, widths):
-        active = s <= lt < e + 0.08
+    for j, ((tx, s, e), wd) in enumerate(zip(g, widths)):
+        nxt = g[j + 1][1] if j + 1 < len(g) else e + 0.3
+        active = s <= lt < nxt          # подсвечено ровно одно слово
         d.text((x, Y_SUBS), tx, font=f, fill=(YELLOW if active else WHITE) + (255,), anchor="lm",
                stroke_width=6, stroke_fill=(0, 0, 0, 255))
         x += wd + sp

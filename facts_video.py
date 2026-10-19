@@ -32,6 +32,7 @@ FISH_KEY = os.environ.get("FISH_API_KEY", "")
 FISH_VOICE = os.environ.get("FISH_VOICE", "0036c4fdc4c7442e9a47af59287b7737")
 FISH_MODEL = os.environ.get("FISH_MODEL", "s2.1-pro-free")
 FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.15"))
+FISH_TEMP = float(os.environ.get("FISH_TEMP", "0.85"))     # разброс интонаций (по умолчанию у Fish 0.7)
 WATERMARK = "@admiral8dota"
 SR, FPS = 44100, 30
 PAD = 0.7                     # пауза после факта, сек
@@ -99,12 +100,12 @@ def tts(text, path_mp3, voice=None, pitch=None, rate=None):
     raise RuntimeError(f"озвучка не получилась: {last}")
 
 
-def tts_fish(text, path_mp3, voice=None):
+def tts_fish(text, path_mp3, voice=None, align=True):
     """Озвучка через Fish Audio + тайминги слов распознаванием (faster-whisper)."""
     import urllib.request
     body = json.dumps({"text": text, "reference_id": voice or FISH_VOICE, "format": "mp3",
                        "mp3_bitrate": 192, "prosody": {"speed": FISH_SPEED}, "language": "ru",
-                       "normalize": True}).encode()
+                       "normalize": True, "temperature": FISH_TEMP}).encode()
     last = None
     for attempt in range(4):
         try:
@@ -131,7 +132,7 @@ def tts_fish(text, path_mp3, voice=None):
         raise RuntimeError(f"Fish Audio не ответил: {last}")
     if not Path(path_mp3).exists() or Path(path_mp3).stat().st_size < 1000:
         raise RuntimeError(f"Fish Audio не ответил: {last}")
-    return align_words(path_mp3)
+    return align_words(path_mp3) if align else None
 
 
 _WHISPER = None
@@ -193,8 +194,12 @@ def align_to_script(text, asr):
     return [(w, t[0], t[1]) for w, t in zip(script, times)]
 
 
-def speak(text, path_mp3):
-    """Озвучка фрагмента: Fish Audio, если есть ключ, иначе бесплатный edge-tts."""
+def speak(text, path_mp3, voice_file=None):
+    """Озвучка фрагмента: выбранный дубль, иначе Fish Audio (если есть ключ), иначе edge-tts."""
+    if voice_file and (HERE / voice_file).exists() and not os.environ.get("FV_FAKE_TTS"):
+        import shutil
+        shutil.copy(HERE / voice_file, path_mp3)
+        return align_to_script(text, align_words(path_mp3))
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
         try:
             return align_to_script(text, tts_fish(text, path_mp3))
@@ -253,7 +258,7 @@ def prepare(ep, heroes, items):
     for i, f in enumerate(parts):
         text = f["voice"].format(**vals)
         mp3 = WORK / f"v{i}.mp3"
-        words = speak(text, mp3)
+        words = speak(text, mp3, f.get("voice_file"))
         pcm = mp3_to_pcm(mp3)
         dur = len(pcm) / SR + PAD + (0.6 if i == len(parts) - 1 else 0)   # в конце чуть дольше пауза
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
@@ -489,9 +494,25 @@ def voice_samples(out_dir):
             print(f"  голос {n}: {v} недоступен ({e})")
 
 
+def voice_takes(ep, out_dir, n=3):
+    """Несколько дублей озвучки каждого факта (и вариантов финала) — выбрать на слух."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1)]
+    jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
+    for name, text, k in jobs:
+        for t in range(1, k + 1):
+            path = out / f"take_{name}_{t}.mp3"
+            tts_fish(text, path, align=False)
+            print(f"  {path.name}: {text}")
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "--samples":
         voice_samples(sys.argv[2])
+    elif sys.argv[1] == "--takes":
+        with open(sys.argv[2], encoding="utf-8") as f:
+            voice_takes(json.load(f), sys.argv[3])
     else:
         with open(sys.argv[1], encoding="utf-8") as f:
             render(json.load(f), sys.argv[2])

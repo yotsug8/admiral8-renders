@@ -34,7 +34,8 @@
           "assets/teams/quest.png",
           "assets/teams/gaimin_gladiators.png"
         ],
-        "winner": 0
+        "winner": 0,
+        "event_logo": "assets/events/bali_major_2023.png"
       },
       "voice_file": "voice/002/f2.mp3"
     },

@@ -199,10 +199,12 @@ async function init(data) {
       });
       P.vs = vs;
       P.win = el.querySelector(".win");
-      const row = $("div", "row", el, "top:1135px;width:640px;left:220px");
+      const row = $("div", "row", el, "top:1125px;width:640px;left:220px");
       P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
-      P.lab = $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
-      P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.lab = $("div", "lab", el, "top:1292px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
+      if (v.event_logo) {        // логотип турнира вместо текстовой плашки
+        P.pill = $("img", null, el, "position:absolute;top:1345px;left:50%;height:88px;transform:translateX(-50%)"); P.pill.src = v.event_logo;
+      } else { P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || ""; }
     } else if (s.layout === "gauge") {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);

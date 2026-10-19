@@ -1,0 +1,6 @@
+{
+  "episode": 1,
+  "items": ["phase_boots", "invis_sword", "black_king_bar", "greater_crit", "blink", "ultimate_scepter"],
+  "options": ["sven", "kunkka", "tiny", "chaos_knight"],
+  "answer": "kunkka"
+}

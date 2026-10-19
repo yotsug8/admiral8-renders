@@ -19,6 +19,9 @@ on:
       liquipedia:
         description: "страницы Liquipedia через ; (скачать логотипы команд)"
         default: ""
+      lqprefix:
+        description: "префиксы имён файлов Liquipedia через ; (скачать все совпадения)"
+        default: ""
 
 permissions:
   contents: write
@@ -38,6 +41,7 @@ jobs:
           ABILITIES: ${{ inputs.abilities }}
           TEAMS: ${{ inputs.teams }}
           LIQUIPEDIA: ${{ inputs.liquipedia }}
+          LQPREFIX: ${{ inputs.lqprefix }}
         run: |
           mkdir -p a
           python - <<'PY'
@@ -103,6 +107,17 @@ jobs:
               except Exception as e:
                   print(page, "ошибка:", e)
               import time; time.sleep(3)          # Liquipedia просит не чаще раза в пару секунд
+          for pre in [p.strip() for p in os.environ.get("LQPREFIX", "").split(";") if p.strip()]:
+              try:
+                  res = lq({"action": "query", "list": "allimages", "aiprefix": pre, "ailimit": 15, "aiprop": "url|size"})
+                  for ii in res["query"]["allimages"]:
+                      name = re.sub(r"\W+", "_", ii["name"].rsplit(".", 1)[0])
+                      if not ii["name"].lower().endswith(".png"): continue
+                      im = get(ii["url"]); im.save(f"a/lq_{name}.png")
+                      print("  скачан", ii["name"], im.size)
+              except Exception as e:
+                  print(pre, "ошибка:", e)
+              import time; time.sleep(3)
           PY
           cd a
           git init -q -b assets && git add -A

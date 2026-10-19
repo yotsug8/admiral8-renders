@@ -78,13 +78,13 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .row img { width: 92px; height: 68px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
 /* «Шкала» */
-.gauge { position: absolute; left: 60px; top: 560px; width: 150px; height: 640px; border-radius: 24px; background: rgba(255,255,255,.08);
+.gauge { position: absolute; left: 60px; top: 470px; width: 150px; height: 540px; border-radius: 24px; background: rgba(255,255,255,.08);
   overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
 .gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
 .gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
-.chips { position: absolute; left: 250px; top: 930px; width: 690px; display: flex; flex-direction: column; gap: 14px; }
-.abil { display: flex; gap: 10px; margin-top: 10px; }
-.abil img { width: 54px; height: 54px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
+.chips { position: absolute; left: 60px; top: 1190px; width: 880px; display: flex; flex-direction: column; gap: 14px; }
+.abil { display: inline-flex; gap: 8px; margin-left: 16px; vertical-align: middle; }
+.abil img { width: 50px; height: 50px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
 .chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
 /* «Весы» */
 .beam { position: absolute; left: 110px; width: 780px; top: 900px; height: 18px; border-radius: 9px; background: var(--ink); transform-origin: 50% 50%; }
@@ -93,7 +93,7 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .pan { position: absolute; width: 300px; height: 22px; border-radius: 0 0 150px 150px; background: var(--acc); }
 .pile { position: absolute; width: 300px; height: 280px; }
 .pile img { position: absolute; width: 64px; height: 47px; border-radius: 6px; box-shadow: 3px 3px 0 rgba(0,0,0,.4); }
-.note { position: absolute; left: 60px; width: 880px; font: 600 26px Manrope; color: rgba(244,244,242,.55); text-align: center; }
+.note { position: absolute; left: 60px; width: 880px; font: 600 30px Manrope; color: rgba(244,244,242,.55); text-align: center; }
 
 /* Переход: жёлтая шторка с тёмной кромкой */
 #wipe { position: absolute; top: 0; left: 0; width: 1500px; height: 1920px; background: var(--acc); transform: translateX(-1600px); }
@@ -201,7 +201,7 @@ async function init(data) {
       P.win = el.querySelector(".win");
       const row = $("div", "row", el, "top:1125px;width:640px;left:220px");
       P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
-      P.lab = $("div", "lab", el, "top:1292px;width:880px;text-align:center;font-size:34px"); P.lab.textContent = v.label || "";
+      P.lab = $("div", "lab", el, "top:1290px;width:880px;text-align:center;font-size:38px"); P.lab.textContent = v.label || "";
       if (v.event_logo) {        // логотип турнира вместо текстовой плашки
         P.pill = $("img", null, el, "position:absolute;top:1345px;left:50%;height:88px;transform:translateX(-50%)"); P.pill.src = v.event_logo;
       } else { P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || ""; }
@@ -209,8 +209,8 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
       $("div", "mark", gg, "bottom:50%");                       // отметка 50%
-      P.gnum = $("div", "big", el, "top:1240px;left:60px;font-size:120px;color:#ff5a4e"); P.gnum.textContent = v.number;
-      P.lab = $("div", "lab", el, "top:1375px;left:64px;width:860px;font-size:32px"); P.lab.textContent = v.label || "";
+      P.gnum = $("div", "big", el, "top:1035px;left:60px;font-size:130px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1040px;left:400px;width:540px;font-size:32px"); P.lab.textContent = v.label || "";
       P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
       const ch = $("div", "chips", el);
       P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
@@ -268,7 +268,7 @@ async function init(data) {
     const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
     if (s.layout === "block") placeHero(P.hero, 600, 1170, 760, 1170 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
-    if (s.layout === "gauge") placeHero(P.hero, 600, 1225, 720, 1225 - headBottom);
+    if (s.layout === "gauge") placeHero(P.hero, 590, 1010, 680, 1010 - headBottom);
     if (s.layout === "scale") placeHero(P.hero, 260, 900, 320, 300);
     if (s.layout === "mosaic") MOS.push(buildMosaic(g));
   });
@@ -412,7 +412,7 @@ function drawExtra(g, lt) {
     const n = P.pts.length, e = eInOut((lt - 0.9) / Math.max(2, s.dur - 4.5)), shown = Math.round(n * e);
     const ctx = P.ctx, c = P.cell;
     ctx.clearRect(0, 0, P.cv.width, P.cv.height);
-    ctx.globalAlpha = 0.12; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
+    ctx.globalAlpha = 0.35; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
     for (let m = 0; m < shown; m++) { const [x, y] = P.pts[m]; ctx.drawImage(P.icon, x - c * 0.6, y - c * 0.45, c * 1.2, c * 0.9); }
     // Сквозь Танго проступает сам Пудж — чтобы силуэт читался как герой, а не пятно
     ctx.globalCompositeOperation = "source-atop"; ctx.globalAlpha = 0.45;
@@ -510,12 +510,23 @@ function audit() {
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
   const texts = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .clock, .vs, .chip2, .note")].filter(vis);
-  const sub = document.getElementById("subsin"); if (sub) texts.push(sub);
+  // Субтитры: прямоугольник по видимым словам
+  const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
+  if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({
+    left: Math.min(...rs.map(r => r.left)), right: Math.max(...rs.map(r => r.right)), top: Math.min(...rs.map(r => r.top)), bottom: Math.max(...rs.map(r => r.bottom)) }) }); }
   for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) {
     const A = R(texts[a]), B = R(texts[b]);
     if (A.left < B.right && B.left < A.right && A.top < B.bottom - 4 && B.top < A.bottom - 4)
       bad.push(`наложение: «${texts[a].textContent.trim().slice(0, 16)}» и «${texts[b].textContent.trim().slice(0, 16)}»`);
   }
+  // Надписи не должны лежать поверх героев
+  seg.el.querySelectorAll("img.hero").forEach(im => {
+    if (!vis(im)) return;
+    const r = R(im);
+    texts.forEach(t => { const A = t.getBoundingClientRect();
+      if (A.left < r.right - 10 && r.left + 10 < A.right && A.top < r.bottom - 10 && r.top + 10 < A.bottom)
+        bad.push(`надпись на герое: «${t.textContent.trim().slice(0, 16)}»`); });
+  });
   // Герои не должны залезать на заголовок
   const head = seg.el.querySelector(".head");
   if (head) {

@@ -503,6 +503,7 @@ def voice_takes(ep, out_dir, n=3):
     out.mkdir(parents=True, exist_ok=True)
     jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
     jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
+    jobs += [(name, t, 2) for name, t in ep.get("take_texts", [])]          # варианты интонаций
     for name, text, k in jobs:
         for t in range(1, k + 1):
             path = out / f"take_{name}_{t}.mp3"

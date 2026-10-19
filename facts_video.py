@@ -285,6 +285,21 @@ def item_icon(key, items):
 
 # ---------- подготовка ----------
 
+def cue_time(words, cue):
+    """Время слова-метки в озвучке: «рошана» — начало слова, «минут:end» — конец, «квест#2» — второе вхождение."""
+    end = cue.endswith(":end")
+    cue = cue[:-4] if end else cue
+    nth = 1
+    if "#" in cue:
+        cue, nth = cue.split("#")[0], int(cue.split("#")[1])
+    key = _norm(cue)
+    for w, a, b in words:
+        if _norm(w).startswith(key):
+            nth -= 1
+            if nth == 0:
+                return b if end else a
+    return None
+
 def prepare(ep, heroes, items):
     segs, t = [], 0.0
     parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
@@ -324,6 +339,10 @@ def prepare(ep, heroes, items):
             for key in ("number", "label", "caption"):
                 if v.get(key):
                     v[key] = str(v[key])
+            # Метки: элемент появляется, когда диктор говорит слово про него
+            if v.get("cues"):
+                v["at"] = {k: cue_time(seg["words"], c) for k, c in v.pop("cues").items()}
+                print("    метки:", {k: (round(t, 2) if t is not None else "НЕ НАЙДЕНО") for k, t in v["at"].items()})
             seg.update(headline=f["headline"], layout=f["layout"], visual=v)
         segs.append(seg)
         print(f"  [{i + 1}] {dur:.1f}с: {text}")
@@ -476,8 +495,41 @@ def analyze_take(path):
     return res
 
 
+def voices(arg, out_dir):
+    """Подбор голоса: «list» — список популярных русских голосов Fish Audio в voices.json,
+    иначе — id через запятую: одна и та же фраза каждым голосом (voice_<id>.mp3)."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    if arg == "list":
+        import urllib.parse
+        found = {}
+        queries = [dict(language="ru", sort_by="task_count")] + \
+                  [dict(language="ru", title=t) for t in ("мем", "смеш", "угар", "прикол", "мульт", "озвучк")]
+        for q in queries:
+            url = "https://api.fish.audio/model?" + urllib.parse.urlencode(dict(q, page_size=60))
+            req = urllib.request.Request(url, headers={"Authorization": f"Bearer {FISH_KEY}"})
+            for m in json.loads(urllib.request.urlopen(req, timeout=60).read())["items"]:
+                found[m["_id"]] = dict(title=m["title"], tags=m.get("tags"), uses=m.get("task_count"),
+                                       likes=m.get("like_count"), desc=(m.get("description") or "")[:120])
+        top = sorted(found.items(), key=lambda kv: -(kv[1]["uses"] or 0))
+        (out / "voices.json").write_text(json.dumps(dict(top), ensure_ascii=False, indent=1), encoding="utf-8")
+        for vid, m in top[:120]:
+            print(vid, m["uses"], m["title"], m["tags"])
+        return
+    text = ("[excited] Пудж весит девять тысяч двести Танго! [break] [sarcastic] Но Пудж не толстый. "
+            "[break] Просто кость широкая. [long-break] [surprised] Рошана убили одиннадцать раз!")
+    for vid in arg.split(","):
+        try:
+            tts_fish(text, out / f"voice_{vid.strip()}.mp3", vid.strip(), align=False)
+            print("  готово", vid)
+        except Exception as e:
+            print("  ошибка", vid, e)
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "--takes":
+    if sys.argv[1] == "--voices":
+        voices(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == "--takes":
         with open(sys.argv[2], encoding="utf-8") as f:
             voice_takes(json.load(f), sys.argv[3])
     else:

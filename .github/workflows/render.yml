@@ -9,6 +9,9 @@ on:
       takes:
         description: "выпуск для дублей озвучки (пусто — обычный рендер)"
         default: ""
+      voices:
+        description: "подбор голоса: list или id через запятую"
+        default: ""
 
 permissions:
   contents: write
@@ -22,12 +25,21 @@ jobs:
         with:
           python-version: "3.12"
       - name: Зависимости
-        if: ${{ inputs.takes == '' || inputs.takes == null }}
+        if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
           pip install pillow numpy edge-tts "rembg[cpu]" playwright faster-whisper
           python -m playwright install --with-deps chromium
+      - name: Подбор голоса
+        if: ${{ inputs.voices != '' && inputs.voices != null }}
+        env:
+          FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
+        run: |
+          set -o pipefail
+          mkdir -p out
+          pip install -q pillow numpy
+          python facts_video.py --voices "${{ inputs.voices }}" out 2>&1 | tee out/render.log
       - name: Дубли озвучки
         if: ${{ inputs.takes != '' && inputs.takes != null }}
         env:
@@ -39,7 +51,7 @@ jobs:
           pip install -q pillow numpy faster-whisper
           FV_TAKES_ANALYZE=1 python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
       - name: Рендер
-        if: ${{ inputs.takes == '' || inputs.takes == null }}
+        if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
         env:
           FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
         run: |
@@ -60,7 +72,7 @@ jobs:
       - name: Публикация в ветку renders
         if: always()          # лог публикуется и при ошибке — чтобы было видно причину
         run: |
-          BR=renders; [ -n "${{ inputs.takes }}" ] && BR=takes
+          BR=renders; [ -n "${{ inputs.takes }}${{ inputs.voices }}" ] && BR=takes
           cd out
           # Страница-папка: список роликов со ссылками на скачивание
           {

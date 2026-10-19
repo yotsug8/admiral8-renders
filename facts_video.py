@@ -27,9 +27,9 @@ from quiz import fetch_image, load_consts, placeholder
 VOICE = os.environ.get("FV_VOICE", "ru-RU-DmitryNeural")
 PITCH = os.environ.get("FV_PITCH", "-10Hz")
 RATE = os.environ.get("FV_RATE", "+12%")
-# Fish Audio: живой голос (если задан ключ). Голос «Энергичный Рассказчик» из библиотеки fish.audio
+# Fish Audio: живой голос (если задан ключ). Голос «Да да» из библиотеки fish.audio
 FISH_KEY = os.environ.get("FISH_API_KEY", "")
-FISH_VOICE = os.environ.get("FISH_VOICE", "48ec28a45588422b977a86460c11977f")
+FISH_VOICE = os.environ.get("FISH_VOICE", "ee1f00ee4b0f4f15b685bf1738a33a0d")
 FISH_MODEL = os.environ.get("FISH_MODEL", "s2.1-pro-free")
 FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.1"))
 WATERMARK = "@admiral8dota"

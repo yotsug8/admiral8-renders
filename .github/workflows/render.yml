@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
-          pip install pillow numpy
+          pip install pillow numpy edge-tts
       - name: Рендер
         run: |
           set -o pipefail
@@ -31,7 +31,11 @@ jobs:
             echo "== выпуск $n"
             python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
           done
-          python facts.py out 2>&1 | tee -a out/render.log
+          for f in episodes_dp/*.json; do
+            n=$(basename "$f" .json)
+            echo "== Дотапедия $n" | tee -a out/render.log
+            python dotapedia.py "$f" "out/dotapedia_$n.mp4" 2>&1 | tee -a out/render.log
+          done
           echo "иконок в кэше: $(ls cache | wc -l)" | tee -a out/render.log
       - uses: actions/upload-artifact@v4
         with:

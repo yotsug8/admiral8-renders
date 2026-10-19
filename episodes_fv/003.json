@@ -43,11 +43,12 @@
         "zzz": 0,
         "cues": {
           "clock_done": "секунду:end",
-          "teams": "москито",
+          "teams": "проиграть",
           "zzz": "уснул",
           "label": "драфта",
           "win": "сдалась"
-        }
+        },
+        "thumb": "file:assets/teams/mosquito_clan.png"
       },
       "voice_file": "voice/003/sleep.mp3"
     },

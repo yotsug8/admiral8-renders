@@ -29,7 +29,7 @@ from quiz import (CX, FPS, GOLD, H, MUTED, RED, W, WHITE, cover, ease_out,
                   paste_scaled, placeholder)
 
 VOICE = "ru-RU-DmitryNeural"
-RATE = "+8%"                 # чуть быстрее обычного — для TikTok
+RATE = "+15%"                # быстрее обычного — темп TikTok
 SR = 44100
 PAD = 0.7                    # пауза после факта, сек
 TRANS = 0.35                 # длительность перехода между фактами
@@ -92,7 +92,7 @@ def contain(img, w, h):
     return img.resize((max(1, int(img.width * k)), max(1, int(img.height * k))), Image.LANCZOS)
 
 
-def skull_row(n, total=5, size=46):
+def skull_row(n, total=5, size=60):
     """Абсурдометр: черепа (☠ есть в шрифте DejaVu)."""
     f = font(size)
     w = total * (size + 14)
@@ -226,12 +226,13 @@ def draw_subs(img, words, lt):
     if not words:
         return
     # Разбиваем на группы по ~3 слова (не длиннее ширины)
+    # Новая группа — после 3 слов или на паузе в речи (там, где точка/запятая)
     groups, cur = [], []
     for w in words:
-        cur.append(w)
-        if len(cur) >= 3 or w[0].endswith((".", ",", "?", "!")):
+        if cur and (len(cur) >= 3 or w[1] - cur[-1][2] > 0.2):
             groups.append(cur)
             cur = []
+        cur.append(w)
     if cur:
         groups.append(cur)
     g = None
@@ -361,8 +362,11 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
         else:
             # Финал: призыв + цифры фактов
             ka = ease_out_back(lt / 0.4)
-            q = gradient_text("Какой факт самый дикий?", 70, (255, 255, 255), (255, 226, 160), stroke=5)
-            paste_scaled(img, q, CX, 620, ka)
+            for qi, ql in enumerate(("Какой факт", "самый дикий?")):
+                ck = ("outro", qi)
+                if ck not in cache:
+                    cache[ck] = gradient_text(ql, 84, (255, 255, 255), (255, 226, 160), stroke=5)
+                paste_scaled(img, cache[ck], CX, 560 + qi * 96, ka)
             for k in range(nfacts):
                 bx = CX + (k - (nfacts - 1) / 2) * 220
                 s = ease_out_back((lt - 0.3 - k * 0.15) / 0.35)

@@ -41,12 +41,14 @@ jobs:
           done
           echo "иконок в кэше: $(ls cache | wc -l)" | tee -a out/render.log
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: videos
           path: out/*.mp4
           retention-days: 30
       # Готовые ролики кладём в ветку renders: оттуда их удобно скачать и смотреть на GitHub
       - name: Публикация в ветку renders
+        if: always()          # лог публикуется и при ошибке — чтобы было видно причину
         run: |
           cd out
           # Страница-папка: список роликов со ссылками на скачивание

@@ -103,18 +103,22 @@ def gen_facts(items, heroes, stats):
 
     if stats:
         by_id = {h["id"]: h for h in hs}
+        # Верхний ранг: Immortal (8), а если по нему нет данных — Divine (7)
+        rank_names = {7: "Divine", 8: "Immortal"}
+        hi = 8 if float(np.median([s.get("8_pick") or 0 for s in stats])) > 0 else 7
+        hi_name = rank_names[hi]
         # Порог выборки — от медианы пиков в ранге (у OpenDota выборка небольшая)
         med1 = float(np.median([s.get("1_pick") or 0 for s in stats]))
-        med8 = float(np.median([s.get("8_pick") or 0 for s in stats]))
-        print(f"  heroStats: медиана пиков Herald={med1:.0f}, Immortal={med8:.0f}")
+        medh = float(np.median([s.get(f"{hi}_pick") or 0 for s in stats]))
+        print(f"  heroStats: медиана пиков Herald={med1:.0f}, {hi_name}={medh:.0f}")
         rows = []
         for s in stats:
-            p1, w1, p8, w8 = (s.get(k) or 0 for k in ("1_pick", "1_win", "8_pick", "8_win"))
-            if p1 >= MIN_SHARE * med1 and p8 >= MIN_SHARE * med8 and p1 and p8 and s["id"] in by_id:
-                rows.append((w1 / p1 * 100, w8 / p8 * 100, by_id[s["id"]]))
-
+            p1, w1 = s.get("1_pick") or 0, s.get("1_win") or 0
+            ph, wh = s.get(f"{hi}_pick") or 0, s.get(f"{hi}_win") or 0
+            if p1 >= MIN_SHARE * med1 and ph >= MIN_SHARE * medh and p1 and ph and s["id"] in by_id:
+                rows.append((w1 / p1 * 100, wh / ph * 100, by_id[s["id"]]))
         if not rows:
-            print("  heroStats: нет подходящих строк, ключи:", sorted(stats[0].keys()) if stats else None)
+            print("  heroStats: нет подходящих строк")
             return facts
 
         # 4. Герой для новичков: в Herald побеждает, в Immortal проигрывает
@@ -123,7 +127,7 @@ def gen_facts(items, heroes, stats):
             question="Какой герой разносит новичков, но сливает у топовых игроков?",
             number=round(h_wr - i_wr, 1), unit="% разницы",
             title=hero["localized_name"],
-            bars=[("Herald", h_wr, GREEN), ("Immortal", i_wr, RED)],
+            bars=[("Herald", h_wr, GREEN), (hi_name, i_wr, RED)],
             caption="Винрейт в пабах по рангам, данные OpenDota.",
             img=hero["img"]))
 
@@ -133,7 +137,7 @@ def gen_facts(items, heroes, stats):
             question="Какой герой проигрывает новичкам, но тащит у топовых игроков?",
             number=round(i_wr - h_wr, 1), unit="% разницы",
             title=hero["localized_name"],
-            bars=[("Herald", h_wr, RED), ("Immortal", i_wr, GREEN)],
+            bars=[("Herald", h_wr, RED), (hi_name, i_wr, GREEN)],
             caption="Винрейт в пабах по рангам, данные OpenDota.",
             img=hero["img"]))
 

@@ -156,7 +156,7 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
   border: 6px solid var(--dark); box-shadow: 12px 12px 0 var(--ink); font: 900 110px/1 Unbounded; transform: rotate(-3deg); }
 .paper { position: absolute; left: 60px; top: 670px; width: 880px; height: 400px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
   box-shadow: 14px 14px 0 var(--acc); padding: 30px 40px; color: var(--dark); }
-.paper .er { font: 60px/1.55 "Noto Color Emoji", sans-serif; white-space: nowrap; }
+.paper .er { font: 80px/1.15 "Noto Color Emoji", sans-serif; white-space: nowrap; text-align: center; word-spacing: 36px; }
 .paper small { position: absolute; right: 30px; bottom: 18px; font: 800 30px Manrope; color: rgba(13,14,18,.55); }
 .decode { position: absolute; left: 60px; top: 1120px; width: 880px; padding: 18px 26px; border-radius: 24px; background: var(--dark); border: 6px solid var(--ink);
   box-shadow: 10px 10px 0 var(--acc); display: flex; align-items: center; gap: 24px; font: 800 36px/1.2 Manrope; color: var(--ink); }
@@ -524,7 +524,7 @@ function drawExtra(g, lt) {
     const kp = eBack((lt - 0.2) / 0.5);
     P.panel.style.transform = `scale(${0.9 + 0.1 * kp})`; P.panel.style.opacity = clamp(kp * 2);
     // Полоски данных проявляются, когда диктор говорит про спрятанные данные
-    const tP = C("panel", 1.2);
+    const tP = Math.min(C("panel", 0.4), 0.4);          // панель сразу заполнена данными — без пустого окна
     P.panel.querySelectorAll(".bar").forEach((b, m) => { const q = eOut((lt - tP - m * 0.12) / 0.4); b.style.transform = `scaleX(${q})`; b.style.transformOrigin = "0 50%"; });
     const tR = C("read", 3);
     P.scan.style.top = (((lt - tR) * 260) % 420 - 90) + "px"; P.scan.style.opacity = lt > tR ? 1 : 0;
@@ -556,7 +556,7 @@ function drawExtra(g, lt) {
   if (s.layout === "notes") {
     const kv = eBack((lt - 0.3) / 0.5); P.ver.style.opacity = clamp(kv * 2); P.ver.style.transform = `rotate(-3deg) scale(${0.6 + 0.4 * kv})`;
     const kp = eOut((lt - 0.5) / 0.5); P.paper.style.opacity = kp; P.paper.style.transform = `translateY(${(1 - kp) * 80}px)`;
-    const tE = C("emoji", 2);
+    const tE = Math.min(C("emoji", 0.9), 0.9);          // лист сразу со смайликами — без пустой бумаги
     P.rows.forEach((r, m) => { const q = eBack((lt - tE - m * 0.3) / 0.35); r.style.opacity = clamp(q * 2); r.style.transform = `translateX(${(1 - q) * -60}px)`; });
     P.paper.querySelector("small").style.opacity = clamp((lt - tE - 1) / 0.4);
     const kd = eBack((lt - C("decode", 5)) / 0.5); P.decode.style.opacity = clamp(kd * 2); P.decode.style.transform = `translateY(${(1 - kd) * 60}px)`;

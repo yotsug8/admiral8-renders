@@ -118,6 +118,49 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 /* Фон карточек: косые полосы — карточки не выглядят пустыми */
 .card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
 .card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
+/* Иконки в плашках — без искажения пропорций (предметы не квадратные) */
+.abil img { width: auto; }
+/* «Ловушка»: панель скрытых данных, сканер, штамп БАН, логотип и счётчик */
+.panel { position: absolute; left: 60px; top: 480px; width: 880px; height: 420px; border-radius: 28px; background: var(--dark);
+  border: 6px solid var(--ink); box-shadow: 14px 14px 0 var(--acc); overflow: hidden; padding: 34px 40px; }
+.panel .tag { display: inline-block; padding: 6px 18px; border-radius: 10px; background: var(--acc); color: var(--dark); font: 900 30px Unbounded; }
+.panel .bar { height: 34px; border-radius: 9px; background: rgba(244,244,242,.16); margin-top: 26px; }
+.panel .bar.h { background: repeating-linear-gradient(90deg, rgba(255,210,63,.55) 0 22px, rgba(255,210,63,.15) 22px 34px); }
+.scan { position: absolute; left: 0; right: 0; height: 90px; background: linear-gradient(180deg, transparent, rgba(255,90,78,.55), transparent); }
+.reader { position: absolute; right: 36px; top: 30px; padding: 8px 20px; border-radius: 12px; background: #ff5a4e; color: var(--dark);
+  font: 800 34px Manrope; border: 5px solid var(--dark); }
+.stamp { position: absolute; left: 290px; top: 610px; width: 500px; padding: 6px 0 14px; text-align: center; border: 14px solid #ff5a4e; border-radius: 26px;
+  color: #ff5a4e; font: 900 150px/1 Unbounded; letter-spacing: -.02em; background: rgba(13,14,18,.82); }
+.plate { position: absolute; left: 60px; top: 950px; width: 320px; height: 250px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; align-items: center; justify-content: center; }
+.plate img { width: 250px; image-rendering: auto; }
+/* «Дальность»: линейка, клик, место приземления, карточка игрока */
+.ruler { position: absolute; left: 100px; top: 1052px; width: 840px; height: 14px; border-radius: 7px; background: rgba(244,244,242,.25); }
+.ruler i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; background: var(--ink); }
+.tick { position: absolute; top: 980px; width: 10px; height: 100px; border-radius: 5px; background: var(--acc); border: 3px solid var(--dark); }
+.tlab { position: absolute; top: 1090px; padding: 6px 18px; border-radius: 12px; font: 900 54px Unbounded; border: 5px solid var(--dark); white-space: nowrap; }
+.tlab.w { background: var(--ink); color: var(--dark); box-shadow: 6px 6px 0 var(--acc); }
+.tlab.r { background: #ff5a4e; color: var(--dark); box-shadow: 6px 6px 0 var(--ink); }
+.cursor { position: absolute; top: 1018px; width: 82px; height: 82px; border-radius: 50%; border: 8px solid #ff5a4e; }
+.cursor:after { content: ""; position: absolute; left: 25px; top: 25px; width: 16px; height: 16px; border-radius: 50%; background: #ff5a4e; }
+.landicon { position: absolute; top: 960px; width: 132px; height: 96px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 7px 7px 0 var(--ink); }
+.gapbar { position: absolute; top: 1048px; height: 22px; border-radius: 6px; background: repeating-linear-gradient(-45deg, #ff5a4e 0 12px, #b8352c 12px 24px); }
+.pcard { position: absolute; left: 60px; top: 1200px; width: 880px; height: 200px; border-radius: 28px; background: var(--acc); border: 6px solid var(--dark);
+  box-shadow: 12px 12px 0 var(--ink); display: flex; align-items: center; gap: 22px; padding: 0 28px; color: var(--dark); }
+.pcard .lg { width: 140px; height: 140px; border-radius: 22px; background: var(--dark); display: flex; align-items: center; justify-content: center; flex: none; }
+.pcard .lg img { max-width: 112px; max-height: 112px; }
+.pcard b { display: block; font: 900 58px/1 Unbounded; }
+.pcard small { display: block; font: 800 34px/1.2 Manrope; margin-top: 8px; }
+/* «Патчноут»: номер патча, лист со смайликами, расшифровка */
+.ver { position: absolute; left: 60px; top: 480px; padding: 8px 30px 14px; border-radius: 24px; background: var(--acc); color: var(--dark);
+  border: 6px solid var(--dark); box-shadow: 12px 12px 0 var(--ink); font: 900 110px/1 Unbounded; transform: rotate(-3deg); }
+.paper { position: absolute; left: 60px; top: 670px; width: 880px; height: 400px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
+  box-shadow: 14px 14px 0 var(--acc); padding: 30px 40px; color: var(--dark); }
+.paper .er { font: 60px/1.55 "Noto Color Emoji", sans-serif; white-space: nowrap; }
+.paper small { position: absolute; right: 30px; bottom: 18px; font: 800 30px Manrope; color: rgba(13,14,18,.55); }
+.decode { position: absolute; left: 60px; top: 1120px; width: 880px; padding: 18px 26px; border-radius: 24px; background: var(--dark); border: 6px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--acc); display: flex; align-items: center; gap: 24px; font: 800 36px/1.2 Manrope; color: var(--ink); }
+.decode img { width: 118px; height: 86px; border-radius: 12px; border: 4px solid var(--ink); flex: none; }
 /* Хук: три наклейки-превью фактов под заголовком */
 .stk { position: absolute; width: 250px; height: 560px; border-radius: 28px; border: 6px solid var(--dark); overflow: hidden; opacity: 0; }
 .stk.c0, .stk.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); box-shadow: 12px 12px 0 var(--ink); }
@@ -197,7 +240,7 @@ async function init(data) {
           const im = $("img", null, c); im.src = src;
           // Иконки и логотипы — по ширине карточки, над плашкой с цифрой
           if (src.includes("/item_")) im.className = "icon";
-          else if (src.includes("/teams/")) im.className = "logo";
+          else if (src.includes("/teams/") || src.includes("/orgs/") || src.includes("/events/")) im.className = "logo";
         }
         // Плашка с главной цифрой факта
         const st = (s.stats || [])[k];
@@ -267,6 +310,42 @@ async function init(data) {
         const last = P.chips[P.chips.length - 1], row = $("div", "abil", last);
         v.ability_icons.forEach(src => { $("img", null, row).src = src; });
       }
+    } else if (s.layout === "trap") {
+      P.lines = headline(el, s.headline);
+      P.panel = $("div", "panel", el);
+      $("div", "tag", P.panel).textContent = "скрытые данные";
+      [1, 0.8, 1, 0.6, 0.9].forEach((w, k) => { $("div", "bar" + (k % 2 ? "" : " h"), P.panel, `width:${w * 100}%`); });
+      P.scan = $("div", "scan", P.panel);
+      P.reader = $("div", "reader", P.panel); P.reader.textContent = "видят только читы";
+      P.plate = $("div", "plate", el); $("img", null, P.plate).src = v.logo;
+      P.big = $("div", "big y", el, "left:420px;top:975px;font-size:100px"); P.big.textContent = v.number;
+      P.lab = $("div", "lab", el, "left:424px;top:1100px;width:520px;font-size:40px"); P.lab.textContent = v.label || "";
+      P.stamp = $("div", "stamp", el); P.stamp.textContent = "БАН";
+    } else if (s.layout === "range") {
+      P.lines = headline(el, s.headline);
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      // Шкала 0…1500 единиц на 840 px; клик — за пределом 1200
+      const X = u => 100 + u / 1500 * 840;
+      P.X = X; P.clickU = Math.min(1450, v.max * 1.2);
+      P.ruler = $("div", "ruler", el); P.fillR = $("i", null, P.ruler);
+      P.tick = $("div", "tick", el, `left:${X(v.max) - 5}px`);
+      P.tmax = $("div", "tlab w", el); P.tmax.textContent = v.max;
+      P.cursor = $("div", "cursor", el, `left:${X(P.clickU) - 41}px`);
+      P.gap = $("div", "gapbar", el, `left:${X(v.land)}px;width:${X(v.max) - X(v.land)}px`);
+      P.licon = $("img", "landicon", el, `left:${X(v.land) - 66}px`); P.licon.src = v.icon;
+      P.tland = $("div", "tlab r", el); P.tland.textContent = v.land;
+      const pl = v.player || {};
+      P.pcard = $("div", "pcard", el);
+      (pl.logos || []).forEach(src => { $("img", null, $("div", "lg", P.pcard)).src = src; });
+      const tx = $("div", null, P.pcard); $("b", null, tx).textContent = pl.name || ""; $("small", null, tx).textContent = pl.caption || "";
+    } else if (s.layout === "notes") {
+      P.lines = headline(el, s.headline);
+      P.ver = $("div", "ver", el); P.ver.textContent = v.version;
+      P.paper = $("div", "paper", el);
+      P.rows = (v.emoji || []).map(r => { const d = $("div", "er", P.paper); d.textContent = r; return d; });
+      $("small", null, P.paper).textContent = v.emoji_note || "";
+      P.decode = $("div", "decode", el);
+      $("img", null, P.decode).src = v.icon; $("span", null, P.decode).textContent = v.decoded || "";
     } else if (s.layout === "mosaic") {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
@@ -296,6 +375,15 @@ async function init(data) {
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 270, 1380, 420, 380);
     if (s.layout === "gauge") placeHero(P.hero, 590, 960, 680, 960 - headBottom);
     if (s.layout === "mosaic") MOS.push(buildMosaic(g));
+    if (s.layout === "range") {
+      placeHero(P.hero, 300, 1040, 540, 1040 - headBottom - 20);
+      // Подписи над/под шкалой — по центру своих отметок
+      const cx = (el, x) => { el.style.left = (x - el.offsetWidth / 2) + "px"; };
+      cx(P.tmax, P.X(s.visual.max)); P.tmax.style.top = "1100px";
+      cx(P.tland, P.X(s.visual.land)); P.tland.style.top = "1100px";
+      P.tmax.style.top = "850px";                                           // 1200 — над отметкой
+      P.tland.style.left = (P.X(s.visual.land) - P.tland.offsetWidth - 14) + "px";   // 960 — левее
+    }
   });
   await Promise.all(MOS);
   return true;
@@ -432,6 +520,47 @@ function drawExtra(g, lt) {
       const p2 = eBack((lt - C("pill", 3.2)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
     }
   }
+  if (s.layout === "trap") {
+    const kp = eBack((lt - 0.2) / 0.5);
+    P.panel.style.transform = `scale(${0.9 + 0.1 * kp})`; P.panel.style.opacity = clamp(kp * 2);
+    // Полоски данных проявляются, когда диктор говорит про спрятанные данные
+    const tP = C("panel", 1.2);
+    P.panel.querySelectorAll(".bar").forEach((b, m) => { const q = eOut((lt - tP - m * 0.12) / 0.4); b.style.transform = `scaleX(${q})`; b.style.transformOrigin = "0 50%"; });
+    const tR = C("read", 3);
+    P.scan.style.top = (((lt - tR) * 260) % 420 - 90) + "px"; P.scan.style.opacity = lt > tR ? 1 : 0;
+    const kr = eBack((lt - tR) / 0.4); P.reader.style.opacity = clamp(kr * 2); P.reader.style.transform = `scale(${0.7 + 0.3 * kr})`;
+    const kl = eBack((lt - 0.5) / 0.5); P.plate.style.opacity = clamp(kl * 2); P.plate.style.transform = `rotate(${(1 - kl) * -10 - 3}deg)`;
+    countUp(P.big, v.number, lt, C("number", 0.9));
+    const kt = eOut((lt - C("number", 0.9) - 0.3) / 0.4); P.lab.style.opacity = kt;
+    // Штамп БАН падает сверху с отдачей
+    const ks = clamp((lt - C("stamp", 4)) / 0.28);
+    P.stamp.style.opacity = ks > 0 ? 1 : 0;
+    P.stamp.style.transform = `rotate(-12deg) scale(${2.2 - 1.2 * eOut(ks) + 0.06 * Math.sin(clamp((lt - C("stamp", 4) - 0.28) / 0.3) * Math.PI)})`;
+  }
+  if (s.layout === "range") {
+    const kh = eBack((lt - 0.2) / 0.55);
+    P.hero.style.transform = `translateX(${(1 - kh) * -260}px)`; P.hero.style.opacity = clamp(kh * 2);
+    const tR = C("ruler", 1.2), kr = eOut((lt - tR + 0.4) / 0.8);
+    P.fillR.style.width = (kr * (P.X(v.max) - 100)) + "px";
+    P.tick.style.opacity = clamp((lt - tR) / 0.3); P.tmax.style.opacity = clamp((lt - tR) / 0.3);
+    // Клик за пределом дальности — пульсирующий прицел
+    const tC = C("click", 2.5), kc = eBack((lt - tC) / 0.4);
+    P.cursor.style.opacity = clamp(kc * 2); P.cursor.style.transform = `scale(${kc * (1 + 0.08 * Math.sin(lt * 9))})`;
+    // Блинк приземляется на 960, штрафной отрезок краснеет
+    const tL = C("land", 3.8), kL = eBack((lt - tL) / 0.45);
+    P.licon.style.opacity = clamp(kL * 2); P.licon.style.transform = `translateY(${(1 - kL) * -160}px) rotate(${(1 - kL) * 30 - 4}deg)`;
+    P.tland.style.opacity = clamp((lt - tL - 0.2) / 0.3);
+    const kg = eOut((lt - tL - 0.3) / 0.5); P.gap.style.transform = `scaleX(${kg})`; P.gap.style.transformOrigin = "100% 50%";
+    const kp = eBack((lt - C("player", 6)) / 0.5); P.pcard.style.opacity = clamp(kp * 2); P.pcard.style.transform = `translateY(${(1 - kp) * 120}px)`;
+  }
+  if (s.layout === "notes") {
+    const kv = eBack((lt - 0.3) / 0.5); P.ver.style.opacity = clamp(kv * 2); P.ver.style.transform = `rotate(-3deg) scale(${0.6 + 0.4 * kv})`;
+    const kp = eOut((lt - 0.5) / 0.5); P.paper.style.opacity = kp; P.paper.style.transform = `translateY(${(1 - kp) * 80}px)`;
+    const tE = C("emoji", 2);
+    P.rows.forEach((r, m) => { const q = eBack((lt - tE - m * 0.3) / 0.35); r.style.opacity = clamp(q * 2); r.style.transform = `translateX(${(1 - q) * -60}px)`; });
+    P.paper.querySelector("small").style.opacity = clamp((lt - tE - 1) / 0.4);
+    const kd = eBack((lt - C("decode", 5)) / 0.5); P.decode.style.opacity = clamp(kd * 2); P.decode.style.transform = `translateY(${(1 - kd) * 60}px)`;
+  }
   if (s.layout === "gauge") {
     const kh = eBack((lt - 0.3) / 0.6);
     P.hero.style.transform = `translateX(${(1 - kh) * 300}px)`; P.hero.style.opacity = clamp(kh * 2);
@@ -516,13 +645,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

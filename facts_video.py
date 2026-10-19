@@ -300,6 +300,14 @@ def cue_time(words, cue):
                 return b if end else a
     return None
 
+def image_ref(ref, heroes, items):
+    """Картинка по ссылке: "hero:ключ" — герой без фона, "item:ключ" — иконка предмета, "file:путь" — из репозитория."""
+    kind, key = ref.split(":", 1)
+    path = {"hero": lambda: hero_cutout(key, heroes), "item": lambda: item_icon(key, items),
+            "file": lambda: HERE / key}[kind]()
+    return path.as_uri()
+
+
 def prepare(ep, heroes, items):
     segs, t = [], 0.0
     parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
@@ -317,8 +325,10 @@ def prepare(ep, heroes, items):
             thumbs = []
             for fact in ep["facts"]:
                 v = fact.get("visual", {})
-                # Для сетки и таймера — иконка предмета, иначе герой
-                if v.get("team_logos"):          # матч команд — логотип победителя
+                # Для сетки и таймера — иконка предмета, иначе герой; thumb в выпуске — явная картинка
+                if v.get("thumb"):
+                    thumbs.append(image_ref(v["thumb"], heroes, items))
+                elif v.get("team_logos"):          # матч команд — логотип победителя
                     thumbs.append((HERE / v["team_logos"][v.get("winner", 0)]).as_uri())
                 elif v.get("icons") and (fact["layout"] in ("grid", "timer") or not v.get("heroes")):
                     thumbs.append(item_icon(v["icons"], items).as_uri())
@@ -328,13 +338,7 @@ def prepare(ep, heroes, items):
                     thumbs.append(None)
             seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []))
         elif f.get("hook"):
-            # Картинки хука: "hero:ключ" — герой без фона, "item:ключ" — иконка предмета, "file:путь" — из репозитория
-            imgs = []
-            for ref in f.get("images", []):
-                kind, key = ref.split(":", 1)
-                path = {"hero": lambda: hero_cutout(key, heroes), "item": lambda: item_icon(key, items),
-                        "file": lambda: HERE / key}[kind]()     # file: — картинка из репозитория
-                imgs.append(path.as_uri())
+            imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
             print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
             seg.update(hook=True, headline=f["headline"], images=imgs, at=at)
@@ -345,6 +349,12 @@ def prepare(ep, heroes, items):
             if v.get("icons"):
                 v["icons"] = dict(src=item_icon(v["icons"], items).as_uri(),
                                   count=int(v["count"]))
+            if v.get("icon"):                        # одна иконка предмета (range, notes)
+                v["icon"] = item_icon(v["icon"], items).as_uri()
+            if v.get("logo"):
+                v["logo"] = (HERE / v["logo"]).as_uri()
+            if v.get("player"):                      # карточка игрока: логотипы команды и турнира
+                v["player"] = dict(v["player"], logos=[(HERE / x).as_uri() for x in v["player"].get("logos", [])])
             for key in ("team_logos", "ability_icons"):     # картинки, лежащие в репозитории
                 if v.get(key):
                     v[key] = [(HERE / x).as_uri() if x else None for x in v[key]]

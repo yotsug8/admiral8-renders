@@ -4,20 +4,51 @@
   "pad": 0.6,
   "hook": {
     "headline": "Это *правда*|было в Доте",
-    "voice": "[excited] Ловушка для читеров, Блинк с подвохом и патч из смайликов. Всё это правда.",
+    "voice": "[excited] Профи уснул прямо на турнире, Вэлв поймали сорок тысяч читеров, а Блинк недолетает. Всё это правда.",
     "images": [
+      "file:assets/teams/mosquito_clan.png",
       "file:assets/orgs/valve.png",
-      "item:blink",
-      "item:blood_grenade"
+      "item:blink"
+    ],
+    "labels": [
+      "41 сек",
+      "40 000",
+      "−240"
     ],
     "cues": [
-      "ловушка",
-      "блинк",
-      "патч"
-    ],
-    "voice_file": "voice/003/hook.mp3"
+      "уснул",
+      "поймали",
+      "блинк"
+    ]
   },
   "facts": [
+    {
+      "layout": "timer",
+      "headline": "Уснул|*в матче*",
+      "voice": "[curious] Как проиграть карту за сорок одну секунду? [excited] Игрок Москито Клан уснул прямо во время драфта. У него в Перу было пять утра. [surprised] Команда сдалась ОГ на сорок первой секунде! [sarcastic] Вот это я понимаю, сон важнее Доты.",
+      "visual": {
+        "timer": 41,
+        "teams": [
+          "Mosquito Clan",
+          "OG"
+        ],
+        "team_logos": [
+          "assets/teams/mosquito_clan.png",
+          "assets/teams/og.png"
+        ],
+        "winner": 1,
+        "event_logo": "assets/events/fissure_special.png",
+        "label": "игрок уснул во время драфта · FISSURE Special, 2025",
+        "zzz": 0,
+        "cues": {
+          "clock_done": "секунду:end",
+          "teams": "москито",
+          "zzz": "уснул",
+          "label": "драфта",
+          "win": "сдалась"
+        }
+      }
+    },
     {
       "layout": "trap",
       "headline": "Ловушка|для *читеров*",
@@ -34,11 +65,11 @@
         },
         "thumb": "file:assets/orgs/valve.png"
       },
-      "voice_file": "voice/003/f1.mp3"
+      "voice_file": "voice/003/trap.mp3"
     },
     {
       "layout": "range",
-      "headline": "Блинк|с *подвохом*",
+      "headline": "Лишний|*клик*",
       "voice": "[curious] Блинк переносит на тысячу двести. Но кликни хоть чуть дальше, и он перенесёт всего на девятьсот шестьдесят. [surprised] Минус двести сорок за лишний клик! [sarcastic] Этого не знал даже Крит. А через два года он выиграл Интернешнл.",
       "visual": {
         "heroes": [
@@ -62,29 +93,7 @@
           "player": "крит"
         }
       },
-      "voice_file": "voice/003/f2.mp3"
-    },
-    {
-      "layout": "notes",
-      "headline": "Патч из|*смайликов*",
-      "voice": "[curious] Перед патчем семь тридцать четыре Вэлв выложили список изменений одними смайликами. Ни одного слова! [sarcastic] Игроки всем Реддитом гадали, что поменяли.",
-      "visual": {
-        "version": "7.34",
-        "icon": "blood_grenade",
-        "decoded": "Кровавая граната: было 65 золота, стало 50",
-        "cues": {
-          "emoji": "выложили",
-          "decode": "гадали"
-        },
-        "emoji": [
-          "🩸💣 💰⬇️",
-          "🌍🪨 💥⬆️",
-          "🐷🥢 ⚔️⬇️"
-        ],
-        "emoji_note": "≈ так выглядел патчноут",
-        "thumb": "item:blood_grenade"
-      },
-      "voice_file": "voice/003/f3.mp3"
+      "voice_file": "voice/003/blink.mp3"
     }
   ],
   "outro": {
@@ -92,5 +101,12 @@
     "cta": "пока Valve не забанили и тебя",
     "voice": "[sarcastic] Подпишись, пока Вэлв не забанили и тебя.",
     "voice_file": "voice/003/end.mp3"
-  }
+  },
+  "take_texts": [
+    [
+      "f1s",
+      "[curious] Как проиграть карту за сорок одну секунду? [excited] Игрок Моски́то Клан уснул прямо во время драфта. У него в Перу было пять утра. [surprised] Команда сдалась ОГ на сорок первой секунде! [sarcastic] Вот это я понимаю, сон важнее Доты.",
+      2
+    ]
+  ]
 }

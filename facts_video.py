@@ -341,7 +341,7 @@ def prepare(ep, heroes, items):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
             print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
-            seg.update(hook=True, headline=f["headline"], images=imgs, at=at)
+            seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []))
         else:
             v = dict(f.get("visual", {}))
             if v.get("heroes"):

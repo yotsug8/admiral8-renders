@@ -70,6 +70,7 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .tlogo img { max-width: 160px; max-height: 170px; }
 .win { position: absolute; top: -22px; right: -14px; padding: 8px 18px; border-radius: 12px; background: #2fd36b; color: var(--dark);
   font: 800 28px Manrope; transform: rotate(6deg); box-shadow: 5px 5px 0 var(--dark); }
+.tcard span { text-align: center; padding: 0 18px; line-height: 1.05; }
 .vs i { font: 800 34px Manrope; color: rgba(244,244,242,.6); font-style: normal; }
 .row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .row img { width: 92px; height: 68px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
@@ -118,6 +119,12 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 /* Фон карточек: косые полосы — карточки не выглядят пустыми */
 .card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
 .card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
+/* «Zzz» над карточкой команды */
+.zzz { position: absolute; font: 900 58px/1 Unbounded; color: var(--acc); -webkit-text-stroke: 5px var(--dark); paint-order: stroke fill; text-shadow: 6px 6px 0 var(--dark); }
+/* Подпись на наклейке хука */
+.stk .cap { position: absolute; left: 12px; right: 12px; top: 18px; padding: 6px 4px 10px; border-radius: 14px; background: var(--dark); color: var(--acc);
+  font: 900 36px/1.1 Unbounded; text-align: center; letter-spacing: -.02em; }
+.stk img.logo { height: auto; width: 84%; left: 50%; bottom: 42%; transform: translate(-50%, 50%); object-fit: contain; filter: drop-shadow(6px 6px 0 var(--dark)); }
 /* Иконки в плашках — без искажения пропорций (предметы не квадратные) */
 .abil img { width: auto; }
 /* «Ловушка»: панель скрытых данных, сканер, штамп БАН, логотип и счётчик */
@@ -228,6 +235,8 @@ async function init(data) {
         c.dataset.rot = pos[k][2];
         const im = $("img", null, c); im.src = src;
         if (src.includes("/item_") || src.includes("/abilities/")) im.className = "icon";
+        else if (/\/(teams|orgs|events)\//.test(src)) im.className = "logo";
+        if (s.labels && s.labels[k]) $("div", "cap", c).textContent = s.labels[k];
         return c;
       });
     } else if (s.outro) {
@@ -290,8 +299,15 @@ async function init(data) {
       P.vs = vs;
       P.win = el.querySelector(".win");
       const row = $("div", "row", el, "top:1112px;width:720px;left:150px");
-      P.icons = Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; });
-      P.lab = $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:40px"); P.lab.textContent = v.label || "";
+      P.icons = v.icons ? Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; }) : [];   // иконки — по желанию
+      if (v.zzz != null) {            // «Zzz» над карточкой команды: игрок уснул
+        P.zzz = ["Z", "z", "Z"].map((ch, k) => { const z = $("div", "zzz", el); z.textContent = ch; z.dataset.k = k; return z; });
+        P.zzzTeam = v.zzz;
+      }
+      // Без иконок подпись встаёт сразу под карточками команд, крупнее
+      P.lab = v.icons ? $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:40px")
+                      : $("div", "lab", el, "top:1130px;left:60px;width:880px;text-align:center;font-size:46px");
+      P.lab.textContent = v.label || "";
       if (v.event_logo) {        // логотип турнира вместо текстовой плашки
         P.pill = $("img", "evlogo", el, "top:236px;left:668px;height:112px;transform-origin:50% 50%"); P.pill.src = v.event_logo;
         P.pill.dataset.static = "1";
@@ -504,7 +520,9 @@ function drawExtra(g, lt) {
   const P = g.parts, s = g.s, v = s.visual, C = (k, d) => cueAt(v, k, d);
   if (s.layout === "timer") {
     const tEnd = C("clock_done", 2.5), e = eOut((lt - 0.3) / Math.max(0.8, tEnd - 0.3)), sec = Math.round(v.timer * e);
-    P.clock.textContent = `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+    // Меньше часа — минуты:секунды, иначе часы:минуты:секунды
+    P.clock.textContent = v.timer < 3600 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`
+      : `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
     P.clock.style.color = e >= 1 ? "var(--acc)" : "var(--ink)";
     P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - tEnd) / 0.3) : 0)})`;
     const tT = C("teams", 0.8);
@@ -513,6 +531,15 @@ function drawExtra(g, lt) {
     if (P.win) { const w = eBack((lt - C("win", 3.6)) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
     const tI = C("icons", 2.6), stI = Math.max(0.05, (C("icons_end", tI + 0.18 * P.icons.length) - tI) / P.icons.length);
     P.icons.forEach((im, m) => { const q = eBack((lt - tI - m * stI) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
+    if (P.zzz) {
+      // Буквы всплывают над карточкой уснувшей команды и покачиваются
+      const r = P.teams[P.zzzTeam].getBoundingClientRect(), tZ = C("zzz", 1.5);
+      P.zzz.forEach((z, k) => {
+        const q = eBack((lt - tZ - k * 0.25) / 0.4), sway = Math.sin(lt * 2.4 + k) * 10;
+        z.style.left = (r.left + 268 + k * 34 + sway * 0.4) + "px"; z.style.top = (r.top + 60 - k * 48) + "px";   // над логотипом, справа
+        z.style.opacity = clamp(q * 2); z.style.transform = `scale(${0.6 + 0.4 * q + k * 0.15}) rotate(${-10 + k * 8}deg)`;
+      });
+    }
     const q = eOut((lt - C("label", 2.8)) / 0.4); P.lab.style.opacity = q;
     if (P.pill.dataset.static) {        // логотип турнира у заголовка: появляется сразу
       const p3 = eBack((lt - 0.5) / 0.4); P.pill.style.opacity = clamp(p3 * 2); P.pill.style.transform = `scale(${0.7 + 0.3 * p3}) rotate(${(1 - p3) * -8}deg)`;

@@ -118,6 +118,14 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 /* Фон карточек: косые полосы — карточки не выглядят пустыми */
 .card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
 .card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
+/* Хук: три наклейки-превью фактов под заголовком */
+.stk { position: absolute; width: 250px; height: 560px; border-radius: 28px; border: 6px solid var(--dark); overflow: hidden; opacity: 0; }
+.stk.c0, .stk.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); box-shadow: 12px 12px 0 var(--ink); }
+.stk.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); box-shadow: 12px 12px 0 var(--acc); }
+.stk img { position: absolute; left: 4%; bottom: 0; width: 92%; height: 96%; object-fit: contain; object-position: 50% 100%;
+  filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
+.stk img.icon { height: auto; width: 82%; left: 50%; bottom: 50%; transform: translate(-50%, 50%); border-radius: 14px; border: 5px solid var(--dark);
+  box-shadow: 8px 8px 0 var(--dark); filter: none; }
 </style>
 </head>
 <body>
@@ -162,13 +170,24 @@ async function init(data) {
   D = data;
   document.getElementById("wm").textContent = data.watermark;
   const prog = document.getElementById("progress");
-  data.segs.filter(s => !s.outro).forEach(() => $("i", null, $("div", "pg", prog)));
+  data.segs.filter(s => !s.outro && !s.hook).forEach(() => $("i", null, $("div", "pg", prog)));
   const host = document.getElementById("segs");
   data.segs.forEach(s => {
     const el = $("div", "seg", host);
     const g = { s, el, parts: {} };
     const P = g.parts, v = s.visual || {};
-    if (s.outro) {
+    if (s.hook) {
+      P.lines = headline(el, s.headline);
+      // Три наклейки лесенкой: появляются, когда диктор называет факт
+      const pos = [[78, 640, -4], [378, 780, 4], [678, 680, -3]];
+      P.stk = s.images.map((src, k) => {
+        const c = $("div", "stk c" + k, el, `left:${pos[k][0]}px;top:${pos[k][1]}px`);
+        c.dataset.rot = pos[k][2];
+        const im = $("img", null, c); im.src = src;
+        if (src.includes("/item_") || src.includes("/abilities/")) im.className = "icon";
+        return c;
+      });
+    } else if (s.outro) {
       P.lines = headline(el, s.question);
       const cards = $("div", "cards", el);
       P.cards = s.thumbs.map((src, k) => {
@@ -194,6 +213,7 @@ async function init(data) {
       el.insertAdjacentHTML("beforeend", `<svg class="path" viewBox="0 0 1080 1920"><defs><marker id="ah${data.segs.indexOf(s)}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#f4f4f2"/></marker></defs>
         <path d="M 330 830 C 470 600, 640 600, 760 760" fill="none" stroke="#f4f4f2" stroke-width="10" stroke-linecap="round" stroke-dasharray="1 26" marker-end="url(#ah${data.segs.indexOf(s)})"/></svg>`);
       P.hookSvg = el.querySelector("svg.path");
+      if (v.arc === false) P.hookSvg.style.display = "none";
       P.pill = $("div", "pill", el, "top:1270px"); P.pill.textContent = v.caption || "";
     } else if (s.layout === "block") {
       P.lines = headline(el, s.headline);
@@ -207,7 +227,10 @@ async function init(data) {
       const grid = $("div", "grid", el, "top:660px");
       P.tiles = Array.from({ length: v.icons.count }, () => { const t = $("div", "tile", grid); $("img", null, t).src = v.icons.src; return t; });
       if (v.heroes) { P.hero = $("img", "hero", el); P.hero.src = v.heroes[0]; }
-      P.lab = $("div", "lab", el, "left:520px;top:1120px;width:420px;font:900 46px/1.15 Unbounded"); P.lab.innerHTML = v.label || "";
+      const rows = Math.ceil(v.icons.count / 6), gridBottom = 660 + rows * 118 - 16;
+      P.lab = v.heroes ? $("div", "lab", el, "left:520px;top:1120px;width:420px;font:900 46px/1.15 Unbounded")
+                       : $("div", "lab", el, `left:60px;top:${gridBottom + 44}px;width:880px;text-align:center;font:900 46px/1.15 Unbounded`);
+      P.lab.innerHTML = v.label || "";
     } else if (s.layout === "timer") {
       P.lines = headline(el, s.headline);
       P.clock = $("div", "clock", el, "top:470px");
@@ -285,8 +308,9 @@ function seek(t) {
   const lt = t - segs[i].start;
 
   document.getElementById("dots").style.transform = `translate(${(t * 6) % 36}px, ${(t * 4) % 36}px)`;
+  const fi = segs.slice(0, i + 1).filter(s => !s.hook && !s.outro).length - 1;   // номер факта
   document.querySelectorAll(".pg i").forEach((bar, k) => {
-    bar.style.width = (segs[i].outro || k < i ? 100 : k === i ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
+    bar.style.width = (segs[i].outro || k < fi ? 100 : k === fi && !segs[i].hook ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
   });
   SEGS.forEach((g, k) => { g.el.style.visibility = k === i ? "visible" : "hidden"; });
   draw(SEGS[i], lt);
@@ -307,6 +331,15 @@ function draw(g, lt) {
   if (!P.lines) return;
   const hl = g === SEGS[0] ? lt + 0.7 : lt;        // первый кадр = обложка: заголовок уже на месте
   P.lines.forEach((sp, j) => { const k = eOut((hl - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
+  if (s.hook) {
+    P.stk.forEach((c, k) => {
+      const t0 = (s.at && s.at[k] != null) ? s.at[k] : 0.4 + k * 0.5;
+      const e = eBack((lt - t0 + 0.05) / 0.45);
+      c.style.opacity = clamp(e * 2);
+      c.style.transform = `translateY(${(1 - e) * 220}px) rotate(${c.dataset.rot * (0.4 + 0.6 * e) + 0.6 * Math.sin(lt * 2 + k)}deg) scale(${0.85 + 0.15 * e})`;
+    });
+    return;
+  }
   if (s.outro) {
     P.cards.forEach((c, k) => { const e = eBack((lt - 0.3 - k * 0.12) / 0.5); c.style.transform = `translateY(${(1 - e) * 260}px) rotate(${(1 - e) * (k - 1) * 8}deg)`; c.style.opacity = clamp(e * 2); });
     const e = eOut((lt - 0.9) / 0.4); P.cta.style.opacity = e; P.cta.style.transform = `translateY(${(1 - e) * 30}px)`;
@@ -483,7 +516,7 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .tile, .clock, .tcard, .chip2, .note"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))

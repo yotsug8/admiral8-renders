@@ -192,6 +192,19 @@ async function init(data) {
       P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
       const ch = $("div", "chips", el);
       P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
+    } else if (s.layout === "mosaic") {
+      P.lines = headline(el, s.headline);
+      el.querySelector(".head").style.fontSize = "70px";
+      P.big = $("div", "big y", el, "top:420px;font-size:110px"); P.big.textContent = v.number;
+      P.cv = $("canvas", null, el, "position:absolute;left:60px;top:560px");
+      P.cv.width = 880; P.cv.height = 680;
+      // Лупа: показывает крупно, что силуэт выложен именно Танго
+      P.lens = $("canvas", null, el, "position:absolute;width:300px;height:300px;border-radius:50%;border:8px solid #ffd23f;box-shadow:12px 12px 0 #f4f4f2;background:#15171c;opacity:0");
+      P.lens.width = 300; P.lens.height = 300;
+      P.hero = $("img", null, null); P.hero.src = v.heroes[0];
+      P.icon = $("img", null, null); P.icon.src = v.icons.src;
+      P.pill = $("div", "pill", el, "top:1265px;left:50%;transform:translateX(-50%)"); P.pill.textContent = v.caption || "";
+      P.note = $("div", "note", el, "top:1375px"); P.note.textContent = v.note || "";
     } else if (s.layout === "scale") {
       P.lines = headline(el, s.headline);
       el.querySelector(".head").style.fontSize = "70px";
@@ -219,6 +232,7 @@ async function init(data) {
   });
   await document.fonts.ready;
   await Promise.all([...document.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+  const MOS = [];
   // Раскладка героев по реальным пропорциям картинок
   SEGS.forEach(g => {
     const P = g.parts, s = g.s;
@@ -229,7 +243,9 @@ async function init(data) {
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 250, 1420, 380, 300);
     if (s.layout === "gauge") placeHero(P.hero, 640, 900, 560, 900 - headBottom);
     if (s.layout === "scale") placeHero(P.hero, 260, 900, 320, 300);
+    if (s.layout === "mosaic") MOS.push(buildMosaic(g));
   });
+  await Promise.all(MOS);
   return true;
 }
 
@@ -303,6 +319,33 @@ function draw(g, lt) {
   }
 }
 
+// Мозаика: вписываем героя в холст, подбираем размер клетки, чтобы клеток внутри силуэта было ровно target
+async function buildMosaic(g) {
+  const P = g.parts, target = g.s.visual.icons.count, W = P.cv.width, H = P.cv.height;
+  if (!P.hero.complete) await new Promise(r => P.hero.onload = r);
+  if (!P.icon.complete) await new Promise(r => P.icon.onload = r);
+  const k = Math.min(W / P.hero.naturalWidth, H / P.hero.naturalHeight);
+  const w = P.hero.naturalWidth * k, h = P.hero.naturalHeight * k, x0 = (W - w) / 2, y0 = H - h;
+  const off = document.createElement("canvas"); off.width = W; off.height = H;
+  const c = off.getContext("2d"); c.drawImage(P.hero, x0, y0, w, h);
+  const A = c.getImageData(0, 0, W, H).data;
+  const cells = cell => { const pts = [];
+    for (let y = cell / 2; y < H; y += cell) for (let x = cell / 2; x < W; x += cell)
+      if (A[(Math.floor(y) * W + Math.floor(x)) * 4 + 3] > 120) pts.push([x, y]);
+    return pts; };
+  // Бинарный поиск размера клетки под нужное число Танго
+  let lo = 1, hi = 60, pts = [];
+  for (let it = 0; it < 30; it++) { const mid = (lo + hi) / 2; pts = cells(mid); if (pts.length > target) lo = mid; else hi = mid; }
+  pts = cells(lo); P.cell = lo;
+  pts.sort((a, b) => (b[1] - a[1]) || (a[0] - b[0]));     // снизу вверх
+  P.pts = pts.slice(0, target);
+  let sx = 0, sy = 0; P.pts.forEach(([x, y]) => { sx += x; sy += y; });
+  P.lensAt = [sx / P.pts.length, sy / P.pts.length + 40];
+  P.lensPos = [Math.min(W - 160, P.lensAt[0] + 230), Math.max(160, P.lensAt[1] - 170)];
+  P.silhouette = off;
+  P.ctx = P.cv.getContext("2d");
+}
+
 function drawExtra(g, lt) {
   const P = g.parts, s = g.s, v = s.visual;
   if (s.layout === "timer") {
@@ -324,6 +367,34 @@ function drawExtra(g, lt) {
     countUp(P.gnum, v.number, lt, 0.8);
     const q = eOut((lt - 1.5) / 0.4); P.lab.style.opacity = q;
     P.chips.forEach((c, m) => { const k = eBack((lt - v.chips_at - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
+  }
+  if (s.layout === "mosaic" && P.pts) {
+    const n = P.pts.length, e = eInOut((lt - 0.9) / Math.max(2, s.dur - 4.5)), shown = Math.round(n * e);
+    const ctx = P.ctx, c = P.cell;
+    ctx.clearRect(0, 0, P.cv.width, P.cv.height);
+    ctx.globalAlpha = 0.12; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
+    for (let m = 0; m < shown; m++) { const [x, y] = P.pts[m]; ctx.drawImage(P.icon, x - c * 0.6, y - c * 0.45, c * 1.2, c * 0.9); }
+    // Лупа над животом Пуджа: увеличение ×7, иконки перерисовываются крупно (не растягиваются)
+    const la = eBack((lt - 2.2) / 0.5);
+    if (la > 0) {
+      const Z = 7, cx = P.lensAt[0], cy = P.lensAt[1], half = 150 / Z;
+      const lc = P.lens.getContext("2d");
+      lc.clearRect(0, 0, 300, 300); lc.save(); lc.beginPath(); lc.arc(150, 150, 150, 0, Math.PI * 2); lc.clip();
+      lc.fillStyle = "#15171c"; lc.fillRect(0, 0, 300, 300);
+      for (let m = 0; m < shown; m++) {
+        const [x, y] = P.pts[m];
+        if (Math.abs(x - cx) > half + c || Math.abs(y - cy) > half + c) continue;
+        lc.drawImage(P.icon, (x - cx) * Z + 150 - c * 0.6 * Z, (y - cy) * Z + 150 - c * 0.45 * Z, c * 1.2 * Z, c * 0.9 * Z);
+      }
+      lc.restore();
+      P.lens.style.left = (60 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (560 + P.lensPos[1] - 150) + "px";
+      P.lens.style.opacity = clamp(la * 2); P.lens.style.transform = `scale(${0.5 + 0.5 * la})`;
+    }
+    // Счётчик идёт ровно по числу выложенных Танго
+    P.big.style.opacity = clamp((lt - 0.6) / 0.3);
+    P.big.textContent = String(shown).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009") + " Танго";
+    const p2 = eBack((lt - s.dur + 3.0) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    P.note.style.opacity = clamp((lt - s.dur + 2.6) / 0.4);
   }
   if (s.layout === "scale") {
     countUp(P.big, v.number, lt, 0.5);

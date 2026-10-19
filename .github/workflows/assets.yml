@@ -82,8 +82,8 @@ jobs:
                       print("команда", n, ": логотип не найден")
           # Логотипы с Liquipedia: все файлы-логотипы со страницы команды (прозрачный PNG)
           import gzip, json, urllib.parse
-          def lq(params):
-              url = "https://liquipedia.net/dota2/api.php?" + urllib.parse.urlencode(dict(params, format="json"))
+          def lq(params, wiki="dota2"):
+              url = f"https://liquipedia.net/{wiki}/api.php?" + urllib.parse.urlencode(dict(params, format="json"))
               req = urllib.request.Request(url, headers={"User-Agent": "admiral8-renders/1.0 (github.com/contributor)", "Accept-Encoding": "gzip"})
               raw = urllib.request.urlopen(req, timeout=60).read()
               try: raw = gzip.decompress(raw)
@@ -109,7 +109,8 @@ jobs:
               import time; time.sleep(3)          # Liquipedia просит не чаще раза в пару секунд
           for pre in [p.strip() for p in os.environ.get("LQPREFIX", "").split(";") if p.strip()]:
               try:
-                  res = lq({"action": "query", "list": "allimages", "aiprefix": pre, "ailimit": 15, "aiprop": "url|size"})
+                  res = lq({"action": "query", "list": "allimages", "aiprefix": pre.replace(" ", "_"), "ailimit": 15, "aiprop": "url|size"}, "commons")   # логотипы лежат в общем хранилище
+                  print(pre, "найдено:", len(res["query"]["allimages"]))
                   for ii in res["query"]["allimages"]:
                       name = re.sub(r"\W+", "_", ii["name"].rsplit(".", 1)[0])
                       if not ii["name"].lower().endswith(".png"): continue

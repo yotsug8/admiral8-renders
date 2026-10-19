@@ -276,7 +276,8 @@ function seek(t) {
 function draw(g, lt) {
   const P = g.parts, s = g.s;
   if (!P.lines) return;
-  P.lines.forEach((sp, j) => { const k = eOut((lt - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
+  const hl = g === SEGS[0] ? lt + 0.7 : lt;        // первый кадр = обложка: заголовок уже на месте
+  P.lines.forEach((sp, j) => { const k = eOut((hl - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
   if (s.outro) {
     P.cards.forEach((c, k) => { const e = eBack((lt - 0.3 - k * 0.12) / 0.5); c.style.transform = `translateY(${(1 - e) * 260}px) rotate(${(1 - e) * (k - 1) * 8}deg)`; c.style.opacity = clamp(e * 2); });
     const e = eOut((lt - 0.9) / 0.4); P.cta.style.opacity = e; P.cta.style.transform = `translateY(${(1 - e) * 30}px)`;

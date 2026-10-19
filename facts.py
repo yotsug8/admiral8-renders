@@ -204,7 +204,7 @@ def render_fact(fact, idx, out_path):
          "-pix_fmt", "yuv420p", "-crf", "18", "_video.mp4"], stdin=subprocess.PIPE)
 
     tmp = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    q_lines = wrap(tmp, fact["question"], font(54), 860)
+    q_lines = wrap(tmp, fact["question"], font(50), 860)
     c_lines = wrap(tmp, fact["caption"], font(38), 860)
 
     for fi in range(int(TOTAL * FPS)):
@@ -229,12 +229,12 @@ def render_fact(fact, idx, out_path):
         # Вопрос
         qa = ease_out((t - T_Q) / 0.4)
         if qa > 0:
-            y = 450
+            y = 440
             for ln in q_lines:
-                d.text((CX, y), ln, font=font(54), fill=WHITE + (int(255 * qa),), anchor="mm")
-                y += 66
+                d.text((CX, y), ln, font=font(50), fill=WHITE + (int(255 * qa),), anchor="mm")
+                y += 60
 
-        media_cy = 820
+        media_cy = 845
         if t < T_REVEAL:
             # Пульсирующий «?» на месте ответа + полоса ожидания
             if t > T_Q + 0.2:
@@ -260,15 +260,22 @@ def render_fact(fact, idx, out_path):
                 shown = big_target
             num = fmt_num(shown)
             na = ease_out(r / 0.3)
-            d.text((CX, 1185), num, font=font(150), fill=GOLD + (int(255 * na),), anchor="ms",
+            # Число и единица центрируются вместе, единица ужимается, если не влезает
+            nf = font(150)
+            nw = d.textlength(num, font=nf)
+            us = 44
+            while us > 26 and nw + 16 + d.textlength(fact["unit"], font=font(us)) > 880:
+                us -= 2
+            uw = d.textlength(fact["unit"], font=font(us))
+            x0 = CX - (nw + 16 + uw) / 2
+            d.text((x0, 1205), num, font=nf, fill=GOLD + (int(255 * na),), anchor="ls",
                    stroke_width=4, stroke_fill=(0, 0, 0, 200))
-            nw = d.textlength(num, font=font(150))
-            d.text((CX + nw / 2 + 14, 1170), fact["unit"], font=font(44), fill=GOLD + (int(255 * na),),
+            d.text((x0 + nw + 16, 1190), fact["unit"], font=font(us), fill=GOLD + (int(255 * na),),
                    anchor="ls")
             ta = ease_out((r - 0.3) / 0.3)
-            d.text((CX, 1245), fact["title"], font=font(52), fill=WHITE + (int(255 * ta),), anchor="mm")
+            d.text((CX, 1265), fact["title"], font=font(52), fill=WHITE + (int(255 * ta),), anchor="mm")
 
-            y = 1310
+            y = 1330
             if fact.get("bars"):
                 # Сравнение винрейтов полосками (шкала 40–60%)
                 for label, val, col in fact["bars"]:
@@ -288,7 +295,7 @@ def render_fact(fact, idx, out_path):
 
             if r > 2.2:
                 a = int(255 * ease_out((r - 2.2) / 0.3))
-                d.text((CX, 1565), "Знал? Пиши в комменты", font=font(44), fill=WHITE + (a,), anchor="mm")
+                d.text((CX, 1580), "Знал? Пиши в комменты", font=font(44), fill=WHITE + (a,), anchor="mm")
 
         ff.stdin.write(img.tobytes())
 

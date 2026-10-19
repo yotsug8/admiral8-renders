@@ -149,13 +149,18 @@ def align_words(path):
                           "-ac", "1", "-ar", "16000", "-"], capture_output=True, check=True).stdout
     audio = np.frombuffer(raw, np.float32)
     segs, _ = _WHISPER.transcribe(audio, language="ru", word_timestamps=True, vad_filter=False)
+    _PROBS.clear()
     words = []
     for sg in segs:
         for w in sg.words or []:
             t = w.word.strip()
             if t:
                 words.append((t, float(w.start), float(w.end)))
+                _PROBS.append(float(w.probability))
     return words
+
+
+_PROBS = []      # уверенность распознавания по словам последнего вызова align_words
 
 
 def _norm(w):
@@ -199,10 +204,10 @@ def speak(text, path_mp3, voice_file=None):
     if voice_file and (HERE / voice_file).exists() and not os.environ.get("FV_FAKE_TTS"):
         import shutil
         shutil.copy(HERE / voice_file, path_mp3)
-        return align_to_script(text, align_words(path_mp3))
+        return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
         try:
-            return align_to_script(text, tts_fish(text, path_mp3))
+            return align_to_script(text.replace("\u0301", ""), tts_fish(text, path_mp3))
         except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
             print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
     elif not FISH_KEY:
@@ -503,16 +508,18 @@ def voice_takes(ep, out_dir, n=3):
     """Несколько дублей озвучки каждого факта (и вариантов финала) — выбрать на слух."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    summary = {}
     jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
     jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
-    jobs += [(name, t, 2) for name, t in ep.get("take_texts", [])]          # варианты интонаций
+    jobs += [(x[0], x[1], x[2] if len(x) > 2 else 2) for x in ep.get("take_texts", [])]   # варианты: имя, текст, число дублей
     for name, text, k in jobs:
         for t in range(1, k + 1):
             path = out / f"take_{name}_{t}.mp3"
             tts_fish(text, path, align=False)
             print(f"  {path.name}: {text}")
             if os.environ.get("FV_TAKES_ANALYZE"):
-                analyze_take(path)
+                summary[path.name] = analyze_take(path)
+                (out / "takes.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
 def analyze_take(path):
@@ -527,6 +534,13 @@ def analyze_take(path):
             db = 20 * np.log10(np.sqrt((seg ** 2).mean()) + 1e-9)
             line.append(f"<пауза {nxt[1] - b:.2f}с {db:.0f}дБ>")
     print("    " + " ".join(line))
+    probs = list(_PROBS)
+    weak = [f"{w}:{p:.2f}" for (w, _, _), p in zip(words, probs) if p < 0.6]
+    loud = [x for x in line if x.startswith("<пауза") and float(x.split()[1][:-1]) > 0.3 and int(x.split()[2][:-3]) > -35]
+    res = dict(prob=round(float(np.mean(probs)) if probs else 0, 3), weak=weak, loud_pauses=loud,
+               dur=round(len(pcm) / SR, 2), words=len(words))
+    print(f"    ИТОГ: {res}")
+    return res
 
 
 if __name__ == "__main__":

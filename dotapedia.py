@@ -5,11 +5,9 @@
     python dotapedia.py episodes_dp/001.json out/dotapedia_001.mp4
 
 Выпуск (JSON): список фактов. У каждого факта:
-    tag       — метка над заголовком («АБСУРД», «ИСТОРИЯ»…)
     headline  — короткий заголовок крупно
     voice     — текст озвучки (в нём можно писать {числа} из calc)
     visual    — что показать: heroes / number / icons (см. draw_visual)
-    absurd    — абсурдометр, 1–5
 Озвучка: edge-tts (бесплатный голос Microsoft), нужен интернет.
 """
 import asyncio
@@ -24,12 +22,13 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 import quiz as Q
-from quiz import (CX, FPS, GOLD, H, MUTED, RED, W, WHITE, cover, ease_out,
+from quiz import (CX, FPS, GOLD, H, W, WHITE, ease_out,
                   ease_out_back, fetch_image, font, glow_layer, gradient_text, load_consts,
                   paste_scaled, placeholder)
 
-VOICE = "ru-RU-DmitryNeural"
-RATE = "+15%"                # быстрее обычного — темп TikTok
+VOICE = os.environ.get("DP_VOICE", "ru-RU-DmitryNeural")
+RATE = os.environ.get("DP_RATE", "+12%")     # темп речи
+PITCH = os.environ.get("DP_PITCH", "-10Hz")  # ниже обычного — другой тембр
 SR = 44100
 PAD = 0.7                    # пауза после факта, сек
 TRANS = 0.35                 # длительность перехода между фактами
@@ -37,9 +36,9 @@ SERIES = "ДОТАПЕДИЯ"
 YELLOW = (255, 214, 64)
 
 # Вертикальная раскладка (безопасная зона TikTok)
-Y_PROGRESS, Y_BRAND, Y_TAG, Y_HEAD = 175, 228, 282, 352
-VIS_TOP, VIS_BOT = 470, 1150
-Y_SUBS, Y_METER = 1250, 1430
+Y_PROGRESS, Y_BRAND, Y_HEAD = 175, 228, 310
+VIS_TOP, VIS_BOT = 430, 1190
+Y_SUBS = 1300
 
 
 # ---------- озвучка ----------
@@ -50,7 +49,7 @@ def tts(text, path_mp3):
 
     async def run():
         words = []
-        com = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
+        com = edge_tts.Communicate(text, VOICE, rate=RATE, pitch=PITCH, boundary="WordBoundary")
         with open(path_mp3, "wb") as f:
             async for ch in com.stream():
                 if ch["type"] == "audio":
@@ -83,25 +82,31 @@ def hero_render(key, heroes):
     if img is None:
         h = heroes[key]
         img = fetch_image(h["img"]) or placeholder(256, 144, h["localized_name"], 0)
+    img = cut_background(img, key)
     bbox = img.getbbox()            # обрезаем пустые поля
     return img.crop(bbox) if bbox else img
+
+
+def cut_background(img, key):
+    """У рендеров с сайта Доты непрозрачный фон — вырезаем героя нейросетью rembg (с кэшем)."""
+    if img.getextrema()[3][0] < 250:            # уже есть прозрачность
+        return img
+    path = os.path.join("cache", f"cut_{key}.png")
+    if os.path.exists(path):
+        return Image.open(path).convert("RGBA")
+    try:
+        from rembg import remove
+        out = remove(img).convert("RGBA")
+        out.save(path)
+        return out
+    except Exception as e:
+        print("  не удалось вырезать фон:", key, e)
+        return img
 
 
 def contain(img, w, h):
     k = min(w / img.width, h / img.height)
     return img.resize((max(1, int(img.width * k)), max(1, int(img.height * k))), Image.LANCZOS)
-
-
-def skull_row(n, total=5, size=60):
-    """Абсурдометр: черепа (☠ есть в шрифте DejaVu)."""
-    f = font(size)
-    w = total * (size + 14)
-    im = Image.new("RGBA", (w, size + 16), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    for i in range(total):
-        d.text((i * (size + 14) + size / 2, size / 2 + 6), "☠", font=f,
-               fill=(YELLOW if i < n else (70, 74, 88)) + (255,), anchor="mm")
-    return im
 
 
 # ---------- подготовка фактов ----------
@@ -279,18 +284,9 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     brand = gradient_text(SERIES, 46, (255, 236, 180), GOLD, stroke=3)
     cache = {}
     head_cache = {}
-    skulls = {n: skull_row(n) for n in range(6)}
 
-    # Размытый фон под каждый факт (из первого героя)
-    for i, sg in enumerate(segs):
-        keys = sg["fact"].get("visual", {}).get("heroes", [])
-        b = bg.copy()
-        if keys:
-            r = hero_render(keys[0], heroes)
-            bl = cover(r.convert("RGB").convert("RGBA"), W, H).resize((W // 12, H // 12)).resize((W, H))
-            bl.putalpha(80)
-            b.alpha_composite(bl)
-        sg["bg"] = b
+    for sg in segs:
+        sg["bg"] = bg
 
     embers = Q.Embers()
     ff = subprocess.Popen(
@@ -328,14 +324,6 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
         img.alpha_composite(brand, (int(CX - brand.width / 2), int(Y_BRAND - brand.height / 2)))
 
         if not sg["is_outro"]:
-            # Метка и номер факта
-            tag = f"{si + 1}/{nfacts}  ·  {fact['tag']}"
-            tw = d.textlength(tag, font=font(30)) + 44
-            col = RED if fact["tag"] == "АБСУРД" else (40, 110, 170)
-            d.rounded_rectangle((CX - tw / 2, Y_TAG - 22, CX + tw / 2, Y_TAG + 22), radius=22,
-                                fill=col + (255,))
-            d.text((CX, Y_TAG), tag, font=font(30), fill=WHITE, anchor="mm")
-
             # Заголовок
             if si not in head_cache:
                 lines, cur = [], ""
@@ -358,12 +346,6 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
             draw_visual(img, sg, lt, heroes, items, cache)
             draw_subs(img, sg["words"], lt)
 
-            # Абсурдометр
-            ma = ease_out((lt - 1.0) / 0.4)
-            if ma > 0:
-                d.text((CX, Y_METER - 46), "АБСУРДОМЕТР", font=font(28), fill=MUTED + (int(255 * ma),),
-                       anchor="mm")
-                paste_scaled(img, skulls[fact.get("absurd", 3)], CX, Y_METER + 10, 1, ma)
         else:
             # Финал: призыв + цифры фактов
             ka = ease_out_back(lt / 0.4)
@@ -434,6 +416,26 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     print("готово:", out_path, f"({total:.1f} с)")
 
 
+def voice_samples(out_dir, text):
+    """Пробы голосов: одна фраза разными голосами, чтобы выбрать на слух."""
+    global VOICE, PITCH, RATE
+    variants = [("ru-RU-DmitryNeural", "-10Hz", "+12%"), ("ru-RU-DmitryNeural", "-25Hz", "+0%"),
+                ("en-US-AndrewMultilingualNeural", "+0Hz", "+5%"),
+                ("en-US-BrianMultilingualNeural", "+0Hz", "+5%"),
+                ("de-DE-FlorianMultilingualNeural", "+0Hz", "+5%"),
+                ("fr-FR-RemyMultilingualNeural", "+0Hz", "+5%")]
+    for n, (v, p, r) in enumerate(variants, 1):
+        VOICE, PITCH, RATE = v, p, r
+        try:
+            tts(text, os.path.join(out_dir, f"voice_{n}_{v.split('-')[2]}{p.replace('Hz', '')}.mp3"))
+            print(f"  проба {n}: {v} {p} {r}")
+        except SystemExit:
+            print(f"  проба {n}: {v} — недоступен")
+
+
 if __name__ == "__main__":
-    with open(sys.argv[1], encoding="utf-8") as f:
-        render(json.load(f), sys.argv[2])
+    if sys.argv[1] == "--samples":
+        voice_samples(sys.argv[2], "Нави выиграли матч на Интернешнл, утаскивая врагов прямо в свой фонтан.")
+    else:
+        with open(sys.argv[1], encoding="utf-8") as f:
+            render(json.load(f), sys.argv[2])

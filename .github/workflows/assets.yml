@@ -16,6 +16,9 @@ on:
       teams:
         description: "названия команд через ; (логотипы из OpenDota)"
         default: ""
+      liquipedia:
+        description: "страницы Liquipedia через ; (скачать логотипы команд)"
+        default: ""
 
 permissions:
   contents: write
@@ -34,13 +37,14 @@ jobs:
           ITEMS: ${{ inputs.items }}
           ABILITIES: ${{ inputs.abilities }}
           TEAMS: ${{ inputs.teams }}
+          LIQUIPEDIA: ${{ inputs.liquipedia }}
         run: |
           mkdir -p a
           python - <<'PY'
           import os, urllib.request, io
           from PIL import Image
           from rembg import remove
-          import sys
+          import sys, re
           sys.stdout = open("a/log.txt", "w")      # лог кладём в ветку: логи Actions мне недоступны
           CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2"
           def get(url):
@@ -60,7 +64,6 @@ jobs:
           # Логотипы команд: ищем по названию в списке команд OpenDota
           names = [n.strip() for n in os.environ.get("TEAMS", "").split(";") if n.strip()]
           if names:
-              import json, re
               req = urllib.request.Request("https://api.opendota.com/api/teams", headers={"User-Agent": "Mozilla/5.0"})
               teams = json.loads(urllib.request.urlopen(req, timeout=60).read())
               for n in names:
@@ -73,6 +76,33 @@ jobs:
                       get(hits[0]["logo_url"]).save(f"a/team_{slug}.png")
                   else:
                       print("команда", n, ": логотип не найден")
+          # Логотипы с Liquipedia: все файлы-логотипы со страницы команды (прозрачный PNG)
+          import gzip, json, urllib.parse
+          def lq(params):
+              url = "https://liquipedia.net/dota2/api.php?" + urllib.parse.urlencode(dict(params, format="json"))
+              req = urllib.request.Request(url, headers={"User-Agent": "admiral8-renders/1.0 (github.com/yotsug8)", "Accept-Encoding": "gzip"})
+              raw = urllib.request.urlopen(req, timeout=60).read()
+              try: raw = gzip.decompress(raw)
+              except OSError: pass
+              return json.loads(raw)
+          for page in [p.strip() for p in os.environ.get("LIQUIPEDIA", "").split(";") if p.strip()]:
+              try:
+                  imgs = lq({"action": "query", "titles": page, "prop": "images", "imlimit": 100})
+                  files = [i["title"] for pg in imgs["query"]["pages"].values() for i in pg.get("images", [])]
+                  print(page, "файлы:", files)
+                  logos = [f for f in files if any(w in f.lower() for w in ("logo", "allmode", "darkmode", "lightmode", "full"))][:8]
+                  if not logos:
+                      logos = [f for f in files if f.lower().endswith(".png")][:8]
+                  info = lq({"action": "query", "titles": "|".join(logos), "prop": "imageinfo", "iiprop": "url|size"})
+                  for pg in info["query"]["pages"].values():
+                      ii = (pg.get("imageinfo") or [{}])[0]
+                      if not ii.get("url"): continue
+                      name = re.sub(r"\W+", "_", pg["title"].split(":", 1)[1].rsplit(".", 1)[0])
+                      im = get(ii["url"]); im.save(f"a/lq_{name}.png")
+                      print("  скачан", pg["title"], im.size, ii["url"])
+              except Exception as e:
+                  print(page, "ошибка:", e)
+              import time; time.sleep(3)          # Liquipedia просит не чаще раза в пару секунд
           PY
           cd a
           git init -q -b assets && git add -A

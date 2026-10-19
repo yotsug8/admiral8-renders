@@ -1,5 +1,5 @@
 """
-Рубрика «Дота в цифрах» — странные факты, которые считаются из данных, а не пишутся руками.
+Рубрика «Цифры не врут» — неочевидные факты о Доте, которые считаются из данных, а не пишутся руками.
 Цифры берутся из справочника dotaconstants и статистики OpenDota (/api/heroStats),
 поэтому после каждого патча факты пересчитываются сами.
 
@@ -23,6 +23,7 @@ from quiz import (CX, FPS, GOLD, GOLD_DARK, GREEN, H, MUTED, RED, W, WHITE, cove
                   load_consts, paste_scaled, placeholder, rounded_mask)
 
 STATS_URL = "https://api.opendota.com/api/heroStats"
+SERIES_TITLE = "ЦИФРЫ НЕ ВРУТ"     # название рубрики в шапке ролика
 MIN_SHARE = 0.4           # герой должен иметь хотя бы 40% от медианы пиков в ранге
 
 # Тайминги (секунды)
@@ -61,99 +62,96 @@ def plural(n, one, few, many):
 
 
 def gen_facts(items, heroes, stats):
-    """Список фактов. Каждый факт — вопрос, число, подпись и картинка."""
-    hs = list(heroes.values())
+    """Неочевидные факты из поведения игроков (OpenDota). Каждый — вопрос, число, подпись, картинка."""
+    if not stats:
+        return []
+    by_id = {h["id"]: h for h in heroes.values()}
+    stats = [s for s in stats if s["id"] in by_id]
+
+    def wr(w, p):
+        return w / p * 100 if p else 0.0
+
+    def med(key):
+        return float(np.median([s.get(key) or 0 for s in stats]))
+
+    def enough(s, key, m):
+        return (s.get(key) or 0) >= MIN_SHARE * m and (s.get(key) or 0) > 0
+
     facts = []
+    src = "Данные OpenDota, паблик-матчи за последнее время."
 
-    # 1. Ноги
-    legs = sorted(hs, key=lambda h: h["legs"], reverse=True)
-    top = legs[0]
-    zero = sum(1 for h in hs if h["legs"] == 0)
-    total = sum(h["legs"] for h in hs)
+    # Верхний ранг: Immortal (8), а если по нему нет данных — Divine (7)
+    hi = 8 if med("8_pick") > 0 else 7
+    hi_name = {7: "Divine", 8: "Immortal"}[hi]
+    m1, mh = med("1_pick"), med(f"{hi}_pick")
+    ranks = [(wr(s["1_win"], s["1_pick"]), wr(s[f"{hi}_win"], s[f"{hi}_pick"]), by_id[s["id"]])
+             for s in stats if enough(s, "1_pick", m1) and enough(s, f"{hi}_pick", mh)]
+
+    # 1. Разносит новичков, сливает наверху
+    a, b, h = max(ranks, key=lambda r: r[0] - r[1])
     facts.append(dict(
-        question="У какого героя больше всего ног?",
-        number=top["legs"], unit=plural(top["legs"], "нога", "ноги", "ног"),
-        title=top["localized_name"],
-        caption=f"У {zero} героев ног нет вообще. А у всех {len(hs)} героев вместе {total} "
-                f"{plural(total, 'нога', 'ноги', 'ног')}.",
-        img=top["img"]))
+        question="Кто разносит новичков, но сливает на высоком рейтинге?",
+        number=round(a - b, 1), unit="% разницы", title=h["localized_name"],
+        bars=[("Herald", a, GREEN), (hi_name, b, RED)], caption=src, img=h["img"]))
 
-    # 2. Рапира в танго
-    rap, tango = items["rapier"], items["tango"]
-    n = rap["cost"] // tango["cost"]
-    rest = rap["cost"] - n * tango["cost"]
+    # 2. Наоборот: внизу проигрывает, наверху тащит
+    a, b, h = max(ranks, key=lambda r: r[1] - r[0])
     facts.append(dict(
-        question=f"Сколько {tango['dname']} можно купить вместо одной {rap['dname']}?",
-        number=n, unit="Tango",
-        title=f"{rap['dname']} = {rap['cost']} золота",
-        caption=f"И ещё {rest} золота останется на сдачу." if rest else "Ровно, без сдачи.",
-        img=rap["img"]))
+        question="Кто проигрывает новичкам, но тащит на высоком рейтинге?",
+        number=round(b - a, 1), unit="% разницы", title=h["localized_name"],
+        bars=[("Herald", a, RED), (hi_name, b, GREEN)], caption=src, img=h["img"]))
 
-    # 3. Скорость
-    fast = max(hs, key=lambda h: h["move_speed"])
-    slow_v = min(h["move_speed"] for h in hs)
-    slow = [h["localized_name"] for h in hs if h["move_speed"] == slow_v]
+    # 3. Имба в турбо, слабый в обычных играх
+    mt, mp = med("turbo_picks"), med("pub_pick")
+    rows = [(wr(s["turbo_wins"], s["turbo_picks"]), wr(s["pub_win"], s["pub_pick"]), by_id[s["id"]])
+            for s in stats if enough(s, "turbo_picks", mt) and enough(s, "pub_pick", mp)]
+    a, b, h = max(rows, key=lambda r: r[0] - r[1])
     facts.append(dict(
-        question="Кто самый быстрый герой в Доте без предметов?",
-        number=fast["move_speed"],
-        unit=plural(fast["move_speed"], "единица", "единицы", "единиц") + " скорости",
-        title=fast["localized_name"],
-        caption=f"Самые медленные: {', '.join(slow)}, у них по {slow_v}.",
-        img=fast["img"]))
+        question="Этот герой — имба в Турбо, но в обычных играх проигрывает. Кто?",
+        number=round(a - b, 1), unit="% разницы", title=h["localized_name"],
+        bars=[("Турбо", a, GREEN), ("Обычные", b, RED)], caption=src, img=h["img"]))
 
-    if stats:
-        by_id = {h["id"]: h for h in hs}
-        # Верхний ранг: Immortal (8), а если по нему нет данных — Divine (7)
-        rank_names = {7: "Divine", 8: "Immortal"}
-        hi = 8 if float(np.median([s.get("8_pick") or 0 for s in stats])) > 0 else 7
-        hi_name = rank_names[hi]
-        # Порог выборки — от медианы пиков в ранге (у OpenDota выборка небольшая)
-        med1 = float(np.median([s.get("1_pick") or 0 for s in stats]))
-        medh = float(np.median([s.get(f"{hi}_pick") or 0 for s in stats]))
-        print(f"  heroStats: медиана пиков Herald={med1:.0f}, {hi_name}={medh:.0f}")
-        rows = []
-        for s in stats:
-            p1, w1 = s.get("1_pick") or 0, s.get("1_win") or 0
-            ph, wh = s.get(f"{hi}_pick") or 0, s.get(f"{hi}_win") or 0
-            if p1 >= MIN_SHARE * med1 and ph >= MIN_SHARE * medh and p1 and ph and s["id"] in by_id:
-                rows.append((w1 / p1 * 100, wh / ph * 100, by_id[s["id"]]))
-        if not rows:
-            print("  heroStats: нет подходящих строк")
-            return facts
+    # 4. Профи его банят и берут, а в пабах он проигрывает
+    contested = sorted(stats, key=lambda s: (s.get("pro_pick") or 0) + (s.get("pro_ban") or 0),
+                       reverse=True)[:15]
+    s = min(contested, key=lambda s: wr(s["pub_win"], s["pub_pick"]))
+    h = by_id[s["id"]]
+    pub = wr(s["pub_win"], s["pub_pick"])
+    cnt = (s.get("pro_pick") or 0) + (s.get("pro_ban") or 0)
+    facts.append(dict(
+        question="Профи постоянно его пикают и банят, а в пабах он проигрывает. Кто это?",
+        number=round(pub, 1), unit="% побед в пабах", title=h["localized_name"],
+        caption=f"В про-матчах его взяли или забанили {cnt} {plural(cnt, "раз", "раза", "раз")}: он в топ-15 самых спорных героев.",
+        img=h["img"]))
 
-        # 4. Герой для новичков: в Herald побеждает, в Immortal проигрывает
-        h_wr, i_wr, hero = max(rows, key=lambda r: r[0] - r[1])
+    # 5. Никто не берёт, а зря: высокий винрейт при низкой популярности
+    pick_cut = float(np.percentile([s["pub_pick"] for s in stats], 25))
+    rare = [s for s in stats if s["pub_pick"] <= pick_cut and enough(s, "pub_pick", 0.3 * mp)]
+    if rare:
+        s = max(rare, key=lambda s: wr(s["pub_win"], s["pub_pick"]))
+        h = by_id[s["id"]]
+        place = sorted(stats, key=lambda x: x["pub_pick"]).index(s) + 1
         facts.append(dict(
-            question="Какой герой разносит новичков, но сливает у топовых игроков?",
-            number=round(h_wr - i_wr, 1), unit="% разницы",
-            title=hero["localized_name"],
-            bars=[("Herald", h_wr, GREEN), (hi_name, i_wr, RED)],
-            caption="Винрейт в пабах по рангам, данные OpenDota.",
-            img=hero["img"]))
+            question="Его почти никто не берёт, хотя он выигрывает чаще большинства. Кто?",
+            number=round(wr(s["pub_win"], s["pub_pick"]), 1), unit="% побед",
+            title=h["localized_name"],
+            caption=f"По популярности он {place}-й с конца из {len(stats)}.",
+            img=h["img"]))
 
-        # 5. Наоборот: бесполезен внизу, имба наверху
-        h_wr, i_wr, hero = max(rows, key=lambda r: r[1] - r[0])
+    # 6. Тихий апгрейд: рост винрейта за период трендов (обычно неделя)
+    rows = []
+    for s in stats:
+        p, w = s.get("pub_pick_trend") or [], s.get("pub_win_trend") or []
+        if len(p) >= 2 and len(p) == len(w) and min(p[0], p[-1]) >= 0.4 * mp / max(1, len(p)):
+            rows.append((wr(w[-1], p[-1]) - wr(w[0], p[0]), wr(w[0], p[0]), wr(w[-1], p[-1]),
+                         by_id[s["id"]], len(p)))
+    if rows:
+        d, a, b, h, n = max(rows, key=lambda r: r[0])
         facts.append(dict(
-            question="Какой герой проигрывает новичкам, но тащит у топовых игроков?",
-            number=round(i_wr - h_wr, 1), unit="% разницы",
-            title=hero["localized_name"],
-            bars=[("Herald", h_wr, RED), (hi_name, i_wr, GREEN)],
-            caption="Винрейт в пабах по рангам, данные OpenDota.",
-            img=hero["img"]))
-
-        # 6. Самый непопулярный герой
-        picks = [(sum((s.get(f"{r}_pick") or 0) for r in range(1, 9)), s["id"]) for s in stats
-                 if s["id"] in by_id]
-        least_n, least_id = min(picks)
-        total_picks = sum(p for p, _ in picks)
-        hero = by_id[least_id]
-        share = least_n / total_picks * 100 * 10   # доля среди пиков (в матче 10 героев)
-        facts.append(dict(
-            question="Какого героя сейчас берут реже всех в пабах?",
-            number=round(share, 2), unit="% матчей",
-            title=hero["localized_name"],
-            caption=f"Его выбирают примерно в одной игре из {round(100 / share)}.",
-            img=hero["img"]))
+            question="Какой герой за последние дни тихо стал сильнее всех?",
+            number=round(d, 1), unit="% винрейта", title=h["localized_name"],
+            bars=[(f"{n} дн. назад", a, RED), ("Сейчас", b, GREEN)],
+            caption="Без громких баффов: просто игроки распробовали.", img=h["img"]))
     return facts
 
 
@@ -192,7 +190,7 @@ def render_fact(fact, idx, out_path):
     bg_ans = bg.copy()
     bg_ans.alpha_composite(blur)
 
-    title = gradient_text("ДОТА В ЦИФРАХ", 92, (255, 236, 180), GOLD, stroke=4)
+    title = gradient_text(SERIES_TITLE, 92, (255, 236, 180), GOLD, stroke=4)
     title_glow = glow_layer(title, 22, (255, 150, 50), 0.55)
     qmark = gradient_text("?", 300, (255, 236, 180), GOLD, stroke=6)
     big_target = fact["number"]

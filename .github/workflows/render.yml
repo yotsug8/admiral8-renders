@@ -28,7 +28,7 @@ jobs:
         if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
+          sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra fonts-noto-color-emoji
           pip install pillow numpy edge-tts "rembg[cpu]" playwright faster-whisper
           python -m playwright install --with-deps chromium
       - name: Подбор голоса

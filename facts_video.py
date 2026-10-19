@@ -272,13 +272,15 @@ def prepare(ep, heroes, items):
             for fact in ep["facts"]:
                 v = fact.get("visual", {})
                 # Для сетки и таймера — иконка предмета, иначе герой
-                if v.get("icons") and (fact["layout"] in ("grid", "timer") or not v.get("heroes")):
+                if v.get("team_logos"):          # матч команд — логотип победителя
+                    thumbs.append((HERE / v["team_logos"][v.get("winner", 0)]).as_uri())
+                elif v.get("icons") and (fact["layout"] in ("grid", "timer") or not v.get("heroes")):
                     thumbs.append(item_icon(v["icons"], items).as_uri())
                 elif v.get("heroes"):
                     thumbs.append(hero_cutout(v["heroes"][0], heroes).as_uri())
                 else:
                     thumbs.append(None)
-            seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs)
+            seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []))
         else:
             v = dict(f.get("visual", {}))
             if v.get("heroes"):

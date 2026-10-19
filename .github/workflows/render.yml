@@ -6,6 +6,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   render:
     runs-on: ubuntu-latest
@@ -25,11 +28,19 @@ jobs:
           for f in episodes/*.json; do
             n=$(basename "$f" .json)
             echo "== выпуск $n"
-            python quiz.py "$f" "out/guess_build_$n.mp4"
+            python quiz.py "$f" "out/guess_build_$n.mp4" 2>&1 | tee -a out/render.log
           done
-          echo "иконок в кэше: $(ls cache | wc -l)"
+          echo "иконок в кэше: $(ls cache | wc -l)" | tee -a out/render.log
       - uses: actions/upload-artifact@v4
         with:
           name: videos
           path: out/*.mp4
           retention-days: 30
+      # Готовые ролики кладём в ветку renders: оттуда их удобно скачать и смотреть на GitHub
+      - name: Публикация в ветку renders
+        run: |
+          cd out
+          git init -q -b renders
+          git add -A
+          git -c user.name="render-bot" -c user.email="render-bot@users.noreply.github.com" commit -q -m "Рендер ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" renders

@@ -303,6 +303,8 @@ def cue_time(words, cue):
 def prepare(ep, heroes, items):
     segs, t = [], 0.0
     parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
+    if ep.get("hook"):                       # короткий хук перед фактами
+        parts = [dict(ep["hook"], hook=True)] + parts
     for i, f in enumerate(parts):
         text = f["voice"]
         mp3 = WORK / f"v{i}.mp3"
@@ -324,6 +326,17 @@ def prepare(ep, heroes, items):
                 else:
                     thumbs.append(None)
             seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []))
+        elif f.get("hook"):
+            # Картинки хука: "hero:ключ" — герой без фона, "item:ключ" — иконка предмета, "file:путь" — из репозитория
+            imgs = []
+            for ref in f.get("images", []):
+                kind, key = ref.split(":", 1)
+                path = {"hero": lambda: hero_cutout(key, heroes), "item": lambda: item_icon(key, items),
+                        "file": lambda: HERE / key}[kind]()     # file: — картинка из репозитория
+                imgs.append(path.as_uri())
+            at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
+            print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
+            seg.update(hook=True, headline=f["headline"], images=imgs, at=at)
         else:
             v = dict(f.get("visual", {}))
             if v.get("heroes"):
@@ -462,6 +475,10 @@ def voice_takes(ep, out_dir, n=3):
     out.mkdir(parents=True, exist_ok=True)
     summary = {}
     jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
+    for name in ("hook", "outro"):           # хук и финал — тоже дублями, если дубль ещё не выбран
+        part = ep.get(name)
+        if part and part.get("voice") and not part.get("voice_file"):
+            jobs.append(("hook" if name == "hook" else "end", part["voice"], n))
     jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
     jobs += [(x[0], x[1], x[2] if len(x) > 2 else 2) for x in ep.get("take_texts", [])]   # варианты: имя, текст, число дублей
     for name, text, k in jobs:

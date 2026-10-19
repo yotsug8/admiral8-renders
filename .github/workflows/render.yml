@@ -40,6 +40,16 @@ jobs:
       - name: Публикация в ветку renders
         run: |
           cd out
+          # Страница-папка: список роликов со ссылками на скачивание
+          {
+            echo "# Ролики Admiral 8"
+            echo
+            echo "Нажми на ссылку, чтобы скачать. Обновлено: $(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M')"
+            echo
+            for f in $(ls -r *.mp4); do
+              echo "- [$f](https://github.com/${{ github.repository }}/raw/renders/$f)"
+            done
+          } > README.md
           git init -q -b renders
           git add -A
           git -c user.name="render-bot" -c user.email="render-bot@users.noreply.github.com" commit -q -m "Рендер ${GITHUB_SHA::7}"

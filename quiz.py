@@ -204,14 +204,24 @@ def glow_layer(img, radius, color, strength=1.0):
 
 # ---------- компоновка ----------
 
-SLOT_W, SLOT_H = 270, 196          # пропорции иконок Steam (88x64)
-COLS, GAP = 3, 26
-PANEL_X = (W - (COLS * SLOT_W + (COLS - 1) * GAP)) // 2
-PANEL_Y = 470
+# Безопасная зона TikTok: сверху ~160px вкладки, снизу ~360px подпись,
+# справа (x > ~940, y 900–1550) колонка кнопок. Поэтому центр композиции сдвинут влево.
+CX = 500                            # горизонтальный центр композиции
+SLOT_W, SLOT_H = 250, 182           # пропорции иконок Steam (88x64)
+COLS, GAP = 3, 22
+NAME_H = 62                         # место под подпись предмета
+PANEL_X = CX - (COLS * SLOT_W + (COLS - 1) * GAP) // 2
+PANEL_Y = 486                       # верх первого ряда ячеек
+STRIP_Y = 1040                      # полоса вопроса / таймера / ответа
+OPT_Y, OPT_W, OPT_H, OPT_GAP = 1100, 860, 104, 14
 
 
 def slot_pos(i):
-    return (PANEL_X + (i % COLS) * (SLOT_W + GAP), PANEL_Y + (i // COLS) * (SLOT_H + 74))
+    return (PANEL_X + (i % COLS) * (SLOT_W + GAP), PANEL_Y + (i // COLS) * (SLOT_H + NAME_H))
+
+
+def opt_pos(i):
+    return (CX - OPT_W // 2, OPT_Y + i * (OPT_H + OPT_GAP))
 
 
 def make_item_slot(icon):
@@ -230,34 +240,52 @@ def make_item_slot(icon):
     return Image.alpha_composite(s, hl)
 
 
-def make_option_card(letter, hero_name, portrait, w=470, h=180):
-    """Карточка варианта ответа: портрет + буква + имя."""
+def option_frame(letter):
+    """Общая рамка строки-варианта: фон, бейдж с буквой. Возвращает (картинка, x портрета)."""
+    w, h = OPT_W, OPT_H
     card = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(card)
-    d.rounded_rectangle((0, 0, w - 1, h - 1), radius=22, fill=PANEL + (235,),
+    d.rounded_rectangle((0, 0, w - 1, h - 1), radius=20, fill=PANEL + (230,),
                         outline=(70, 78, 96, 255), width=3)
-    pw, ph = 210, h - 24
-    pic = cover(portrait, pw, ph)
-    card.paste(pic, (12, 12), rounded_mask(pw, ph, 14))
-    # Бейдж с буквой поверх портрета
-    d.ellipse((20, 20, 72, 72), fill=(0, 0, 0, 200), outline=GOLD + (255,), width=3)
-    d.text((46, 47), letter, font=font(30), fill=GOLD, anchor="mm")
-    # Имя (с переносом)
-    f = font(36, cond=True)
-    words, lines, cur = hero_name.split(), [], ""
-    for wd in words:
-        test = (cur + " " + wd).strip()
-        if d.textlength(test, font=f) > w - pw - 50 and cur:
-            lines.append(cur)
-            cur = wd
-        else:
-            cur = test
-    lines.append(cur)
-    cy = h / 2 - (len(lines) - 1) * 22
-    for ln in lines:
-        d.text((pw + 34, cy), ln, font=f, fill=WHITE, anchor="lm")
-        cy += 44
+    # Бейдж с буквой слева
+    d.ellipse((18, h / 2 - 30, 78, h / 2 + 30), fill=(0, 0, 0, 220), outline=GOLD + (255,), width=3)
+    d.text((48, h / 2), letter, font=font(34), fill=GOLD, anchor="mm")
+    return card, 96
+
+
+def make_option_card(letter, hero_name, portrait):
+    """Строка варианта ответа: буква, портрет, имя героя."""
+    card, px = option_frame(letter)
+    pw, ph = 168, OPT_H - 16
+    card.paste(cover(portrait, pw, ph), (px, 8), rounded_mask(pw, ph, 12))
+    ImageDraw.Draw(card).text((px + pw + 30, OPT_H / 2), hero_name, font=font(44, cond=True),
+                              fill=WHITE, anchor="lm")
     return card
+
+
+def make_locked_card(letter):
+    """Закрытый вариант до появления ответов: «???» вместо героя."""
+    card, px = option_frame(letter)
+    d = ImageDraw.Draw(card)
+    pw, ph = 168, OPT_H - 16
+    d.rounded_rectangle((px, 8, px + pw, 8 + ph), radius=12, fill=(26, 30, 40, 255))
+    d.text((px + pw / 2, OPT_H / 2), "?", font=font(56), fill=(70, 78, 96, 255), anchor="mm")
+    d.text((px + pw + 30, OPT_H / 2), "? ? ?", font=font(44, cond=True), fill=(70, 78, 96, 255),
+           anchor="lm")
+    return card
+
+
+def make_collage(icons):
+    """Размытый коллаж из иконок предметов — цветной фон под билд."""
+    cols, rows = 2, 3
+    cw, ch = W // cols, H // rows
+    col = Image.new("RGBA", (W, H), (0, 0, 0, 255))
+    for i in range(cols * rows):
+        ic = cover(icons[i % len(icons)], cw, ch)
+        col.paste(ic, ((i % cols) * cw, (i // cols) * ch))
+    col = col.resize((W // 8, H // 8)).filter(ImageFilter.GaussianBlur(6)).resize((W, H), Image.BILINEAR)
+    col.putalpha(60)
+    return col
 
 
 def ease_out_back(t):
@@ -310,45 +338,44 @@ def render(build, consts_dir, out_path):
                  for v in load_consts("heroes.json", consts_dir).values()}
 
     # Предметы
-    slots, names, total_cost = [], [], 0
+    slots, names, icons = [], [], []
     for key in build["items"]:
         it = items_db[key]
-        total_cost += it.get("cost") or 0
         icon = fetch_image(it["img"]) or placeholder(176, 128, it["dname"], it.get("cost", 0))
+        icons.append(icon)
         slots.append(make_item_slot(icon))
         names.append(it["dname"])
 
     # Варианты ответа
     letters = "ABCD"
-    cards, correct_idx = [], 0
+    cards, locked, correct_idx = [], [], 0
     for i, key in enumerate(build["options"]):
         hero = heroes_db[key]
         pic = fetch_image(hero["img"]) or placeholder(256, 144, hero["localized_name"], 0)
         cards.append(make_option_card(letters[i], hero["localized_name"], pic))
+        locked.append(make_locked_card(letters[i]))
         if key == build["answer"]:
             correct_idx = i
     answer_name = heroes_db[build["answer"]]["localized_name"].upper()
 
-    # Статичные слои
+    # Статичные слои: фон + размытый коллаж из иконок билда
     bg = make_background()
-    title1 = gradient_text("УГАДАЙ ГЕРОЯ", 104, (255, 236, 180), GOLD, stroke=4)
-    title2 = gradient_text("ПО БИЛДУ", 104, (255, 120, 90), RED, stroke=4)
+    bg.alpha_composite(make_collage(icons))
+    title1 = gradient_text("УГАДАЙ ГЕРОЯ", 96, (255, 236, 180), GOLD, stroke=4)
+    title2 = gradient_text("ПО БИЛДУ", 96, (255, 120, 90), RED, stroke=4)
     title_glow = glow_layer(title1, 22, (255, 150, 50), 0.55)
-    answer_img = gradient_text(answer_name, 120, (255, 236, 180), GOLD, stroke=5)
-    answer_glow = glow_layer(answer_img, 26, (255, 150, 50), 0.7)
+    answer_img = gradient_text(answer_name, 92, (255, 236, 180), GOLD, stroke=5)
+    answer_glow = glow_layer(answer_img, 24, (255, 150, 50), 0.7)
 
     # Панель инвентаря
     rows = (len(slots) + COLS - 1) // COLS
-    panel_w = COLS * SLOT_W + (COLS - 1) * GAP + 60
-    panel_h = rows * (SLOT_H + 74) + 70
+    panel_w = COLS * SLOT_W + (COLS - 1) * GAP + 48
+    panel_h = rows * (SLOT_H + NAME_H) + 64
     panel = Image.new("RGBA", (panel_w, panel_h), (0, 0, 0, 0))
-    pd = ImageDraw.Draw(panel)
-    pd.rounded_rectangle((0, 0, panel_w - 1, panel_h - 1), radius=26, fill=PANEL + (215,),
-                         outline=(60, 50, 34, 255), width=3)
-    panel_xy = (PANEL_X - 30, PANEL_Y - 60)
-
-    card_w, card_h = cards[0].size
-    card_pos = [(60 + (i % 2) * (card_w + 20), 1135 + (i // 2) * (card_h + 22)) for i in range(4)]
+    ImageDraw.Draw(panel).rounded_rectangle((0, 0, panel_w - 1, panel_h - 1), radius=26,
+                                            fill=PANEL + (215,), outline=(60, 50, 34, 255), width=3)
+    panel_xy = (PANEL_X - 24, PANEL_Y - 58)
+    bar_w = OPT_W
 
     embers = Embers()
     frames = int(TOTAL * FPS)
@@ -366,34 +393,42 @@ def render(build, consts_dir, out_path):
 
         # Заголовок: падение сверху
         k = ease_out_back(t / 0.6)
-        ty = -120 + (210 + 120) * k
-        img.alpha_composite(title_glow, (int(W / 2 - title_glow.width / 2), int(ty - 106)))
-        img.alpha_composite(title1, (int(W / 2 - title1.width / 2), int(ty - 106)))
-        img.alpha_composite(title2, (int(W / 2 - title2.width / 2), int(ty + 9)))
+        ty = -120 + (228 + 120) * k
+        img.alpha_composite(title_glow, (int(CX - title_glow.width / 2), int(ty - 104)))
+        img.alpha_composite(title1, (int(CX - title1.width / 2), int(ty - 104)))
+        img.alpha_composite(title2, (int(CX - title2.width / 2), int(ty + 2)))
         # Бейдж выпуска
         if t > 0.4:
             a = int(255 * ease_out((t - 0.4) / 0.3))
-            badge = f"ВЫПУСК #{build['episode']}"
-            bw = d.textlength(badge, font=font(30)) + 44
-            d.rounded_rectangle((W / 2 - bw / 2, 352, W / 2 + bw / 2, 398), radius=23,
+            badge = f"ВЫПУСК #{build['episode']}  ·  @admiral8dota"
+            bw = d.textlength(badge, font=font(28)) + 44
+            d.rounded_rectangle((CX - bw / 2, 372, CX + bw / 2, 414), radius=21,
                                 fill=(RED[0], RED[1], RED[2], a))
-            d.text((W / 2, 375), badge, font=font(30), fill=(255, 255, 255, a), anchor="mm")
+            d.text((CX, 393), badge, font=font(28), fill=(255, 255, 255, a), anchor="mm")
 
         # Панель инвентаря
-        if t > T_ITEMS - 0.3:
-            pa = ease_out((t - (T_ITEMS - 0.3)) / 0.3)
+        pa = ease_out((t - 0.5) / 0.4)
+        if pa > 0:
             paste_scaled(img, panel, panel_xy[0] + panel_w / 2, panel_xy[1] + panel_h / 2, 1, pa)
-            d.text((panel_xy[0] + 34, panel_xy[1] + 32), "ИНВЕНТАРЬ", font=font(28),
+            hy = panel_xy[1] + 30
+            d.text((panel_xy[0] + 30, hy), "ИНВЕНТАРЬ", font=font(28),
                    fill=MUTED + (int(255 * pa),), anchor="lm")
             # Счётчик стоимости набегает по мере выкладки
             shown = sum((items_db[k2].get("cost") or 0) for j, k2 in enumerate(build["items"])
                         if t >= T_ITEMS + j * T_STEP)
-            cx = panel_xy[0] + panel_w - 34
+            rx = panel_xy[0] + panel_w - 30
             txt = f"{shown:,}".replace(",", " ")
             tw = d.textlength(txt, font=font(34))
-            d.text((cx, panel_xy[1] + 32), txt, font=font(34), fill=GOLD + (int(255 * pa),), anchor="rm")
-            d.ellipse((cx - tw - 40, panel_xy[1] + 20, cx - tw - 16, panel_xy[1] + 44),
+            d.text((rx, hy), txt, font=font(34), fill=GOLD + (int(255 * pa),), anchor="rm")
+            d.ellipse((rx - tw - 38, hy - 12, rx - tw - 14, hy + 12),
                       fill=GOLD + (int(255 * pa),), outline=GOLD_DARK + (int(255 * pa),), width=3)
+            # Пустые ячейки до появления предметов
+            for i in range(len(slots)):
+                if t < T_ITEMS + i * T_STEP:
+                    x, y = slot_pos(i)
+                    d.rounded_rectangle((x, y, x + SLOT_W, y + SLOT_H), radius=14,
+                                        fill=(8, 9, 12, int(200 * pa)),
+                                        outline=(50, 44, 34, int(255 * pa)), width=3)
 
         # Предметы
         for i, slot in enumerate(slots):
@@ -402,62 +437,70 @@ def render(build, consts_dir, out_path):
                 continue
             x, y = slot_pos(i)
             s = ease_out_back((t - t0) / 0.28)
-            # Вспышка при появлении
             flash = max(0.0, 1 - (t - t0) / 0.35)
             if flash > 0:
-                fl = glow_layer(slot, 22, (255, 200, 120), 2.0 * flash)
-                img.alpha_composite(fl, (x, y))
+                img.alpha_composite(glow_layer(slot, 22, (255, 200, 120), 2.0 * flash), (x, y))
             paste_scaled(img, slot, x + SLOT_W / 2, y + SLOT_H / 2, s)
             na = ease_out((t - t0 - 0.1) / 0.25)
-            d.text((x + SLOT_W / 2, y + SLOT_H + 30), names[i], font=font(28, cond=True),
+            d.text((x + SLOT_W / 2, y + SLOT_H + 28), names[i], font=font(27, cond=True),
                    fill=WHITE + (int(255 * na),), anchor="mm")
 
-        # Варианты ответа
-        for i, card in enumerate(cards):
+        # Полоса: вопрос → таймер → ответ
+        if t < T_TIMER:
+            a = int(255 * ease_out((t - 0.8) / 0.4))
+            if a > 0:
+                d.text((CX, STRIP_Y), "Кто собирает такой билд?", font=font(46),
+                       fill=WHITE + (a,), anchor="mm")
+        elif t < T_REVEAL:
+            left = T_REVEAL - t
+            frac = left / DUR_TIMER
+            col = GOLD if left > 2 else RED
+            d.text((CX - bar_w / 2, STRIP_Y - 8), "Пиши букву в комменты", font=font(38),
+                   fill=WHITE, anchor="lm")
+            d.text((CX + bar_w / 2, STRIP_Y - 8), str(math.ceil(left)), font=font(46),
+                   fill=col, anchor="rm")
+            by = STRIP_Y + 26
+            d.rounded_rectangle((CX - bar_w / 2, by, CX + bar_w / 2, by + 12), radius=6,
+                                fill=(40, 44, 56, 255))
+            d.rounded_rectangle((CX - bar_w / 2, by, CX - bar_w / 2 + bar_w * frac, by + 12),
+                                radius=6, fill=col)
+        else:
+            s = ease_out_back((t - T_REVEAL) / 0.4)
+            paste_scaled(img, answer_glow, CX, STRIP_Y, s)
+            paste_scaled(img, answer_img, CX, STRIP_Y, s)
+
+        # Варианты: сначала закрытые, в T_OPTIONS переворачиваются
+        for i in range(4):
+            x, y = opt_pos(i)
             t0 = T_OPTIONS + i * 0.12
+            la = ease_out((t - 0.9 - i * 0.08) / 0.3)
             if t < t0:
+                paste_scaled(img, locked[i], x + OPT_W / 2, y + OPT_H / 2, 0.96 + 0.04 * la, la)
                 continue
-            x, y = card_pos[i]
-            s = ease_out_back((t - t0) / 0.3)
+            # «Переворот»: сжатие по вертикали и раскрытие уже с героем
+            k = min(1.0, (t - t0) / 0.3)
+            src = locked[i] if k < 0.5 else cards[i]
+            sy = abs(1 - 2 * k) if k < 1 else 1
+            card = src
             alpha = 1.0
             if t >= T_REVEAL:
                 r = ease_out((t - T_REVEAL) / 0.35)
                 if i == correct_idx:
-                    gl = glow_layer(card, 24, GREEN, 2.2 * r)
-                    img.alpha_composite(gl, (x, y))
-                    s = 1 + 0.06 * r
+                    img.alpha_composite(glow_layer(card, 22, GREEN, 2.2 * r), (x, y))
                 else:
                     alpha = 1 - 0.65 * r
-            paste_scaled(img, card, x + card_w / 2, y + card_h / 2, s, alpha)
+            if sy < 0.999:
+                h2 = max(1, int(OPT_H * sy))
+                card = src.resize((OPT_W, h2), Image.BILINEAR)
+                img.alpha_composite(card, (x, int(y + (OPT_H - h2) / 2)))
+            else:
+                paste_scaled(img, card, x + OPT_W / 2, y + OPT_H / 2, 1, alpha)
             if t >= T_REVEAL and i == correct_idx:
                 r = ease_out((t - T_REVEAL) / 0.35)
-                d.rounded_rectangle((x - 4, y - 4, x + card_w + 4, y + card_h + 4), radius=24,
+                d.rounded_rectangle((x - 3, y - 3, x + OPT_W + 3, y + OPT_H + 3), radius=22,
                                     outline=GREEN + (int(255 * r),), width=6)
-
-        # Таймер-кольцо
-        ring_c = (W / 2, 1085)
-        if T_TIMER <= t < T_REVEAL:
-            left = T_REVEAL - t
-            frac = left / DUR_TIMER
-            R = 40
-            bbox = (ring_c[0] - R, ring_c[1] - R, ring_c[0] + R, ring_c[1] + R)
-            d.ellipse(bbox, fill=(0, 0, 0, 200), outline=(60, 60, 70, 255), width=8)
-            col = GOLD if left > 2 else RED
-            d.arc(bbox, -90, -90 + 360 * frac, fill=col, width=8)
-            d.text(ring_c, str(math.ceil(left)), font=font(40), fill=WHITE, anchor="mm")
-        elif t >= T_REVEAL:
-            # Имя героя-ответа
-            s = ease_out_back((t - T_REVEAL) / 0.4)
-            paste_scaled(img, answer_glow, W / 2, ring_c[1] - 10, s)
-            paste_scaled(img, answer_img, W / 2, ring_c[1] - 10, s)
-
-        # Призыв к действию (над зоной подписи TikTok)
-        if T_OPTIONS <= t < T_REVEAL:
-            d.text((W / 2, 1560), "Пиши букву в комменты", font=font(44), fill=WHITE, anchor="mm")
-        elif t >= T_REVEAL:
-            a = int(255 * ease_out((t - T_REVEAL - 0.4) / 0.3))
-            d.text((W / 2, 1560), "Угадал? Завтра новый выпуск", font=font(44),
-                   fill=WHITE + (a,), anchor="mm")
+                d.text((x + OPT_W - 34, y + OPT_H / 2), "✓", font=font(54),
+                       fill=GREEN + (int(255 * r),), anchor="rm")
 
         ff.stdin.write(img.tobytes())
 

@@ -516,8 +516,10 @@ def voices(arg, out_dir):
         for vid, m in top[:120]:
             print(vid, m["uses"], m["title"], m["tags"])
         return
-    text = ("[excited] Пудж весит девять тысяч двести Танго! [break] [sarcastic] Но Пудж не толстый. "
-            "[break] Просто кость широкая. [long-break] [surprised] Рошана убили одиннадцать раз!")
+    # Фраза для прослушки: можно задать своей через FV_VOICE_TEXT
+    text = os.environ.get("FV_VOICE_TEXT") or (
+        "[excited] Сто одиннадцать минут! [break] Три Рапиры на Зевсе! "
+        "[long-break] [sarcastic] Один против пятерых — это всё-таки не стратегия.")
     for vid in arg.split(","):
         try:
             tts_fish(text, out / f"voice_{vid.strip()}.mp3", vid.strip(), align=False)

@@ -24,6 +24,7 @@ jobs:
           pip install pillow numpy
       - name: Рендер
         run: |
+          set -o pipefail
           mkdir -p out
           for f in episodes/*.json; do
             n=$(basename "$f" .json)

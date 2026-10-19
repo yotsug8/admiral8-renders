@@ -109,6 +109,10 @@ def gen_facts(items, heroes, stats):
             if p1 >= MIN_PICKS and p8 >= MIN_PICKS and s["id"] in by_id:
                 rows.append((w1 / p1 * 100, w8 / p8 * 100, by_id[s["id"]]))
 
+        if not rows:
+            print("  heroStats: нет подходящих строк, ключи:", sorted(stats[0].keys()) if stats else None)
+            return facts
+
         # 4. Герой для новичков: в Herald побеждает, в Immortal проигрывает
         h_wr, i_wr, hero = max(rows, key=lambda r: r[0] - r[1])
         facts.append(dict(

@@ -118,14 +118,17 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 .evlogo { position: absolute; filter: drop-shadow(6px 6px 0 rgba(0,0,0,.5)); }
 
 /* Финальные карточки: картинка + тёмная плашка с цифрой факта */
-.card img { bottom: 150px; height: 470px; }
-.card img.icon { width: 84%; height: auto; bottom: 250px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); filter: none; }
-.card img.logo { width: 82%; height: auto; max-height: 300px; object-fit: contain; bottom: 230px; filter: drop-shadow(8px 8px 0 var(--dark)); }
+.card img { bottom: 0; height: 600px; }
+.card img.icon { width: 84%; height: auto; bottom: 220px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); filter: none; }
+.card img.logo { width: 86%; height: auto; max-height: 340px; object-fit: contain; bottom: 180px; filter: drop-shadow(8px 8px 0 var(--dark)); }
 .cstat { position: absolute; left: 0; right: 0; bottom: 0; height: 160px; background: var(--dark); color: var(--ink);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-top: 6px solid var(--dark); }
 .cstat strong { font: 900 46px/1 Unbounded; color: var(--acc); white-space: nowrap; letter-spacing: -.03em; }
 .cstat small { font: 800 26px/1.1 Manrope; color: var(--ink); text-align: center; padding: 0 10px; }
 .card b { z-index: 3; left: 16px; top: 16px; padding: 6px 18px 10px; border-radius: 18px; background: var(--dark); color: var(--acc); font-size: 72px; }
+/* Фон карточек: косые полосы — карточки не выглядят пустыми */
+.card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
+.card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
 </style>
 </head>
 <body>

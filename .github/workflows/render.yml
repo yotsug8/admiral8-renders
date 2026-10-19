@@ -1,0 +1,35 @@
+# Рендер всех выпусков из episodes/*.json в облаке GitHub
+name: render
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Зависимости
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra
+          pip install pillow numpy
+      - name: Рендер
+        run: |
+          mkdir -p out
+          for f in episodes/*.json; do
+            n=$(basename "$f" .json)
+            echo "== выпуск $n"
+            python quiz.py "$f" "out/guess_build_$n.mp4"
+          done
+          echo "иконок в кэше: $(ls cache | wc -l)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: videos
+          path: out/*.mp4
+          retention-days: 30

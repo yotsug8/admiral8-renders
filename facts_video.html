@@ -374,6 +374,10 @@ function drawExtra(g, lt) {
     ctx.clearRect(0, 0, P.cv.width, P.cv.height);
     ctx.globalAlpha = 0.12; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
     for (let m = 0; m < shown; m++) { const [x, y] = P.pts[m]; ctx.drawImage(P.icon, x - c * 0.6, y - c * 0.45, c * 1.2, c * 0.9); }
+    // Сквозь Танго проступает сам Пудж — чтобы силуэт читался как герой, а не пятно
+    ctx.globalCompositeOperation = "source-atop"; ctx.globalAlpha = 0.45;
+    ctx.drawImage(P.silhouette, 0, 0);
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
     // Лупа над животом Пуджа: увеличение ×7, иконки перерисовываются крупно (не растягиваются)
     const la = eBack((lt - 2.2) / 0.5);
     if (la > 0) {

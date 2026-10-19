@@ -17,7 +17,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 .head { position: absolute; left: 60px; top: 250px; width: 980px; font: 900 86px/1.06 Unbounded; white-space: nowrap; color: var(--ink);
   text-transform: uppercase; letter-spacing: -.03em; }
 .head .y { color: var(--acc); }
-/* Рики — наклейка с белым контуром; рамка задаётся из скрипта по пропорциям */
+/* Логотип — наклейка с белым контуром; рамка задаётся из скрипта по пропорциям */
 .hero { position: absolute;
   filter: drop-shadow(7px 0 0 var(--ink)) drop-shadow(-7px 0 0 var(--ink)) drop-shadow(0 7px 0 var(--ink)) drop-shadow(0 -7px 0 var(--ink))
           drop-shadow(14px 16px 0 var(--dark)); }
@@ -26,23 +26,23 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
   background: var(--acc); border: 8px solid var(--dark); box-shadow: 16px 16px 0 var(--ink); white-space: nowrap;
   font: 900 120px/1 Unbounded; color: var(--dark); letter-spacing: -.05em; }
 .num small { font-size: 54px; letter-spacing: -.02em; }
+.zzz { position: absolute; font-family: Unbounded; font-weight: 900; color: var(--acc); -webkit-text-stroke: 7px var(--dark); paint-order: stroke fill; text-shadow: 8px 8px 0 var(--dark); }
 .wm { position: absolute; left: 62px; top: 1560px; font: 800 30px Manrope; color: rgba(244,244,242,.45); }
 </style>
 </head>
 <body>
 <div class="dots"></div>
 <div class="band"></div>
-<img class="hero" id="hero" src="_fv_work/hero_riki.png">
-<!-- Гемы истины вокруг: ловушка «видит» читеров -->
-<img class="gem" src="_fv_work/item_gem.png" style="left:70px;top:1010px;transform:rotate(-14deg)">
-<img class="gem" src="_fv_work/item_gem.png" style="left:850px;top:600px;transform:rotate(12deg)">
-<img class="gem" src="_fv_work/item_gem.png" style="left:880px;top:1090px;transform:rotate(-8deg)">
-<img class="gem" src="_fv_work/item_gem.png" style="left:60px;top:560px;transform:rotate(9deg)">
-<div class="head">Как Valve<br>поймали<br><span class="y">читеров?</span></div>
-<div class="num">40 000 <small>БАНОВ</small></div>
+<img class="hero" id="hero" src="assets/teams/mosquito_clan.png">
+<!-- «Zzz»: игрок уснул -->
+<div class="zzz" style="left:770px;top:610px;font-size:120px">Z</div>
+<div class="zzz" style="left:860px;top:520px;font-size:90px">z</div>
+<div class="zzz" style="left:930px;top:450px;font-size:70px">z</div>
+<div class="head">Как проиграть<br>за <span class="y">41 секунду?</span></div>
+<div class="num">0:41 <small>УСНУЛ</small></div>
 <div class="wm">@admiral8dota</div>
 <script>
-// Герой вписывается в рамку 900×700 низом на плашку, по центру
+// Логотип уснувшей команды вписывается в рамку 900×700 низом на плашку, по центру
 const im = document.getElementById("hero");
 im.onload = () => {
   const k = Math.min(900 / im.naturalWidth, 700 / im.naturalHeight);

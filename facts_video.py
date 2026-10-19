@@ -27,11 +27,11 @@ from quiz import fetch_image, load_consts, placeholder
 VOICE = os.environ.get("FV_VOICE", "ru-RU-DmitryNeural")
 PITCH = os.environ.get("FV_PITCH", "-10Hz")
 RATE = os.environ.get("FV_RATE", "+12%")
-# Fish Audio: живой голос (если задан ключ). Голос «Да да» из библиотеки fish.audio
+# Fish Audio: живой голос (если задан ключ). Голос «Молодой Мужской Голос» (энергичный) из библиотеки fish.audio
 FISH_KEY = os.environ.get("FISH_API_KEY", "")
-FISH_VOICE = os.environ.get("FISH_VOICE", "ee1f00ee4b0f4f15b685bf1738a33a0d")
+FISH_VOICE = os.environ.get("FISH_VOICE", "a0ee3d18e2e244f2b448f322273e4286")
 FISH_MODEL = os.environ.get("FISH_MODEL", "s2.1-pro-free")
-FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.1"))
+FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.2"))
 WATERMARK = "@admiral8dota"
 SR, FPS = 44100, 30
 PAD = 0.7                     # пауза после факта, сек
@@ -157,11 +157,45 @@ def align_words(path):
     return words
 
 
+def _norm(w):
+    return "".join(ch for ch in w.lower().replace("ё", "е") if ch.isalnum())
+
+
+def align_to_script(text, asr):
+    """Слова для субтитров берём из исходного текста, а тайминги — из распознавания.
+    Сопоставляем последовательности (difflib); несовпавшим словам времена интерполируем."""
+    import difflib
+    script = [w.strip(",.;:") for w in text.split() if _norm(w)]
+    if not asr:
+        return [(w, i * 0.35, i * 0.35 + 0.3) for i, w in enumerate(script)]
+    a = [_norm(w) for w in script]
+    b = [_norm(w[0]) for w in asr]
+    times = [None] * len(script)
+    for blk in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        tag, i1, i2, j1, j2 = blk
+        if tag == "equal":
+            for k in range(i2 - i1):
+                times[i1 + k] = (asr[j1 + k][1], asr[j1 + k][2])
+        elif tag == "replace" and i2 > i1 and j2 > j1:
+            # Блок разной длины («Бали Мейджор» ↔ «Балли -мейджер»): делим его время поровну
+            t0, t1 = asr[j1][1], asr[j2 - 1][2]
+            n = i2 - i1
+            for k in range(n):
+                times[i1 + k] = (t0 + (t1 - t0) * k / n, t0 + (t1 - t0) * (k + 1) / n)
+    # Дыры (слова без пары) — между соседями
+    for i in range(len(times)):
+        if times[i] is None:
+            prev = next((times[j][1] for j in range(i - 1, -1, -1) if times[j]), 0.0)
+            nxt = next((times[j][0] for j in range(i + 1, len(times)) if times[j]), prev + 0.4)
+            times[i] = (prev, max(prev + 0.05, min(nxt, prev + 0.4)))
+    return [(w, t[0], t[1]) for w, t in zip(script, times)]
+
+
 def speak(text, path_mp3):
     """Озвучка фрагмента: Fish Audio, если есть ключ, иначе бесплатный edge-tts."""
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
         try:
-            return tts_fish(text, path_mp3)
+            return align_to_script(text, tts_fish(text, path_mp3))
         except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
             print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
     elif not FISH_KEY:

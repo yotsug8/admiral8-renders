@@ -35,6 +35,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p out
+          pip install -q pillow numpy
           python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
       - name: Рендер
         if: ${{ inputs.takes == '' || inputs.takes == null }}

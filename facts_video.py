@@ -117,9 +117,19 @@ def tts_fish(text, path_mp3, voice=None):
             Path(path_mp3).write_bytes(data)
             break
         except Exception as e:
-            last = e
-            print(f"  fish повтор {attempt + 1}: {e}")
+            body_err = ""
+            if hasattr(e, "read"):
+                try:
+                    body_err = e.read()[:300].decode("utf-8", "replace")
+                except Exception:
+                    pass
+            last = f"{e} {body_err}".strip()
+            print(f"  fish повтор {attempt + 1}: {last}")
+            if getattr(e, "code", 0) in (401, 402, 403):   # ключ/оплата — повторять бессмысленно
+                break
     else:
+        raise RuntimeError(f"Fish Audio не ответил: {last}")
+    if not Path(path_mp3).exists() or Path(path_mp3).stat().st_size < 1000:
         raise RuntimeError(f"Fish Audio не ответил: {last}")
     return align_words(path_mp3)
 
@@ -146,7 +156,12 @@ def align_words(path):
 def speak(text, path_mp3):
     """Озвучка фрагмента: Fish Audio, если есть ключ, иначе бесплатный edge-tts."""
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
-        return tts_fish(text, path_mp3)
+        try:
+            return tts_fish(text, path_mp3)
+        except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
+            print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
+    elif not FISH_KEY:
+        print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
     return tts(text, path_mp3)
 
 

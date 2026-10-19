@@ -33,7 +33,8 @@
         "team_logos": [
           "assets/teams/quest.png",
           "assets/teams/gaimin_gladiators.png"
-        ]
+        ],
+        "winner": 0
       },
       "voice_file": "voice/002/f2.mp3"
     },

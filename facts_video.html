@@ -419,7 +419,7 @@ function drawExtra(g, lt) {
     ctx.drawImage(P.silhouette, 0, 0);
     ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
     // Лупа над животом Пуджа: увеличение ×7, иконки перерисовываются крупно (не растягиваются)
-    const la = eBack((lt - 2.2) / 0.5);
+    const la = eBack((e - 0.6) / 0.12);          // лупа — когда Танго уже дошли до живота, иначе пустой круг
     if (la > 0) {
       const Z = 7, cx = P.lensAt[0], cy = P.lensAt[1], half = 150 / Z;
       const lc = P.lens.getContext("2d");

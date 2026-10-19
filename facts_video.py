@@ -265,7 +265,10 @@ def render_frames(segs, total, video_path, qa_path):
                 for b in page.evaluate("() => audit()"):
                     problems.append(f"{t:.1f}с: {b}")
                 from io import BytesIO
-                qa_frames.append(Image.open(BytesIO(jpg)).convert("RGB").resize((270, 480)))
+                full = Image.open(BytesIO(jpg)).convert("RGB")
+                if os.environ.get("FV_QA_DIR"):        # полноразмерные кадры для просмотра
+                    full.save(os.path.join(os.environ["FV_QA_DIR"], f"frame_{t:05.1f}.jpg"), quality=90)
+                qa_frames.append(full.resize((270, 480)))
                 ci += 1
             if fi % 150 == 0:
                 print(f"  кадр {fi}/{n}")

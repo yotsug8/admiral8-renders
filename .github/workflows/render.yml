@@ -1,4 +1,5 @@
-# Рендер всех выпусков из episodes_fv/*.json в облаке GitHub (или дубли озвучки по кнопке)
+# Рендер выпуска в облаке GitHub (или дубли озвучки / прослушка голосов по кнопке).
+# Быстро: рендерится только изменённый выпуск, кадры — в 4 потока, зависимости из кэша.
 name: render
 
 on:
@@ -15,6 +16,12 @@ on:
       vtext:
         description: "фраза для прослушки голосов (пусто — стандартная)"
         default: ""
+      ep:
+        description: "номер выпуска для рендера, например 005 (пусто — изменённые в последнем коммите)"
+        default: ""
+      silent:
+        description: "1 — без озвучки (тишина, тайминги по темпу речи)"
+        default: ""
 
 permissions:
   contents: write
@@ -24,16 +31,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2                 # чтобы видеть, какие выпуски изменились в коммите
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Зависимости
+      # Кэш пакетов, браузера и модели распознавания: повторные запуски без скачивания
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/ms-playwright
+            ~/.cache/huggingface
+          key: render-deps-v2
+      - name: Какие выпуски рендерить
+        id: eps
         if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q ffmpeg fonts-dejavu-core fonts-dejavu-extra fonts-noto-color-emoji
-          pip install pillow numpy edge-tts "rembg[cpu]" playwright faster-whisper
-          python -m playwright install --with-deps chromium
+          if [ -n "${{ inputs.ep }}" ]; then E="${{ inputs.ep }}"
+          else E=$(git diff --name-only HEAD~1 HEAD | grep -oE '(episodes_fv/|voice/)[0-9]{3}' | grep -oE '[0-9]{3}' | sort -u | tr '\n' ' '); fi
+          echo "list=$E" >> "$GITHUB_OUTPUT"; echo "выпуски: ${E:-нет}"
+      - name: Зависимости
+        if: ${{ steps.eps.outputs.list != '' }}
+        run: |
+          pip install -q pillow numpy edge-tts playwright faster-whisper imageio-ffmpeg
+          python -m playwright install chromium
       - name: Подбор голоса
         if: ${{ inputs.voices != '' && inputs.voices != null }}
         env:
@@ -55,28 +77,28 @@ jobs:
           pip install -q pillow numpy faster-whisper
           FV_TAKES_ANALYZE=1 python facts_video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
       - name: Рендер
-        if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
+        if: ${{ steps.eps.outputs.list != '' }}
         env:
           FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
         run: |
           set -o pipefail
           mkdir -p out
-          for f in episodes_fv/*.json; do
-            n=$(basename "$f" .json)
+          T0=$(date +%s)
+          for n in ${{ steps.eps.outputs.list }}; do
             echo "== Факты $n" | tee -a out/render.log
-            python facts_video.py "$f" "out/facts_$n.mp4" 2>&1 | grep -v "кадр " | tee -a out/render.log
+            FV_WORKERS=4 FV_SILENT="${{ inputs.silent }}" python facts_video.py "episodes_fv/$n.json" "out/facts_$n.mp4" 2>&1 | tee -a out/render.log
           done
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: videos
-          path: out/*.mp4
-          retention-days: 30
+          echo "рендер занял $(( $(date +%s) - T0 )) с" | tee -a out/render.log
       # Готовые ролики кладём в ветку renders: оттуда их удобно скачать и смотреть на GitHub
       - name: Публикация в ветку renders
         if: always()          # лог публикуется и при ошибке — чтобы было видно причину
         run: |
           BR=renders; [ -n "${{ inputs.takes }}${{ inputs.voices }}" ] && BR=takes
+          [ -z "$(ls out)" ] && exit 0
+          if [ "$BR" = renders ]; then          # прошлые ролики сохраняем: берём ветку и докладываем новые файлы
+            git clone -q --depth 1 -b renders "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" prev || mkdir prev
+            rm -rf prev/.git; cp -n prev/*.mp4 out/ 2>/dev/null || true
+          fi
           cd out
           # Страница-папка: список роликов со ссылками на скачивание
           {

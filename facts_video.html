@@ -699,6 +699,9 @@ async function init(data) {
     } else if (s.layout === "patchline") {
       P.lines = headline(el, s.headline);
       P.anim = v.anim ? makeAnim(el, v.anim) : null;
+      // Номера патчей в заголовке — отдельными кусками: подсвечивается тот, чья карточка сейчас активна
+      P.lines.forEach(sp => { sp.innerHTML = sp.innerHTML.replace(/\d+\.\d+[a-z]?/g, '<span class="hv">$&</span>'); });
+      P.hv = [...el.querySelectorAll(".head .hv")];
       const n = v.entries.length, top = 520, gap = 30, h = Math.min(380, (1420 - top - gap * (n - 1)) / n);
       P.cards = v.entries.map((e, k) => {
         const c = $("div", "nc pl", el, `top:${top + k * (h + gap)}px;height:${h}px`);
@@ -1116,6 +1119,14 @@ function drawExtra(g, lt) {
   if (s.layout === "patchline") {
     if (P.anim) { const e = eBack((lt - 0.1) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 60}px)`; drawAnim(P.anim, lt); }
     const at = P.cards.map((_, k) => C("e" + k, 0.6 + k * 1.6));
+    // Активная версия: у последней карточки, до которой дошёл диктор
+    let cur = null; at.forEach((t0, k) => { if (lt >= t0 - 0.1) cur = v.entries[k].ver; });
+    P.hv.forEach(h => {
+      const on = cur !== null && h.textContent === cur;
+      h.style.color = cur === null ? "" : on ? "var(--acc)" : "var(--ink)";
+      h.style.opacity = cur === null || on ? 1 : 0.4;
+      h.style.textShadow = on ? "0 0 24px rgba(95,212,196,.55)" : "none";
+    });
     P.cards.forEach((c, k) => {
       const t0 = at[k], nxt = k + 1 < at.length ? at[k + 1] : 1e9, e = eBack((lt - t0 + 0.1) / 0.45);
       const active = lt >= t0 - 0.1 && lt < nxt - 0.1, q = lt - t0;
@@ -1273,7 +1284,7 @@ function audit() {
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

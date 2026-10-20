@@ -12,6 +12,7 @@ Python готовит данные: озвучку (Fish Audio, запасной
 import asyncio
 import json
 import math
+import re
 import time
 import os
 import shutil
@@ -144,9 +145,28 @@ def show_text(text):
 
 
 def tts_fish(text, path_mp3, voice=None, align=True):
-    """Озвучка через Fish Audio + тайминги слов распознаванием (faster-whisper)."""
+    """Озвучка через Fish Audio + тайминги слов распознаванием (faster-whisper).
+    «||» в тексте — граница смысловых кусков: каждый озвучивается отдельно и склеивается с паузой 0,3 с,
+    чтобы интонация обнулялась между изменениями и речь не была сплошной."""
     import urllib.request
     text = say_text(text)
+    if "||" in text:
+        tags = " ".join(re.findall(r"\[[^\]]*\]", text.split("||")[0])[:1])      # первая эмоция — на все куски без своей
+        chunks = [c.strip() for c in text.split("||") if c.strip()]
+        pcm = []
+        for k, c in enumerate(chunks):
+            tmp = Path(str(path_mp3) + f".part{k}.mp3")
+            tts_fish(c if c.startswith("[") or not tags else f"{tags} {c}", tmp, voice, align=False)
+            pcm.append(mp3_to_pcm(tmp)); tmp.unlink()
+            if k + 1 < len(chunks):
+                pcm.append(np.zeros(int(0.3 * SR), np.float32))
+        wav = Path(str(path_mp3) + ".wav")
+        with wave.open(str(wav), "wb") as w:
+            w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
+            w.writeframes((np.clip(np.concatenate(pcm), -1, 1) * 32767).astype(np.int16).tobytes())
+        subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(wav), "-c:a", "libmp3lame", "-b:a", "192k", str(path_mp3)], check=True)
+        wav.unlink()
+        return align_words(path_mp3) if align else None
     body = json.dumps({"text": text, "reference_id": voice or FISH_VOICE, "format": "mp3",
                        "mp3_bitrate": 192, "prosody": {"speed": FISH_SPEED}, "language": "ru",
                        "normalize": True, "temperature": FISH_TEMP}).encode()
@@ -216,7 +236,7 @@ def align_to_script(text, asr):
     Сопоставляем последовательности (difflib); несовпавшим словам времена интерполируем."""
     import difflib
     import re
-    text = re.sub(r"\[[^\]]*\]", " ", show_text(text))   # теги эмоций/пауз не показываем; {показ|озвучка} → показ
+    text = re.sub(r"\[[^\]]*\]", " ", show_text(text).replace("||", " "))   # теги эмоций/пауз не показываем; {показ|озвучка} → показ
     script = [w.strip(",.;:") for w in text.split() if _norm(w)]
     if not asr:
         return [(w, i * 0.35, i * 0.35 + 0.3) for i, w in enumerate(script)]
@@ -269,7 +289,7 @@ def speak(text, path_mp3, voice_file=None, voice=None):
     elif not FISH_KEY:
         print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
     import re
-    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", say_text(text)).replace("\u0301", "").strip(), path_mp3)
+    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", say_text(text).replace("||", " ")).replace("\u0301", "").strip(), path_mp3)
 
 
 def mp3_to_pcm(path):

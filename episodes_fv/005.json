@@ -1,6 +1,6 @@
 {
   "voice_id": "6ccdfb6b21e14501adc1fbcb44e50082",
-  "fish_temp": 0.7,
+  "fish_temp": 0.6,
   "fish_speed": 1.2,
   "pad": 0.45,
   "theme": "k",
@@ -74,8 +74,7 @@
           "7.37",
           "7.41"
         ]
-      },
-      "voice_file": "voice/005/f1.mp3"
+      }
     },
     {
       "layout": "chronicle",
@@ -145,8 +144,7 @@
           "7.37",
           "7.41"
         ]
-      },
-      "voice_file": "voice/005/f2.mp3"
+      }
     },
     {
       "layout": "chronicle",
@@ -221,14 +219,13 @@
           "7.37",
           "7.41"
         ]
-      },
-      "voice_file": "voice/005/f3.mp3"
+      }
     }
   ],
   "outro": {
     "question": "Подпишись",
     "cta": "",
-    "voice": "[confident] Подпишись, чтобы не пропустить следующие разборы.",
+    "voice": "[confident] Подпишись, если было интересно.",
     "style": "big",
     "anim": "kunkka",
     "floats": [
@@ -239,7 +236,6 @@
       "ability:kunkka_tidal_wave",
       "ability:kunkka_admirals_rum"
     ],
-    "hold": 0.6,
-    "voice_file": "voice/005/end.mp3"
+    "hold": 0.6
   }
 }

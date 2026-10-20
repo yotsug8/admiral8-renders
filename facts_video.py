@@ -341,7 +341,8 @@ def prepare(ep, heroes, items):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
             print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
-            seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []))
+            seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []),
+                       style=f.get("style", "stickers"))      # stickers — наклейки, list — список вопросов
         else:
             v = dict(f.get("visual", {}))
             if v.get("heroes"):
@@ -349,6 +350,8 @@ def prepare(ep, heroes, items):
             if v.get("icons"):
                 v["icons"] = dict(src=item_icon(v["icons"], items).as_uri(),
                                   count=int(v["count"]))
+            if v.get("items"):                       # список иконок предметов (xray)
+                v["items"] = [item_icon(k, items).as_uri() for k in v["items"]]
             if v.get("icon"):                        # одна иконка предмета (range, notes)
                 v["icon"] = item_icon(v["icon"], items).as_uri()
             if v.get("logo"):
@@ -376,10 +379,10 @@ def prepare(ep, heroes, items):
 
 # ---------- рендер кадров в браузере ----------
 
-def render_frames(segs, total, video_path, qa_path):
+def render_frames(segs, total, video_path, qa_path, theme=""):
     from playwright.sync_api import sync_playwright
 
-    data = dict(watermark=WATERMARK,
+    data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
     ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "mjpeg",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
@@ -468,7 +471,7 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     out_path = Path(out_path)
     video, wav = WORK / "video.mp4", WORK / "audio.wav"
     qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
-    problems = render_frames(segs, total, video, qa)
+    problems = render_frames(segs, total, video, qa, ep.get("theme", ""))
     mix_audio(segs, total, wav)
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)

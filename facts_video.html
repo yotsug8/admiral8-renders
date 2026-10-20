@@ -119,6 +119,60 @@ svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; o
 /* Фон карточек: косые полосы — карточки не выглядят пустыми */
 .card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
 .card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
+/* ===== Тема «b»: сетка вместо точек, белая шторка, заголовок с жёлтой чертой ===== */
+body.tb #dots { background-image: linear-gradient(rgba(255,255,255,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.05) 2px, transparent 2px);
+  background-size: 72px 72px; }
+body.tb #wipe { background: var(--ink); }
+body.tb .head { padding-left: 30px; border-left: 14px solid var(--acc); }
+body.tb #subs span.on { background: var(--ink); }
+body.tb .pg i { background: var(--acc); }
+/* Хук-список: три вопроса строками */
+.hrow { position: absolute; left: 60px; width: 880px; height: 210px; border-radius: 30px; background: var(--dark); border: 6px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; align-items: center; gap: 26px; padding: 0 28px; opacity: 0; }
+.hrow .ic { width: 170px; height: 150px; border-radius: 22px; background: var(--ink); flex: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hrow .ic img { width: 150px; }
+.hrow .ic img.hico { width: auto; max-width: 166px; max-height: 146px; }
+.hrow b { font: 900 46px/1.1 Unbounded; color: var(--ink); text-transform: uppercase; letter-spacing: -.02em; }
+.hrow i { position: absolute; left: -22px; top: -26px; width: 64px; height: 64px; border-radius: 50%; background: var(--acc); color: var(--dark);
+  font: 900 36px/64px Unbounded; text-align: center; font-style: normal; border: 5px solid var(--dark); }
+/* «Досмотр»: подносы с предметами, лента, штампы решений */
+.tray { position: absolute; width: 410px; height: 380px; border-radius: 30px; background: #2a2e37; border: 6px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; flex-direction: column; align-items: center; padding-top: 34px; opacity: 0; }
+.tray img { width: 200px; height: 146px; border-radius: 18px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
+.tray .nm { margin-top: 26px; font: 900 44px/1 Unbounded; color: var(--ink); text-transform: uppercase; }
+.tray .why { margin-top: 12px; font: 800 30px/1.15 Manrope; color: rgba(244,244,242,.75); text-align: center; padding: 0 20px; }
+.verd { position: absolute; right: -18px; top: 18px; padding: 6px 18px 10px; border-radius: 16px; border: 7px solid; font: 900 34px/1 Unbounded;
+  background: var(--dark); white-space: nowrap; opacity: 0; }
+.verd.no { color: #ff5a4e; border-color: #ff5a4e; } .verd.ok { color: #2fd36b; border-color: #2fd36b; } .verd.limit { color: var(--acc); border-color: var(--acc); }
+.belt { position: absolute; left: 0; width: 1080px; height: 54px; background: repeating-linear-gradient(90deg, #3a3f4a 0 40px, #2a2e37 40px 80px);
+  border-top: 6px solid var(--ink); border-bottom: 6px solid var(--ink); }
+/* «Дом»: крыша и три этажа-квартиры */
+.roof { position: absolute; left: 40px; top: 470px; width: 920px; height: 110px; background: var(--acc); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.floor { position: absolute; left: 60px; width: 880px; height: 255px; border-radius: 22px; background: #22262e; border: 6px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--acc); overflow: hidden; opacity: 0; }
+.floor .hb { position: absolute; left: 14px; bottom: 0; width: 300px; height: 236px; }
+.floor .hb img { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); max-width: 300px; max-height: 236px;
+  filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
+.floor .tg { position: absolute; left: 340px; top: 30px; padding: 6px 18px 10px; border-radius: 14px; font: 900 36px/1 Unbounded; color: var(--dark); text-transform: uppercase; }
+.floor .tg.g { background: #2fd36b; } .floor .tg.r { background: #ff5a4e; } .floor .tg.y { background: var(--acc); }
+.floor .tx { position: absolute; left: 340px; top: 100px; width: 420px; font: 800 34px/1.2 Manrope; color: var(--ink); }
+.floor .ab { position: absolute; right: 22px; bottom: 22px; width: 92px; height: 92px; border-radius: 16px; border: 5px solid var(--dark); box-shadow: 6px 6px 0 var(--dark); }
+/* «Сутки»: циферблат день/ночь, подпись, плитки дней */
+.dial { position: absolute; left: 290px; top: 470px; width: 500px; height: 500px; border-radius: 50%; border: 10px solid var(--ink);
+  background: conic-gradient(var(--acc) 0 180deg, #24305e 180deg 360deg); box-shadow: 16px 16px 0 var(--dark); }
+.dial .hand { position: absolute; left: 50%; top: 50%; width: 14px; height: 210px; margin-left: -7px; border-radius: 7px; background: var(--ink);
+  transform-origin: 50% 0; border: 4px solid var(--dark); }
+.dial .hub { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px; border-radius: 50%; background: var(--dark); border: 6px solid var(--ink); }
+.dial .sun, .dial .moon { position: absolute; width: 90px; height: 90px; border-radius: 50%; }
+.dial .sun { left: 330px; top: 200px; background: #fff3b0; border: 6px solid var(--dark); }
+.dial .moon { left: 60px; top: 200px; background: #f4f4f2; box-shadow: inset -26px 0 0 #24305e; border: 6px solid var(--dark); }
+.daylab { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 64px/1.05 Unbounded; color: var(--acc); text-transform: uppercase; opacity: 0; }
+.daytile { position: absolute; width: 200px; height: 190px; border-radius: 24px; background: var(--ink); border: 6px solid var(--dark); box-shadow: 8px 8px 0 var(--acc);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; opacity: 0; color: var(--dark); }
+.daytile .sm { display: flex; gap: 10px; }
+.daytile .sm u { width: 50px; height: 50px; border-radius: 50%; background: var(--acc); border: 4px solid var(--dark); }
+.daytile .sm s { width: 50px; height: 50px; border-radius: 50%; background: #f4f4f2; box-shadow: inset -16px 0 0 #24305e; border: 4px solid var(--dark); }
+.daytile b { font: 900 34px/1 Unbounded; }
 /* «Zzz» над карточкой команды */
 .zzz { position: absolute; font: 900 58px/1 Unbounded; color: var(--acc); -webkit-text-stroke: 5px var(--dark); paint-order: stroke fill; text-shadow: 6px 6px 0 var(--dark); }
 /* Подпись на наклейке хука */
@@ -219,6 +273,7 @@ function placeHero(im, cx, bottom, w, h) {
 async function init(data) {
   D = data;
   document.getElementById("wm").textContent = data.watermark;
+  if (data.theme) document.body.classList.add("t" + data.theme);      // вариант оформления выпуска
   const prog = document.getElementById("progress");
   data.segs.filter(s => !s.outro && !s.hook).forEach(() => $("i", null, $("div", "pg", prog)));
   const host = document.getElementById("segs");
@@ -226,7 +281,18 @@ async function init(data) {
     const el = $("div", "seg", host);
     const g = { s, el, parts: {} };
     const P = g.parts, v = s.visual || {};
-    if (s.hook) {
+    if (s.hook && s.style === "list") {
+      // Хук-список: три вопроса строками, у каждой иконка
+      P.lines = headline(el, s.headline);
+      P.rows = s.images.map((src, k) => {
+        const r = $("div", "hrow", el, `top:${560 + k * 260}px`);
+        $("i", null, r).textContent = k + 1;
+        const ic = $("div", "ic", r), im = $("img", null, ic); im.src = src;
+        if (!/\/item_|\/abilities\//.test(src)) im.className = "hico";   // герой в строке — не «.hero», чтобы аудит не считал строку надписью на герое
+        $("b", null, r).textContent = (s.labels || [])[k] || "";
+        return r;
+      });
+    } else if (s.hook) {
       P.lines = headline(el, s.headline);
       // Три наклейки лесенкой: появляются, когда диктор называет факт
       const pos = [[78, 640, -4], [378, 780, 4], [678, 680, -3]];
@@ -326,6 +392,41 @@ async function init(data) {
         const last = P.chips[P.chips.length - 1], row = $("div", "abil", last);
         v.ability_icons.forEach(src => { $("img", null, row).src = src; });
       }
+    } else if (s.layout === "xray") {
+      P.lines = headline(el, s.headline);
+      P.belt = $("div", "belt", el, "top:1300px");
+      const pos = [[60, 470], [520, 470], [60, 880], [520, 880]];
+      P.trays = v.items.map((src, k) => {
+        const t = $("div", "tray", el, `left:${pos[k][0]}px;top:${pos[k][1]}px`);
+        $("img", null, t).src = src;
+        $("div", "nm", t).textContent = (v.names || [])[k] || "";
+        $("div", "why", t).textContent = (v.notes || [])[k] || "";
+        const vd = $("div", "verd " + ((v.kinds || [])[k] || "ok"), t); vd.textContent = (v.verdicts || [])[k] || "";
+        return t;
+      });
+    } else if (s.layout === "house") {
+      P.lines = headline(el, s.headline);
+      P.roof = $("div", "roof", el);
+      P.floors = v.heroes.map((src, k) => {
+        const f = $("div", "floor", el, `top:${580 + k * 275}px`);
+        $("img", null, $("div", "hb", f)).src = src;
+        const tg = $("div", "tg " + ((v.colors || [])[k] || "y"), f); tg.textContent = (v.tags || [])[k] || "";
+        $("div", "tx", f).textContent = (v.notes || [])[k] || "";
+        if ((v.ability_icons || [])[k]) $("img", "ab", f).src = v.ability_icons[k];
+        return f;
+      });
+    } else if (s.layout === "dayclock") {
+      P.lines = headline(el, s.headline);
+      P.dial = $("div", "dial", el);
+      $("div", "sun", P.dial); $("div", "moon", P.dial);
+      P.hand = $("div", "hand", P.dial); $("div", "hub", P.dial);
+      P.dlab = $("div", "daylab", el, "top:1010px"); P.dlab.textContent = v.label || "";
+      P.tiles = Array.from({ length: v.days || 4 }, (_, k) => {
+        const t = $("div", "daytile", el, `left:${60 + k * 230}px;top:1130px`);
+        const sm = $("div", "sm", t); $("u", null, sm); $("s", null, sm);
+        $("b", null, t).textContent = `день ${k + 1}`;
+        return t;
+      });
     } else if (s.layout === "trap") {
       P.lines = headline(el, s.headline);
       P.panel = $("div", "panel", el);
@@ -435,6 +536,13 @@ function draw(g, lt) {
   if (!P.lines) return;
   const hl = g === SEGS[0] ? lt + 0.7 : lt;        // первый кадр = обложка: заголовок уже на месте
   P.lines.forEach((sp, j) => { const k = eOut((hl - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
+  if (s.hook && P.rows) {
+    P.rows.forEach((r, k) => {
+      const t0 = (s.at && s.at[k] != null) ? s.at[k] : 0.4 + k * 0.6, e = eBack((lt - t0 + 0.05) / 0.45);
+      r.style.opacity = clamp(e * 2); r.style.transform = `translateY(${(1 - e) * 90}px) rotate(${(k - 1) * 1.2}deg)`;      // всплывают снизу, не вылезая за края
+    });
+    return;
+  }
   if (s.hook) {
     P.stk.forEach((c, k) => {
       const t0 = (s.at && s.at[k] != null) ? s.at[k] : 0.4 + k * 0.5;
@@ -546,6 +654,35 @@ function drawExtra(g, lt) {
     } else {
       const p2 = eBack((lt - C("pill", 3.2)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
     }
+  }
+  if (s.layout === "xray") {
+    P.belt.style.backgroundPosition = `${-lt * 160}px 0`;              // лента едет
+    P.trays.forEach((t, k) => {
+      const t0 = C("i" + k, 0.6 + k * 1.2), e = eOut((lt - t0 + 0.1) / 0.5);
+      t.style.opacity = clamp(e * 1.5); t.style.transform = `translateX(${(1 - e) * -160}px)`;
+      // Штамп решения падает чуть позже и пружинит
+      const vd = t.querySelector(".verd"), q = clamp((lt - t0 - 0.55) / 0.25);
+      vd.style.opacity = q > 0 ? 1 : 0; vd.style.transform = `rotate(${8 - 2 * q}deg) scale(${2 - eOut(q)})`;
+    });
+  }
+  if (s.layout === "house") {
+    const kr = eBack((lt - 0.2) / 0.5); P.roof.style.transform = `translateY(${(1 - kr) * -80}px)`; P.roof.style.opacity = clamp(kr * 2);
+    P.floors.forEach((f, k) => {
+      const t0 = C("f" + k, 0.6 + k * 1.5), e = eBack((lt - t0 + 0.05) / 0.45);
+      let sx = 0, sy = 0;
+      if (k === v.shake && lt > t0 + 0.4) { sx = Math.sin(lt * 47) * 7; sy = Math.cos(lt * 39) * 5; }   // этаж Эрдшейкера трясётся
+      f.style.opacity = clamp(e * 2); f.style.transform = `translate(${(1 - e) * (k % 2 ? 120 : -120) + sx}px, ${sy}px)`;
+    });
+  }
+  if (s.layout === "dayclock") {
+    const kd = eBack((lt - 0.2) / 0.5); P.dial.style.transform = `scale(${0.7 + 0.3 * kd})`; P.dial.style.opacity = clamp(kd * 2);
+    P.hand.style.transform = `rotate(${180 + lt * 72}deg)`;            // стрелка бежит: оборот за 5 с
+    const kl = eBack((lt - C("label", 2)) / 0.4); P.dlab.style.opacity = clamp(kl * 2); P.dlab.style.transform = `scale(${0.8 + 0.2 * kl})`;
+    const tT = C("days", 4);
+    P.tiles.forEach((t, m) => {
+      const q = eBack((lt - tT - m * 0.18) / 0.4), pre = clamp((lt - 0.8 - m * 0.1) / 0.4);   // сначала бледные заготовки, на метке — яркие
+      t.style.opacity = Math.max(0.28 * pre, clamp(q * 2)); t.style.transform = `scale(${0.92 + 0.08 * q}) rotate(${(m % 2 ? 3 : -3) * (1 - q)}deg)`;
+    });
   }
   if (s.layout === "trap") {
     const kp = eBack((lt - 0.2) / 0.5);
@@ -660,7 +797,7 @@ function drawSubs(words, lt) {
     return `<span class="${w[1] <= lt && lt < nxt ? "on" : ""}">${w[0]}</span>`;
   }).join("") + `</div>`;
   const inner = document.getElementById("subsin");
-  const fit = Math.min(1, 740 / inner.offsetWidth);       // длинная строка ужимается в поля
+  const fit = Math.min(1, 720 / inner.offsetWidth);       // длинная строка ужимается в поля
   const k = eOut((lt - g[0][1] + 0.05) / 0.18);       // без перелёта, чтобы не вылезать за края
   box.style.transform = `scale(${fit * (0.88 + 0.12 * k)})`;
 }
@@ -672,13 +809,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .floor, .dial, .daytile, .daylab, .hrow"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

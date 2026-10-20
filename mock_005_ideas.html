@@ -84,6 +84,62 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #06162
 .strip.past { opacity: .55; } .strip.fut { opacity: .3; }
 .strip.dead { border-color: var(--hot); } .strip.dead img { filter: grayscale(1) brightness(.6); }
 .strip em { margin-left: auto; font: 900 24px Unbounded; font-style: normal; color: var(--dark); background: var(--hot); padding: 4px 12px 6px; border-radius: 8px; }
+/* ===== Вариант В: составные элементы, отступы, без кругов; игровые объекты — только иконками ===== */
+.hc { position: absolute; left: 60px; top: 220px; }
+.hc .pre { display: inline-block; padding: 8px 18px 10px; background: var(--hot); color: #fff; font: 900 30px/1 Unbounded; border-radius: 8px 8px 0 0; }
+.hc .main { display: flex; align-items: flex-end; gap: 18px; padding: 16px 26px 20px; background: rgba(2,10,20,.55); border: 3px solid var(--line); border-radius: 0 16px 16px 16px; }
+.hc .main b { font: 900 108px/0.95 Unbounded; color: var(--acc); }
+.hc .main i { font: 900 60px/1 Unbounded; font-style: normal; opacity: .4; padding-bottom: 6px; }
+.hero.c { right: 40px; top: 150px; height: 340px; }
+/* маршрут: таблички-причалы на канате, текущая — с вымпелом */
+.rope { position: absolute; left: 60px; top: 500px; width: 880px; height: 130px; }
+.rope:before { content: ""; position: absolute; left: 0; right: 0; top: 52px; height: 8px; border-radius: 4px;
+  background: repeating-linear-gradient(60deg, #c9b48a 0 10px, #8f7a52 10px 20px); }
+.pier { position: absolute; top: 24px; width: 128px; margin-left: -64px; }
+.pier .pl2 { position: relative; padding: 10px 0 12px; text-align: center; font: 900 30px/1 Unbounded; background: #0d2a47; border: 3px solid var(--line); border-radius: 10px; }
+.pier .pl2:before, .pier .pl2:after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 2px; background: rgba(238,246,251,.45); }
+.pier .pl2:before { left: 8px; } .pier .pl2:after { right: 8px; }
+.pier.past .pl2 { color: var(--acc); border-color: rgba(95,212,196,.5); }
+.pier.fut { opacity: .45; }
+.pier.cur { top: 4px; width: 156px; margin-left: -78px; }
+.pier.cur .pl2 { font-size: 38px; padding: 16px 0 18px; background: var(--ink); color: #0a2340; border: none; box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+.pier.cur .pen { position: absolute; left: 50%; top: -58px; width: 6px; height: 62px; background: #c9d3dc; }
+.pier.cur .pen:after { content: ""; position: absolute; left: 6px; top: 0; border-left: 46px solid var(--hot); border-top: 15px solid transparent; border-bottom: 15px solid transparent; }
+/* главная карточка: внешняя рама + шапка + внутренняя панель + уголки-заклёпки */
+.mc { position: absolute; left: 60px; width: 880px; }
+.mc .cap { display: flex; align-items: center; gap: 14px; height: 74px; padding: 0 22px; background: var(--acc); color: #0a2340; border-radius: 22px 22px 0 0;
+  font: 900 34px/1 Unbounded; text-transform: uppercase; }
+.mc .cap .ver { padding: 6px 14px 8px; background: #0a2340; color: var(--ink); border-radius: 8px; }
+.mc .cap .kind { margin-left: auto; font-size: 26px; padding: 6px 14px 8px; border: 3px solid #0a2340; border-radius: 8px; }
+.mc .body { position: relative; padding: 30px 36px 36px; background: linear-gradient(180deg, #13406a, #0a2340); border: 5px solid var(--acc); border-top: none;
+  border-radius: 0 0 22px 22px; box-shadow: 0 14px 0 rgba(2,10,20,.65), 0 0 34px rgba(95,212,196,.3); display: flex; gap: 34px; align-items: center; }
+.mc .body:before, .mc .body:after { content: ""; position: absolute; bottom: 14px; width: 12px; height: 12px; border-radius: 3px; background: rgba(238,246,251,.4); }
+.mc .body:before { left: 14px; } .mc .body:after { right: 14px; }
+.mc .l { flex: 1; min-width: 0; }
+.mc .ics { display: flex; align-items: center; gap: 16px; }
+.mc .ics .ab { width: 176px; height: 176px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+.mc .ics .it { width: 123px; height: 90px; border-radius: 14px; border: 3px solid var(--ink); }
+.mc .ics s { font: 900 54px Unbounded; text-decoration: none; }
+.mc b.t { display: block; margin-top: 26px; font: 900 54px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.mc .sub { display: block; margin-top: 14px; font: 800 36px/1.18 Manrope; opacity: .85; }
+/* мини-схема: прямоугольная морская карта с сеткой, внутри — настоящие иконки */
+.map { position: relative; flex: none; width: 280px; height: 280px; border-radius: 16px; overflow: hidden;
+  background: linear-gradient(rgba(238,246,251,.07) 2px, transparent 2px) 0 0 / 50px 50px, linear-gradient(90deg, rgba(238,246,251,.07) 2px, transparent 2px) 0 0 / 50px 50px, #0b2f4d;
+  border: 3px solid var(--line); box-shadow: inset 0 0 0 8px rgba(2,10,20,.35); }
+.map .lbl { position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 0 8px; text-align: center; background: rgba(2,10,20,.7); font: 900 22px Unbounded; letter-spacing: .04em; }
+.map img { position: absolute; border-radius: 10px; border: 2px solid var(--ink); }
+.map .k { width: 70px; height: 70px; border-radius: 12px; border-color: var(--ink); }
+.map .tr { width: 52px; height: 52px; box-shadow: 0 0 0 6px rgba(95,212,196,.25); }
+.map .ball { position: absolute; width: 12px; height: 12px; border-radius: 3px; background: var(--hot); box-shadow: 0 0 10px var(--hot); }
+/* полоски: цветной язычок + номер + название + метка */
+.sc { position: absolute; left: 60px; width: 880px; height: 104px; display: flex; align-items: center; gap: 18px; padding: 0 24px 0 0;
+  background: rgba(13,42,71,.85); border: 3px solid var(--line); border-radius: 16px; overflow: hidden; font: 900 34px Unbounded; text-transform: uppercase; }
+.sc .tab { align-self: stretch; width: 16px; background: var(--acc); }
+.sc img { width: 70px; height: 70px; border-radius: 12px; border: 2px solid var(--ink); }
+.sc .ver { padding: 5px 12px 7px; background: var(--ink); color: #0a2340; border-radius: 8px; font-size: 28px; }
+.sc em { margin-left: auto; font: 900 24px Unbounded; font-style: normal; padding: 5px 12px 7px; border-radius: 8px; border: 3px solid currentColor; }
+.sc.past { opacity: .6; } .sc.fut { opacity: .32; }
+.sc.dead .tab { background: var(--hot); } .sc.dead { border-color: rgba(255,77,94,.6); } .sc.dead em { color: var(--hot); } .sc.dead img { filter: grayscale(1) brightness(.6); }
 </style></head>
 <body>
 <div class="bg"></div>
@@ -159,5 +215,31 @@ if (f === 6) {
     strip(1350, A + "kunkka_admirals_rum.png", "7.37", "Адмиральский ром", "fut") +
     strip(1460, A + "kunkka_ghostship.png", "7.41", "Ром ×2", "fut") + subs("");
 }
+
+const piers = (cur) => { const vs = ["7.23", "7.28", "7.33", "7.36", "7.37", "7.41"];
+  return `<div class="rope">${vs.map((v, k) => `<div class="pier ${k < cur ? "past" : k === cur ? "cur" : "fut"}" style="left:${78 + k * 145}px">${k === cur ? '<div class="pen"></div>' : ""}<div class="pl2">${v}</div></div>`).join("")}</div>`; };
+const hc = (a, b) => `<div class="hc"><div class="pre">патч</div><div class="main"><b>${a}</b><i>→ ${b}</i></div></div>`;
+const sc = (top, icon, ver, title, cls, tag = "") => `<div class="sc ${cls}" style="top:${top}px"><div class="tab"></div><img src="${icon}"><div class="ver">${ver}</div>${title}${tag ? `<em>${tag}</em>` : ""}</div>`;
+const mc = (top, ver, kind, icons, title, sub, map) => `<div class="mc" style="top:${top}px"><div class="cap"><span class="ver">${ver}</span>изменение<span class="kind">${kind}</span></div>
+  <div class="body"><div class="l"><div class="ics">${icons}</div><b class="t">${title}</b><span class="sub">${sub}</span></div>${map}</div></div>`;
+if (f === 7) {
+  const pts = [[30, 40], [200, 30], [40, 160], [210, 170], [120, 200], [190, 100]];
+  const map = `<div class="map"><img class="k" src="assets/anim/kunkka/001.webp" style="left:115px;top:95px;object-fit:cover;background:#0b2f4d">${pts.map(([x, y]) => `<img class="tr" src="${A}kunkka_torrent.png" style="left:${x}px;top:${y}px">`).join("")}<div class="lbl">ВОКРУГ КУНКИ</div></div>`;
+  R.innerHTML = `<div class="lab">В · часть 1</div>` + hc("7.23", "7.28") + `<img class="hero c" src="assets/anim/kunkka/001.webp">` + piers(0) +
+    mc(650, "7.23", "добавили", it("ultimate_scepter") + "<s>→</s>" + ab("kunkka_torrent_storm"), "Аганим: Торрент Шторм", "5 секунд торренты в случайных местах", map) +
+    sc(1330, A + "kunkka_tidal_wave.png", "7.28", "Шард: Тайдал Вейв", "fut") + subs("торренты <i>бьют</i> в случайных");
+}
+if (f === 8) {
+  const map = `<div class="map"><img class="ab2" src="${A}kunkka_ghostship.png" style="left:24px;top:40px;width:96px;height:96px"><img src="${A}kunkka_ghostship.png" style="left:160px;top:140px;width:96px;height:96px">
+    ${[[130, 70], [150, 82], [170, 94], [90, 160], [70, 172]].map(([x, y]) => `<div class="ball" style="left:${x}px;top:${y}px"></div>`).join("")}<div class="lbl">ДВА КОРАБЛЯ</div></div>`;
+  R.innerHTML = `<div class="lab">В · часть 3</div>` + hc("7.37", "7.41") + `<img class="hero c" src="assets/anim/kunkka/001.webp">` + piers(4) +
+    sc(650, A + "kunkka_torrent_storm.png", "7.37", "Торрент Шторм", "past dead", "удалён") +
+    mc(890, "7.37", "добавили", it("ultimate_scepter") + "<s>→</s>" + ab("kunkka_ghostship"), "Аганим: флот", "два корабля с ядрами", map) +
+    sc(1330, A + "kunkka_admirals_rum.png", "7.37", "Адмиральский ром", "fut") + subs("");
+  document.querySelector(".subs").style.display = "none";
+}
+
+// Раскладка без наложений: карточки и полоски идут столбиком с зазором 24 px
+if (f >= 7) Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))]).then(() => { let y = null; [...document.querySelectorAll(".mc, .sc")].sort((a, b) => a.offsetTop - b.offsetTop).forEach(e => { if (y !== null) e.style.top = y + "px"; y = e.offsetTop + e.offsetHeight + 24; }); document.body.dataset.ready = 1; });
 </script>
 </body></html>

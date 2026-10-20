@@ -17,12 +17,17 @@
     "labels": [
       "Торрент Шторм",
       "Тайдбрингер",
-      "Гостшип"
+      "Корабль"
     ],
     "cues": [
       "переделали",
       "крупные",
       "порядку"
+    ],
+    "sfx": [
+      "Kunkka_Torrent_Storm",
+      "Tidebringer_splash1",
+      "Kunkka_Ghostship"
     ],
     "voice_file": "voice/005/hook.mp3"
   },
@@ -49,7 +54,7 @@
             "title": "Аганим: Торрент Шторм",
             "sub": "5 секунд торренты в случайных местах",
             "kind": "add",
-            "fx": "torrents"
+            "sfx": "Kunkka_Torrent_Storm"
           },
           {
             "ver": "7.28",
@@ -60,16 +65,14 @@
             "title": "Шард: Тайдал Вейв",
             "sub": "волна тащит врагов за собой",
             "kind": "add",
-            "fx": "wave"
+            "sfx": "Kunkka_Tidal_Wave_1"
           }
         ],
         "thumb": "ability:kunkka_torrent_storm",
         "cues": {
           "e0": "аганим",
           "e1": "шард"
-        },
-        "offset": 0,
-        "total": 9
+        }
       },
       "voice_file": "voice/005/f1.mp3"
     },
@@ -92,7 +95,8 @@
             ],
             "title": "Торрент Шторм — в точку",
             "sub": "раньше только вокруг себя",
-            "kind": "change"
+            "kind": "change",
+            "sfx": "Kunkka_Torrent_1"
           },
           {
             "ver": "7.33",
@@ -102,7 +106,8 @@
             ],
             "title": "Тайдбрингер: только истощение",
             "sub": "сайленс больше не выключает",
-            "kind": "change"
+            "kind": "change",
+            "sfx": "Tidebringer_splash1"
           },
           {
             "ver": "7.36",
@@ -111,7 +116,8 @@
             ],
             "title": "Врождённый Тайдбрингер",
             "sub": "и аспекты у Кунки",
-            "kind": "add"
+            "kind": "add",
+            "sfx": "Tidebringer_ready"
           }
         ],
         "thumb": "ability:kunkka_tidebringer",
@@ -119,16 +125,14 @@
           "e0": "торрент",
           "e1": "тайдбрингер",
           "e2": "7.36"
-        },
-        "offset": 2,
-        "total": 9
+        }
       },
       "voice_file": "voice/005/f2.mp3"
     },
     {
       "layout": "patchline",
       "headline": "7.37|→ 7.41",
-      "voice": "[curious] В {7.37|семь тридцать семь} Торрент Шторм удалили. Аганим теперь даёт флот из двух Гостшипов с ядрами, а врождённой способностью стал Адмиральский ром. [sarcastic] В {7.41|семь сорок один} аспекты убрали у всех героев, а Гостшип стал давать двойной ром.",
+      "voice": "[curious] В {7.37|семь тридцать семь} Торрент Шторм удалили. Аганим теперь даёт флот из двух кораблей с ядрами, а врождённой способностью стал Адмиральский ром. [sarcastic] В {7.41|семь сорок один} аспекты убрали у всех героев, а Корабль стал давать двойной ром.",
       "visual": {
         "anim": "kunkka",
         "refs": {
@@ -145,7 +149,8 @@
             ],
             "title": "Торрент Шторм",
             "sub": "удалён из игры",
-            "kind": "remove"
+            "kind": "remove",
+            "sfx": "Kunkka_X_Marks_the_Spot"
           },
           {
             "ver": "7.37",
@@ -154,8 +159,9 @@
               "ship"
             ],
             "title": "Аганим: флот",
-            "sub": "два Гостшипа с ядрами",
-            "kind": "add"
+            "sub": "два корабля с ядрами",
+            "kind": "add",
+            "sfx": "Kunkka_Ghostship"
           },
           {
             "ver": "7.37",
@@ -173,8 +179,9 @@
               "rum"
             ],
             "title": "Ром ×2",
-            "sub": "аспекты удалены у всех",
-            "kind": "change"
+            "sub": "от Корабля · аспекты удалены",
+            "kind": "change",
+            "sfx": "Kunkka_Ghostship"
           }
         ],
         "thumb": "item:ultimate_scepter",
@@ -183,19 +190,15 @@
           "e1": "аганим",
           "e2": "врожденной",
           "e3": "7.41"
-        },
-        "offset": 5,
-        "total": 9
-      },
-      "voice_file": "voice/005/f3.mp3"
+        }
+      }
     }
   ],
   "outro": {
-    "question": "*Подпишись*",
-    "cta": "пока Valve не удалили и это видео",
-    "voice": "[sarcastic] Подпишись, пока {Valve|Вэлв} не удалили и это видео.",
+    "question": "Вступай|*во флот*",
+    "cta": "подпишись — и ты на борту",
+    "voice": "[confident] Вступай во флот Адмирала. Подпишись.",
     "style": "follow",
-    "anim": "kunkka",
-    "voice_file": "voice/005/end.mp3"
+    "anim": "kunkka"
   }
 }

@@ -409,7 +409,7 @@ def prepare(ep, heroes, items):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
             print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
-            seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []),
+            seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []), sfx=f.get("sfx", []),
                        style=f.get("style", "stickers"),      # stickers — наклейки, list — список вопросов, hero — анимированный герой и значки
                        anim=anim_frames(f["anim"]) if f.get("anim") else None)
         else:
@@ -522,6 +522,24 @@ def render_frames(segs, total, video_path, qa_path, theme=""):
     return problems
 
 
+_SFX = {}
+
+
+def sfx(name, max_dur):
+    """Звук из assets/snd (звуки Dota 2 с вики): первые max_dur секунд с плавным затуханием. None, если файла нет."""
+    key = (name, max_dur)
+    if key not in _SFX:
+        f = HERE / "assets" / "snd" / f"{name}.mp3"
+        if not f.exists():
+            _SFX[key] = None
+        else:
+            p = mp3_to_pcm(f)[:int(max_dur * SR)]
+            fade = min(len(p), int(0.35 * SR))
+            p = p.copy(); p[-fade:] *= np.linspace(1, 0, fade)
+            _SFX[key] = p / (np.abs(p).max() + 1e-9) * 0.9           # громкость выравниваем
+    return _SFX[key]
+
+
 def mix_audio(segs, total, wav_path):
     """Голос + фоновый бит + «вжух» на переходах."""
     n = int((total + 0.5) * SR)
@@ -540,39 +558,30 @@ def mix_audio(segs, total, wav_path):
         L = min(len(p), n - i)
         mix[i:i + L] += p[:L]
         if s["start"] > 0:
-            L = min(int(0.4 * SR), n - i)
-            env = np.sin(np.linspace(0, np.pi, L)) * 0.14
-            mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
-    # Звуки под события на экране (хронология патчей и значки хука): удержание внимания
+            tr = sfx("Torrent_erupt", 1.3)
+            if tr is not None:                     # переход — всплеск воды (звук Торрента из игры)
+                j = max(0, i - int(0.35 * SR)); L = min(len(tr), n - j)
+                mix[j:j + L] += tr[:L] * 0.32
+            else:
+                L = min(int(0.4 * SR), n - i)
+                env = np.sin(np.linspace(0, np.pi, L)) * 0.14
+                mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
+    # Звуки способностей из игры под события на экране: карточки хронологии (поле sfx) и значки хука (hook.sfx)
     def add(t, snd, gain):
         i = int(t * SR)
-        if 0 <= i < n:
+        if snd is not None and 0 <= i < n:
             L = min(len(snd), n - i)
             mix[i:i + L] += snd[:L] * gain
-    rng = np.random.default_rng(7)
-    tt = lambda d: np.arange(int(d * SR)) / SR
-    pop = np.sin(2 * np.pi * (500 + 900 * tt(0.12)) * tt(0.12)) * np.exp(-tt(0.12) * 35)          # «чпок» — карточка/значок
-    thud = (np.sin(2 * np.pi * 55 * tt(0.35)) * np.exp(-tt(0.35) * 9)
-            + rng.normal(0, 1, len(tt(0.35))) * np.exp(-tt(0.35) * 40) * 0.5)                      # удар штампа
-    noise = rng.normal(0, 1, int(0.9 * SR))
-    splash = np.convolve(noise, np.ones(30) / 30, "same") * np.sin(np.linspace(0, np.pi, len(noise))) ** 2   # всплеск/волна
     for s in segs:
         v = s.get("visual") or {}
-        if s.get("layout") == "patchline":
-            for k, e in enumerate(v.get("entries", [])):
-                t0 = (v.get("at") or {}).get(f"e{k}")
-                if t0 is None:
-                    continue
-                t0 += s["start"]
-                add(t0, pop, 0.22)
-                if e.get("fx") in ("torrents", "wave"):
-                    add(t0, splash, 0.35)
-                if e.get("kind") == "remove":
-                    add(t0 + 0.5, thud, 0.6)
+        for k, e in enumerate(v.get("entries", []) if s.get("layout") == "patchline" else []):
+            t0 = (v.get("at") or {}).get(f"e{k}")
+            if t0 is not None and e.get("sfx"):
+                add(s["start"] + t0, sfx(e["sfx"], 1.8), 0.3)
         if s.get("hook"):
-            for t0 in s.get("at") or []:
-                if t0 is not None:
-                    add(s["start"] + t0, pop, 0.2)
+            for t0, name in zip(s.get("at") or [], s.get("sfx") or []):
+                if t0 is not None and name:
+                    add(s["start"] + t0, sfx(name, 1.4), 0.25)
     pcm = (np.clip(mix, -1, 1) * 32767).astype(np.int16)
     with wave.open(str(wav_path), "wb") as w:
         w.setnchannels(1)

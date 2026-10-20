@@ -346,7 +346,11 @@ body.tk .nc.hot { border-color: var(--hot); box-shadow: 0 12px 0 rgba(2,10,20,.6
 body.tk .ico { border-color: var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
 body.tk .pl .v { background: var(--ink); color: #0a2340; border: none; border-left: 12px solid var(--hot); border-radius: 8px; }
 body.tk .pl .ics s { color: var(--ink); }
-body.tk .fw { color: var(--ink); text-shadow: 0 8px 0 rgba(2,10,20,.8); }
+body.tk .fw { color: var(--ink); text-shadow: 0 8px 0 rgba(2,10,20,.8); top: 640px; font-size: 92px; line-height: 1.02; }
+body.tk .fw br + * , body.tk .fw { white-space: normal; }
+body.tk .fsub { top: 860px; }
+body.tk .fbtn { top: 990px; }
+body.tk .fnick { top: 1230px; }
 body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
 /* «Хронология патчей»: карточки изменений по порядку, у каждой версия, иконки «было → стало», метка */
 .pl { position: absolute; left: 60px; width: 880px; display: flex; align-items: center; gap: 26px; padding: 0 30px; opacity: 0; }
@@ -515,7 +519,7 @@ async function init(data) {
       });
     } else if (s.outro && s.style === "follow") {
       // Финал без карточек: слово, подкол, кнопка подписки с ником
-      P.fw = $("div", "fw", el); P.fw.innerHTML = s.question.replace(/\*/g, "");
+      P.fw = $("div", "fw", el); P.fw.innerHTML = s.question.replace(/\*/g, "").replace(/\|/g, "<br>");   // «|» — перенос строки
       P.fsub = $("div", "fsub", el); P.fsub.textContent = s.cta;
       P.fbtn = $("div", "fbtn", el);
       P.fbtn.innerHTML = `<svg viewBox="0 0 100 100"><path class="plus" d="M50 18 V82 M18 50 H82" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" fill="none"/>
@@ -730,7 +734,7 @@ async function init(data) {
             <path d="M0 260 C 250 120, 420 40, 620 90 C 780 130, 820 300, 980 300 C 1150 300, 1300 160, 1500 200" fill="none" stroke="#eef6fb" stroke-width="16"/></svg>`;
           return [w];
         }
-        if (e.kind === "remove") return [$("div", "flash", P.fx)];
+        if (e.kind === "remove" && v.flash) return [$("div", "flash", P.fx)];
         return [];
       });
       const n = v.entries.length, top = 520, gap = 30, h = Math.min(380, (1420 - top - gap * (n - 1)) / n);
@@ -1153,11 +1157,12 @@ function drawExtra(g, lt) {
     // Активная версия: у последней карточки, до которой дошёл диктор
     let cur = null, ci = -1; at.forEach((t0, k) => { if (lt >= t0 - 0.1) { cur = v.entries[k].ver; ci = k; } });
     // Счётчик изменений по всему ролику: «3 / 9»
+    P.cnt.style.display = v.counter ? "" : "none";
     P.cnt.textContent = `изменение ${(v.offset || 0) + Math.max(1, ci + 1)} / ${v.total || v.entries.length}`;
     P.cnt.style.opacity = clamp((lt - 0.3) / 0.3);
     // Наезд камеры на каждом новом изменении
     const tp = ci >= 0 ? lt - at[ci] : 9, punch = tp >= 0 && tp < 0.4 ? Math.sin(tp / 0.4 * Math.PI) * 0.025 : 0;
-    g.el.style.transform = `scale(${1 + punch})`; g.el.style.transformOrigin = "540px 900px";
+    if (v.punch) { g.el.style.transform = `scale(${1 + punch})`; g.el.style.transformOrigin = "540px 900px"; }
     // Эффекты во весь экран
     P.fxs.forEach((list, k) => {
       const q = lt - at[k], e = v.entries[k];
@@ -1166,7 +1171,7 @@ function drawExtra(g, lt) {
         gy.style.height = (h * up) + "px"; gy.style.opacity = up > 0 ? Math.min(1, up * 1.6) : 0; });
       if (e.fx === "wave") { const w = list[0], u = clamp(q / 1.1); w.style.opacity = q > 0 && q < 1.1 ? Math.sin(u * Math.PI) * 1.2 : 0;
         w.style.transform = `translateX(${-1500 + u * 2600}px) translateY(${Math.sin(u * 6) * 20}px)`; }
-      if (e.kind === "remove") { const u = q - 0.5; list[0].style.opacity = u > 0 && u < 0.35 ? 0.35 * (1 - u / 0.35) : 0; }
+      if (e.kind === "remove" && v.flash) { const u = q - 0.5; list[0].style.opacity = u > 0 && u < 0.35 ? 0.35 * (1 - u / 0.35) : 0; }
     });
     P.hv.forEach(h => {
       const on = cur !== null && h.textContent === cur;

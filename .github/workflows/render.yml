@@ -22,6 +22,9 @@ on:
       silent:
         description: "1 — без озвучки (тишина, тайминги по темпу речи)"
         default: ""
+      audition:
+        description: "прослушка на видео: id:Название,… (нужен ep) — хук и первый факт каждым голосом"
+        default: ""
 
 permissions:
   contents: write
@@ -84,6 +87,10 @@ jobs:
           set -o pipefail
           mkdir -p out
           T0=$(date +%s)
+          if [ -n "${{ inputs.audition }}" ]; then
+            FV_WORKERS=4 python facts_video.py --audition "episodes_fv/${{ inputs.ep }}.json" "${{ inputs.audition }}" out 2>&1 | tee -a out/render.log
+            echo "рендер занял $(( $(date +%s) - T0 )) с" | tee -a out/render.log; exit 0
+          fi
           for n in ${{ steps.eps.outputs.list }}; do
             echo "== Факты $n" | tee -a out/render.log
             FV_WORKERS=4 FV_SILENT="${{ inputs.silent }}" python facts_video.py "episodes_fv/$n.json" "out/facts_$n.mp4" 2>&1 | tee -a out/render.log

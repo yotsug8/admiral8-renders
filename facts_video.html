@@ -378,6 +378,7 @@ body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
   <div id="subs"></div>
   <div id="progress"></div>
   <div id="wm"></div>
+  <div id="badge" style="display:none;position:absolute;left:60px;right:140px;top:96px;text-align:center;padding:10px 20px 14px;border-radius:16px;background:#ff4d5e;color:#fff;font:900 40px/1.1 Unbounded;box-shadow:0 8px 0 rgba(2,10,20,.6)"></div>
   <div id="wipe"></div>
   <div id="tide"><svg class="top" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg><div class="body"></div><svg class="bot" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg></div>
   <div id="ring"><i></i></div>
@@ -459,6 +460,7 @@ function buildSea() {
 async function init(data) {
   D = data;
   document.getElementById("wm").textContent = data.watermark;
+  if (data.badge) { const b = document.getElementById("badge"); b.textContent = data.badge; b.style.display = "block"; }   // прослушка голосов
   if (data.theme) document.body.classList.add("t" + data.theme);      // вариант оформления выпуска
   if (data.theme === "k") buildSea();
   const prog = document.getElementById("progress");

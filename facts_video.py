@@ -492,6 +492,7 @@ def render_frames(segs, total, video_path, qa_path, theme=""):
     куски склеиваются без перекодирования."""
     from concurrent.futures import ProcessPoolExecutor
     data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
+                badge=os.environ.get("FV_BADGE", ""),   # плашка сверху (для прослушки голосов на видео)
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
     # Ключевые моменты для проверки и контрольного листа
     checks = set()
@@ -661,8 +662,46 @@ def voices(arg, out_dir):
             print("  ошибка", vid, e)
 
 
+def audition(ep_path, voices_arg, out_dir):
+    """Прослушка голосов прямо на видео: хук и первый факт выпуска каждым голосом, сверху плашка с номером.
+    voices_arg: «id:Название,id:Название,…». Итог — out_dir/golosa_<выпуск>.mp4."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    base = json.load(open(ep_path, encoding="utf-8"))
+    parts = []
+    pairs = [x.split(":", 1) for x in voices_arg.split(",") if x.strip()]
+    for k, (vid, name) in enumerate(pairs, 1):
+        ep = json.loads(json.dumps(base))
+        ep["voice_id"] = vid.strip()
+        ep["facts"] = ep["facts"][:1]
+        ep.pop("outro", None)
+        for part in [ep.get("hook")] + ep["facts"]:
+            if part:
+                part.pop("voice_file", None)
+        for f in WORK.glob("v*.mp3"):
+            f.unlink()
+        os.environ["FV_BADGE"] = f"Голос {k} · {name.strip()}"
+        mp4 = out / f"aud_{k}.mp4"
+        render(ep, mp4)
+        parts.append(mp4)
+    os.environ.pop("FV_BADGE", None)
+    lst = WORK / "aud.txt"
+    lst.write_text("".join(f"file '{p.resolve()}'\n" for p in parts))
+    name = Path(ep_path).stem
+    subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
+                    "-c", "copy", str(out / f"golosa_{name}.mp4")], check=True)
+    for p in parts:
+        p.unlink()
+        q = p.with_name("qa_" + p.stem + ".jpg")
+        if q.exists():
+            q.unlink()
+    print("прослушка:", out / f"golosa_{name}.mp4")
+
+
 if __name__ == "__main__":
-    if sys.argv[1] == "--voices":
+    if sys.argv[1] == "--audition":
+        audition(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif sys.argv[1] == "--voices":
         voices(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "--takes":
         with open(sys.argv[2], encoding="utf-8") as f:

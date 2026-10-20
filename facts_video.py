@@ -338,7 +338,7 @@ def image_ref(ref, heroes, items):
 
 
 def anim_frames(key):
-    """Кадры анимированного рендера героя (assets/anim/<ключ>/*.webp, 15 к/с, без потерь) → список адресов.
+    """Кадры анимированного рендера героя (assets/anim/<ключ>/*.webp, родная частота из meta.json, без потерь) → {fps, frames}.
     Свечение и тень запекаются в кадры один раз: CSS-фильтр на каждом кадре был самым дорогим местом рендера."""
     from PIL import ImageFilter
     fs = sorted((HERE / "assets" / "anim" / key).glob("*.webp"))
@@ -369,7 +369,9 @@ def anim_frames(key):
                 canvas = canvas.resize((round(canvas.width * 900 / canvas.height), 900), Image.LANCZOS)
             canvas.save(out, compress_level=1)
         res.append(out.as_uri())
-    return res
+    meta = HERE / "assets" / "anim" / key / "meta.json"
+    fps = json.load(open(meta))["fps"] if meta.exists() else 15
+    return dict(fps=fps, frames=res)
 
 
 def prepare(ep, heroes, items):

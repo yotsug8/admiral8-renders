@@ -63,8 +63,8 @@
         ],
         "thumb": "ability:kunkka_torrent_storm",
         "cues": {
-          "e0": "аганим",
-          "e1": "шард"
+          "e0": "7.23",
+          "e1": "7.28"
         },
         "route": [
           "7.23",
@@ -208,8 +208,8 @@
         ],
         "thumb": "item:ultimate_scepter",
         "cues": {
-          "e0": "удалил",
-          "e1": "флот",
+          "e0": "7.37",
+          "e1": "взамен",
           "e2": "врожденной",
           "e3": "7.41"
         },
@@ -228,7 +228,7 @@
   "outro": {
     "question": "Подпишись",
     "cta": "",
-    "voice": "[excited] Подпишись, если было интересно.",
+    "voice": "[confident] Подпишись на Адмирала.",
     "style": "big",
     "anim": "kunkka",
     "floats": [
@@ -239,7 +239,6 @@
       "ability:kunkka_tidal_wave",
       "ability:kunkka_admirals_rum"
     ],
-    "hold": 0.6,
-    "voice_file": "voice/005/end.mp3"
+    "hold": 0.6
   }
 }

@@ -129,13 +129,15 @@ jobs:
                   print(pre, "ошибка:", e)
               import time; time.sleep(3)
           PY
-          # Анимированные рендеры: webm с альфой (VP9) → кадры webp без потерь 15 к/с, полный размер, общий кроп по всем кадрам
+          # Анимированные рендеры: webm с альфой (VP9) → кадры webp без потерь, родная частота, полный размер, общий кроп по всем кадрам
           for k in $ANIMS; do
             curl -sfL -A "Mozilla/5.0" -o "a/anim_$k.webm" "https://cdn.cloudflare.steamstatic.com/apps/dota2/videos/dota_react/heroes/renders/$k.webm" || { echo "$k: нет webm" >> a/log.txt; continue; }
             mkdir -p "a/anim_$k"
-            ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact "a/anim_$k.webm" >> a/log.txt 2>&1
-            ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" -vf "fps=15" "a/anim_$k/%03d.png" 2>> a/log.txt \
-              || ffmpeg -v error -i "a/anim_$k.webm" -vf "fps=15" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
+            ffprobe -v error -show_entries format=duration:stream=width,height,codec_name,r_frame_rate -of compact "a/anim_$k.webm" >> a/log.txt 2>&1
+            # родная частота кадров — в meta.json (раньше брали 15 к/с, анимация шла рывками)
+            ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "a/anim_$k.webm" | python -c "import sys,json; a,b=sys.stdin.read().strip().split('/'); json.dump({'fps': float(a)/float(b)}, open('a/anim_$k/meta.json','w'))"
+            ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" "a/anim_$k/%03d.png" 2>> a/log.txt \
+              || ffmpeg -v error -i "a/anim_$k.webm" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
             python - "$k" 2>> a/err.txt <<'PY'
           import sys, glob
           from PIL import Image

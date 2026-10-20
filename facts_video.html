@@ -324,6 +324,7 @@ async function init(data) {
       P.fbtn.innerHTML = `<svg viewBox="0 0 100 100"><path class="plus" d="M50 18 V82 M18 50 H82" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" fill="none"/>
         <path class="tick" d="M22 52 L42 72 L80 30" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0"/></svg>`;
       P.fnick = $("div", "fnick", el); P.fnick.textContent = s.watermark;
+      P.lines = [];                                   // заголовка нет, но draw() должен отработать
     } else if (s.outro) {
       P.lines = headline(el, s.question);
       const cards = $("div", "cards", el);

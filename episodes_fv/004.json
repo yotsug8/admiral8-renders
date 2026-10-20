@@ -131,6 +131,7 @@
     "question": "*Подпишись*",
     "cta": "бабушка плохого не посоветует",
     "voice": "[sarcastic] Подпишись. Бабушка плохого не посоветует.",
-    "style": "follow"
+    "style": "follow",
+    "voice_file": "voice/004/end.mp3"
   }
 }

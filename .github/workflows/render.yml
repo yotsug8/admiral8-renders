@@ -12,6 +12,9 @@ on:
       voices:
         description: "подбор голоса: list или id через запятую"
         default: ""
+      vtext:
+        description: "фраза для прослушки голосов (пусто — стандартная)"
+        default: ""
 
 permissions:
   contents: write
@@ -35,6 +38,7 @@ jobs:
         if: ${{ inputs.voices != '' && inputs.voices != null }}
         env:
           FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
+          FV_VOICE_TEXT: ${{ inputs.vtext }}
         run: |
           set -o pipefail
           mkdir -p out

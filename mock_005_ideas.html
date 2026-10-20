@@ -58,6 +58,32 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #06162
 /* 4. Реакция героя */
 .hero.hit { filter: grayscale(.7) brightness(.6) drop-shadow(0 0 30px rgba(255,77,94,.9)); transform: translateX(-10px) rotate(-3deg); }
 .shk { position: absolute; font: 900 60px Unbounded; color: var(--hot); }
+/* ===== Вариант Б: иерархия — активная карточка крупно, остальные полосками ===== */
+.head.b { font-size: 104px; top: 230px; }
+.hero.b { right: 30px; top: 150px; height: 470px; }
+.route.b { top: 560px; height: 170px; }
+.route.b .isl { width: 120px; margin-left: -60px; }
+.route.b .isl i { width: 58px; height: 58px; } .route.b .isl.cur i { width: 72px; height: 72px; margin-top: -7px; }
+.route.b .isl b { font-size: 32px; } .route.b .ship { font-size: 70px; top: -26px; }
+.big { position: absolute; left: 60px; width: 880px; border-radius: 30px; background: linear-gradient(180deg, #13406a, #0a2340); border: 5px solid var(--acc);
+  box-shadow: 0 14px 0 rgba(2,10,20,.65), 0 0 34px rgba(95,212,196,.35); padding: 34px 36px; display: flex; gap: 30px; }
+.big .l { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.big .ics .ab { width: 176px; height: 176px; border-radius: 22px; border-width: 4px; }
+.big .ics .it { width: 123px; height: 90px; border-radius: 14px; }
+.big .ics s { font-size: 54px; }
+.big b { display: block; margin-top: 22px; font: 900 54px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.big span { display: block; margin-top: 12px; font: 800 36px/1.15 Manrope; opacity: .85; }
+.big .v { font-size: 40px; align-self: flex-start; }
+.big .scheme { width: 330px; height: 330px; align-self: center; }
+.big .scheme .k { width: 40px; height: 40px; margin: -20px; }
+.big .scheme .t { width: 34px; height: 34px; margin: -17px; }
+.strip { position: absolute; left: 60px; width: 880px; height: 96px; border-radius: 18px; background: rgba(13,42,71,.75); border: 3px solid var(--line);
+  display: flex; align-items: center; gap: 18px; padding: 0 22px; font: 900 34px Unbounded; text-transform: uppercase; }
+.strip img { width: 64px; height: 64px; border-radius: 12px; border: 2px solid var(--ink); }
+.strip .v { margin: 0; font-size: 28px; padding: 5px 12px 7px; }
+.strip.past { opacity: .55; } .strip.fut { opacity: .3; }
+.strip.dead { border-color: var(--hot); } .strip.dead img { filter: grayscale(1) brightness(.6); }
+.strip em { margin-left: auto; font: 900 24px Unbounded; font-style: normal; color: var(--dark); background: var(--hot); padding: 4px 12px 6px; border-radius: 8px; }
 </style></head>
 <body>
 <div class="bg"></div>
@@ -110,6 +136,28 @@ if (f === 4) {
     subs("Торрент Шторм <i>удалили</i>");
   document.querySelector(".card").style.borderColor = "var(--hot)";
   document.querySelector(".card .ics img").style.filter = "grayscale(1) brightness(.55)";
+}
+
+const route = (cur) => { const vs = ["7.23", "7.28", "7.33", "7.36", "7.37", "7.41"], xs = vs.map((_, k) => 60 + k * 152);
+  return `<div class="route b"><svg viewBox="0 0 880 170"><path d="M60 80 ${xs.slice(1).map((x, k) => `Q ${x - 76} ${k % 2 ? 20 : 140} ${x} 80`).join(" ")}" fill="none" stroke="#eef6fb" stroke-width="6" stroke-dasharray="4 16" stroke-linecap="round" opacity=".6"/></svg>
+    ${vs.map((v, k) => `<div class="isl ${k < cur ? "past" : k === cur ? "cur" : "fut"}" style="left:${xs[k]}px;top:50px"><i></i><b>${v}</b></div>`).join("")}
+    <div class="ship" style="left:${xs[cur] - 100}px">⛵</div></div>`; };
+const strip = (top, icon, ver, title, cls, tag = "") => `<div class="strip ${cls}" style="top:${top}px"><img src="${icon}"><div class="v">${ver}</div>${title}${tag ? `<em>${tag}</em>` : ""}</div>`;
+if (f === 5) {
+  const t = [[70, 80], [250, 70], [55, 210], [260, 240], [160, 280], [215, 150]];
+  R.innerHTML = `<div class="lab">Б · часть 1 (2 изменения)</div>` + `<div class="head b"><span class="on">7.23</span><br>→ <span class="off">7.28</span></div>` + `<img class="hero b" src="assets/anim/kunkka/001.webp">` + route(0) +
+    `<div class="big" style="top:770px;height:540px"><div class="l"><div class="v">7.23</div><div class="ics">${it("ultimate_scepter")}<s>→</s>${ab("kunkka_torrent_storm")}</div><b>Аганим: Торрент Шторм</b><span>5 секунд торренты в случайных местах</span></div>
+      <div class="scheme"><div class="k"></div>${t.map(([x, y]) => `<div class="t" style="left:${x}px;top:${y}px"></div>`).join("")}</div></div>` +
+    strip(1340, A + "kunkka_tidal_wave.png", "7.28", "Шард: Тайдал Вейв", "fut") + subs("торренты <i>бьют</i> в случайных");
+}
+if (f === 6) {
+  R.innerHTML = `<div class="lab">Б · часть 3 (4 изменения)</div>` + `<div class="head b"><span class="on">7.37</span><br>→ <span class="off">7.41</span></div>` + `<img class="hero b" src="assets/anim/kunkka/001.webp">` + route(4) +
+    strip(770, A + "kunkka_torrent_storm.png", "7.37", "Торрент Шторм", "past dead", "удалён") +
+    `<div class="big" style="top:890px;height:430px"><div class="l"><div class="v">7.37</div><div class="ics">${it("ultimate_scepter")}<s>→</s>${ab("kunkka_ghostship")}</div><b>Аганим: флот</b><span>два корабля с ядрами</span></div>
+      <div class="scheme" style="width:300px;height:300px"><div style="position:absolute;left:40px;top:70px;font-size:70px">⛵</div><div style="position:absolute;left:150px;top:160px;font-size:70px">⛵</div>
+      ${[[120, 95], [140, 80], [230, 190], [250, 175], [95, 140]].map(([x, y]) => `<div class="t" style="left:${x}px;top:${y}px;width:16px;height:16px;margin:-8px;background:#ff4d5e;box-shadow:0 0 12px #ff4d5e"></div>`).join("")}</div></div>` +
+    strip(1350, A + "kunkka_admirals_rum.png", "7.37", "Адмиральский ром", "fut") +
+    strip(1460, A + "kunkka_ghostship.png", "7.41", "Ром ×2", "fut") + subs("");
 }
 </script>
 </body></html>

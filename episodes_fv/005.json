@@ -191,14 +191,23 @@
           "e2": "врожденной",
           "e3": "7.41"
         }
-      }
+      },
+      "voice_file": "voice/005/f3.mp3"
     }
   ],
   "outro": {
-    "question": "Вступай|*во флот*",
-    "cta": "подпишись — и ты на борту",
-    "voice": "[confident] Вступай во флот Адмирала. Подпишись.",
-    "style": "follow",
-    "anim": "kunkka"
+    "question": "Подпишись",
+    "cta": "",
+    "voice": "[confident] Подпишись.",
+    "style": "big",
+    "anim": "kunkka",
+    "floats": [
+      "ability:kunkka_torrent",
+      "ability:kunkka_tidebringer",
+      "ability:kunkka_x_marks_the_spot",
+      "ability:kunkka_ghostship",
+      "ability:kunkka_tidal_wave",
+      "ability:kunkka_admirals_rum"
+    ]
   }
 }

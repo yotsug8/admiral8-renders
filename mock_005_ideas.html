@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<style>
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2); }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2); unicode-range: U+0000-00FF; }
+/* Макеты идей визуала для выпуска 005 (тема «Адмирал»): маршрут, мини-схема, было→стало, реакция героя */
+:root { --ink: #eef6fb; --acc: #5fd4c4; --hot: #ff4d5e; --dark: #020a14; --line: rgba(238,246,251,.22); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #061627; color: var(--ink); font-family: Manrope; }
+.bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.35), transparent 70%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px);
+  background-size: auto, 120px 120px, 120px 120px; }
+.waves { position: absolute; left: 0; top: 1660px; width: 1080px; height: 260px; background:
+  radial-gradient(ellipse 90px 30px at 90px 0, transparent 70%, #12507a 72%) 0 30px / 180px 60px repeat-x, linear-gradient(#12507a, #1b6f93); }
+.head { position: absolute; left: 60px; top: 245px; font: 900 84px/1.04 Unbounded; }
+.head .on { color: var(--acc); } .head .off { opacity: .4; }
+.hero { position: absolute; right: 50px; top: 170px; height: 330px; filter: drop-shadow(0 0 24px rgba(95,212,196,.5)); }
+.card { position: absolute; left: 60px; width: 880px; border-radius: 22px; background: linear-gradient(180deg, #11355a, #0a2340); border: 4px solid var(--line);
+  box-shadow: 0 12px 0 rgba(2,10,20,.65); display: flex; align-items: center; gap: 26px; padding: 0 30px; }
+.card.on { border-color: var(--acc); box-shadow: 0 12px 0 rgba(2,10,20,.65), 0 0 26px rgba(95,212,196,.35); }
+.card.dim { opacity: .5; }
+.ics { display: flex; align-items: center; gap: 10px; flex: none; }
+.ics img { border-radius: 14px; border: 3px solid var(--ink); }
+.ics .ab { width: 128px; height: 128px; } .ics .it { width: 88px; height: 64px; border-radius: 10px; }
+.ics s { font: 900 40px Unbounded; text-decoration: none; }
+.tx { flex: 1; min-width: 0; }
+.v { display: inline-block; padding: 6px 16px 9px; border-radius: 8px; background: var(--ink); color: #0a2340; border-left: 12px solid var(--hot); font: 900 34px/1 Unbounded; margin-bottom: 12px; }
+.tx b { display: block; font: 900 40px/1.08 Unbounded; text-transform: uppercase; }
+.tx span { display: block; margin-top: 10px; font: 800 32px/1.15 Manrope; opacity: .8; }
+.tag { position: absolute; right: -10px; top: -18px; padding: 4px 14px 7px; border-radius: 10px; font: 900 26px/1 Unbounded; color: var(--dark); background: var(--acc); }
+.subs { position: absolute; left: 60px; width: 880px; top: 1468px; text-align: center; font: 800 56px Manrope; }
+.subs i { font-style: normal; background: var(--acc); color: var(--dark); padding: 2px 12px; border-radius: 12px; }
+.lab { position: absolute; left: 60px; top: 120px; padding: 8px 18px; border-radius: 12px; background: var(--hot); color: #fff; font: 900 34px Unbounded; }
+/* 1. Маршрут по карте */
+.route { position: absolute; left: 60px; top: 520px; width: 880px; height: 150px; }
+.route svg { position: absolute; inset: 0; overflow: visible; }
+.isl { position: absolute; top: 46px; width: 92px; margin-left: -46px; text-align: center; }
+.isl i { display: block; margin: 0 auto; width: 46px; height: 46px; border-radius: 50%; background: #2a8fa0; border: 5px solid var(--ink); }
+.isl.past i { background: var(--acc); } .isl.cur i { background: var(--hot); width: 56px; height: 56px; margin-top: -5px; box-shadow: 0 0 22px var(--hot); }
+.isl b { display: block; margin-top: 8px; font: 900 26px Unbounded; } .isl.fut { opacity: .45; }
+.ship { position: absolute; top: -6px; font-size: 54px; }
+/* 2. Мини-схема */
+.scheme { position: relative; width: 250px; height: 250px; flex: none; border-radius: 50%; background: radial-gradient(circle, rgba(95,212,196,.12), rgba(2,10,20,.6));
+  border: 3px dashed rgba(238,246,251,.35); }
+.scheme .k { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; border-radius: 50%; background: var(--ink); border: 5px solid #0a2340; }
+.scheme .t { position: absolute; width: 26px; height: 26px; margin: -13px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 8px rgba(95,212,196,.25), 0 0 0 18px rgba(95,212,196,.12); }
+.scheme .t.old { opacity: .35; box-shadow: none; }
+.cross { position: absolute; width: 110px; height: 110px; margin: -55px; border-radius: 50%; border: 5px solid var(--hot); }
+.cross:before, .cross:after { content: ""; position: absolute; background: var(--hot); }
+.cross:before { left: 50%; top: -18px; bottom: -18px; width: 5px; margin-left: -2px; } .cross:after { top: 50%; left: -18px; right: -18px; height: 5px; margin-top: -2px; }
+/* 3. Было → стало */
+.nums { display: flex; gap: 14px; margin-top: 14px; }
+.num { padding: 6px 14px 9px; border-radius: 12px; background: rgba(2,10,20,.55); border: 3px solid var(--line); font: 900 34px Unbounded; white-space: nowrap; }
+.num del { color: rgba(238,246,251,.45); text-decoration-color: var(--hot); text-decoration-thickness: 5px; }
+.num ins { text-decoration: none; color: var(--hot); }
+/* 4. Реакция героя */
+.hero.hit { filter: grayscale(.7) brightness(.6) drop-shadow(0 0 30px rgba(255,77,94,.9)); transform: translateX(-10px) rotate(-3deg); }
+.shk { position: absolute; font: 900 60px Unbounded; color: var(--hot); }
+</style></head>
+<body>
+<div class="bg"></div>
+<div class="waves"></div>
+<div id="f"></div>
+<script>
+const f = +new URLSearchParams(location.search).get("f") || 1, R = document.getElementById("f");
+const A = "assets/abilities/", I = "_fv_work/";
+const head = (a, b, on) => `<div class="head"><span class="${on === 0 ? "on" : "off"}">${a}</span><br>→ <span class="${on === 1 ? "on" : "off"}">${b}</span></div>`;
+const hero = (cls = "") => `<img class="hero ${cls}" src="assets/anim/kunkka/001.webp">`;
+const card = (top, h, icons, ver, title, sub, tag, cls = "", extra = "", tail = "") =>
+  `<div class="card ${cls}" style="top:${top}px;height:${h}px"><div class="ics">${icons}</div><div class="tx"><div class="v">${ver}</div><b>${title}</b><span>${sub}</span>${extra}</div>${tail}<div class="tag">${tag}</div></div>`;
+const ab = k => `<img class="ab" src="${A}${k}.png">`, it = k => `<img class="it" src="${I}item_${k}.png">`;
+const subs = t => `<div class="subs">${t}</div>`;
+if (f === 1) {
+  // Маршрут: острова-патчи, кораблик у текущего
+  const vs = ["7.23", "7.28", "7.33", "7.36", "7.37", "7.41"], cur = 1;
+  const xs = vs.map((_, k) => 46 + k * 157);
+  R.innerHTML = `<div class="lab">1 · Маршрут по патчам</div>` + head("7.23", "7.28", 1) + hero() +
+    `<div class="route"><svg viewBox="0 0 880 150"><path d="M46 69 ${xs.slice(1).map((x, k) => `Q ${x - 78} ${k % 2 ? 20 : 120} ${x} 69`).join(" ")}" fill="none" stroke="#eef6fb" stroke-width="5" stroke-dasharray="4 14" stroke-linecap="round" opacity=".6"/></svg>
+     ${vs.map((v, k) => `<div class="isl ${k < cur ? "past" : k === cur ? "cur" : "fut"}" style="left:${xs[k]}px"><i></i><b>${v}</b></div>`).join("")}
+     <div class="ship" style="left:${xs[cur] - 80}px">⛵</div></div>` +
+    card(720, 330, it("ultimate_scepter") + "<s>→</s>" + ab("kunkka_torrent_storm"), "7.23", "Аганим: Торрент Шторм", "5 секунд торренты в случайных местах", "добавили", "dim") +
+    card(1080, 330, it("aghanims_shard") + "<s>→</s>" + ab("kunkka_tidal_wave"), "7.28", "Шард: Тайдал Вейв", "волна тащит врагов за собой", "добавили", "on") +
+    subs("у Кунки <i>появился</i> шард");
+}
+if (f === 2) {
+  // Мини-схема в карточке: торренты в случайных местах вокруг Кунки / прицел
+  const t = [[60, 70], [190, 60], [40, 170], [200, 190], [120, 220], [175, 120]];
+  R.innerHTML = `<div class="lab">2 · Мини-схема в карточке</div>` + head("7.23", "7.28", 0) + hero() +
+    card(520, 400, ab("kunkka_torrent_storm"), "7.23", "Торрент Шторм", "торренты в случайных местах", "добавили", "on", "",
+      `<div class="scheme"><div class="k"></div>${t.map(([x, y]) => `<div class="t" style="left:${x}px;top:${y}px"></div>`).join("")}</div>`) +
+    card(960, 400, ab("kunkka_torrent_storm"), "7.33", "В точку", "торренты бьют в прицел", "изменили", "", "",
+      `<div class="scheme"><div class="k" style="left:30%;top:70%"></div><div class="cross" style="left:66%;top:34%"></div>${[[150, 70], [175, 95], [140, 100], [170, 60]].map(([x, y]) => `<div class="t" style="left:${x}px;top:${y}px"></div>`).join("")}</div>`) +
+    subs("пять секунд <i>торренты</i> бьют");
+}
+if (f === 3) {
+  // Было → стало цифрами
+  R.innerHTML = `<div class="lab">3 · Было → стало цифрами</div>` + head("7.33", "7.36", 0) + hero() +
+    card(520, 300, ab("kunkka_torrent_storm"), "7.33", "Торрент Шторм — в точку", "раньше только вокруг себя", "изменили", "dim") +
+    card(850, 420, ab("kunkka_torrent_storm"), "7.34e · 7.35", "Порезали", "", "изменили", "on",
+      `<div class="nums"><div class="num"><del>5 с</del> → <ins>4 с</ins></div><div class="num"><del>70</del> → <ins>75</ins> КД</div></div><div class="nums"><div class="num"><del>250</del> → <ins>275</ins> маны</div></div>`) +
+    subs("а потом <i>порезали</i>");
+}
+if (f === 4) {
+  // Реакция героя на «удалили»
+  R.innerHTML = `<div class="lab">4 · Кунка реагирует</div>` + head("7.37", "7.41", 0) + hero("hit") +
+    `<div class="shk" style="right:330px;top:230px">!</div><div class="shk" style="right:40px;top:200px;transform:rotate(14deg)">!</div>` +
+    card(720, 330, ab("kunkka_torrent_storm"), "7.37", "Торрент Шторм", "удалён из игры", "удалили", "", "", "") +
+    subs("Торрент Шторм <i>удалили</i>");
+  document.querySelector(".card").style.borderColor = "var(--hot)";
+  document.querySelector(".card .ics img").style.filter = "grayscale(1) brightness(.55)";
+}
+</script>
+</body></html>

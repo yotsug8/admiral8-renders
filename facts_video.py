@@ -414,9 +414,9 @@ def render_frames(segs, total, video_path, qa_path, theme=""):
 
     data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
-    ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "mjpeg",
+    ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "png",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                           "-crf", "19", "-preset", "medium", str(video_path)], stdin=subprocess.PIPE)
+                           "-crf", "16", "-preset", "medium", str(video_path)], stdin=subprocess.PIPE)
     # Ключевые моменты для проверки и контрольного листа
     checks = []
     for s in segs:
@@ -436,7 +436,7 @@ def render_frames(segs, total, video_path, qa_path, theme=""):
         for fi in frames:
             t = fi / FPS
             page.evaluate("t => seek(t)", t)
-            jpg = page.screenshot(type="jpeg", quality=92)
+            jpg = page.screenshot(type="png")          # без потерь: JPEG мылил мелкие детали
             ff.stdin.write(jpg)
             if ci < len(checks) and t >= checks[ci]:
                 for b in page.evaluate("() => audit()"):

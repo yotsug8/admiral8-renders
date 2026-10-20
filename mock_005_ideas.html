@@ -277,7 +277,7 @@ if (f === 8) {
 
 
 const piers2 = (cur) => { const vs = ["7.23", "7.28", "7.33", "7.36", "7.37", "7.41"];
-  return `<div class="rope">${vs.map((v, k) => `<div class="pier ${k < cur ? "past" : k === cur ? "now" : "fut"}" style="left:${100 + k * 148}px">${k === cur ? '<div class="knot"></div><div class="pl2">' + v + '</div><div class="rib">СЕЙЧАС</div>' : '<div class="pl2">' + v + "</div>"}</div>`).join("")}</div>`; };
+  return `<div class="rope">${vs.map((v, k) => `<div class="pier ${k < cur ? "past" : k === cur ? "now" : "fut"}" style="left:${76 + k * 145.6}px">${k === cur ? '<div class="knot"></div><div class="pl2">' + v + '</div><div class="rib">СЕЙЧАС</div>' : '<div class="pl2">' + v + "</div>"}</div>`).join("")}</div>`; };
 const mcw = (top, ver, kind, icons, title, sub, cls = "", extra = "") => `<div class="mc wide ${cls}" style="top:${top}px"><div class="cap"><span class="ver">${ver}</span>изменение<span class="kind">${kind}</span></div>
   <div class="body"><div class="ics">${icons}</div><b class="t">${title}</b><span class="sub">${sub}</span>${extra}</div></div>`;
 if (f === 9) {

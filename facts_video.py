@@ -634,11 +634,13 @@ def voices(arg, out_dir):
     иначе — id через запятую: одна и та же фраза каждым голосом (voice_<id>.mp3)."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    if arg == "list":
+    if arg == "list" or arg.startswith("list:"):
         import urllib.parse
         found = {}
-        queries = [dict(language="ru", sort_by="task_count")] + \
-                  [dict(language="ru", title=t) for t in ("мем", "смеш", "угар", "прикол", "мульт", "озвучк")]
+        # «list:слово;слово» — поиск по своим словам в названии (например, пират;капитан;бас)
+        words = arg[5:].split(";") if arg.startswith("list:") else ["мем", "смеш", "угар", "прикол", "мульт", "озвучк"]
+        queries = ([dict(language="ru", sort_by="task_count")] if arg == "list" else []) + \
+                  [dict(language="ru", title=t.strip()) for t in words if t.strip()]
         for q in queries:
             url = "https://api.fish.audio/model?" + urllib.parse.urlencode(dict(q, page_size=60))
             req = urllib.request.Request(url, headers={"Authorization": f"Bearer {FISH_KEY}"})

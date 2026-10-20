@@ -1,42 +1,53 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
+<html lang="ru"><head><meta charset="utf-8">
 <style>
-@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2) format("woff2"); }
-@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
-@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2) format("woff2"); }
-@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
-/* Обложка TikTok 1080×1920, всё важное в середине (y 240–1680). Тема «Сонар»: радар, неон, штамп УДАЛЁН */
-:root { --bg: #031417; --ink: #d8fff4; --acc: #3ef0c0; --hot: #ff6b3d; --dark: #010809; }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2); }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2); unicode-range: U+0000-00FF; }
+/* Обложка 005 в теме «Адмирал»: заголовок, Кунка, канат с патчами, карточка «удалён» со штампом */
+:root { --ink: #eef6fb; --acc: #5fd4c4; --red: #d9443b; --navy: #0a2340; --paper: #efe6d2; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
-.rings { position: absolute; inset: 0; background: repeating-radial-gradient(circle at 540px 1000px, transparent 0 118px, rgba(62,240,192,.12) 118px 121px); }
-.sweep { position: absolute; left: 540px; top: 1000px; width: 1600px; height: 1600px; margin: -800px; border-radius: 50%; transform: rotate(-60deg);
-  background: conic-gradient(from 0deg, rgba(62,240,192,.3), rgba(62,240,192,0) 60deg, transparent 360deg); }
-.head { position: absolute; left: 60px; top: 260px; width: 960px; font: 900 96px/1.04 Unbounded; color: var(--ink); text-transform: uppercase; letter-spacing: -.03em;
-  text-shadow: 0 0 30px rgba(62,240,192,.45); }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: #061627; color: var(--ink); font-family: Manrope; }
+.bg { position: absolute; inset: 0; background-image: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.4), transparent 70%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.5) 100%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.25 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+  background-size: auto, auto, 120px 120px, 120px 120px, 600px 600px; }
+.grain { position: absolute; inset: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); opacity: .35; mix-blend-mode: overlay; }
+.waves { position: absolute; left: 0; top: 1680px; width: 1080px; height: 240px; background: linear-gradient(#12507a, #1b6f93); border-top: 6px solid rgba(238,246,251,.35); }
+.pre { position: absolute; left: 60px; top: 250px; padding: 8px 18px 10px; background: var(--red); color: var(--paper); font: 900 34px/1 Unbounded; border-radius: 8px 8px 0 0; }
+.head { position: absolute; left: 60px; top: 300px; width: 960px; padding: 22px 30px 28px; border: 3px solid rgba(238,246,251,.22); border-radius: 0 18px 18px 18px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, rgba(2,10,20,.55), rgba(2,10,20,.75)); font: 900 128px/1.0 Unbounded; text-transform: uppercase; letter-spacing: -.03em; }
 .head em { font-style: normal; color: var(--acc); }
-.hero { position: absolute; left: -40px; top: 640px; width: 760px; filter: drop-shadow(0 0 30px rgba(62,240,192,.5)) drop-shadow(14px 18px 0 rgba(1,8,9,.7)); }
-.card { position: absolute; width: 300px; padding: 26px 0 22px; border-radius: 30px; background: #072a2c; border: 5px solid var(--acc);
-  box-shadow: 0 0 40px rgba(62,240,192,.45); display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.card img { width: 190px; height: 190px; border-radius: 22px; border: 5px solid var(--ink); }
-.card b { font: 900 34px/1 Unbounded; color: var(--ink); text-transform: uppercase; }
-.card.dead { border-color: var(--hot); box-shadow: 0 0 40px rgba(255,107,61,.5); }
-.card.dead img { filter: grayscale(1) brightness(.6); }
-.stamp { position: absolute; padding: 6px 26px 12px; border: 10px solid var(--hot); border-radius: 20px; color: var(--hot); background: rgba(1,8,9,.9);
-  font: 900 64px/1 Unbounded; box-shadow: 0 0 40px rgba(255,107,61,.6); transform: rotate(-12deg); }
-.wm { position: absolute; left: 62px; top: 1600px; font: 800 30px Manrope; color: rgba(216,255,244,.45); }
-</style>
-</head>
-<body>
-<div class="rings"></div>
-<div class="sweep"></div>
-<div class="head">Что Valve<br>сделали<br>с <em>Кункой?</em></div>
+.hero { position: absolute; left: -30px; top: 700px; width: 640px; filter: drop-shadow(0 0 30px rgba(95,212,196,.45)) drop-shadow(12px 16px 0 rgba(1,8,9,.7)); }
+.rope { position: absolute; left: 60px; top: 640px; width: 960px; height: 8px; border-radius: 4px; background: repeating-linear-gradient(60deg, #c9b48a 0 10px, #8f7a52 10px 20px); }
+.pl { position: absolute; top: 612px; width: 130px; margin-left: -65px; padding: 10px 0 12px; text-align: center; font: 900 30px Unbounded; border: 3px solid rgba(238,246,251,.25); border-radius: 10px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #2a4b6d, #10304f); color: var(--acc); }
+.pl.now { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #e2564c, #b8352d); color: var(--paper); border: 4px solid var(--navy); box-shadow: 6px 6px 0 var(--navy); top: 600px; padding: 14px 0 16px; font-size: 34px; }
+.card { position: absolute; left: 560px; width: 400px; }
+.cap { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-radius: 18px 18px 0 0; font: 900 28px Unbounded; text-transform: uppercase; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.3 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); }
+.cap b { padding: 4px 10px 6px; border-radius: 6px; }
+.body { padding: 24px; border-radius: 0 0 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 14px; position: relative; box-shadow: 0 12px 0 rgba(2,10,20,.65); }
+.body img { width: 176px; height: 176px; border-radius: 20px; border: 4px solid var(--ink); }
+.body .it { width: 176px; height: 128px; }
+.body span { font: 900 34px/1.05 Unbounded; text-transform: uppercase; text-align: center; }
+.dead .cap { background-color: var(--red); color: var(--paper); } .dead .cap b { background: var(--paper); color: var(--navy); }
+.dead .body { border: 5px solid var(--red); border-top: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #3a1d2a, #1c0f1b); }
+.dead .body img { filter: grayscale(1) brightness(.55); }
+.add .cap { background-color: var(--acc); color: var(--navy); } .add .cap b { background: var(--navy); color: var(--ink); }
+.add .body { border: 5px solid var(--acc); border-top: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #13406a, #0a2340); }
+.stamp { position: absolute; left: 50%; top: 70px; transform: translateX(-50%) rotate(-12deg); padding: 8px 20px 12px; border: 6px solid var(--red); outline: 3px solid var(--red); outline-offset: 5px;
+  color: var(--red); font: 900 54px/1 Unbounded; background: rgba(10,35,64,.7); -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='3' seed='6' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); -webkit-mask-size: 300px 300px; white-space: nowrap; }
+.wm { position: absolute; left: 62px; top: 1610px; font: 800 30px Manrope; color: rgba(238,246,251,.5); }
+</style></head><body>
+<div class="bg"></div>
+<div class="pre">патч 7.23 → 7.41</div>
+<div class="head">Кунка<br><em>за 7 лет</em></div>
+<div class="rope"></div>
+<div class="pl" style="left:125px">7.23</div><div class="pl" style="left:291px">7.28</div><div class="pl" style="left:457px">7.33</div><div class="pl" style="left:623px">7.36</div><div class="pl now" style="left:789px">7.37</div><div class="pl" style="left:955px">7.41</div>
 <img class="hero" src="assets/anim/kunkka/001.webp">
-<div class="card dead" style="left:630px;top:700px;transform:rotate(4deg)"><img src="assets/abilities/kunkka_torrent_storm.png"><b>Шторм</b></div>
-<div class="stamp" style="left:600px;top:800px">УДАЛЁН</div>
-<div class="card" style="left:630px;top:1130px;transform:rotate(-3deg)"><img src="_fv_work/item_ultimate_scepter.png"><b>Аганим</b></div>
+<div class="card dead" style="top:780px"><div class="cap"><b>7.37</b>удалили</div><div class="body"><img src="assets/abilities/kunkka_torrent_storm.png"><span>Торрент Шторм</span><div class="stamp">УДАЛЁН</div></div></div>
+<div class="card add" style="top:1200px"><div class="cap"><b>7.37</b>добавили</div><div class="body"><img src="assets/abilities/kunkka_ghostship.png"><span>Аганим: флот</span></div></div>
+<div class="waves"></div>
+<div class="grain"></div>
 <div class="wm">@admiral8dota</div>
-</body>
-</html>
+</body></html>

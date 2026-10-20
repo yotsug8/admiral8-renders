@@ -318,7 +318,7 @@ async function init(data) {
           const im = $("img", null, c); im.src = src;
           // Иконки и логотипы — по ширине карточки, над плашкой с цифрой
           if (src.includes("/item_")) im.className = "icon";
-          else if (src.includes("/teams/") || src.includes("/orgs/") || src.includes("/events/")) im.className = "logo";
+          else if (/\/(teams|orgs|events|ui)\//.test(src)) im.className = "logo";
         }
         // Плашка с главной цифрой факта
         const st = (s.stats || [])[k];

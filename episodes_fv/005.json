@@ -145,7 +145,8 @@
           "7.37",
           "7.41"
         ]
-      }
+      },
+      "voice_file": "voice/005/f2.mp3"
     },
     {
       "layout": "chronicle",

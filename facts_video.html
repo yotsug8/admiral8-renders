@@ -147,34 +147,21 @@ body.tb .pg i { background: var(--acc); }
 .belt { position: absolute; left: 0; width: 1080px; height: 54px; background: repeating-linear-gradient(90deg, #3a3f4a 0 40px, #2a2e37 40px 80px);
   border-top: 6px solid var(--ink); border-bottom: 6px solid var(--ink); }
 /* «Дом»: крыша и три этажа-квартиры */
-.roof { position: absolute; left: 40px; top: 470px; width: 920px; height: 110px; background: var(--acc); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-.floor { position: absolute; left: 60px; width: 880px; height: 255px; border-radius: 22px; background: #22262e; border: 6px solid var(--ink);
-  box-shadow: 10px 10px 0 var(--acc); overflow: hidden; opacity: 0; }
-.floor .hb { position: absolute; left: 14px; bottom: 0; width: 300px; height: 236px; }
-.floor .hb img { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); max-width: 300px; max-height: 236px;
-  filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
-.floor .tg { position: absolute; left: 340px; top: 30px; padding: 6px 18px 10px; border-radius: 14px; font: 900 36px/1 Unbounded; color: var(--dark); text-transform: uppercase; }
+/* «Дом»: фасад с крышей и трубой, на каждом этаже окно со светом и жильцом, подписи прямо на стене */
+.facade { position: absolute; left: 90px; top: 600px; width: 820px; height: 830px; background: #3a2f2a; border: 8px solid var(--ink);
+  border-radius: 10px 10px 0 0; box-shadow: 16px 16px 0 var(--acc);
+  background-image: linear-gradient(rgba(0,0,0,.18) 3px, transparent 3px); background-size: 100% 46px; }
+.roof { position: absolute; left: 50px; top: 470px; width: 900px; height: 140px; background: #b5402f; clip-path: polygon(8% 100%, 50% 0, 92% 100%); }
+.chimney { position: absolute; left: 690px; top: 480px; width: 70px; height: 100px; background: #6b4a3a; border: 6px solid var(--dark); }
+.floor { position: absolute; left: 90px; width: 820px; height: 272px; opacity: 0; }
+.floor .win { position: absolute; left: 36px; top: 28px; width: 250px; height: 210px; border-radius: 12px; background: #ffe58a;
+  border: 10px solid #f4f4f2; box-shadow: inset 0 0 0 6px var(--dark), 8px 8px 0 var(--dark); overflow: hidden; }
+.floor .win img { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); max-width: 210px; max-height: 196px; }
+.floor .sill { position: absolute; left: 22px; top: 234px; width: 278px; height: 18px; background: var(--ink); border-radius: 4px; }
+.floor .tg { position: absolute; left: 320px; top: 44px; padding: 6px 18px 10px; border-radius: 14px; font: 900 40px/1 Unbounded; color: var(--dark);
+  text-transform: uppercase; border: 5px solid var(--dark); }
 .floor .tg.g { background: #2fd36b; } .floor .tg.r { background: #ff5a4e; } .floor .tg.y { background: var(--acc); }
-.floor .tx { position: absolute; left: 340px; top: 100px; width: 420px; font: 800 34px/1.2 Manrope; color: var(--ink); }
-.floor .ab { position: absolute; right: 22px; bottom: 22px; width: 92px; height: 92px; border-radius: 16px; border: 5px solid var(--dark); box-shadow: 6px 6px 0 var(--dark); }
-/* «Домофон»: металлическая панель, решётка динамика, квартиры с кнопками звонка */
-.intercom { position: absolute; left: 60px; top: 470px; width: 880px; height: 920px; border-radius: 44px;
-  background: linear-gradient(160deg, #4a505c, #2b2f37 60%, #23262d); border: 8px solid var(--ink); box-shadow: 16px 16px 0 var(--acc); }
-.intercom .grill { position: absolute; left: 330px; top: 30px; width: 280px; height: 90px; border-radius: 20px; background: #1b1d22;
-  background-image: radial-gradient(#555b67 5px, transparent 6px); background-size: 28px 28px; border: 5px solid var(--dark); }
-.intercom .scr { position: absolute; left: 40px; top: 44px; width: 260px; height: 62px; border-radius: 12px; background: #0c2a1a; border: 4px solid var(--dark);
-  font: 900 28px/56px Unbounded; color: #45f08a; text-align: center; letter-spacing: .05em; }
-.apt { position: absolute; left: 30px; width: 804px; height: 236px; border-radius: 28px; background: #1d2026; border: 5px solid #5a606c; opacity: 0; }
-.apt .ph { position: absolute; left: 18px; top: 16px; width: 196px; height: 196px; border-radius: 50%; overflow: hidden; background: var(--ink);
-  border: 7px solid var(--dark); box-shadow: 0 0 0 6px #5a606c; }
-.apt .ph img { position: absolute; left: 6%; top: 8%; width: 88%; height: 92%; object-fit: contain; object-position: 50% 100%; }   /* герой целиком в «глазке» */
-.apt .no { position: absolute; left: 250px; top: 26px; font: 900 32px/1 Unbounded; color: rgba(244,244,242,.55); }
-.apt .tg { position: absolute; left: 250px; top: 70px; padding: 6px 18px 10px; border-radius: 14px; font: 900 40px/1 Unbounded; color: var(--dark); text-transform: uppercase; }
-.apt .tg.g { background: #2fd36b; } .apt .tg.r { background: #ff5a4e; } .apt .tg.y { background: var(--acc); }
-.apt .tx { position: absolute; left: 250px; top: 136px; width: 400px; font: 800 34px/1.2 Manrope; color: var(--ink); }
-.apt .bell { position: absolute; right: 30px; top: 70px; width: 110px; height: 110px; border-radius: 50%; background: #c9ced8;
-  border: 7px solid var(--dark); box-shadow: inset 0 -10px 0 #9aa0ab; display: flex; align-items: center; justify-content: center; }
-.apt .bell img { width: 70px; height: 70px; border-radius: 12px; border: 4px solid var(--dark); }
+.floor .tx { position: absolute; left: 320px; top: 122px; width: 470px; font: 800 38px/1.18 Manrope; color: var(--ink); text-shadow: 0 3px 0 var(--dark); }
 /* «Сутки»: циферблат день/ночь, подпись, плитки дней */
 .dial { position: absolute; left: 290px; top: 470px; width: 500px; height: 500px; border-radius: 50%; border: 10px solid var(--ink);
   background: conic-gradient(var(--acc) 0 180deg, #24305e 180deg 360deg); box-shadow: 16px 16px 0 var(--dark); }
@@ -424,29 +411,14 @@ async function init(data) {
       });
     } else if (s.layout === "house") {
       P.lines = headline(el, s.headline);
-      P.roof = $("div", "roof", el);
+      P.chimney = $("div", "chimney", el); P.roof = $("div", "roof", el); P.facade = $("div", "facade", el);
       P.floors = v.heroes.map((src, k) => {
-        const f = $("div", "floor", el, `top:${580 + k * 275}px`);
-        $("img", null, $("div", "hb", f)).src = src;
+        const f = $("div", "floor", el, `top:${606 + k * 272}px`);
+        $("img", null, $("div", "win", f)).src = src;
+        $("div", "sill", f);
         const tg = $("div", "tg " + ((v.colors || [])[k] || "y"), f); tg.textContent = (v.tags || [])[k] || "";
         $("div", "tx", f).textContent = (v.notes || [])[k] || "";
-        if ((v.ability_icons || [])[k]) $("img", "ab", f).src = v.ability_icons[k];
         return f;
-      });
-    } else if (s.layout === "intercom") {
-      P.lines = headline(el, s.headline);
-      P.panel = $("div", "intercom", el);
-      $("div", "grill", P.panel);
-      const scr = $("div", "scr", P.panel); scr.textContent = v.screen || "ЗВОНОК";
-      P.apts = v.heroes.map((src, k) => {
-        const a = $("div", "apt", P.panel, `top:${140 + k * 255}px`);
-        $("img", null, $("div", "ph", a)).src = src;
-        $("div", "no", a).textContent = "кв. " + (k + 1);
-        const tg = $("div", "tg " + ((v.colors || [])[k] || "y"), a); tg.textContent = (v.tags || [])[k] || "";
-        $("div", "tx", a).textContent = (v.notes || [])[k] || "";
-        const b = $("div", "bell", a);
-        if ((v.ability_icons || [])[k]) $("img", null, b).src = v.ability_icons[k];
-        return a;
       });
     } else if (s.layout === "dayclock") {
       P.lines = headline(el, s.headline);
@@ -699,24 +671,13 @@ function drawExtra(g, lt) {
     });
   }
   if (s.layout === "house") {
-    const kr = eBack((lt - 0.2) / 0.5); P.roof.style.transform = `translateY(${(1 - kr) * -80}px)`; P.roof.style.opacity = clamp(kr * 2);
+    const kr = eBack((lt - 0.15) / 0.5);
+    [P.roof, P.chimney, P.facade].forEach(x => { x.style.opacity = clamp(kr * 2); x.style.transform = `translateY(${(1 - kr) * 60}px)`; });
     P.floors.forEach((f, k) => {
       const t0 = C("f" + k, 0.6 + k * 1.5), e = eBack((lt - t0 + 0.05) / 0.45);
       let sx = 0, sy = 0;
       if (k === v.shake && lt > t0 + 0.4) { sx = Math.sin(lt * 47) * 7; sy = Math.cos(lt * 39) * 5; }   // этаж Эрдшейкера трясётся
-      f.style.opacity = clamp(e * 2); f.style.transform = `translate(${(1 - e) * (k % 2 ? 120 : -120) + sx}px, ${sy}px)`;
-    });
-  }
-  if (s.layout === "intercom") {
-    const kp = eBack((lt - 0.15) / 0.5); P.panel.style.opacity = clamp(kp * 2); P.panel.style.transform = `translateY(${(1 - kp) * 80}px)`;
-    P.apts.forEach((a, k) => {
-      const t0 = C("f" + k, 0.8 + k * 1.5), e = eBack((lt - t0 + 0.05) / 0.4);
-      let sx = 0, sy = 0;
-      if (k === v.shake && lt > t0 + 0.4) { sx = Math.sin(lt * 47) * 7; sy = Math.cos(lt * 39) * 5; }   // квартира Эрдшейкера трясётся
-      a.style.opacity = clamp(e * 2); a.style.transform = `translate(${sx}px, ${sy + (1 - e) * 40}px)`;
-      // Кнопка звонка «нажимается» в момент появления
-      const b = a.querySelector(".bell"), pr = clamp((lt - t0) / 0.25);
-      b.style.transform = `scale(${pr < 1 ? 0.88 + 0.12 * pr : 1})`; b.style.background = lt - t0 < 0.6 && lt > t0 ? "var(--acc)" : "#c9ced8";
+      f.style.opacity = clamp(e * 2); f.style.transform = `translate(${sx}px, ${sy + (1 - e) * 30}px)`;   // жилец появляется в окне
     });
   }
   if (s.layout === "dayclock") {
@@ -854,7 +815,7 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .floor, .dial, .daytile, .daylab, .hrow, .intercom"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .facade, .dial, .daytile, .daylab, .hrow"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))

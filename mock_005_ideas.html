@@ -139,7 +139,43 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: #06162
 .sc .ver { padding: 5px 12px 7px; background: var(--ink); color: #0a2340; border-radius: 8px; font-size: 28px; }
 .sc em { margin-left: auto; font: 900 24px Unbounded; font-style: normal; padding: 5px 12px 7px; border-radius: 8px; border: 3px solid currentColor; }
 .sc.past { opacity: .6; } .sc.fut { opacity: .32; }
-.sc.dead .tab { background: var(--hot); } .sc.dead { border-color: rgba(255,77,94,.6); } .sc.dead em { color: var(--hot); } .sc.dead img { filter: grayscale(1) brightness(.6); }
+.sc.dead .tab, .sc .tab.r { background: var(--hot); } .sc.dead { border-color: rgba(255,77,94,.6); } .sc.dead em { color: var(--hot); } .sc.dead img { filter: grayscale(1) brightness(.6); }
+/* ===== Вариант Г: новое — без неона (плотные цвета, бумага, жёсткие тени, штампы) ===== */
+:root { --paper: #efe6d2; --paper2: #e2d5b8; --navy: #0a2340; --red: #d9443b; }
+/* текущий патч: красная пластина на канате + лента «сейчас» с вырезами */
+.pier.now { top: 0; width: 150px; margin-left: -75px; }
+.pier.now .pl2 { font-size: 36px; padding: 14px 0 16px; background: var(--red); color: var(--paper); border: 4px solid var(--navy); border-radius: 10px;
+  box-shadow: 6px 6px 0 var(--navy); }
+.pier.now .pl2:before, .pier.now .pl2:after { background: var(--paper); }
+.pier.now .rib { position: relative; margin: -4px auto 0; width: 130px; padding: 4px 0 8px; text-align: center; background: var(--paper); color: var(--navy);
+  font: 900 20px/1 Unbounded; letter-spacing: .08em; clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%, 8% 50%); }
+.pier.now .knot { position: absolute; left: 50%; top: -14px; width: 18px; height: 18px; margin-left: -9px; background: #c9b48a; border: 3px solid var(--navy); transform: rotate(45deg); }
+/* карточка без схемы: содержимое во всю ширину */
+.mc.wide .body { flex-direction: column; align-items: stretch; gap: 0; }
+/* «удалили»: красная шапка, иконка гаснет, резиновый штамп */
+.mc.del .cap { background: var(--red); color: var(--paper); } .mc.del .cap .ver { background: var(--paper); color: var(--navy); } .mc.del .cap .kind { border-color: var(--paper); }
+.mc.del .body { border-color: var(--red); box-shadow: 0 14px 0 rgba(2,10,20,.65); }
+.mc.del .ics .ab { filter: grayscale(1) brightness(.55); }
+.rstamp { position: absolute; right: 44px; top: 70px; padding: 10px 22px 14px; border: 6px solid var(--red); outline: 3px solid var(--red); outline-offset: 5px;
+  color: var(--red); font: 900 52px/1 Unbounded; transform: rotate(-9deg); background: rgba(10,35,64,.6); }
+/* «изменили»: бумажная карточка «было | стало» */
+.pc { position: absolute; left: 60px; width: 880px; }
+.pc .cap { display: flex; align-items: center; gap: 14px; height: 74px; padding: 0 22px; background: var(--navy); color: var(--paper); border: 4px solid var(--paper);
+  border-bottom: none; border-radius: 18px 18px 0 0; font: 900 34px/1 Unbounded; text-transform: uppercase; }
+.pc .cap .ver { padding: 6px 14px 8px; background: var(--red); color: var(--paper); border-radius: 8px; }
+.pc .cap .kind { margin-left: auto; font-size: 26px; padding: 6px 14px 8px; border: 3px solid var(--paper); border-radius: 8px; }
+.pc .body { display: grid; grid-template-columns: 1fr 70px 1fr; background: var(--paper); color: var(--navy); border: 4px solid var(--paper);
+  border-radius: 0 0 18px 18px; box-shadow: 10px 12px 0 var(--navy); padding: 30px 30px 34px; }
+.pc .half { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.pc .half .h { padding: 4px 12px 7px; border-radius: 6px; font: 900 24px/1 Unbounded; letter-spacing: .06em; background: var(--navy); color: var(--paper); }
+.pc .half.new .h { background: var(--red); }
+.pc .half img { width: 150px; height: 150px; border-radius: 16px; border: 4px solid var(--navy); box-shadow: 6px 6px 0 rgba(10,35,64,.35); }
+.pc .half img.it { width: 123px; height: 90px; }
+.pc .half b { font: 900 38px/1.05 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.pc .half span { font: 800 30px/1.15 Manrope; opacity: .8; }
+.pc .half.old img { filter: grayscale(.6); } .pc .half.old b, .pc .half.old span { opacity: .55; }
+.pc .arr { align-self: center; justify-self: center; font: 900 60px Unbounded; color: var(--red); }
+.paperline { background: repeating-linear-gradient(180deg, transparent 0 42px, rgba(10,35,64,.08) 42px 44px), var(--paper); }
 </style></head>
 <body>
 <div class="bg"></div>
@@ -239,7 +275,33 @@ if (f === 8) {
   document.querySelector(".subs").style.display = "none";
 }
 
+
+const piers2 = (cur) => { const vs = ["7.23", "7.28", "7.33", "7.36", "7.37", "7.41"];
+  return `<div class="rope">${vs.map((v, k) => `<div class="pier ${k < cur ? "past" : k === cur ? "now" : "fut"}" style="left:${100 + k * 148}px">${k === cur ? '<div class="knot"></div><div class="pl2">' + v + '</div><div class="rib">СЕЙЧАС</div>' : '<div class="pl2">' + v + "</div>"}</div>`).join("")}</div>`; };
+const mcw = (top, ver, kind, icons, title, sub, cls = "", extra = "") => `<div class="mc wide ${cls}" style="top:${top}px"><div class="cap"><span class="ver">${ver}</span>изменение<span class="kind">${kind}</span></div>
+  <div class="body"><div class="ics">${icons}</div><b class="t">${title}</b><span class="sub">${sub}</span>${extra}</div></div>`;
+if (f === 9) {
+  R.innerHTML = `<div class="lab">Г · добавили</div>` + hc("7.23", "7.28") + `<img class="hero c" src="assets/anim/kunkka/001.webp">` + piers2(0) +
+    mcw(660, "7.23", "добавили", it("ultimate_scepter") + "<s>→</s>" + ab("kunkka_torrent_storm"), "Аганим: Торрент Шторм", "5 секунд торренты бьют в случайных местах вокруг Кунки") +
+    sc(1330, A + "kunkka_tidal_wave.png", "7.28", "Шард: Тайдал Вейв", "fut") + subs("торренты <i>бьют</i> в случайных");
+}
+if (f === 10) {
+  R.innerHTML = `<div class="lab">Г · изменили</div>` + hc("7.33", "7.36") + `<img class="hero c" src="assets/anim/kunkka/001.webp">` + piers2(2) +
+    `<div class="pc" style="top:660px"><div class="cap"><span class="ver">7.33</span>изменение<span class="kind">изменили</span></div>
+     <div class="body paperline"><div class="half old"><div class="h">БЫЛО</div><img src="${A}kunkka_torrent_storm.png"><b>Вокруг себя</b><span>торренты только вокруг Кунки</span></div>
+     <div class="arr">→</div>
+     <div class="half new"><div class="h">СТАЛО</div><img src="${A}kunkka_torrent_storm.png"><b>В точку</b><span>кидается направленно</span></div></div></div>` +
+    sc(1250, A + "kunkka_tidebringer.png", "7.33", "Тайдбрингер: истощение", "fut") + sc(1378, A + "kunkka_tidebringer.png", "7.36", "Врождённый Тайдбрингер", "fut") + subs("");
+  document.querySelector(".subs").style.display = "none";
+}
+if (f === 11) {
+  R.innerHTML = `<div class="lab">Г · удалили</div>` + hc("7.37", "7.41") + `<img class="hero c" src="assets/anim/kunkka/001.webp">` + piers2(4) +
+    mcw(660, "7.37", "удалили", ab("kunkka_torrent_storm"), "Торрент Шторм", "удалён из игры насовсем", "del", '<div class="rstamp">УДАЛЁН</div>') +
+    sc(1170, A + "kunkka_ghostship.png", "7.37", "Аганим: флот", "fut") + sc(1298, A + "kunkka_admirals_rum.png", "7.37", "Адмиральский ром", "fut") + subs("");
+  document.querySelector(".subs").style.display = "none";
+}
+
 // Раскладка без наложений: карточки и полоски идут столбиком с зазором 24 px
-if (f >= 7) Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))]).then(() => { let y = null; [...document.querySelectorAll(".mc, .sc")].sort((a, b) => a.offsetTop - b.offsetTop).forEach(e => { if (y !== null) e.style.top = y + "px"; y = e.offsetTop + e.offsetHeight + 24; }); document.body.dataset.ready = 1; });
+if (f >= 7) Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => i.onload = i.onerror = r))]).then(() => { let y = null; [...document.querySelectorAll(".mc, .sc, .pc")].sort((a, b) => a.offsetTop - b.offsetTop).forEach(e => { if (y !== null) e.style.top = y + "px"; y = e.offsetTop + e.offsetHeight + 24; }); document.body.dataset.ready = 1; });
 </script>
 </body></html>

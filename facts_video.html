@@ -363,6 +363,15 @@ body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
 .pl .tag { position: absolute; right: -10px; top: -18px; padding: 4px 14px 7px; border-radius: 10px; font: 900 26px/1 Unbounded; color: var(--dark); background: var(--acc); }
 .pl .tag.remove { background: var(--hot); } .pl .tag.change { background: var(--ink); }
 .pl .burst { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 6px solid var(--acc); transform: translate(-50%, -50%); opacity: 0; }
+/* Эффекты во весь экран под событие карточки */
+.fxl { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.gey { position: absolute; width: 90px; margin-left: -45px; bottom: 0; border-radius: 45px 45px 0 0; transform-origin: 50% 100%;
+  background: linear-gradient(180deg, rgba(238,246,251,.95), rgba(95,212,196,.75) 30%, rgba(42,143,160,.0)); opacity: 0; }
+.gey i { position: absolute; left: 50%; bottom: -20px; width: 220px; height: 60px; margin-left: -110px; border-radius: 50%; border: 6px solid rgba(238,246,251,.8); }
+.bigwave { position: absolute; top: 760px; left: 0; width: 1500px; height: 700px; opacity: 0; }
+.flash { position: absolute; inset: 0; background: var(--hot); opacity: 0; }
+.cnt { position: absolute; left: 400px; top: 268px; padding: 6px 16px 9px; border-radius: 12px; background: rgba(238,246,251,.1); border: 3px solid var(--line);
+  font: 900 30px/1 Unbounded; color: var(--ink); }
 .pl .x { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg); padding: 2px 12px 6px; border: 6px solid var(--hot); border-radius: 12px;
   color: var(--hot); background: rgba(1,8,9,.9); font: 900 34px/1 Unbounded; opacity: 0; white-space: nowrap; }
 </style>
@@ -708,6 +717,22 @@ async function init(data) {
       // Номера патчей в заголовке — отдельными кусками: подсвечивается тот, чья карточка сейчас активна
       P.lines.forEach(sp => { sp.innerHTML = sp.innerHTML.replace(/\d+\.\d+[a-z]?/g, '<span class="hv">$&</span>'); });
       P.hv = [...el.querySelectorAll(".head .hv")];
+      P.cnt = $("div", "cnt", el);
+      P.fx = $("div", "fxl", el);
+      P.fxs = v.entries.map((e, k) => {
+        if (e.fx === "torrents") {
+          let sd = 5 + k; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+          return Array.from({ length: 7 }, (_, j) => { const g = $("div", "gey", P.fx, `left:${120 + r() * 840}px;bottom:${180 + r() * 900}px`); $("i", null, g); g.dataset.d = j * 0.12 + r() * 0.1; g.dataset.h = 260 + r() * 260; return g; });
+        }
+        if (e.fx === "wave") {
+          const w = $("div", "bigwave", P.fx);
+          w.innerHTML = `<svg viewBox="0 0 1500 700" width="1500" height="700"><path d="M0 700 V260 C 250 120, 420 40, 620 90 C 780 130, 820 300, 980 300 C 1150 300, 1300 160, 1500 200 V700 Z" fill="rgba(42,143,160,.85)"/>
+            <path d="M0 260 C 250 120, 420 40, 620 90 C 780 130, 820 300, 980 300 C 1150 300, 1300 160, 1500 200" fill="none" stroke="#eef6fb" stroke-width="16"/></svg>`;
+          return [w];
+        }
+        if (e.kind === "remove") return [$("div", "flash", P.fx)];
+        return [];
+      });
       const n = v.entries.length, top = 520, gap = 30, h = Math.min(380, (1420 - top - gap * (n - 1)) / n);
       P.cards = v.entries.map((e, k) => {
         const c = $("div", "nc pl", el, `top:${top + k * (h + gap)}px;height:${h}px`);
@@ -1126,7 +1151,23 @@ function drawExtra(g, lt) {
     if (P.anim) { const e = eBack((lt - 0.1) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 60}px)`; drawAnim(P.anim, lt); }
     const at = P.cards.map((_, k) => C("e" + k, 0.6 + k * 1.6));
     // Активная версия: у последней карточки, до которой дошёл диктор
-    let cur = null; at.forEach((t0, k) => { if (lt >= t0 - 0.1) cur = v.entries[k].ver; });
+    let cur = null, ci = -1; at.forEach((t0, k) => { if (lt >= t0 - 0.1) { cur = v.entries[k].ver; ci = k; } });
+    // Счётчик изменений по всему ролику: «3 / 9»
+    P.cnt.textContent = `изменение ${(v.offset || 0) + Math.max(1, ci + 1)} / ${v.total || v.entries.length}`;
+    P.cnt.style.opacity = clamp((lt - 0.3) / 0.3);
+    // Наезд камеры на каждом новом изменении
+    const tp = ci >= 0 ? lt - at[ci] : 9, punch = tp >= 0 && tp < 0.4 ? Math.sin(tp / 0.4 * Math.PI) * 0.025 : 0;
+    g.el.style.transform = `scale(${1 + punch})`; g.el.style.transformOrigin = "540px 900px";
+    // Эффекты во весь экран
+    P.fxs.forEach((list, k) => {
+      const q = lt - at[k], e = v.entries[k];
+      if (e.fx === "torrents") list.forEach(gy => { const u = q - +gy.dataset.d, h = +gy.dataset.h;
+        const up = u > 0 && u < 0.9 ? Math.sin(clamp(u / 0.9) * Math.PI) : 0;
+        gy.style.height = (h * up) + "px"; gy.style.opacity = up > 0 ? Math.min(1, up * 1.6) : 0; });
+      if (e.fx === "wave") { const w = list[0], u = clamp(q / 1.1); w.style.opacity = q > 0 && q < 1.1 ? Math.sin(u * Math.PI) * 1.2 : 0;
+        w.style.transform = `translateX(${-1500 + u * 2600}px) translateY(${Math.sin(u * 6) * 20}px)`; }
+      if (e.kind === "remove") { const u = q - 0.5; list[0].style.opacity = u > 0 && u < 0.35 ? 0.35 * (1 - u / 0.35) : 0; }
+    });
     P.hv.forEach(h => {
       const on = cur !== null && h.textContent === cur;
       h.style.color = cur === null ? "" : on ? "var(--acc)" : "var(--ink)";
@@ -1290,7 +1331,7 @@ function audit() {
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

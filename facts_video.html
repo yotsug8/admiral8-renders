@@ -1333,7 +1333,7 @@ function drawExtra(g, lt) {
       it.sc.style.opacity = (1 - big) * appear * (k < ci ? 0.6 : k > ci ? 0.35 : 1);
       it.mc.style.opacity = big;
       it.mc.style.transform = `scale(${0.96 + 0.04 * big})`; it.mc.style.transformOrigin = "50% 0";
-      it.mc.style.visibility = big > 0.01 ? "visible" : "hidden";
+      it.mc.style.display = big > 0.01 ? "" : "none";     // не visibility: явное «visible» у потомка пробивало скрытие сегмента
       // Штамп «удалён» падает через полсекунды
       const st = it.mc.querySelector(".rstamp");
       if (st) { const q = clamp((lt - at[k] - 0.5) / 0.25); st.style.opacity = k === ci && q > 0 ? 1 : 0; st.style.transform = `rotate(-9deg) scale(${2 - eOut(q)})`; }

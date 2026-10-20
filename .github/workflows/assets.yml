@@ -47,8 +47,9 @@ jobs:
           LQPREFIX: ${{ inputs.lqprefix }}
           ANIMS: ${{ inputs.anims }}
         run: |
+          set +e                                   # любая ошибка — в лог, ветка всё равно пушится
           mkdir -p a
-          python - <<'PY'
+          python - 2>> a/err.txt <<'PY'
           import os, urllib.request, io
           from PIL import Image
           from rembg import remove
@@ -133,7 +134,7 @@ jobs:
             ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact "a/anim_$k.webm" >> a/log.txt 2>&1
             ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" -vf "fps=15,scale=-2:720" "a/anim_$k/%03d.png" 2>> a/log.txt \
               || ffmpeg -v error -i "a/anim_$k.webm" -vf "fps=15,scale=-2:720" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
-            python - "$k" <<'PY'
+            python - "$k" 2>> a/err.txt <<'PY'
           import sys, glob
           from PIL import Image
           k = sys.argv[1]

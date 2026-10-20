@@ -226,7 +226,7 @@
   "outro": {
     "question": "Подпишись",
     "cta": "",
-    "voice": "[confident] Подпишись.",
+    "voice": "[confident] Подпишись, чтобы не пропустить следующие разборы.",
     "style": "big",
     "anim": "kunkka",
     "floats": [
@@ -237,7 +237,6 @@
       "ability:kunkka_tidal_wave",
       "ability:kunkka_admirals_rum"
     ],
-    "hold": 1.2,
-    "voice_file": "voice/005/end.mp3"
+    "hold": 0.6
   }
 }

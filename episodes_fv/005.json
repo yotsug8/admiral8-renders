@@ -3,15 +3,27 @@
   "fish_temp": 0.7,
   "fish_speed": 1.25,
   "pad": 0.45,
-  "theme": "c",
+  "theme": "k",
   "hook": {
     "style": "hero",
     "anim": "kunkka",
     "headline": "Кунка|*за 7 лет*",
     "voice": "[curious] За семь лет Кунку переделали до неузнаваемости. Разбираем все крупные изменения по порядку.",
-    "images": ["ability:kunkka_torrent_storm", "ability:kunkka_tidebringer", "ability:kunkka_ghostship"],
-    "labels": ["Торрент Шторм", "Тайдбрингер", "Гостшип"],
-    "cues": ["переделали", "крупные", "порядку"]
+    "images": [
+      "ability:kunkka_torrent_storm",
+      "ability:kunkka_tidebringer",
+      "ability:kunkka_ghostship"
+    ],
+    "labels": [
+      "Торрент Шторм",
+      "Тайдбрингер",
+      "Гостшип"
+    ],
+    "cues": [
+      "переделали",
+      "крупные",
+      "порядку"
+    ]
   },
   "facts": [
     {
@@ -20,13 +32,39 @@
       "voice": "[curious] В {7.23|семь двадцать три} аганим Кунки переделали: он стал давать Торрент Шторм. Пять секунд торренты бьют в случайных местах вокруг Кунки. [surprised] А в {7.28|семь двадцать восемь} у Кунки появился шард: Тайдал Вейв, волна, которая тащит врагов за собой.",
       "visual": {
         "anim": "kunkka",
-        "refs": {"scepter": "item:ultimate_scepter", "storm": "ability:kunkka_torrent_storm", "shard": "item:aghanims_shard", "wave": "ability:kunkka_tidal_wave"},
+        "refs": {
+          "scepter": "item:ultimate_scepter",
+          "storm": "ability:kunkka_torrent_storm",
+          "shard": "item:aghanims_shard",
+          "wave": "ability:kunkka_tidal_wave"
+        },
         "entries": [
-          {"ver": "7.23", "icons": ["scepter", "storm"], "title": "Аганим: Торрент Шторм", "sub": "5 секунд торренты в случайных местах", "kind": "add"},
-          {"ver": "7.28", "icons": ["shard", "wave"], "title": "Шард: Тайдал Вейв", "sub": "волна тащит врагов за собой", "kind": "add"}
+          {
+            "ver": "7.23",
+            "icons": [
+              "scepter",
+              "storm"
+            ],
+            "title": "Аганим: Торрент Шторм",
+            "sub": "5 секунд торренты в случайных местах",
+            "kind": "add"
+          },
+          {
+            "ver": "7.28",
+            "icons": [
+              "shard",
+              "wave"
+            ],
+            "title": "Шард: Тайдал Вейв",
+            "sub": "волна тащит врагов за собой",
+            "kind": "add"
+          }
         ],
         "thumb": "ability:kunkka_torrent_storm",
-        "cues": {"e0": "аганим", "e1": "шард"}
+        "cues": {
+          "e0": "аганим",
+          "e1": "шард"
+        }
       }
     },
     {
@@ -35,14 +73,47 @@
       "voice": "[curious] В {7.33|семь тридцать три} Торрент Шторм сделали направленным на точку, а Тайдбрингер перестал выключаться от сайленса, теперь только от истощения. [surprised] В {7.36|семь тридцать шесть} Тайдбрингер сделали врождённой способностью и добавили Кунке аспекты.",
       "visual": {
         "anim": "kunkka",
-        "refs": {"storm": "ability:kunkka_torrent_storm", "tide": "ability:kunkka_tidebringer", "edge": "item:silver_edge"},
+        "refs": {
+          "storm": "ability:kunkka_torrent_storm",
+          "tide": "ability:kunkka_tidebringer",
+          "edge": "item:silver_edge"
+        },
         "entries": [
-          {"ver": "7.33", "icons": ["storm"], "title": "Торрент Шторм — в точку", "sub": "раньше только вокруг себя", "kind": "change"},
-          {"ver": "7.33", "icons": ["tide", "edge"], "title": "Тайдбрингер: только истощение", "sub": "сайленс больше не выключает", "kind": "change"},
-          {"ver": "7.36", "icons": ["tide"], "title": "Врождённый Тайдбрингер", "sub": "и аспекты у Кунки", "kind": "add"}
+          {
+            "ver": "7.33",
+            "icons": [
+              "storm"
+            ],
+            "title": "Торрент Шторм — в точку",
+            "sub": "раньше только вокруг себя",
+            "kind": "change"
+          },
+          {
+            "ver": "7.33",
+            "icons": [
+              "tide",
+              "edge"
+            ],
+            "title": "Тайдбрингер: только истощение",
+            "sub": "сайленс больше не выключает",
+            "kind": "change"
+          },
+          {
+            "ver": "7.36",
+            "icons": [
+              "tide"
+            ],
+            "title": "Врождённый Тайдбрингер",
+            "sub": "и аспекты у Кунки",
+            "kind": "add"
+          }
         ],
         "thumb": "ability:kunkka_tidebringer",
-        "cues": {"e0": "торрент", "e1": "тайдбрингер", "e2": "7.36"}
+        "cues": {
+          "e0": "торрент",
+          "e1": "тайдбрингер",
+          "e2": "7.36"
+        }
       }
     },
     {
@@ -51,15 +122,59 @@
       "voice": "[curious] В {7.37|семь тридцать семь} Торрент Шторм удалили. Аганим теперь даёт флот из двух Гостшипов с ядрами, а врождённой способностью стал Адмиральский ром. [sarcastic] В {7.41|семь сорок один} аспекты убрали у всех героев, а Гостшип стал давать двойной ром.",
       "visual": {
         "anim": "kunkka",
-        "refs": {"storm": "ability:kunkka_torrent_storm", "scepter": "item:ultimate_scepter", "ship": "ability:kunkka_ghostship", "rum": "ability:kunkka_admirals_rum"},
+        "refs": {
+          "storm": "ability:kunkka_torrent_storm",
+          "scepter": "item:ultimate_scepter",
+          "ship": "ability:kunkka_ghostship",
+          "rum": "ability:kunkka_admirals_rum"
+        },
         "entries": [
-          {"ver": "7.37", "icons": ["storm"], "title": "Торрент Шторм", "sub": "удалён из игры", "kind": "remove"},
-          {"ver": "7.37", "icons": ["scepter", "ship"], "title": "Аганим: флот", "sub": "два Гостшипа с ядрами", "kind": "add"},
-          {"ver": "7.37", "icons": ["rum"], "title": "Адмиральский ром", "sub": "новая врождённая", "kind": "add"},
-          {"ver": "7.41", "icons": ["ship", "rum"], "title": "Ром ×2", "sub": "аспекты удалены у всех", "kind": "change"}
+          {
+            "ver": "7.37",
+            "icons": [
+              "storm"
+            ],
+            "title": "Торрент Шторм",
+            "sub": "удалён из игры",
+            "kind": "remove"
+          },
+          {
+            "ver": "7.37",
+            "icons": [
+              "scepter",
+              "ship"
+            ],
+            "title": "Аганим: флот",
+            "sub": "два Гостшипа с ядрами",
+            "kind": "add"
+          },
+          {
+            "ver": "7.37",
+            "icons": [
+              "rum"
+            ],
+            "title": "Адмиральский ром",
+            "sub": "новая врождённая",
+            "kind": "add"
+          },
+          {
+            "ver": "7.41",
+            "icons": [
+              "ship",
+              "rum"
+            ],
+            "title": "Ром ×2",
+            "sub": "аспекты удалены у всех",
+            "kind": "change"
+          }
         ],
         "thumb": "item:ultimate_scepter",
-        "cues": {"e0": "удалили", "e1": "аганим", "e2": "врожденной", "e3": "7.41"}
+        "cues": {
+          "e0": "удалили",
+          "e1": "аганим",
+          "e2": "врожденной",
+          "e3": "7.41"
+        }
       }
     }
   ],

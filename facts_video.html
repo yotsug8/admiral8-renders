@@ -322,6 +322,32 @@ canvas.anim { position: absolute; will-change: transform; }   /* свечени�
 .ball { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--hot); box-shadow: 0 0 12px var(--hot); }
 .promo { position: absolute; padding: 8px 26px 14px; border-radius: 20px; border: 8px solid var(--acc); color: var(--acc); background: rgba(1,8,9,.9);
   font: 900 64px/1 Unbounded; box-shadow: 0 0 40px rgba(62,240,192,.6); opacity: 0; white-space: nowrap; }
+/* ===== Тема «k» — Адмирал (под Кунку): ночное море, морская карта, компас, волны внизу; переход — волной Торрента ===== */
+body.tk { --bg: #061627; --ink: #eef6fb; --acc: #5fd4c4; --hot: #ff4d5e; --dark: #020a14; --card: #0d2a47; --line: rgba(238,246,251,.22); }
+body.tk #dots { inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.35), transparent 70%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px);
+  background-size: auto, 120px 120px, 120px 120px; background-position: 0 0, 0 0, 0 0; }
+#compass, #waves, #tide { display: none; position: absolute; pointer-events: none; }
+body.tk #compass, body.tk #waves, body.tk #tide { display: block; }
+body.tk #wipe, body.tk #ring, body.tk #sweep { display: none; }
+#compass { left: 470px; top: 980px; width: 900px; height: 900px; opacity: .07; will-change: transform; }
+#waves { left: 0; top: 1640px; width: 1080px; height: 280px; overflow: hidden; }
+#waves svg { position: absolute; left: 0; width: 2160px; height: 280px; will-change: transform; }
+#tide { left: 0; top: 0; width: 1080px; height: 2500px; will-change: transform; }
+#tide .body { position: absolute; left: 0; right: 0; top: 140px; bottom: 140px; background: linear-gradient(180deg, #2a8fa0, #145273 45%, #0b3150); }
+#tide svg { position: absolute; left: 0; width: 2160px; height: 150px; }
+body.tk .head .y { color: var(--acc); }
+body.tk .pg { background: rgba(238,246,251,.14); } body.tk .pg i { background: var(--acc); }
+body.tk #subs span { text-shadow: 0 4px 0 var(--dark); }
+body.tk #subs span.on { background: var(--acc); color: var(--dark); border: 4px solid var(--dark); box-shadow: 6px 6px 0 rgba(2,10,20,.8); text-shadow: none; }
+body.tk .nc { background: linear-gradient(180deg, #11355a, #0a2340); border: 4px solid var(--line); box-shadow: 0 12px 0 rgba(2,10,20,.65); }
+body.tk .nc.on { border-color: var(--acc); box-shadow: 0 12px 0 rgba(2,10,20,.65), 0 0 26px rgba(95,212,196,.35); }
+body.tk .nc.hot { border-color: var(--hot); box-shadow: 0 12px 0 rgba(2,10,20,.65), 0 0 26px rgba(255,77,94,.35); }
+body.tk .ico { border-color: var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+body.tk .pl .v { background: var(--ink); color: #0a2340; border: none; border-left: 12px solid var(--hot); border-radius: 8px; }
+body.tk .pl .ics s { color: var(--ink); }
+body.tk .fw { color: var(--ink); text-shadow: 0 8px 0 rgba(2,10,20,.8); }
+body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
 /* «Хронология патчей»: карточки изменений по порядку, у каждой версия, иконки «было → стало», метка */
 .pl { position: absolute; left: 60px; width: 880px; display: flex; align-items: center; gap: 26px; padding: 0 30px; opacity: 0; }
 .pl .v { display: inline-block; padding: 6px 16px 9px; border-radius: 12px; background: var(--dark); border: 3px solid var(--line);
@@ -345,12 +371,15 @@ canvas.anim { position: absolute; will-change: transform; }   /* свечени�
 <div id="stage">
   <div id="dots"></div>
   <div id="sweep"></div>
+  <svg id="compass" viewBox="-100 -100 200 200"></svg>
+  <div id="waves"></div>
   <div id="segs"></div>
   <div id="scan"></div>
   <div id="subs"></div>
   <div id="progress"></div>
   <div id="wm"></div>
   <div id="wipe"></div>
+  <div id="tide"><svg class="top" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg><div class="body"></div><svg class="bot" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg></div>
   <div id="ring"><i></i></div>
 </div>
 <div id="preload" style="display:none"></div>
@@ -382,10 +411,10 @@ function placeHero(im, cx, bottom, w, h) {
   im.style.left = (cx - W / 2) + "px"; im.style.top = (bottom - H) + "px";
 }
 
-// Анимированный герой: кадры (15 к/с) рисуются на холсте; картинки грузятся в скрытый #preload
-function makeAnim(parent, frames) {
-  const pre = document.getElementById("preload");
-  return { cv: $("canvas", "anim", parent), imgs: frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) };
+// Анимированный герой: кадры рисуются на холсте в родной частоте; картинки грузятся в скрытый #preload
+function makeAnim(parent, anim) {
+  const pre = document.getElementById("preload"), frames = Array.isArray(anim) ? anim : anim.frames;
+  return { cv: $("canvas", "anim", parent), fps: anim.fps || 15, imgs: frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) };
 }
 function placeAnim(A, cx, bottom, w, h) {
   if (!A || !A.imgs.length) return;
@@ -396,15 +425,38 @@ function placeAnim(A, cx, bottom, w, h) {
 }
 function drawAnim(A, t) {
   if (!A || !A.imgs.length || !A.cv.width) return;
-  const im = A.imgs[Math.floor(Math.max(0, t) * 15) % A.imgs.length], c = A.cv.getContext("2d");
-  c.clearRect(0, 0, A.cv.width, A.cv.height); c.drawImage(im, 0, 0, A.cv.width, A.cv.height);
+  // Между соседними кадрами — плавное наложение: исходник 24 к/с, видео 30 к/с, без него движение дёргается
+  const f = Math.max(0, t) * A.fps, i = Math.floor(f), a = f - i, n = A.imgs.length, c = A.cv.getContext("2d");
+  c.clearRect(0, 0, A.cv.width, A.cv.height);
+  c.globalAlpha = 1; c.drawImage(A.imgs[i % n], 0, 0, A.cv.width, A.cv.height);
+  if (a > 0.01) { c.globalAlpha = a; c.drawImage(A.imgs[(i + 1) % n], 0, 0, A.cv.width, A.cv.height); c.globalAlpha = 1; }
 }
 
 // ---------- построение ----------
+// Морская тема: волны (период 360 px — сдвиг по кругу без скачка), компас, гребни волны-перехода
+const wavePath = (amp, y0, h, per = 360) => { let d = `M0 ${y0}`; for (let x = 0; x < 2160; x += per) d += ` q${per / 4} ${-amp} ${per / 2} 0 t${per / 2} 0`; return d + ` V${h} H0 Z`; };
+function buildSea() {
+  const w = document.getElementById("waves");
+  w.innerHTML = [["#0e3a5c", 34, 90, .9], ["#12507a", 26, 140, .9], ["#1b6f93", 20, 190, .95]].map(([c, a, y, o]) =>
+    `<svg viewBox="0 0 2160 280" preserveAspectRatio="none" style="opacity:${o}"><path d="${wavePath(a, y, 280)}" fill="${c}"/>
+     <path d="${wavePath(a, y, 280).split(" V")[0]}" fill="none" stroke="rgba(238,246,251,.35)" stroke-width="4"/></svg>`).join("");
+  const c = document.getElementById("compass");
+  c.innerHTML = `<circle r="96" fill="none" stroke="#eef6fb" stroke-width="2"/><circle r="80" fill="none" stroke="#eef6fb" stroke-width="1" stroke-dasharray="2 4"/>
+    <path d="M0 -92 L10 -10 L0 0 L-10 -10 Z M0 92 L10 10 L0 0 L-10 10 Z M-92 0 L-10 -10 L0 0 L-10 10 Z M92 0 L10 -10 L0 0 L10 10 Z" fill="#eef6fb"/>
+    <path d="M-50 -50 L-6 -6 L0 0 L-6 6 Z M50 50 L6 6 L0 0 L6 -6 Z M50 -50 L6 -6 L0 0 L-6 -6 Z M-50 50 L-6 6 L0 0 L6 6 Z" fill="#eef6fb" opacity=".6"/>
+    <text y="-104" text-anchor="middle" font-size="14" font-family="Unbounded" fill="#eef6fb">N</text>`;
+  const crest = (flip) => `<path d="${wavePath(40, 60, 150)}" fill="${flip ? "#0b3150" : "#2a8fa0"}" ${flip ? 'transform="scale(1,-1) translate(0,-150)"' : ""}/>
+    <path d="${wavePath(40, 60, 150).split(" V")[0]}" fill="none" stroke="#eef6fb" stroke-width="10" ${flip ? 'transform="scale(1,-1) translate(0,-150)"' : ""}/>`;
+  document.querySelector("#tide .top").innerHTML = crest(false);
+  document.querySelector("#tide .bot").innerHTML = crest(true);
+  document.querySelector("#tide .bot").style.bottom = "0";
+}
+
 async function init(data) {
   D = data;
   document.getElementById("wm").textContent = data.watermark;
   if (data.theme) document.body.classList.add("t" + data.theme);      // вариант оформления выпуска
+  if (data.theme === "k") buildSea();
   const prog = document.getElementById("progress");
   data.segs.filter(s => !s.outro && !s.hook).forEach(() => $("i", null, $("div", "pg", prog)));
   const host = document.getElementById("segs");
@@ -415,7 +467,7 @@ async function init(data) {
     if (s.hook && s.style === "hero") {
       // Хук: анимированный герой слева, значки фактов справа загораются по меткам
       P.lines = headline(el, s.headline);
-      P.anim = s.anim && s.anim.length ? makeAnim(el, s.anim) : null;
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
       P.badges = s.images.map((src, k) => {
         const b = $("div", "hbadge nc", el, `top:${520 + k * 262}px`);
         $("img", "ico", b).src = src;
@@ -454,7 +506,7 @@ async function init(data) {
       P.fbtn.innerHTML = `<svg viewBox="0 0 100 100"><path class="plus" d="M50 18 V82 M18 50 H82" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" fill="none"/>
         <path class="tick" d="M22 52 L42 72 L80 30" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0"/></svg>`;
       P.fnick = $("div", "fnick", el); P.fnick.textContent = s.watermark;
-      P.anim = s.anim && s.anim.length ? makeAnim(el, s.anim) : null;
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
       P.lines = [];                                   // заголовка нет, но draw() должен отработать
     } else if (s.outro) {
       P.lines = headline(el, s.question);
@@ -646,7 +698,7 @@ async function init(data) {
       $("img", null, P.decode).src = v.icon; $("span", null, P.decode).textContent = v.decoded || "";
     } else if (s.layout === "patchline") {
       P.lines = headline(el, s.headline);
-      P.anim = v.anim && v.anim.length ? makeAnim(el, v.anim) : null;
+      P.anim = v.anim ? makeAnim(el, v.anim) : null;
       const n = v.entries.length, top = 520, gap = 30, h = Math.min(380, (1420 - top - gap * (n - 1)) / n);
       P.cards = v.entries.map((e, k) => {
         const c = $("div", "nc pl", el, `top:${top + k * (h + gap)}px;height:${h}px`);
@@ -666,7 +718,7 @@ async function init(data) {
       P.lines = headline(el, s.headline);
       P.radar = $("div", "radar", el, "left:140px;top:500px;width:800px;height:800px");
       P.sw = $("div", "sw", P.radar);
-      P.anim = v.anim && v.anim.length ? makeAnim(P.radar, v.anim) : null;
+      P.anim = v.anim ? makeAnim(P.radar, v.anim) : null;
       // Вспышки торрентов в случайных точках радара (фиксированное зерно — кадры повторяемы)
       let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
       P.blips = Array.from({ length: v.count || 20 }, () => {
@@ -682,7 +734,7 @@ async function init(data) {
       P.stamp = $("div", "dstamp", el); P.stamp.textContent = v.stamp || "УДАЛЁН";
     } else if (s.layout === "silence") {
       P.lines = headline(el, s.headline);
-      P.anim = v.anim && v.anim.length ? makeAnim(el, v.anim) : null;
+      P.anim = v.anim ? makeAnim(el, v.anim) : null;
       P.slot = $("div", "nc slot", el);
       P.ab = $("img", "ab", P.slot); P.ab.src = v.refs.ability;
       $("b", null, P.slot).textContent = v.name || "";
@@ -772,7 +824,9 @@ function seek(t) {
   let i = 0; while (i + 1 < segs.length && segs[i + 1].start <= t) i++;
   const lt = t - segs[i].start;
 
-  document.getElementById("dots").style.transform = `translate(${(t * 6) % 36}px, ${(t * 4) % 36}px)`;
+  const TK = document.body.classList.contains("tk");
+  // Сдвиг узора по кругу: в старых темах шаг 36 px совпадает с узором; в теме k фон неподвижен (иначе «скачет»)
+  if (!TK) document.getElementById("dots").style.transform = `translate(${(t * 6) % 36}px, ${(t * 4) % 36}px)`;
   const fi = segs.slice(0, i + 1).filter(s => !s.hook && !s.outro).length - 1;   // номер факта
   document.querySelectorAll(".pg i").forEach((bar, k) => {
     bar.style.width = (segs[i].outro || k < fi ? 100 : k === fi && !segs[i].hook ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
@@ -788,6 +842,20 @@ function seek(t) {
     if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
   });
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
+  if (TK) {
+    document.querySelectorAll("#waves svg").forEach((sv, k) => { sv.style.transform = `translateX(${-((t * (30 + k * 18)) % 360)}px)`; });
+    document.getElementById("compass").style.transform = `rotate(${t * 2}deg)`;
+    // Переход: волна поднимается снизу, накрывает экран и уходит вверх
+    const tide = document.getElementById("tide"), W2 = WIPE * 1.25;
+    let st = null;
+    segs.forEach((s, k) => { if (k && Math.abs(t - s.start) < W2) st = t - s.start; });
+    tide.style.visibility = st === null ? "hidden" : "visible";
+    if (st !== null) {
+      const e = eInOut((st + W2) / (2 * W2));
+      tide.style.transform = `translateY(${1920 - e * (1920 + 2500)}px)`;
+      tide.querySelectorAll("svg").forEach(sv => { sv.style.transform = `translateX(${-((t * 300) % 360)}px)`; });
+    }
+  }
   if (document.body.classList.contains("tc")) {
     document.getElementById("sweep").style.transform = `rotate(${t * 45}deg)`;
     SEGS[i].el.style.transformOrigin = "540px 940px";

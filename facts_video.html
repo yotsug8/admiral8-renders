@@ -428,8 +428,12 @@ function drawAnim(A, t) {
   // Между соседними кадрами — плавное наложение: исходник 24 к/с, видео 30 к/с, без него движение дёргается
   const f = Math.max(0, t) * A.fps, i = Math.floor(f), a = f - i, n = A.imgs.length, c = A.cv.getContext("2d");
   c.clearRect(0, 0, A.cv.width, A.cv.height);
-  c.globalAlpha = 1; c.drawImage(A.imgs[i % n], 0, 0, A.cv.width, A.cv.height);
-  if (a > 0.01) { c.globalAlpha = a; c.drawImage(A.imgs[(i + 1) % n], 0, 0, A.cv.width, A.cv.height); c.globalAlpha = 1; }
+  // Честное смешивание двух кадров: (1−a)·A + a·B через сложение («lighter»). Обычное наложение
+  // удваивало полупрозрачное свечение, и оно мигало
+  c.globalCompositeOperation = "lighter";
+  c.globalAlpha = 1 - a; c.drawImage(A.imgs[i % n], 0, 0, A.cv.width, A.cv.height);
+  if (a > 0.001) { c.globalAlpha = a; c.drawImage(A.imgs[(i + 1) % n], 0, 0, A.cv.width, A.cv.height); }
+  c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
 }
 
 // ---------- построение ----------
@@ -1125,7 +1129,7 @@ function drawExtra(g, lt) {
       const on = cur !== null && h.textContent === cur;
       h.style.color = cur === null ? "" : on ? "var(--acc)" : "var(--ink)";
       h.style.opacity = cur === null || on ? 1 : 0.4;
-      h.style.textShadow = on ? "0 0 24px rgba(95,212,196,.55)" : "none";
+      h.style.textShadow = "none";          // без свечения: маска строки заголовка обрезала его краями
     });
     P.cards.forEach((c, k) => {
       const t0 = at[k], nxt = k + 1 < at.length ? at[k + 1] : 1e9, e = eBack((lt - t0 + 0.1) / 0.45);

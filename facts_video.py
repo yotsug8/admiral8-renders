@@ -559,14 +559,19 @@ def mix_audio(segs, total, wav_path):
         L = min(len(p), n - i)
         mix[i:i + L] += p[:L]
         if s["start"] > 0:
-            # Переход — мягкая «волна»: шум, сглаженный до низкого гула, с плавным нарастанием и спадом (нейтрально, без резкости)
-            L = int(0.9 * SR)
-            j = max(0, i - L // 2); L = min(L, n - j)
-            w = np.random.default_rng(i).normal(0, 1, L)
-            for k in (60, 40):
-                w = np.convolve(w, np.ones(k) / k, "same")
-            w *= np.sin(np.linspace(0, np.pi, L)) ** 1.5
-            mix[j:j + L] += w / (np.abs(w).max() + 1e-9) * 0.16
+            # Переход — светлый воздушный «вжух»: из шума убран низ (без глухого гула), фильтр плавно
+            # открывается от мягкого к звонкому и обратно; быстрый вход, плавный хвост
+            L = int(0.65 * SR)
+            j = max(0, i - int(0.4 * L)); L = min(L, n - j)
+            x = np.random.default_rng(i).normal(0, 1, L)
+            x = x - np.convolve(x, np.ones(40) / 40, "same")            # убираем низ
+            pos = np.linspace(0, 1, L)
+            bright = np.sin(np.pi * pos)                                   # 0 → 1 → 0: насколько открыт фильтр
+            soft = np.convolve(x, np.ones(9) / 9, "same")
+            w = soft * (1 - bright) + x * bright * 0.7
+            env = np.where(pos < 0.35, (pos / 0.35) ** 1.5, ((1 - pos) / 0.65) ** 2)
+            w *= env
+            mix[j:j + L] += w / (np.abs(w).max() + 1e-9) * 0.13
     # Звуки способностей из игры под события на экране: карточки хронологии (поле sfx) и значки хука (hook.sfx)
     def add(t, snd, gain):
         i = int(t * SR)

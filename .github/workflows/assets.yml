@@ -129,13 +129,13 @@ jobs:
                   print(pre, "ошибка:", e)
               import time; time.sleep(3)
           PY
-          # Анимированные рендеры: webm с альфой (VP9) → кадры webp 15 к/с, высота 720, общий кроп по всем кадрам
+          # Анимированные рендеры: webm с альфой (VP9) → кадры webp без потерь 15 к/с, полный размер, общий кроп по всем кадрам
           for k in $ANIMS; do
             curl -sfL -A "Mozilla/5.0" -o "a/anim_$k.webm" "https://cdn.cloudflare.steamstatic.com/apps/dota2/videos/dota_react/heroes/renders/$k.webm" || { echo "$k: нет webm" >> a/log.txt; continue; }
             mkdir -p "a/anim_$k"
             ffprobe -v error -show_entries format=duration:stream=width,height,codec_name -of compact "a/anim_$k.webm" >> a/log.txt 2>&1
-            ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" -vf "fps=15,scale=-2:720" "a/anim_$k/%03d.png" 2>> a/log.txt \
-              || ffmpeg -v error -i "a/anim_$k.webm" -vf "fps=15,scale=-2:720" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
+            ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" -vf "fps=15" "a/anim_$k/%03d.png" 2>> a/log.txt \
+              || ffmpeg -v error -i "a/anim_$k.webm" -vf "fps=15" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
             python - "$k" 2>> a/err.txt <<'PY'
           import sys, glob
           from PIL import Image
@@ -147,7 +147,7 @@ jobs:
               if b: box = b if box is None else (min(box[0], b[0]), min(box[1], b[1]), max(box[2], b[2]), max(box[3], b[3]))
           for f in fs:
               im = Image.open(f).convert("RGBA")
-              (im.crop(box) if box else im).save(f.replace(".png", ".webp"), quality=86, method=5)
+              (im.crop(box) if box else im).save(f.replace(".png", ".webp"), lossless=True, method=4)
           print(k, "кадров:", len(fs), "кроп:", box, "альфа min первого:", Image.open(fs[0]).getextrema()[3][0] if fs else None, file=open("a/log.txt", "a"))
           PY
             rm -f "a/anim_$k"/*.png

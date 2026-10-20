@@ -1047,8 +1047,11 @@ function drawExtra(g, lt) {
     const tT = C("talent", 1), tA = C("agh", 3), pulse = lt > tT && lt < tA ? 0.5 + 0.5 * Math.sin((lt - tT) * 8) : 0;
     if (P.pick) { P.pick.style.boxShadow = `0 0 ${20 + 30 * pulse}px rgba(62,240,192,${0.4 + 0.4 * pulse})`; P.pick.style.transform = `scale(${1 + 0.04 * pulse})`; }
     const ka = eBack((lt - tA) / 0.5);
-    P.agh.style.opacity = clamp(ka * 2); P.agh.style.transform = `translateY(${(1 - ka) * -200}px) scale(${0.7 + 0.3 * ka})`;
-    const kse = eOut((lt - tA - 0.3) / 0.5); P.sea.style.opacity = kse;
+    // До метки — бледные заготовки слота и моря, чтобы низ экрана не пустовал
+    const pre = 0.22 * eOut((lt - 0.6) / 0.5);
+    P.agh.style.opacity = Math.max(pre, clamp(ka * 2)); P.agh.style.transform = `scale(${0.92 + 0.08 * clamp(ka)})`;
+    P.agh.style.filter = lt < tA ? "grayscale(1)" : "none";
+    const kse = eOut((lt - tA - 0.3) / 0.5); P.sea.style.opacity = Math.max(pre, kse);
     P.ships.forEach((im, k) => {
       const x = 20 + ((lt * 55 + k * 150) % 290), y = 40 + k * 190;
       im.style.left = x + "px"; im.style.top = y + "px"; im.dataset.x = x; im.dataset.y = y;

@@ -543,6 +543,36 @@ def mix_audio(segs, total, wav_path):
             L = min(int(0.4 * SR), n - i)
             env = np.sin(np.linspace(0, np.pi, L)) * 0.14
             mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
+    # Звуки под события на экране (хронология патчей и значки хука): удержание внимания
+    def add(t, snd, gain):
+        i = int(t * SR)
+        if 0 <= i < n:
+            L = min(len(snd), n - i)
+            mix[i:i + L] += snd[:L] * gain
+    rng = np.random.default_rng(7)
+    tt = lambda d: np.arange(int(d * SR)) / SR
+    pop = np.sin(2 * np.pi * (500 + 900 * tt(0.12)) * tt(0.12)) * np.exp(-tt(0.12) * 35)          # «чпок» — карточка/значок
+    thud = (np.sin(2 * np.pi * 55 * tt(0.35)) * np.exp(-tt(0.35) * 9)
+            + rng.normal(0, 1, len(tt(0.35))) * np.exp(-tt(0.35) * 40) * 0.5)                      # удар штампа
+    noise = rng.normal(0, 1, int(0.9 * SR))
+    splash = np.convolve(noise, np.ones(30) / 30, "same") * np.sin(np.linspace(0, np.pi, len(noise))) ** 2   # всплеск/волна
+    for s in segs:
+        v = s.get("visual") or {}
+        if s.get("layout") == "patchline":
+            for k, e in enumerate(v.get("entries", [])):
+                t0 = (v.get("at") or {}).get(f"e{k}")
+                if t0 is None:
+                    continue
+                t0 += s["start"]
+                add(t0, pop, 0.22)
+                if e.get("fx") in ("torrents", "wave"):
+                    add(t0, splash, 0.35)
+                if e.get("kind") == "remove":
+                    add(t0 + 0.5, thud, 0.6)
+        if s.get("hook"):
+            for t0 in s.get("at") or []:
+                if t0 is not None:
+                    add(s["start"] + t0, pop, 0.2)
     pcm = (np.clip(mix, -1, 1) * 32767).astype(np.int16)
     with wave.open(str(wav_path), "wb") as w:
         w.setnchannels(1)

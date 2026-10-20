@@ -485,9 +485,10 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
 
 
 def apply_voice_settings(ep):
-    """Настройки голоса из выпуска: fish_temp ниже — ровнее, без срывов голоса."""
-    global FISH_TEMP
+    """Настройки голоса из выпуска: fish_temp ниже — ровнее, без срывов; fish_speed — темп речи."""
+    global FISH_TEMP, FISH_SPEED
     FISH_TEMP = float(ep.get("fish_temp", FISH_TEMP))
+    FISH_SPEED = float(ep.get("fish_speed", FISH_SPEED))
 
 
 def voice_takes(ep, out_dir, n=3):

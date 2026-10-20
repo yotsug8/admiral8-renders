@@ -22,6 +22,9 @@ on:
       lqprefix:
         description: "префиксы имён файлов Liquipedia через ; (скачать все совпадения)"
         default: ""
+      sounds:
+        description: "префиксы звуковых файлов Dota 2 Wiki через ; (например Kunkka;Torrent)"
+        default: ""
       anims:
         description: "ключи героев через пробел: анимированный рендер webm → кадры webp"
         default: ""
@@ -48,6 +51,7 @@ jobs:
           LIQUIPEDIA: ${{ inputs.liquipedia }}
           LQPREFIX: ${{ inputs.lqprefix }}
           ANIMS: ${{ inputs.anims }}
+          SOUNDS: ${{ inputs.sounds }}
         run: |
           set +e                                   # любая ошибка — в лог, ветка всё равно пушится
           mkdir -p a
@@ -116,6 +120,23 @@ jobs:
               except Exception as e:
                   print(page, "ошибка:", e)
               import time; time.sleep(3)          # Liquipedia просит не чаще раза в пару секунд
+          # Звуки игры с Dota 2 Wiki (fandom): все аудиофайлы с заданными префиксами
+          for pre in [p.strip() for p in os.environ.get("SOUNDS", "").split(";") if p.strip()]:
+              try:
+                  url = "https://dota2.fandom.com/api.php?" + urllib.parse.urlencode(dict(action="query", list="allimages", aiprefix=pre.replace(" ", "_"),
+                        ailimit=500, aiprop="url|mime|size", format="json"))
+                  req = urllib.request.Request(url, headers={"User-Agent": "admiral8-renders/1.0 (github.com/yotsug8)"})
+                  res = json.loads(urllib.request.urlopen(req, timeout=60).read())
+                  aud = [i for i in res["query"]["allimages"] if i.get("mime", "").startswith("audio")]
+                  print("звуки", pre, "найдено:", len(aud), "из", len(res["query"]["allimages"]))
+                  os.makedirs("a/snd", exist_ok=True)
+                  for i in aud[:80]:
+                      name = re.sub(r"[^\w.-]+", "_", i["name"])
+                      req = urllib.request.Request(i["url"], headers={"User-Agent": "Mozilla/5.0"})
+                      open(f"a/snd/{name}", "wb").write(urllib.request.urlopen(req, timeout=60).read())
+                      print("  ", name, i.get("size"))
+              except Exception as e:
+                  print("звуки", pre, "ошибка:", e)
           for pre in [p.strip() for p in os.environ.get("LQPREFIX", "").split(";") if p.strip()]:
               try:
                   res = lq({"action": "query", "list": "allimages", "aiprefix": pre.replace(" ", "_"), "ailimit": 15, "aiprop": "url|size"}, "commons")   # логотипы лежат в общем хранилище

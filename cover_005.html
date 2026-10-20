@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2) format("woff2"); }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2) format("woff2"); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+/* Обложка TikTok 1080×1920, всё важное в середине (y 240–1680). Тема «Сонар»: радар, неон, штамп УДАЛЁН */
+:root { --bg: #031417; --ink: #d8fff4; --acc: #3ef0c0; --hot: #ff6b3d; --dark: #010809; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+.rings { position: absolute; inset: 0; background: repeating-radial-gradient(circle at 540px 1000px, transparent 0 118px, rgba(62,240,192,.12) 118px 121px); }
+.sweep { position: absolute; left: 540px; top: 1000px; width: 1600px; height: 1600px; margin: -800px; border-radius: 50%; transform: rotate(-60deg);
+  background: conic-gradient(from 0deg, rgba(62,240,192,.3), rgba(62,240,192,0) 60deg, transparent 360deg); }
+.head { position: absolute; left: 60px; top: 260px; width: 960px; font: 900 96px/1.04 Unbounded; color: var(--ink); text-transform: uppercase; letter-spacing: -.03em;
+  text-shadow: 0 0 30px rgba(62,240,192,.45); }
+.head em { font-style: normal; color: var(--acc); }
+.hero { position: absolute; left: -40px; top: 640px; width: 760px; filter: drop-shadow(0 0 30px rgba(62,240,192,.5)) drop-shadow(14px 18px 0 rgba(1,8,9,.7)); }
+.card { position: absolute; width: 300px; padding: 26px 0 22px; border-radius: 30px; background: #072a2c; border: 5px solid var(--acc);
+  box-shadow: 0 0 40px rgba(62,240,192,.45); display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.card img { width: 190px; height: 190px; border-radius: 22px; border: 5px solid var(--ink); }
+.card b { font: 900 34px/1 Unbounded; color: var(--ink); text-transform: uppercase; }
+.card.dead { border-color: var(--hot); box-shadow: 0 0 40px rgba(255,107,61,.5); }
+.card.dead img { filter: grayscale(1) brightness(.6); }
+.stamp { position: absolute; padding: 6px 26px 12px; border: 10px solid var(--hot); border-radius: 20px; color: var(--hot); background: rgba(1,8,9,.9);
+  font: 900 64px/1 Unbounded; box-shadow: 0 0 40px rgba(255,107,61,.6); transform: rotate(-12deg); }
+.wm { position: absolute; left: 62px; top: 1600px; font: 800 30px Manrope; color: rgba(216,255,244,.45); }
+</style>
+</head>
+<body>
+<div class="rings"></div>
+<div class="sweep"></div>
+<div class="head">Что Valve<br>сделали<br>с <em>Кункой?</em></div>
+<img class="hero" src="assets/anim/kunkka/001.webp">
+<div class="card dead" style="left:630px;top:700px;transform:rotate(4deg)"><img src="assets/abilities/kunkka_torrent_storm.png"><b>Шторм</b></div>
+<div class="stamp" style="left:600px;top:800px">УДАЛЁН</div>
+<div class="card" style="left:630px;top:1130px;transform:rotate(-3deg)"><img src="_fv_work/item_ultimate_scepter.png"><b>Аганим</b></div>
+<div class="wm">@admiral8dota</div>
+</body>
+</html>

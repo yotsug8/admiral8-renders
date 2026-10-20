@@ -23,7 +23,8 @@
       "переделали",
       "крупные",
       "порядку"
-    ]
+    ],
+    "voice_file": "voice/005/hook.mp3"
   },
   "facts": [
     {
@@ -69,7 +70,8 @@
         },
         "offset": 0,
         "total": 9
-      }
+      },
+      "voice_file": "voice/005/f1.mp3"
     },
     {
       "layout": "patchline",
@@ -120,7 +122,8 @@
         },
         "offset": 2,
         "total": 9
-      }
+      },
+      "voice_file": "voice/005/f2.mp3"
     },
     {
       "layout": "patchline",
@@ -183,7 +186,8 @@
         },
         "offset": 5,
         "total": 9
-      }
+      },
+      "voice_file": "voice/005/f3.mp3"
     }
   ],
   "outro": {
@@ -191,6 +195,7 @@
     "cta": "пока Valve не удалили и это видео",
     "voice": "[sarcastic] Подпишись, пока {Valve|Вэлв} не удалили и это видео.",
     "style": "follow",
-    "anim": "kunkka"
+    "anim": "kunkka",
+    "voice_file": "voice/005/end.mp3"
   }
 }

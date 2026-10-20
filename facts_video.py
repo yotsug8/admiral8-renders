@@ -559,14 +559,14 @@ def mix_audio(segs, total, wav_path):
         L = min(len(p), n - i)
         mix[i:i + L] += p[:L]
         if s["start"] > 0:
-            tr = sfx("Torrent_erupt", 1.3)
-            if tr is not None:                     # переход — всплеск воды (звук Торрента из игры)
-                j = max(0, i - int(0.35 * SR)); L = min(len(tr), n - j)
-                mix[j:j + L] += tr[:L] * 0.32
-            else:
-                L = min(int(0.4 * SR), n - i)
-                env = np.sin(np.linspace(0, np.pi, L)) * 0.14
-                mix[i:i + L] += np.random.default_rng(i).normal(0, 1, L) * env
+            # Переход — мягкая «волна»: шум, сглаженный до низкого гула, с плавным нарастанием и спадом (нейтрально, без резкости)
+            L = int(0.9 * SR)
+            j = max(0, i - L // 2); L = min(L, n - j)
+            w = np.random.default_rng(i).normal(0, 1, L)
+            for k in (60, 40):
+                w = np.convolve(w, np.ones(k) / k, "same")
+            w *= np.sin(np.linspace(0, np.pi, L)) ** 1.5
+            mix[j:j + L] += w / (np.abs(w).max() + 1e-9) * 0.16
     # Звуки способностей из игры под события на экране: карточки хронологии (поле sfx) и значки хука (hook.sfx)
     def add(t, snd, gain):
         i = int(t * SR)

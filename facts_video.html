@@ -1331,6 +1331,7 @@ function drawExtra(g, lt) {
       const appear = eOut((lt - 0.25 - k * 0.08) / 0.4);
       it.sc.style.top = y + "px"; it.mc.style.top = y + "px";
       it.sc.style.opacity = (1 - big) * appear * (k < ci ? 0.6 : k > ci ? 0.35 : 1);
+      const tag = it.sc.querySelector("em"); if (tag) tag.style.opacity = k <= ci ? 1 : 0;      // «удалён» — только после того, как об этом сказали
       it.mc.style.opacity = big;
       it.mc.style.transform = `scale(${0.96 + 0.04 * big})`; it.mc.style.transformOrigin = "50% 0";
       it.mc.style.display = big > 0.01 ? "" : "none";     // не visibility: явное «visible» у потомка пробивало скрытие сегмента

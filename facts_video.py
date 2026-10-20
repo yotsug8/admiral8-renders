@@ -12,6 +12,7 @@ Python готовит данные: озвучку (Fish Audio, запасной
 import asyncio
 import json
 import math
+import time
 import os
 import shutil
 import subprocess
@@ -242,8 +243,21 @@ def align_to_script(text, asr):
     return [(w, t[0], t[1]) for w, t in zip(script, times)]
 
 
+def silent(text, path_mp3):
+    """Без озвучки (FV_SILENT): слова идут в темпе живой речи (~2,6 слова/с), звук — тишина той же длины."""
+    words = align_to_script(text, None)
+    k = 0.38 / 0.35
+    words = [(w, a * k, b * k) for w, a, b in words]
+    dur = (words[-1][2] if words else 1) + 0.3
+    subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+                    "-t", f"{dur:.2f}", "-c:a", "libmp3lame", "-b:a", "64k", str(path_mp3)], check=True)
+    return words
+
+
 def speak(text, path_mp3, voice_file=None, voice=None):
     """Озвучка фрагмента: выбранный дубль, иначе Fish Audio (если есть ключ), иначе edge-tts."""
+    if os.environ.get("FV_SILENT"):
+        return silent(text.replace("\u0301", ""), path_mp3)
     if voice_file and (HERE / voice_file).exists() and not os.environ.get("FV_FAKE_TTS"):
         shutil.copy(HERE / voice_file, path_mp3)
         return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
@@ -324,11 +338,38 @@ def image_ref(ref, heroes, items):
 
 
 def anim_frames(key):
-    """Кадры анимированного рендера героя (assets/anim/<ключ>/*.webp, 15 к/с) → список адресов."""
+    """Кадры анимированного рендера героя (assets/anim/<ключ>/*.webp, 15 к/с, без потерь) → список адресов.
+    Свечение и тень запекаются в кадры один раз: CSS-фильтр на каждом кадре был самым дорогим местом рендера."""
+    from PIL import ImageFilter
     fs = sorted((HERE / "assets" / "anim" / key).glob("*.webp"))
     if not fs:
         print("  нет анимации:", key)
-    return [f.as_uri() for f in fs]
+    out_dir = WORK / f"anim_{key}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    res = []
+    for f in fs:
+        out = out_dir / (f.stem + ".png")
+        if not out.exists():
+            im = Image.open(f).convert("RGBA")
+            pad = 70
+            W, H = im.width + 2 * pad, im.height + 2 * pad
+            a = Image.new("L", (W, H), 0)
+            a.paste(im.getchannel("A"), (pad, pad))
+            canvas = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            shadow = Image.new("RGBA", (W, H), (1, 8, 9, 0))
+            shadow.putalpha(a.point(lambda v: v * 0.7))
+            canvas.alpha_composite(shadow, (22, 30))                       # жёсткая тень со сдвигом
+            glow = Image.new("RGBA", (W, H), (62, 240, 192, 0))
+            glow.putalpha(a.filter(ImageFilter.GaussianBlur(40)).point(lambda v: min(255, v * 1.0)))
+            canvas.alpha_composite(glow)                                    # мятное свечение по контуру
+            canvas.alpha_composite(im, (pad, pad))
+            # Хранить исходник полного размера, а в браузер отдавать не больше, чем нужно на экране (до 900 px по высоте):
+            # масштабирование 1400 px на каждом кадре съедало время, а качество на экране то же
+            if canvas.height > 900:
+                canvas = canvas.resize((round(canvas.width * 900 / canvas.height), 900), Image.LANCZOS)
+            canvas.save(out, compress_level=1)
+        res.append(out.as_uri())
+    return res
 
 
 def prepare(ep, heroes, items):
@@ -409,52 +450,68 @@ def prepare(ep, heroes, items):
 
 # ---------- рендер кадров в браузере ----------
 
-def render_frames(segs, total, video_path, qa_path, theme=""):
+def _render_chunk(args):
+    """Рендер куска кадров [a, b) в отдельном браузере → свой mp4. Возвращает проблемы аудита и QA-кадры."""
     from playwright.sync_api import sync_playwright
-
-    data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
-                segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
+    import base64
+    from io import BytesIO
+    data, frames, checks, out_mp4 = args
     ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "png",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                           "-crf", "16", "-preset", "medium", str(video_path)], stdin=subprocess.PIPE)
-    # Ключевые моменты для проверки и контрольного листа
-    checks = []
-    for s in segs:
-        checks += [s["start"] + 1.2, s["start"] + s["dur"] * 0.55, s["start"] + s["dur"] - 0.5]
-    qa_frames, problems = [], []
+                           "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
+    problems, qa = [], []
     with sync_playwright() as p:
         br = p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security"])
         page = br.new_page(viewport={"width": 1080, "height": 1920}, device_scale_factor=1)
         page.on("pageerror", lambda e: problems.append(f"JS-ошибка: {e}"))
         page.goto((HERE / "facts_video.html").as_uri())
         page.evaluate("d => init(d)", data)
-        n = int(total * FPS)
-        ci = 0
-        frames = range(n)
-        if os.environ.get("FV_QA_ONLY"):        # быстрая проверка: только ключевые кадры
-            frames = sorted({int(c * FPS) + 1 for c in checks})
+        cdp = page.context.new_cdp_session(page)
         for fi in frames:
             t = fi / FPS
             page.evaluate("t => seek(t)", t)
-            jpg = page.screenshot(type="png")          # без потерь: JPEG мылил мелкие детали
-            ff.stdin.write(jpg)
-            if ci < len(checks) and t >= checks[ci]:
-                for b in page.evaluate("() => audit()"):
-                    problems.append(f"{t:.1f}с: {b}")
-                from io import BytesIO
-                full = Image.open(BytesIO(jpg)).convert("RGB")
-                if os.environ.get("FV_QA_DIR"):        # полноразмерные кадры для просмотра
+            # PNG без потерь, быстрый режим кодирования (в ~1,7 раза быстрее обычного скриншота)
+            png = base64.b64decode(cdp.send("Page.captureScreenshot", {"format": "png", "optimizeForSpeed": True})["data"])
+            ff.stdin.write(png)
+            if fi in checks:
+                problems += [f"{t:.1f}с: {b}" for b in page.evaluate("() => audit()")]
+                full = Image.open(BytesIO(png)).convert("RGB")
+                if os.environ.get("FV_QA_DIR"):
                     full.save(os.path.join(os.environ["FV_QA_DIR"], f"frame_{t:05.1f}.jpg"), quality=90)
-                qa_frames.append(full.resize((270, 480)))
-                ci += 1
-            if fi % 150 == 0:
-                print(f"  кадр {fi}/{n}")
+                qa.append((fi, full.resize((270, 480))))
         br.close()
     ff.stdin.close()
     ff.wait()
+    return problems, qa
+
+
+def render_frames(segs, total, video_path, qa_path, theme=""):
+    """Кадры рендерятся параллельно в нескольких браузерах (FV_WORKERS, по умолчанию — по числу ядер),
+    куски склеиваются без перекодирования."""
+    from concurrent.futures import ProcessPoolExecutor
+    data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
+                segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
+    # Ключевые моменты для проверки и контрольного листа
+    checks = set()
+    for s in segs:
+        checks |= {int((s["start"] + x) * FPS) + 1 for x in (1.2, s["dur"] * 0.55, s["dur"] - 0.5)}
+    n = int(total * FPS)
+    frames = sorted(checks) if os.environ.get("FV_QA_ONLY") else list(range(n))   # быстрая проверка: только ключевые кадры
+    workers = max(1, int(os.environ.get("FV_WORKERS", os.cpu_count() or 2)))
+    size = math.ceil(len(frames) / workers)
+    jobs = [(data, frames[k:k + size], checks, WORK / f"chunk_{j}.mp4") for j, k in enumerate(range(0, len(frames), size))]
+    t0 = time.time()
+    with ProcessPoolExecutor(len(jobs)) as ex:
+        results = list(ex.map(_render_chunk, jobs))
+    print(f"  кадров: {len(frames)}, потоков: {len(jobs)}, {time.time() - t0:.0f} с")
+    lst = WORK / "chunks.txt"
+    lst.write_text("".join(f"file '{j[3]}'\n" for j in jobs))
+    subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(video_path)], check=True)
+    problems = [p for r in results for p in r[0]]
+    qa_frames = [im for _, im in sorted((x for r in results for x in r[1]), key=lambda x: x[0])]
     # Контрольный лист: ключевые кадры сеткой
     cols = 4
-    rows = math.ceil(len(qa_frames) / cols)
+    rows = max(1, math.ceil(len(qa_frames) / cols))
     sheet = Image.new("RGB", (cols * 270, rows * 480), (0, 0, 0))
     for k, im in enumerate(qa_frames):
         sheet.paste(im, ((k % cols) * 270, (k // cols) * 480))

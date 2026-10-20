@@ -7,157 +7,60 @@
   "hook": {
     "style": "hero",
     "anim": "kunkka",
-    "headline": "Кунку|*переделывали*",
-    "voice": "[curious] Кунку {Valve|Вэлв} переделывали чаще, чем кажется. Торрент Шторм добавили и удалили, Тайдбрингер выключался от сайленса, а талант превратили в аганим.",
-    "speed": 1.1,
-    "images": [
-      "ability:kunkka_torrent_storm",
-      "ability:kunkka_tidebringer",
-      "item:ultimate_scepter"
-    ],
-    "labels": [
-      "Торрент Шторм",
-      "Тайдбрингер",
-      "Талант → аганим"
-    ],
-    "cues": [
-      "торрент",
-      "тайдбрингер",
-      "талант"
-    ],
-    "voice_file": "voice/005/hook.mp3"
+    "headline": "Кунка|*за 7 лет*",
+    "voice": "[curious] За семь лет Кунку переделали до неузнаваемости. Разбираем все крупные изменения по порядку.",
+    "images": ["ability:kunkka_torrent_storm", "ability:kunkka_tidebringer", "ability:kunkka_ghostship"],
+    "labels": ["Торрент Шторм", "Тайдбрингер", "Гостшип"],
+    "cues": ["переделали", "крупные", "порядку"]
   },
   "facts": [
     {
-      "layout": "storm",
-      "headline": "Торрент|*Шторм*",
-      "voice": "[curious] В патче {7.23|семь двадцать три} аганим начал давать Кунке Торрент Шторм. Каждую четверть секунды новый торрент, и так пять секунд, в случайных местах. [sarcastic] Куда попадёт, не знал даже сам Кунка. [surprised] В {7.33|семь тридцать три} его разрешили кидать куда хочешь, потом порезали, а в {7.37|семь тридцать семь} удалили совсем.",
+      "layout": "patchline",
+      "headline": "7.23|*→ 7.28*",
+      "voice": "[curious] В {7.23|семь двадцать три} аганим Кунки переделали: он стал давать Торрент Шторм. Пять секунд торренты бьют в случайных местах вокруг Кунки. [surprised] А в {7.28|семь двадцать восемь} у Кунки появился шард: Тайдал Вейв, волна, которая тащит врагов за собой.",
       "visual": {
         "anim": "kunkka",
-        "refs": {
-          "torrent": "ability:kunkka_torrent"
-        },
-        "count": 20,
-        "step": 0.2,
-        "patches": [
-          [
-            "7.23",
-            "добавили"
-          ],
-          [
-            "7.33",
-            "прицел"
-          ],
-          [
-            "7.34e",
-            "порезали",
-            1
-          ],
-          [
-            "7.37",
-            "удалён",
-            1
-          ]
+        "refs": {"scepter": "item:ultimate_scepter", "storm": "ability:kunkka_torrent_storm", "shard": "item:aghanims_shard", "wave": "ability:kunkka_tidal_wave"},
+        "entries": [
+          {"ver": "7.23", "icons": ["scepter", "storm"], "title": "Аганим: Торрент Шторм", "sub": "5 секунд торренты в случайных местах", "kind": "add"},
+          {"ver": "7.28", "icons": ["shard", "wave"], "title": "Шард: Тайдал Вейв", "sub": "волна тащит врагов за собой", "kind": "add"}
         ],
-        "stamp": "УДАЛЁН",
         "thumb": "ability:kunkka_torrent_storm",
-        "cues": {
-          "p0": "аганим",
-          "blips": "каждую",
-          "p1": "разрешили",
-          "p2": "порезали",
-          "p3": "удалили",
-          "del": "удалили"
-        }
-      },
-      "voice_file": "voice/005/f1.mp3"
+        "cues": {"e0": "аганим", "e1": "шард"}
+      }
     },
     {
-      "layout": "silence",
-      "headline": "Тайдбрингер|и *сайленс*",
-      "voice": "[curious] До патча {7.33|семь тридцать три} Тайдбрингер выключался от сайленса. [surprised] Хотя это обычный удар мечом, а сайленс должен мешать только заклинаниям. [sarcastic] Теперь его выключает только истощение.",
+      "layout": "patchline",
+      "headline": "7.33|*→ 7.36*",
+      "voice": "[curious] В {7.33|семь тридцать три} Торрент Шторм сделали направленным на точку, а Тайдбрингер перестал выключаться от сайленса, теперь только от истощения. [surprised] В {7.36|семь тридцать шесть} Тайдбрингер сделали врождённой способностью и добавили Кунке аспекты.",
       "visual": {
         "anim": "kunkka",
-        "name": "Тайдбрингер",
-        "refs": {
-          "ability": "ability:kunkka_tidebringer",
-          "silence": "item:orchid",
-          "breakitem": "item:silver_edge"
-        },
-        "lines": [
-          [
-            "Сайленс — и Тайдбрингер не работает",
-            "silence",
-            "hot"
-          ],
-          [
-            "Хотя это удар мечом, а не заклинание",
-            null,
-            ""
-          ],
-          [
-            "<span class=\"vbadge\">7.33</span> выключает только истощение",
-            "breakitem",
-            "on"
-          ]
+        "refs": {"storm": "ability:kunkka_torrent_storm", "tide": "ability:kunkka_tidebringer", "edge": "item:silver_edge"},
+        "entries": [
+          {"ver": "7.33", "icons": ["storm"], "title": "Торрент Шторм — в точку", "sub": "раньше только вокруг себя", "kind": "change"},
+          {"ver": "7.33", "icons": ["tide", "edge"], "title": "Тайдбрингер: только истощение", "sub": "сайленс больше не выключает", "kind": "change"},
+          {"ver": "7.36", "icons": ["tide"], "title": "Врождённый Тайдбрингер", "sub": "и аспекты у Кунки", "kind": "add"}
         ],
         "thumb": "ability:kunkka_tidebringer",
-        "cues": {
-          "silence": "выключался",
-          "l0": "сайленса",
-          "l1": "удар",
-          "l2": "теперь",
-          "fix": "теперь"
-        }
-      },
-      "voice_file": "voice/005/f2.mp3"
+        "cues": {"e0": "торрент", "e1": "тайдбрингер", "e2": "7.36"}
+      }
     },
     {
-      "layout": "promo",
-      "headline": "Талант|*в аганим*",
-      "voice": "[curious] Раньше на двадцать пятом уровне был талант «Флот призрачных кораблей». [surprised] Когда удалили Торрент Шторм, этот флот сделали аганимом, [sarcastic] и корабли научились стрелять ядрами.",
+      "layout": "patchline",
+      "headline": "7.37|*→ 7.41*",
+      "voice": "[curious] В {7.37|семь тридцать семь} Торрент Шторм удалили. Аганим теперь даёт флот из двух Гостшипов с ядрами, а врождённой способностью стал Адмиральский ром. [sarcastic] В {7.41|семь сорок один} аспекты убрали у всех героев, а Гостшип стал давать двойной ром.",
       "visual": {
-        "rows": [
-          [
-            "25",
-            "+100% урона Тайдбрингера по площади",
-            "Флот призрачных кораблей",
-            1
-          ],
-          [
-            "20",
-            "",
-            "",
-            null
-          ],
-          [
-            "15",
-            "",
-            "",
-            null
-          ],
-          [
-            "10",
-            "",
-            "",
-            null
-          ]
+        "anim": "kunkka",
+        "refs": {"storm": "ability:kunkka_torrent_storm", "scepter": "item:ultimate_scepter", "ship": "ability:kunkka_ghostship", "rum": "ability:kunkka_admirals_rum"},
+        "entries": [
+          {"ver": "7.37", "icons": ["storm"], "title": "Торрент Шторм", "sub": "удалён из игры", "kind": "remove"},
+          {"ver": "7.37", "icons": ["scepter", "ship"], "title": "Аганим: флот", "sub": "два Гостшипа с ядрами", "kind": "add"},
+          {"ver": "7.37", "icons": ["rum"], "title": "Адмиральский ром", "sub": "новая врождённая", "kind": "add"},
+          {"ver": "7.41", "icons": ["ship", "rum"], "title": "Ром ×2", "sub": "аспекты удалены у всех", "kind": "change"}
         ],
-        "refs": {
-          "scepter": "item:ultimate_scepter",
-          "ship": "ability:kunkka_ghostship"
-        },
-        "agh_title": "Аганим",
-        "agh_note": "флот кораблей с ядрами",
-        "promo": "ПОВЫШЕН",
         "thumb": "item:ultimate_scepter",
-        "cues": {
-          "talent": "талант",
-          "agh": "аганимом",
-          "promo": "научились"
-        }
-      },
-      "voice_file": "voice/005/f3.mp3"
+        "cues": {"e0": "удалили", "e1": "аганим", "e2": "врожденной", "e3": "7.41"}
+      }
     }
   ],
   "outro": {
@@ -165,7 +68,6 @@
     "cta": "пока Valve не удалили и это видео",
     "voice": "[sarcastic] Подпишись, пока {Valve|Вэлв} не удалили и это видео.",
     "style": "follow",
-    "anim": "kunkka",
-    "voice_file": "voice/005/end.mp3"
+    "anim": "kunkka"
   }
 }

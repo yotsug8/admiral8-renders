@@ -366,6 +366,81 @@ body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
 .bigw span { display: inline-block; text-shadow: 0 10px 0 #0a2340, 0 0 40px rgba(95,212,196,.45); -webkit-text-stroke: 4px #0a2340; paint-order: stroke fill; }
 .nick3 { position: absolute; left: 60px; width: 880px; top: 1170px; text-align: center; font: 800 46px Manrope; color: var(--acc); }
 .float { position: absolute; width: 112px; height: 112px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 10px 0 rgba(2,10,20,.6); }
+/* ===== «Хронология 2»: шапка-табличка патча, канат с причалами, крупная карточка активного изменения, остальные — полосками.
+   Новое — без неона: плотные цвета, бумага, жёсткие тени, штампы, текстуры ===== */
+body.tk { --paper: #efe6d2; --navy: #0a2340; --red: #d9443b; }
+.grain { position: absolute; inset: 0; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); opacity: .35; mix-blend-mode: overlay; display: none; will-change: transform; }
+body.tk .grain { display: block; }
+body.tk #dots { background-image: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.35), transparent 70%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.45) 100%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.25 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+  background-size: auto, auto, 120px 120px, 120px 120px, 600px 600px; }
+.hc { position: absolute; left: 60px; top: 220px; }
+.hc .pre { display: inline-block; padding: 8px 18px 10px; background: var(--red); color: var(--paper); font: 900 30px/1 Unbounded; border-radius: 8px 8px 0 0; }
+.hc .main { display: flex; align-items: flex-end; gap: 18px; padding: 16px 26px 20px; border: 3px solid var(--line); border-radius: 0 16px 16px 16px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, rgba(2,10,20,.55), rgba(2,10,20,.7)); }
+.hc .main b { font: 900 108px/0.95 Unbounded; color: var(--acc); }
+.hc .main i { font: 900 60px/1 Unbounded; font-style: normal; opacity: .4; padding-bottom: 6px; }
+.rope { position: absolute; left: 60px; top: 500px; width: 880px; height: 120px; }
+.rope:before { content: ""; position: absolute; left: 0; right: 0; top: 52px; height: 8px; border-radius: 4px; background: repeating-linear-gradient(60deg, #c9b48a 0 10px, #8f7a52 10px 20px); }
+.pier { position: absolute; top: 24px; width: 128px; margin-left: -64px; }
+.pier .pl2 { position: relative; padding: 10px 0 12px; text-align: center; font: 900 30px/1 Unbounded; border: 3px solid var(--line); border-radius: 10px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #2a4b6d, #10304f); }
+.pier .pl2:before, .pier .pl2:after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 2px; background: rgba(238,246,251,.45); }
+.pier .pl2:before { left: 8px; } .pier .pl2:after { right: 8px; }
+.pier.past .pl2 { color: var(--acc); border-color: rgba(95,212,196,.5); } .pier.fut { opacity: .45; }
+.nowm { position: absolute; top: 0; width: 150px; margin-left: -75px; }
+.nowm .pl2 { position: relative; padding: 14px 0 16px; text-align: center; font: 900 36px/1 Unbounded; color: var(--paper); border: 4px solid var(--navy); border-radius: 10px;
+  box-shadow: 6px 6px 0 var(--navy); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #e2564c, #b8352d); }
+.nowm .rib { margin: -4px auto 0; width: 130px; padding: 4px 0 8px; text-align: center; background: var(--paper); color: var(--navy); font: 900 20px/1 Unbounded; letter-spacing: .08em;
+  clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%, 8% 50%); }
+.nowm .knot { position: absolute; left: 50%; top: -14px; width: 18px; height: 18px; margin-left: -9px; background: #c9b48a; border: 3px solid var(--navy); transform: rotate(45deg); }
+/* полоска */
+.sc { position: absolute; left: 60px; width: 880px; height: 92px; display: flex; align-items: center; gap: 18px; padding: 0 24px 0 0; border: 3px solid var(--line);
+  border-radius: 16px; overflow: hidden; font: 900 32px Unbounded; text-transform: uppercase; white-space: nowrap;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #13406a, #0a2340); }
+.sc .tab { align-self: stretch; width: 16px; background: var(--acc); flex: none; }
+.sc img { width: 64px; height: 64px; border-radius: 12px; border: 2px solid var(--ink); flex: none; }
+.sc .vv { padding: 5px 12px 7px; background: var(--ink); color: var(--navy); border-radius: 8px; font-size: 26px; flex: none; }
+.sc em { margin-left: auto; font: 900 22px Unbounded; font-style: normal; padding: 5px 12px 7px; border-radius: 8px; border: 3px solid currentColor; }
+.sc.dead { border-color: rgba(217,68,59,.6); } .sc.dead .tab { background: var(--red); } .sc.dead em { color: var(--red); } .sc.dead img { filter: grayscale(1) brightness(.6); }
+/* крупная карточка: шапка + тело */
+.mc { position: absolute; left: 60px; width: 880px; }
+.mc .cap { display: flex; align-items: center; gap: 14px; height: 74px; padding: 0 22px; background-color: var(--acc); color: var(--navy); border-radius: 22px 22px 0 0;
+  font: 900 34px/1 Unbounded; text-transform: uppercase; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.3 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); }
+.mc .cap .vv { padding: 6px 14px 8px; background: var(--navy); color: var(--ink); border-radius: 8px; }
+.mc .cap .kind { margin-left: auto; font-size: 26px; padding: 6px 14px 8px; border: 3px solid currentColor; border-radius: 8px; }
+.mc .body { position: relative; padding: 28px 36px 34px; border: 5px solid var(--acc); border-top: none; border-radius: 0 0 22px 22px; box-shadow: 0 14px 0 rgba(2,10,20,.65);
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, rgba(0,0,0,.08) 0 2px, transparent 2px 6px),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #13406a, #0a2340); }
+.mc .body:before, .mc .body:after { content: ""; position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 3px; background: rgba(238,246,251,.4); }
+.mc .body:before { left: 12px; } .mc .body:after { right: 12px; }
+.mc .ics { display: flex; align-items: center; gap: 16px; }
+.mc .ics .ab { width: 176px; height: 176px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+.mc .ics .it { width: 123px; height: 90px; border-radius: 14px; border: 3px solid var(--ink); }
+.mc .ics s { font: 900 54px Unbounded; text-decoration: none; }
+.mc b.t { display: block; margin-top: 22px; font: 900 52px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.mc .sub { display: block; margin-top: 12px; font: 800 34px/1.18 Manrope; opacity: .85; }
+.mc.del .cap { background-color: var(--red); color: var(--paper); } .mc.del .cap .vv { background: var(--paper); color: var(--navy); }
+.mc.del .body { border-color: var(--red); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #3a1d2a, #1c0f1b); }
+.mc.del .ics .ab { filter: grayscale(1) brightness(.55); }
+.rstamp { position: absolute; right: 44px; top: 50px; padding: 10px 22px 14px; border: 6px solid var(--red); outline: 3px solid var(--red); outline-offset: 5px;
+  color: var(--red); font: 900 52px/1 Unbounded; background: rgba(10,35,64,.6); -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='3' seed='6' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); -webkit-mask-size: 300px 300px; }
+/* «изменили»: бумажная карточка было | стало */
+.mc.chg .cap { background-color: var(--navy); color: var(--paper); border: 4px solid var(--paper); border-bottom: none; border-radius: 18px 18px 0 0; }
+.mc.chg .cap .vv { background: var(--red); color: var(--paper); }
+.mc.chg .body { display: grid; grid-template-columns: 1fr 64px 1fr; color: var(--navy); border: 4px solid var(--paper); border-radius: 0 0 18px 18px; padding: 26px 28px 30px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.6' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .22 0'/></filter><rect width='400' height='400' filter='url(%23f)'/></svg>"), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), repeating-linear-gradient(180deg, transparent 0 42px, rgba(10,35,64,.08) 42px 44px), var(--paper);
+  box-shadow: inset 0 0 60px rgba(120,90,40,.35), 10px 12px 0 var(--navy); }
+.mc.chg .body:before, .mc.chg .body:after { background: rgba(10,35,64,.35); }
+.half { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-width: 0; }
+.half .h { padding: 4px 12px 7px; border-radius: 6px; font: 900 24px/1 Unbounded; letter-spacing: .06em; background: var(--navy); color: var(--paper); }
+.half.new .h { background: var(--red); }
+.half img { width: 150px; height: 150px; border-radius: 16px; border: 4px solid var(--navy); box-shadow: 6px 6px 0 rgba(10,35,64,.35); }
+.half img.it { width: 123px; height: 90px; }
+.half b { font: 900 36px/1.05 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.half span { font: 800 29px/1.15 Manrope; opacity: .8; }
+.half.old img { filter: grayscale(.6); } .half.old b, .half.old span { opacity: .55; }
+.mc.chg .arr { align-self: center; justify-self: center; font: 900 56px Unbounded; color: var(--red); }
 /* «Хронология патчей»: карточки изменений по порядку, у каждой версия, иконки «было → стало», метка */
 .pl { position: absolute; left: 60px; width: 880px; display: flex; align-items: center; gap: 26px; padding: 0 30px; opacity: 0; }
 .pl .v { display: inline-block; padding: 6px 16px 9px; border-radius: 12px; background: var(--dark); border: 3px solid var(--line);
@@ -402,6 +477,7 @@ body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
   <div id="waves"></div>
   <div id="segs"></div>
   <div id="scan"></div>
+  <div class="grain"></div>
   <div id="subs"></div>
   <div id="progress"></div>
   <div id="wm"></div>
@@ -745,6 +821,33 @@ async function init(data) {
       $("small", null, P.paper).textContent = v.emoji_note || "";
       P.decode = $("div", "decode", el);
       $("img", null, P.decode).src = v.icon; $("span", null, P.decode).textContent = v.decoded || "";
+    } else if (s.layout === "chronicle") {
+      // Шапка-табличка патча
+      P.lines = [];
+      P.hc = $("div", "hc", el); P.hc.innerHTML = `<div class="pre">патч</div><div class="main"><b></b><i></i></div>`;
+      P.anim = v.anim ? makeAnim(el, v.anim) : null;
+      // Канат с причалами по всем патчам выпуска; табличка «сейчас» переезжает
+      const rope = $("div", "rope", el), rv = v.route || [], step = rv.length > 1 ? 728 / (rv.length - 1) : 0;
+      P.rx = rv.map((_, k) => 76 + k * step);
+      P.piers = rv.map((ver, k) => { const d = $("div", "pier fut", rope, `left:${P.rx[k]}px`); $("div", "pl2", d).textContent = ver; return d; });
+      P.nowm = $("div", "nowm", rope); P.nowm.innerHTML = `<div class="knot"></div><div class="pl2"></div><div class="rib">СЕЙЧАС</div>`;
+      const ref = key => v.refs[key], icon = key => `<img class="${/\/item_/.test(ref(key)) ? "it" : "ab"}" src="${ref(key)}">`;
+      const KIND = { add: "добавили", remove: "удалили", change: "изменили" };
+      P.items = v.entries.map(e => {
+        const sc = $("div", "sc" + (e.kind === "remove" ? " dead" : ""), el);
+        sc.innerHTML = `<div class="tab"></div><img src="${ref(e.strip_icon || e.icons[e.icons.length - 1])}"><div class="vv">${e.ver}</div>${e.title}${e.kind === "remove" ? "<em>удалён</em>" : ""}`;
+        const mc = $("div", "mc " + ({ remove: "del", change: "chg" }[e.kind] || ""), el);
+        let body;
+        if (e.kind === "change") {
+          const half = (h, cls, x) => `<div class="half ${cls}"><div class="h">${h}</div>${icon(x.icon)}<b>${x.title}</b><span>${x.sub || ""}</span></div>`;
+          body = half("БЫЛО", "old", e.before) + `<div class="arr">→</div>` + half("СТАЛО", "new", e.after);
+        } else {
+          body = `<div class="ics">${e.icons.map(icon).join("<s>→</s>")}</div><b class="t">${e.title}</b><span class="sub">${e.sub || ""}</span>` +
+                 (e.kind === "remove" ? `<div class="rstamp">УДАЛЁН</div>` : "");
+        }
+        mc.innerHTML = `<div class="cap"><span class="vv">${e.ver}</span>изменение<span class="kind">${KIND[e.kind || "add"]}</span></div><div class="body">${body}</div>`;
+        return { sc, mc, e };
+      });
     } else if (s.layout === "patchline") {
       P.lines = headline(el, s.headline);
       P.anim = v.anim ? makeAnim(el, v.anim) : null;
@@ -873,6 +976,7 @@ async function init(data) {
     if (s.outro && s.style === "flag") placeAnim(P.anim, 700, 1480, 480, 400);
     if (s.outro && s.style === "big") placeAnim(P.anim, 560, 960, 760, 960 - 230);
     if (s.layout === "patchline") placeAnim(P.anim, 800, 500, 300, 330);
+    if (s.layout === "chronicle") { placeAnim(P.anim, 830, 490, 300, 340); P.items.forEach(it => { it.H = it.mc.offsetHeight; }); }
     if (s.layout === "silence") placeAnim(P.anim, 250, 975, 470, 975 - headBottom - 30);
     if (s.layout === "range") {
       placeHero(P.hero, 300, 1040, 540, 1040 - headBottom - 20);
@@ -1212,6 +1316,40 @@ function drawExtra(g, lt) {
     const tC = C("chips", v.chips_at || 4);
     P.chips.forEach((c, m) => { const k = eBack((lt - tC - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
   }
+  if (s.layout === "chronicle") {
+    if (P.anim) { const e = eBack((lt - 0.1) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 60}px)`; drawAnim(P.anim, lt); }
+    const n = P.items.length, at = P.items.map((_, k) => C("e" + k, 0.6 + k * 1.6));
+    let ci = -1; at.forEach((t0, k) => { if (lt >= t0 - 0.15) ci = k; });
+    const p = ci >= 0 ? eInOut((lt - at[ci] + 0.15) / 0.45) : 1;          // ход смены активной карточки
+    // Высоты: активная — крупная карточка, остальные — полоски; плавно между прошлой и новой активной
+    const SH = 92, GAP = 20, TOP = 640;
+    const hAt = (k, a) => k === a ? P.items[k].H : SH;
+    let y = TOP;
+    P.items.forEach((it, k) => {
+      const h = ci >= 0 ? hAt(k, ci - 1) * (1 - p) + hAt(k, ci) * p : SH;
+      const big = k === ci ? p : k === ci - 1 ? 1 - p : 0;              // насколько элемент сейчас «карточка»
+      const appear = eOut((lt - 0.25 - k * 0.08) / 0.4);
+      it.sc.style.top = y + "px"; it.mc.style.top = y + "px";
+      it.sc.style.opacity = (1 - big) * appear * (k < ci ? 0.6 : k > ci ? 0.35 : 1);
+      it.mc.style.opacity = big;
+      it.mc.style.transform = `scale(${0.96 + 0.04 * big})`; it.mc.style.transformOrigin = "50% 0";
+      it.mc.style.visibility = big > 0.01 ? "visible" : "hidden";
+      // Штамп «удалён» падает через полсекунды
+      const st = it.mc.querySelector(".rstamp");
+      if (st) { const q = clamp((lt - at[k] - 0.5) / 0.25); st.style.opacity = k === ci && q > 0 ? 1 : 0; st.style.transform = `rotate(-9deg) scale(${2 - eOut(q)})`; }
+      y += h + GAP;
+    });
+    // Шапка: текущий патч крупно
+    const cur = ci >= 0 ? P.items[ci].e.ver : P.items[0].e.ver, last = P.items[n - 1].e.ver;
+    P.hc.querySelector("b").textContent = cur;
+    P.hc.querySelector("i").textContent = cur !== last ? "→ " + last : "";
+    const kh = eBack((lt - 0.05) / 0.45); P.hc.style.opacity = clamp(kh * 2); P.hc.style.transform = `translateY(${(1 - kh) * -30}px)`;
+    // Канат: пройденные, текущий, будущие; табличка «сейчас» переезжает
+    const rv = v.route || [], ri = rv.indexOf(cur), prevV = ci > 0 ? P.items[ci - 1].e.ver : cur, rp = rv.indexOf(prevV);
+    const x = P.rx[rp] + (P.rx[ri] - P.rx[rp]) * p;
+    P.piers.forEach((pr, k) => { pr.className = "pier " + (k < ri ? "past" : k === ri ? "past" : "fut"); pr.style.visibility = k === ri ? "hidden" : "visible"; });
+    P.nowm.style.left = x + "px"; P.nowm.querySelector(".pl2").textContent = cur;
+  }
   if (s.layout === "patchline") {
     if (P.anim) { const e = eBack((lt - 0.1) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 60}px)`; drawAnim(P.anim, lt); }
     const at = P.cards.map((_, k) => C("e" + k, 0.6 + k * 1.6));
@@ -1391,13 +1529,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

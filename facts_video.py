@@ -130,9 +130,22 @@ def tts(text, path_mp3, voice=None, pitch=None, rate=None):
     raise RuntimeError(f"озвучка не получилась: {last}")
 
 
+def say_text(text):
+    """Текст для голоса: {7.33|семь тридцать три} → «семь тридцать три»."""
+    import re
+    return re.sub(r"\{([^{}|]*)\|([^{}]*)\}", r"\2", text)
+
+
+def show_text(text):
+    """Текст для субтитров: {7.33|семь тридцать три} → «7.33»."""
+    import re
+    return re.sub(r"\{([^{}|]*)\|([^{}]*)\}", r"\1", text)
+
+
 def tts_fish(text, path_mp3, voice=None, align=True):
     """Озвучка через Fish Audio + тайминги слов распознаванием (faster-whisper)."""
     import urllib.request
+    text = say_text(text)
     body = json.dumps({"text": text, "reference_id": voice or FISH_VOICE, "format": "mp3",
                        "mp3_bitrate": 192, "prosody": {"speed": FISH_SPEED}, "language": "ru",
                        "normalize": True, "temperature": FISH_TEMP}).encode()
@@ -202,7 +215,7 @@ def align_to_script(text, asr):
     Сопоставляем последовательности (difflib); несовпавшим словам времена интерполируем."""
     import difflib
     import re
-    text = re.sub(r"\[[^\]]*\]", " ", text)            # теги эмоций/пауз Fish Audio не показываем
+    text = re.sub(r"\[[^\]]*\]", " ", show_text(text))   # теги эмоций/пауз не показываем; {показ|озвучка} → показ
     script = [w.strip(",.;:") for w in text.split() if _norm(w)]
     if not asr:
         return [(w, i * 0.35, i * 0.35 + 0.3) for i, w in enumerate(script)]
@@ -242,7 +255,7 @@ def speak(text, path_mp3, voice_file=None, voice=None):
     elif not FISH_KEY:
         print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
     import re
-    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", text).replace("\u0301", "").strip(), path_mp3)
+    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", say_text(text)).replace("\u0301", "").strip(), path_mp3)
 
 
 def mp3_to_pcm(path):
@@ -301,11 +314,21 @@ def cue_time(words, cue):
     return None
 
 def image_ref(ref, heroes, items):
-    """Картинка по ссылке: "hero:ключ" — герой без фона, "item:ключ" — иконка предмета, "file:путь" — из репозитория."""
+    """Картинка по ссылке: "hero:ключ" — герой без фона, "item:ключ" — иконка предмета,
+    "ability:ключ" — иконка способности из assets/abilities, "file:путь" — из репозитория."""
     kind, key = ref.split(":", 1)
     path = {"hero": lambda: hero_cutout(key, heroes), "item": lambda: item_icon(key, items),
+            "ability": lambda: HERE / "assets" / "abilities" / f"{key}.png",
             "file": lambda: HERE / key}[kind]()
     return path.as_uri()
+
+
+def anim_frames(key):
+    """Кадры анимированного рендера героя (assets/anim/<ключ>/*.webp, 15 к/с) → список адресов."""
+    fs = sorted((HERE / "assets" / "anim" / key).glob("*.webp"))
+    if not fs:
+        print("  нет анимации:", key)
+    return [f.as_uri() for f in fs]
 
 
 def prepare(ep, heroes, items):
@@ -337,13 +360,15 @@ def prepare(ep, heroes, items):
                 else:
                     thumbs.append(None)
             seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []),
+                       anim=anim_frames(f["anim"]) if f.get("anim") else None,
                        style=f.get("style", "cards"), watermark=WATERMARK)   # cards — карточки фактов, follow — кнопка подписки
         elif f.get("hook"):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]
             print("    метки хука:", [round(x, 2) if x is not None else "НЕ НАЙДЕНО" for x in at])
             seg.update(hook=True, headline=f["headline"], images=imgs, at=at, labels=f.get("labels", []),
-                       style=f.get("style", "stickers"))      # stickers — наклейки, list — список вопросов
+                       style=f.get("style", "stickers"),      # stickers — наклейки, list — список вопросов, hero — анимированный герой и значки
+                       anim=anim_frames(f["anim"]) if f.get("anim") else None)
         else:
             v = dict(f.get("visual", {}))
             if v.get("heroes"):
@@ -357,6 +382,10 @@ def prepare(ep, heroes, items):
                 v["icon"] = item_icon(v["icon"], items).as_uri()
             if v.get("logo"):
                 v["logo"] = (HERE / v["logo"]).as_uri()
+            if v.get("anim"):                        # анимированный герой
+                v["anim"] = anim_frames(v["anim"])
+            if v.get("refs"):                        # произвольные картинки по ссылкам hero:/item:/ability:/file:
+                v["refs"] = {k: image_ref(r, heroes, items) for k, r in v["refs"].items()}
             if v.get("player"):                      # карточка игрока: логотипы команды и турнира
                 v["player"] = dict(v["player"], logos=[(HERE / x).as_uri() for x in v["player"].get("logos", [])])
             for key in ("team_logos", "ability_icons"):     # картинки, лежащие в репозитории

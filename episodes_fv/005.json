@@ -208,6 +208,8 @@
       "ability:kunkka_ghostship",
       "ability:kunkka_tidal_wave",
       "ability:kunkka_admirals_rum"
-    ]
+    ],
+    "hold": 1.2,
+    "voice_file": "voice/005/end.mp3"
   }
 }

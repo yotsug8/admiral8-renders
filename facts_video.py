@@ -385,7 +385,7 @@ def prepare(ep, heroes, items):
         words = speak(text, mp3, f.get("voice_file"), ep.get("voice_id"))   # голос — свой у каждого выпуска
         pcm = mp3_to_pcm(mp3)
         pad = float(ep.get("pad", PAD))      # пауза после фрагмента: можно задать в выпуске, чтобы уложиться в 45 с
-        dur = len(pcm) / SR + pad + (0.6 if i == len(parts) - 1 else 0)   # в конце чуть дольше пауза
+        dur = len(pcm) / SR + pad + (0.6 if i == len(parts) - 1 else 0) + float(f.get("hold", 0))   # в конце чуть дольше пауза; hold — задержать кадр
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
         if f.get("outro"):
             thumbs = []

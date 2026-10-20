@@ -1056,7 +1056,9 @@ function drawExtra(g, lt) {
       // До своей метки карточка видна бледной заготовкой: экран не пустует, видно, сколько изменений впереди
       const pre = 0.22 * eOut((lt - 0.3 - k * 0.08) / 0.4);
       c.style.opacity = Math.max(lt < t0 - 0.1 ? pre : 0, clamp(e * 2) * (active || lt < t0 ? 1 : 0.55));
-      c.style.transform = `translateX(${(1 - e) * 160 + sh}px) scale(${active ? 1 : 0.97})`;
+      // Заготовка уже стоит на месте, поэтому на метке карточка не выезжает, а «вспыхивает» (короткий рост и обратно)
+      const pop = q > 0 && q < 0.35 ? Math.sin(q / 0.35 * Math.PI) * 0.04 : 0;
+      c.style.transform = `translateX(${(1 - e) * 160 * (1 - pre / 0.22) + sh}px) scale(${(active ? 1 : 0.97) + pop})`;
       c.classList.toggle("on", active && c.dataset.kind !== "remove");
       c.classList.toggle("hot", c.dataset.kind === "remove" && q > 0.5);
       const b = c.querySelector(".burst"), qb = clamp(q / 0.6);

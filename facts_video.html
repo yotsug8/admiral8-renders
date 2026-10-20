@@ -126,6 +126,14 @@ body.tb #wipe { background: var(--ink); }
 body.tb .head { padding-left: 30px; border-left: 14px solid var(--acc); }
 body.tb #subs span.on { background: var(--ink); }
 body.tb .pg i { background: var(--acc); }
+/* Финал «follow»: крупное «Подпишись», подкол, круглая кнопка «+» с ником */
+.fw { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 96px/1 Unbounded; color: var(--acc); text-transform: uppercase; white-space: nowrap;
+  letter-spacing: -.03em; top: 640px; }
+.fsub { position: absolute; left: 60px; width: 880px; text-align: center; top: 800px; font: 800 46px/1.2 Manrope; color: var(--ink); }
+.fbtn { position: absolute; left: 400px; top: 960px; width: 200px; height: 200px; border-radius: 50%; background: #ff5a4e; border: 10px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--dark); display: flex; align-items: center; justify-content: center; }
+.fbtn svg { width: 110px; height: 110px; }
+.fnick { position: absolute; left: 60px; width: 880px; text-align: center; top: 1200px; font: 800 44px Manrope; color: rgba(244,244,242,.75); }
 /* Хук-список: три вопроса строками */
 .hrow { position: absolute; left: 60px; width: 880px; height: 210px; border-radius: 30px; background: var(--dark); border: 6px solid var(--ink);
   box-shadow: 12px 12px 0 var(--acc); display: flex; align-items: center; gap: 26px; padding: 0 28px; opacity: 0; }
@@ -308,6 +316,14 @@ async function init(data) {
         if (s.labels && s.labels[k]) $("div", "cap", c).textContent = s.labels[k];
         return c;
       });
+    } else if (s.outro && s.style === "follow") {
+      // Финал без карточек: слово, подкол, кнопка подписки с ником
+      P.fw = $("div", "fw", el); P.fw.innerHTML = s.question.replace(/\*/g, "");
+      P.fsub = $("div", "fsub", el); P.fsub.textContent = s.cta;
+      P.fbtn = $("div", "fbtn", el);
+      P.fbtn.innerHTML = `<svg viewBox="0 0 100 100"><path class="plus" d="M50 18 V82 M18 50 H82" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path class="tick" d="M22 52 L42 72 L80 30" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0"/></svg>`;
+      P.fnick = $("div", "fnick", el); P.fnick.textContent = s.watermark;
     } else if (s.outro) {
       P.lines = headline(el, s.question);
       const cards = $("div", "cards", el);
@@ -520,7 +536,8 @@ async function init(data) {
     const P = g.parts, s = g.s;
     if (s.layout === "duo") { placeHero(P.heroes[0], 290, 1200, 460, 640); placeHero(P.heroes[1], 720, 1200, 420, 600); }
     // Верх героя не выше нижней строки заголовка (+20px)
-    const headBottom = g.el.querySelector(".head").getBoundingClientRect().bottom + 20;
+    const hd = g.el.querySelector(".head");                // в финале «follow» заголовка нет
+    const headBottom = hd ? hd.getBoundingClientRect().bottom + 20 : 0;
     if (s.layout === "block") placeHero(P.hero, 600, 1080, 760, 1080 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 270, 1380, 420, 380);
     if (s.layout === "gauge") placeHero(P.hero, 590, 960, 680, 960 - headBottom);
@@ -583,6 +600,19 @@ function draw(g, lt) {
       c.style.opacity = clamp(e * 2);
       c.style.transform = `translateY(${(1 - e) * 220}px) rotate(${c.dataset.rot * (0.4 + 0.6 * e) + 0.6 * Math.sin(lt * 2 + k)}deg) scale(${0.85 + 0.15 * e})`;
     });
+    return;
+  }
+  if (s.outro && P.fw) {
+    const a = eBack((lt - 0.1) / 0.5); P.fw.style.opacity = clamp(a * 2); P.fw.style.transform = `scale(${0.85 + 0.15 * a})`;
+    const b = eOut((lt - 0.7) / 0.4); P.fsub.style.opacity = b; P.fsub.style.transform = `translateY(${(1 - b) * 20}px)`;
+    const c = eBack((lt - 1.0) / 0.45); P.fbtn.style.opacity = clamp(c * 2);
+    // Одно мягкое «нажатие»: кнопка проседает, плюс сменяется галочкой, кнопка зеленеет
+    const tP = 1.9, pr = clamp((lt - tP) / 0.18), up = clamp((lt - tP - 0.18) / 0.25);
+    P.fbtn.style.transform = `scale(${(0.8 + 0.2 * c) * (1 - 0.1 * pr + 0.1 * up)})`;
+    const done = lt > tP + 0.18;
+    P.fbtn.style.background = done ? "#2fd36b" : "#ff5a4e";
+    P.fbtn.querySelector(".plus").setAttribute("opacity", done ? 0 : 1); P.fbtn.querySelector(".tick").setAttribute("opacity", done ? 1 : 0);
+    P.fnick.style.opacity = clamp((lt - 1.2) / 0.4);
     return;
   }
   if (s.outro) {
@@ -850,7 +880,7 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))

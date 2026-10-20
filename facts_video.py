@@ -336,7 +336,8 @@ def prepare(ep, heroes, items):
                     thumbs.append(hero_cutout(v["heroes"][0], heroes).as_uri())
                 else:
                     thumbs.append(None)
-            seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []))
+            seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []),
+                       style=f.get("style", "cards"), watermark=WATERMARK)   # cards — карточки фактов, follow — кнопка подписки
         elif f.get("hook"):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука
             at = [cue_time(seg["words"], c) for c in f.get("cues", [])]

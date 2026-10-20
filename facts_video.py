@@ -497,14 +497,18 @@ def voice_takes(ep, out_dir, n=3):
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     summary = {}
-    jobs = [(f"f{i}", f["voice"], n) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
+    global FISH_SPEED
+    base_speed = FISH_SPEED
+    # Задание: имя, текст, число дублей, темп (speed во фрагменте — свой темп, например медленнее для хука)
+    jobs = [(f"f{i}", f["voice"], n, f.get("speed")) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
     for name in ("hook", "outro"):           # хук и финал — тоже дублями, если дубль ещё не выбран
         part = ep.get(name)
         if part and part.get("voice") and not part.get("voice_file"):
-            jobs.append(("hook" if name == "hook" else "end", part["voice"], n))
-    jobs += [(f"end{i}", t, 2) for i, t in enumerate(ep.get("outro_variants", []), 1)]
-    jobs += [(x[0], x[1], x[2] if len(x) > 2 else 2) for x in ep.get("take_texts", [])]   # варианты: имя, текст, число дублей
-    for name, text, k in jobs:
+            jobs.append(("hook" if name == "hook" else "end", part["voice"], n, part.get("speed")))
+    jobs += [(f"end{i}", t, 2, None) for i, t in enumerate(ep.get("outro_variants", []), 1)]
+    jobs += [(x[0], x[1], x[2] if len(x) > 2 else 2, x[3] if len(x) > 3 else None) for x in ep.get("take_texts", [])]   # варианты: имя, текст, число дублей, темп
+    for name, text, k, speed in jobs:
+        FISH_SPEED = float(speed) if speed else base_speed
         for t in range(1, k + 1):
             path = out / f"take_{name}_{t}.mp3"
             tts_fish(text, path, ep.get("voice_id"), align=False)

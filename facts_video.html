@@ -1347,7 +1347,7 @@ function drawExtra(g, lt) {
     // Канат: пройденные, текущий, будущие; табличка «сейчас» переезжает
     const rv = v.route || [], ri = rv.indexOf(cur), prevV = ci > 0 ? P.items[ci - 1].e.ver : cur, rp = rv.indexOf(prevV);
     const x = P.rx[rp] + (P.rx[ri] - P.rx[rp]) * p;
-    P.piers.forEach((pr, k) => { pr.className = "pier " + (k < ri ? "past" : k === ri ? "past" : "fut"); pr.style.visibility = k === ri ? "hidden" : "visible"; });
+    P.piers.forEach((pr, k) => { pr.className = "pier " + (k < ri ? "past" : k === ri ? "past" : "fut"); pr.style.opacity = k === ri ? 0 : ""; });
     P.nowm.style.left = x + "px"; P.nowm.querySelector(".pl2").textContent = cur;
   }
   if (s.layout === "patchline") {

@@ -600,8 +600,10 @@ def mix_audio(segs, total, wav_path):
             mix[i:i + L] += snd[:L] * gain
     # Хронология: мягкий звон при переходе к новому патчу, удар штампа на «удалён» (звуки синтезированы)
     tt = lambda d: np.arange(int(d * SR)) / SR
-    chime = (np.sin(2 * np.pi * 880 * tt(0.45)) + 0.5 * np.sin(2 * np.pi * 1320 * tt(0.45)) + 0.25 * np.sin(2 * np.pi * 1760 * tt(0.45))) \
-        * np.exp(-tt(0.45) * 9) * np.minimum(1, tt(0.45) / 0.004)
+    # «Бульк» — пузырь воды: тон быстро скользит вверх 260→520 Гц, мягкая атака, короткое затухание (без звона)
+    bt = tt(0.16)
+    freq = 260 + 260 * (bt / 0.16) ** 0.6
+    chime = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-bt * 22) * np.minimum(1, bt / 0.012)
     chime /= np.abs(chime).max()
     thump = np.sin(2 * np.pi * 62 * tt(0.4)) * np.exp(-tt(0.4) * 11)
     click = np.random.default_rng(3).normal(0, 1, len(thump)) * np.exp(-tt(0.4) * 70)
@@ -617,7 +619,7 @@ def mix_audio(segs, total, wav_path):
             if t0 is None:
                 continue
             if e.get("ver") != prev:
-                add(s["start"] + t0, chime, 0.11)
+                add(s["start"] + t0, chime, 0.16)
             if e.get("kind") == "remove":
                 add(s["start"] + t0 + 0.5, stamp, 0.42)
             prev = e.get("ver")

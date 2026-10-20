@@ -37,6 +37,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install pillow "rembg[cpu]"
+      - if: ${{ inputs.anims != '' }}
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg      # для анимированных рендеров
       - name: Скачать и вырезать
         env:
           HEROES: ${{ inputs.heroes }}

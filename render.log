@@ -1,0 +1,10 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  take_end_1.mp3: [confident] Подпишись и поставь лайк.
+    Подпишись[0.00-0.76] и[0.76-0.94] поставь[0.94-1.40] лайк.[1.40-1.74]
+    ИТОГ: {'prob': 0.962, 'weak': [], 'loud_pauses': [], 'dur': 1.85, 'words': 4}
+  take_end_2.mp3: [confident] Подпишись и поставь лайк.
+    Подпишись[0.00-0.68] и[0.68-0.82] поставь[0.82-1.18] лайк.[1.18-1.48]
+    ИТОГ: {'prob': 0.973, 'weak': [], 'loud_pauses': [], 'dur': 1.57, 'words': 4}
+  take_end_3.mp3: [confident] Подпишись и поставь лайк.
+    Подпишись[0.00-0.74] и[0.74-0.90] поставь[0.90-1.30] лайк.[1.30-1.62]
+    ИТОГ: {'prob': 0.973, 'weak': [], 'loud_pauses': [], 'dur': 1.72, 'words': 4}

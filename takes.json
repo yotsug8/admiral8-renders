@@ -1,0 +1,23 @@
+{
+ "take_end_1.mp3": {
+  "prob": 0.962,
+  "weak": [],
+  "loud_pauses": [],
+  "dur": 1.85,
+  "words": 4
+ },
+ "take_end_2.mp3": {
+  "prob": 0.973,
+  "weak": [],
+  "loud_pauses": [],
+  "dur": 1.57,
+  "words": 4
+ },
+ "take_end_3.mp3": {
+  "prob": 0.973,
+  "weak": [],
+  "loud_pauses": [],
+  "dur": 1.72,
+  "words": 4
+ }
+}

@@ -74,7 +74,8 @@
           "7.37",
           "7.41"
         ]
-      }
+      },
+      "voice_file": "voice/005/f1.mp3"
     },
     {
       "layout": "chronicle",
@@ -144,7 +145,8 @@
           "7.37",
           "7.41"
         ]
-      }
+      },
+      "voice_file": "voice/005/f2.mp3"
     },
     {
       "layout": "chronicle",
@@ -219,7 +221,8 @@
           "7.37",
           "7.41"
         ]
-      }
+      },
+      "voice_file": "voice/005/f3.mp3"
     }
   ],
   "outro": {

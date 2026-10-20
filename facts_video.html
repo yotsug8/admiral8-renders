@@ -352,6 +352,20 @@ body.tk .fsub { top: 860px; }
 body.tk .fbtn { top: 990px; }
 body.tk .fnick { top: 1230px; }
 body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
+/* Финал «flag»: «Подпишись» на развевающемся сигнальном флаге, без кнопки и подписей */
+.flag { position: absolute; left: 90px; top: 760px; width: 820px; height: 250px; transform-origin: 0 50%; }
+.flag svg { position: absolute; inset: 0; overflow: visible; }
+.flag b { position: absolute; left: 70px; right: 20px; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
+  font: 900 92px/1 Unbounded; color: #0a2340; text-transform: uppercase; letter-spacing: -.03em; }
+.pole { position: absolute; left: 70px; top: 700px; width: 18px; height: 820px; border-radius: 9px; background: linear-gradient(90deg, #c9d3dc, #8794a1); }
+.pole:before { content: ""; position: absolute; left: -9px; top: -24px; width: 36px; height: 36px; border-radius: 50%; background: #eef6fb; }
+.fnick2 { position: absolute; left: 60px; width: 880px; text-align: center; top: 1090px; font: 800 44px Manrope; color: rgba(238,246,251,.8); }
+/* Финал «big»: огромное «ПОДПИШИСЬ» по буквам на волнах, герой сверху, иконки способностей покачиваются над водой */
+.bigw { position: absolute; left: 60px; width: 880px; top: 1010px; display: flex; justify-content: center; font: 900 102px/1 Unbounded;
+  text-transform: uppercase; letter-spacing: -.04em; color: var(--ink); }
+.bigw span { display: inline-block; text-shadow: 0 10px 0 #0a2340, 0 0 40px rgba(95,212,196,.45); -webkit-text-stroke: 4px #0a2340; paint-order: stroke fill; }
+.nick3 { position: absolute; left: 60px; width: 880px; top: 1170px; text-align: center; font: 800 46px Manrope; color: var(--acc); }
+.float { position: absolute; width: 112px; height: 112px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 10px 0 rgba(2,10,20,.6); }
 /* «Хронология патчей»: карточки изменений по порядку, у каждой версия, иконки «было → стало», метка */
 .pl { position: absolute; left: 60px; width: 880px; display: flex; align-items: center; gap: 26px; padding: 0 30px; opacity: 0; }
 .pl .v { display: inline-block; padding: 6px 16px 9px; border-radius: 12px; background: var(--dark); border: 3px solid var(--line);
@@ -517,6 +531,22 @@ async function init(data) {
         if (s.labels && s.labels[k]) $("div", "cap", c).textContent = s.labels[k];
         return c;
       });
+    } else if (s.outro && s.style === "big") {
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      const w = $("div", "bigw", el);
+      P.letters = [...s.question.replace(/\*/g, "")].map(ch => { const sp = $("span", null, w); sp.textContent = ch; return sp; });
+      P.nick = $("div", "nick3", el); P.nick.textContent = s.watermark;
+      P.floats = (s.floats || []).map((src, k, a) => { const im = $("img", "float", el, `left:${540 + (k - (a.length - 1) / 2) * 140 - 56}px;top:1300px`); im.src = src; return im; });
+      P.lines = [];
+    } else if (s.outro && s.style === "flag") {
+      P.pole = $("div", "pole", el);
+      P.flag = $("div", "flag", el);
+      P.flagSvg = P.flag.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+      P.flagSvg.setAttribute("viewBox", "0 0 820 250");
+      $("b", null, P.flag).textContent = s.question.replace(/\*/g, "");
+      P.fnick = $("div", "fnick2", el); P.fnick.textContent = s.watermark;
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      P.lines = [];
     } else if (s.outro && s.style === "follow") {
       // Финал без карточек: слово, подкол, кнопка подписки с ником
       P.fw = $("div", "fw", el); P.fw.innerHTML = s.question.replace(/\*/g, "").replace(/\|/g, "<br>");   // «|» — перенос строки
@@ -840,6 +870,8 @@ async function init(data) {
       P.stamp.style.left = (540 - P.stamp.offsetWidth / 2) + "px"; P.stamp.style.top = (900 - P.stamp.offsetHeight / 2) + "px";
     }
     if (s.outro && s.style === "follow") placeAnim(P.anim, 540, 610, 520, 360);
+    if (s.outro && s.style === "flag") placeAnim(P.anim, 700, 1480, 480, 400);
+    if (s.outro && s.style === "big") placeAnim(P.anim, 560, 960, 760, 960 - 230);
     if (s.layout === "patchline") placeAnim(P.anim, 800, 500, 300, 330);
     if (s.layout === "silence") placeAnim(P.anim, 250, 975, 470, 975 - headBottom - 30);
     if (s.layout === "range") {
@@ -944,6 +976,35 @@ function draw(g, lt) {
       c.style.opacity = clamp(e * 2);
       c.style.transform = `translateY(${(1 - e) * 220}px) rotate(${c.dataset.rot * (0.4 + 0.6 * e) + 0.6 * Math.sin(lt * 2 + k)}deg) scale(${0.85 + 0.15 * e})`;
     });
+    return;
+  }
+  if (s.outro && P.letters) {
+    if (P.anim) { const e = eBack((lt - 0.05) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 120}px)`; drawAnim(P.anim, lt); }
+    // Буквы выныривают по очереди и качаются, как на волнах
+    P.letters.forEach((sp, k) => {
+      const e = eBack((lt - 0.15 - k * 0.05) / 0.45);
+      sp.style.opacity = clamp(e * 2);
+      sp.style.transform = `translateY(${(1 - e) * 140 + Math.sin(lt * 3 - k * 0.6) * 9}px) rotate(${Math.sin(lt * 3 - k * 0.6 + 1) * 3}deg)`;
+    });
+    P.nick.style.opacity = clamp((lt - 0.7) / 0.4);
+    P.floats.forEach((im, k) => {
+      const e = eBack((lt - 0.5 - k * 0.08) / 0.45);
+      im.style.opacity = clamp(e * 2);
+      im.style.transform = `translateY(${(1 - e) * 120 + Math.sin(lt * 2.4 + k * 1.1) * 12}px) rotate(${Math.sin(lt * 2 + k) * 6}deg)`;
+    });
+    return;
+  }
+  if (s.outro && P.flag) {
+    // Флаг поднимается по флагштоку и развевается: волна бежит по полотнищу
+    const up = eOut((lt - 0.05) / 0.6);
+    P.flag.style.transform = `translateY(${(1 - up) * 500}px)`; P.flag.style.opacity = clamp(up * 3);
+    const pts = [], W = 820, H = 250, A = 14;
+    for (let x = 0; x <= W; x += 20) pts.push([x, A * Math.sin(x / 120 - lt * 5) * (x / W)]);
+    const top = pts.map(([x, y]) => `${x},${y + 8}`).join(" "), bot = pts.slice().reverse().map(([x, y]) => `${x},${y + H - 8}`).join(" ");
+    P.flagSvg.innerHTML = `<polygon points="${top} ${bot}" fill="#eef6fb"/><polygon points="${pts.map(([x, y]) => `${x},${y + 8}`).filter((_, k) => k <= 3).join(" ")} ${pts.filter((_, k) => k <= 3).reverse().map(([x, y]) => `${x},${y + H - 8}`).join(" ")}" fill="#ff4d5e"/>`;
+    P.flag.querySelector("b").style.transform = `translateY(${A * 0.5 * Math.sin(410 / 120 - lt * 5) * 0.5}px)`;
+    P.fnick.style.opacity = clamp((lt - 0.6) / 0.4);
+    if (P.anim) { const e = eBack((lt - 0.2) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 80}px)`; drawAnim(P.anim, lt); }
     return;
   }
   if (s.outro && P.fw) {
@@ -1330,7 +1391,7 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))

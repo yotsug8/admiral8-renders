@@ -404,6 +404,7 @@ def prepare(ep, heroes, items):
                     thumbs.append(None)
             seg.update(outro=True, question=f["question"], cta=f["cta"], thumbs=thumbs, stats=f.get("stats", []),
                        anim=anim_frames(f["anim"]) if f.get("anim") else None,
+                       floats=[image_ref(r, heroes, items) for r in f.get("floats", [])],   # иконки над водой в финале «big»
                        style=f.get("style", "cards"), watermark=WATERMARK)   # cards — карточки фактов, follow — кнопка подписки
         elif f.get("hook"):
             imgs = [image_ref(r, heroes, items) for r in f.get("images", [])]     # картинки хука

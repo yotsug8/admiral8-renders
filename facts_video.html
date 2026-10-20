@@ -659,7 +659,7 @@ function drawExtra(g, lt) {
     P.belt.style.backgroundPosition = `${-lt * 160}px 0`;              // лента едет
     P.trays.forEach((t, k) => {
       const t0 = C("i" + k, 0.6 + k * 1.2), e = eOut((lt - t0 + 0.1) / 0.5);
-      t.style.opacity = clamp(e * 1.5); t.style.transform = `translateX(${(1 - e) * -160}px)`;
+      t.style.opacity = clamp(e * 1.5); t.style.transform = `translateY(${(1 - e) * -120}px)`;   // поднос съезжает сверху, не вылезая за края
       // Штамп решения падает чуть позже и пружинит
       const vd = t.querySelector(".verd"), q = clamp((lt - t0 - 0.55) / 0.25);
       vd.style.opacity = q > 0 ? 1 : 0; vd.style.transform = `rotate(${8 - 2 * q}deg) scale(${2 - eOut(q)})`;

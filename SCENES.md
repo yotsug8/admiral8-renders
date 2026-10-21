@@ -47,6 +47,10 @@
 1. На компьютере с дотой: `python tools/vpk_tool.py list <regex>` / `get <regex> <папка>` — достаёт сырые файлы из pak01_dir.vpk (без сторонних программ).
 2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (`S2V_CLI`).
 3. Имена анимаций героя — список печатает экспорт без фильтра (у Джаггернаута их 148).
+4. Кусок карты: файл карты `game/dota/maps/dota.vpk` + зависимости (`vpk_tool.py deps <список> <папка>` — список печатает экспорт как «Failed to load …»). Экспорт мира: `Source2Viewer-CLI -i dota.vpk --vpk_filepath maps/dota/world.vwrld_c -o world.glb -d --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt --game <сырые>/gameinfo.gi`, вырезка: `node tools/map_crop.mjs world.glb _game/maps/<имя>.glb <x> <z> <радиус>` (нужны `@gltf-transform/core` и `functions`), слои террейна — PNG в `_game/maps/<имя>_tex/`.
+
+## 3D-площадка (`stage`)
+`{ "type": "stage", "map": "river", "actors": [{ "hero", "anim", "x", "y", "z", "yaw", "phase", "speed", "scale", "splash" }], "cam": { "pos", "look", "to": { "pos", "look" } }, "fov", "sky", "sky_top", "fog_near", "fog_far", "water": { "color", "deep", "opacity" } }` — герои в настоящей карте: террейн смешивается из 4 слоёв как в игре (dota_map.js), вода своя под цвет дотовской, небо — градиент. Без `map` — простая река своей отрисовки. `ambience: "river"` в сцене — шум воды.
 
 Дети контейнера получают id `родитель.0`, `родитель.1` … (если своего нет).
 

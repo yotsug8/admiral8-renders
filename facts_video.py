@@ -830,7 +830,7 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     # Громкость к стандарту площадок (−14 LUFS, пики не выше −1,5 dBTP): TikTok и Shorts всё равно выравнивают,
     # а тихий ролик рядом с соседними звучит слабее
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
-                    "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000",
+                    *([] if os.environ.get("FV_SILENT") else ["-af", "loudnorm=I=-14:TP=-1.5:LRA=11"]), "-ar", "48000",   # без голоса не выравниваем: иначе фон раздувается
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
     stem = out_path.stem
     cover = out_path.with_name((stem.replace("facts_", "cover_", 1) if stem.startswith("facts_") else "cover_" + stem) + ".png")

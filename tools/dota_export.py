@@ -73,7 +73,7 @@ def model(raw, hero, anims=""):
     tmp.mkdir(parents=True)
     done = []
     for f in sorted(src.glob("*.vmdl_c")):
-        if "arcana" in f.stem or "physics" in f.stem:
+        if any(w in f.stem for w in ("arcana", "physics", "refit")):     # альтернативные модели не нужны
             continue
         args = ["-i", f, "-o", tmp / f"{f.stem}.glb", "-d", "--gltf_export_format", "glb", "--gltf_export_materials",
                 "--gltf_textures_adapt", "--gltf_export_animations", "--game", root / "gameinfo.gi"]

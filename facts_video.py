@@ -396,7 +396,7 @@ def anim_frames(key):
 
 
 # Справочник сцен (должен совпадать с scene.js / scene.css) — для проверки описания
-SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie", "model"}
+SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie", "model", "stage"}
 SC_IN = {"fade", "rise", "drop", "pop", "slam", "left", "right", "wipe", "iris", "stamp", "draw", "lines", "chars", "type", "none"}
 SC_FX = SC_IN | {"pulse", "shake", "jump", "gray", "color", "dim", "show", "hide", "out", "move", "mark", "stamps", "count", "swap"}
 SC_TEX = {"noise", "grid", "scan", "halftone", "paper", "parchment", "wood", "oldwood", "doors", "planks", "metal", "plate", "rust",
@@ -487,6 +487,17 @@ def resolve_scene(node, heroes, items):
     if node.get("type") == "video" and isinstance(node.get("src"), str):
         node = dict(node, clip=video_frames(node))
         node.pop("src")
+    if node.get("type") == "stage" and node.get("actors"):
+        import base64
+        gd = Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "models"
+        heroes_glb = {}
+        for h in {a["hero"] for a in node["actors"]}:
+            base = gd / h / f"{h}.glb"
+            if not base.exists():
+                raise SystemExit(f"нет 3D-модели {base}: сначала tools/dota_export.py model …")
+            parts = sorted(p for p in (gd / h).glob("*.glb") if p != base and "ward" not in p.stem)
+            heroes_glb[h] = [base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]]
+        node = dict(node, heroes=heroes_glb)
     if node.get("type") == "model" and node.get("hero"):
         # 3D-герой из файлов игры: _game/models/<герой>/ (tools/dota_export.py); части — список или "all"
         import base64
@@ -788,6 +799,22 @@ def mix_audio(segs, total, wav_path):
             if it.get("type") == "video" and it.get("clip", {}).get("wav"):
                 yield it
             yield from clips(it.get("items"))
+    # Фон сцены «река»: мягкий шум воды (низ, медленные волны громкости) и редкие всплески
+    def river(d, seed):
+        g = np.random.default_rng(seed); L = int(d * SR)
+        x = np.cumsum(g.normal(0, 1, L)); x -= np.convolve(x, np.ones(800) / 800, "same")   # бурый шум без постоянной составляющей
+        x /= np.abs(x).max() + 1e-9
+        tt_ = np.arange(L) / SR
+        x *= 0.55 + 0.25 * np.sin(2 * np.pi * 0.23 * tt_) + 0.2 * np.sin(2 * np.pi * 0.11 * tt_ + 1)
+        for _ in range(int(d * 1.3)):                                    # всплески: короткий шум с быстрым затуханием
+            i = int(g.random() * (L - SR * 0.3)); n = int(SR * (0.08 + g.random() * 0.15))
+            sp = g.normal(0, 1, n); sp -= np.convolve(sp, np.ones(6) / 6, "same")
+            x[i:i + n] += sp * np.exp(-np.arange(n) / SR * 25) * (0.3 + 0.4 * g.random())
+        return x / (np.abs(x).max() + 1e-9)
+    for s in segs:
+        sc = s.get("scene") or {}
+        if sc.get("ambience") == "river":
+            add(s["start"], river(s["dur"], int(s["start"] * 10) + 1), float(sc.get("ambience_gain", 0.18)))
     for s in segs:
         sc = s.get("scene") or {}
         for it in clips(sc.get("items")):                 # звук клипа с момента его старта

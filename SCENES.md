@@ -37,9 +37,16 @@
 | `row` / `col` | `items`, `gap`, `child` (общие поля детей) | ряд/колонка, делит место поровну |
 | `panel` | `items` (координаты внутри панели) | контейнер с текстурой |
 | `video` | `src` (`file:…mp4`), `from`, `dur`, `audio` (громкость звука клипа, 0 — без звука), `start`, `loop` | клип из игры в рамке; кадры нарезаются под размер элемента |
+| `model` | `hero` (ключ, напр. `juggernaut`), `anim` (имя анимации), `parts` (`all` или список), `yaw` (°), `zoom`, `tilt`, `fov`, `rim` (цвет контрового света), `key`/`ambient` (яркость), `speed`, `start`, `in_place` | 3D-герой из файлов игры с одеждой и оружием, анимация по времени сцены |
 | `lottie` | `src` (`file:assets/lottie/….json`), `start`, `speed`, `loop`, `fit` (`cover`) | готовая анимация Lottie (например, с lottiefiles.com, бесплатные — формат Lottie JSON) |
 
-`src`: `hero:juggernaut`, `item:blink`, `ability:kunkka_torrent`, `file:assets/…`.
+`src`: `hero:juggernaut`, `item:blink`, `ability:kunkka_torrent`, `file:assets/…`, `game:panorama/images/minimap/dotamap.png` (картинки из файлов игры).
+
+## Ресурсы из файлов игры (3D, миникарта, иконки)
+Файлы игры не кладутся в публичный репозиторий: они лежат в `_game/` (в .gitignore), и ролики с ними рендерятся локально, а голос берётся готовым дублем из CI.
+1. На компьютере с дотой: `python tools/vpk_tool.py list <regex>` / `get <regex> <папка>` — достаёт сырые файлы из pak01_dir.vpk (без сторонних программ).
+2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (`S2V_CLI`).
+3. Имена анимаций героя — список печатает экспорт без фильтра (у Джаггернаута их 148).
 
 Дети контейнера получают id `родитель.0`, `родитель.1` … (если своего нет).
 

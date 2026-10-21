@@ -353,7 +353,8 @@ def image_ref(ref, heroes, items):
     kind, key = ref.split(":", 1)
     path = {"hero": lambda: hero_cutout(key, heroes), "item": lambda: item_icon(key, items),
             "ability": lambda: HERE / "assets" / "abilities" / f"{key}.png",
-            "file": lambda: HERE / key}[kind]()
+            "file": lambda: HERE / key,
+            "game": lambda: Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "img" / key}[kind]()   # картинки из файлов игры
     return path.as_uri()
 
 
@@ -395,7 +396,7 @@ def anim_frames(key):
 
 
 # Справочник сцен (должен совпадать с scene.js / scene.css) — для проверки описания
-SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie"}
+SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie", "model"}
 SC_IN = {"fade", "rise", "drop", "pop", "slam", "left", "right", "wipe", "iris", "stamp", "draw", "lines", "chars", "type", "none"}
 SC_FX = SC_IN | {"pulse", "shake", "jump", "gray", "color", "dim", "show", "hide", "out", "move", "mark", "stamps", "count", "swap"}
 SC_TEX = {"noise", "grid", "scan", "halftone", "paper", "parchment", "wood", "oldwood", "doors", "planks", "metal", "plate", "rust",
@@ -486,14 +487,24 @@ def resolve_scene(node, heroes, items):
     if node.get("type") == "video" and isinstance(node.get("src"), str):
         node = dict(node, clip=video_frames(node))
         node.pop("src")
+    if node.get("type") == "model" and node.get("hero"):
+        # 3D-герой из файлов игры: _game/models/<герой>/ (tools/dota_export.py); части — список или "all"
+        import base64
+        d = Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "models" / node["hero"]
+        base = d / f"{node['hero']}.glb"
+        if not base.exists():
+            raise SystemExit(f"нет 3D-модели {base}: сначала tools/dota_export.py model …")
+        parts = sorted(p for p in d.glob("*.glb") if p != base and "ward" not in p.stem) if node.get("parts", "all") == "all" \
+            else [d / f"{p}.glb" for p in node["parts"]]
+        node = dict(node, glb=[base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]])
     if node.get("type") == "lottie" and isinstance(node.get("src"), str):
         node = dict(node, data=json.load(open(HERE / node["src"].split(":", 1)[1], encoding="utf-8")))
         node.pop("src")
     out = {}
     for k, v in node.items():
-        if k == "src" and isinstance(v, str) and v.split(":", 1)[0] in ("hero", "item", "ability", "file"):
+        if k == "src" and isinstance(v, str) and v.split(":", 1)[0] in ("hero", "item", "ability", "file", "game"):
             out[k] = image_ref(v, heroes, items)
-        elif k == "anim" and isinstance(v, str):
+        elif k == "anim" and isinstance(v, str) and node.get("type") != "model":   # у 3D-модели anim — имя анимации
             out[k] = anim_frames(v)
         else:
             out[k] = resolve_scene(v, heroes, items)
@@ -599,7 +610,8 @@ def _render_chunk(args):
                            "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
     problems, qa = [], []
     with sync_playwright() as p:
-        br = p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security"])
+        br = p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security",
+                                     "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])   # WebGL для 3D-моделей
         page = br.new_page(viewport={"width": 1080, "height": 1920}, device_scale_factor=1)
         page.on("pageerror", lambda e: problems.append(f"JS-ошибка: {e}"))
         page.goto((HERE / "facts_video.html").as_uri())

@@ -2,6 +2,7 @@
 # Запускается на компьютере с дотой. Путь к игре — DOTA_DIR или стандартный.
 # python vpk_tool.py list <regex>            — найти файлы
 # python vpk_tool.py get <regex> <папка>     — извлечь найденные
+# python vpk_tool.py deps <список> <папка>   — извлечь файлы из списка и всё, на что они ссылаются (материалы, текстуры, модели)
 import os, re, struct, sys
 
 ROOT = os.environ.get("DOTA_DIR", r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota")
@@ -45,6 +46,25 @@ def data(e):
 
 
 if __name__ == "__main__":
+    if sys.argv[1] == "deps":
+        # Ссылки внутри скомпилированных файлов — строки путей вида materials/…/x.vmat, …vtex, models/…vmdl
+        E = read_dir()
+        todo = [l.strip() for l in open(sys.argv[2], encoding="utf-8") if l.strip()]
+        seen, out, size = set(), sys.argv[3], 0
+        ref = re.compile(rb"(?:materials|models)/[\w./\-]+?\.(?:vmat|vtex|vmdl)")
+        while todo:
+            k = todo.pop()
+            if k in seen or k not in E:
+                continue
+            seen.add(k)
+            b = data(E[k]); size += len(b)
+            p = os.path.join(out, *k.split("/"))
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            open(p, "wb").write(b)
+            for m in set(ref.findall(b)):
+                todo.append(m.decode() + "_c")
+        print("извлечено:", len(seen), "файлов,", round(size / 1e6, 1), "МБ")
+        sys.exit()
     cmd, rx = sys.argv[1], re.compile(sys.argv[2], re.I)
     E = read_dir()
     hits = sorted(k for k in E if rx.search(k))

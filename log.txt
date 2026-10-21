@@ -1,0 +1,19 @@
+kunkka (1440, 1440) альфа min: 0
+текстура dark_wooden_planks https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_wooden_planks/dark_wooden_planks_diff_2k.jpg
+текстура brown_planks_05 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_planks_05/brown_planks_05_diff_2k.jpg
+текстура old_planks_02 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/old_planks_02/old_planks_02_diff_2k.jpg
+текстура medieval_wood https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/medieval_wood/medieval_wood_diff_2k.jpg
+текстура metal_plate https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg
+текстура rusty_metal_02 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rusty_metal_02/rusty_metal_02_diff_2k.jpg
+текстура blue_metal_plate https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/blue_metal_plate/blue_metal_plate_diff_2k.jpg
+текстура castle_wall_slates https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/castle_wall_slates/castle_wall_slates_diff_2k.jpg
+текстура medieval_blocks_02 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/medieval_blocks_02/medieval_blocks_02_diff_2k.jpg
+текстура dark_rock https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_rock/dark_rock_diff_2k.jpg
+текстура cliff_side https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cliff_side/cliff_side_diff_2k.jpg
+текстура brown_leather https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_leather/brown_leather_albedo_2k.jpg
+текстура leather_red_02 ошибка: 'Diffuse'
+текстура hessian_230 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/hessian_230/hessian_230_diff_2k.jpg
+текстура rough_concrete https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_concrete/rough_concrete_diff_2k.jpg
+текстура worn_plaster_wall https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/worn_plaster_wall/worn_plaster_wall_diff_2k.jpg
+текстура cobblestone_floor_01 https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_floor_01/cobblestone_floor_01_diff_2k.jpg
+текстура forest_floor https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_floor/forest_floor_diff_2k.jpg

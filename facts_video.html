@@ -2,6 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<link rel="stylesheet" href="scene.css">
+<script src="vendor/gsap/gsap.min.js"></script>
+<script src="vendor/gsap/SplitText.min.js"></script>
+<script src="vendor/gsap/CustomEase.min.js"></script>
+<script src="scene.js"></script>
 <style>
 /* Шрифты лежат в репозитории (fonts/), интернет при рендере не нужен */
 @font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2) format("woff2"); }
@@ -483,6 +488,7 @@ body.tk #dots { background-image: radial-gradient(ellipse at 50% 30%, rgba(40,90
   <div id="wm"></div>
   <div id="badge" style="display:none;position:absolute;left:60px;right:140px;top:96px;text-align:center;padding:10px 20px 14px;border-radius:16px;background:#ff4d5e;color:#fff;font:900 40px/1.1 Unbounded;box-shadow:0 8px 0 rgba(2,10,20,.6)"></div>
   <div id="wipe"></div>
+  <div id="tflash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none"></div>
   <div id="tide"><svg class="top" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg><div class="body"></div><svg class="bot" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg></div>
   <div id="ring"><i></i></div>
 </div>
@@ -566,6 +572,7 @@ async function init(data) {
   if (data.badge) { const b = document.getElementById("badge"); b.textContent = data.badge; b.style.display = "block"; }   // прослушка голосов
   if (data.theme) document.body.classList.add("t" + data.theme);      // вариант оформления выпуска
   if (data.theme === "k") buildSea();
+  if (data.subs_style) document.body.classList.add("subs-" + data.subs_style);   // box, slam, line (scene.css)
   const prog = document.getElementById("progress");
   data.segs.filter(s => !s.outro && !s.hook).forEach(() => $("i", null, $("div", "pg", prog)));
   const host = document.getElementById("segs");
@@ -573,7 +580,9 @@ async function init(data) {
     const el = $("div", "seg", host);
     const g = { s, el, parts: {} };
     const P = g.parts, v = s.visual || {};
-    if (s.hook && s.style === "hero") {
+    if (s.scene) {
+      SCN.build(g);                                   // универсальная сцена из JSON (scene.js)
+    } else if (s.hook && s.style === "hero") {
       // Хук: анимированный герой слева, значки фактов справа загораются по меткам
       P.lines = headline(el, s.headline);
       P.anim = s.anim ? makeAnim(el, s.anim) : null;
@@ -989,6 +998,7 @@ async function init(data) {
     }
   });
   await Promise.all(MOS);
+  SEGS.forEach((g, k) => { if (g.s.scene) SCN.timeline(g, k === 0); });
   return true;
 }
 
@@ -1010,13 +1020,13 @@ function seek(t) {
 
   // Шторка: заезжает слева, на стыке закрывает экран, уезжает вправо
   let x = -1600;
-  segs.forEach((s, k) => {
+  if (!D.transition) segs.forEach((s, k) => {
     if (!k) return;
     const d = t - s.start;
     if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
   });
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
-  if (TK) {
+  if (TK && !D.transition) {
     document.querySelectorAll("#waves svg").forEach((sv, k) => { sv.style.transform = `translateX(${-((t * (30 + k * 18)) % 360)}px)`; });
     document.getElementById("compass").style.transform = `rotate(${t * 2}deg)`;
     // Переход: волна поднимается снизу, накрывает экран и уходит вверх
@@ -1030,7 +1040,7 @@ function seek(t) {
       tide.querySelectorAll("svg").forEach(sv => { sv.style.transform = `translateX(${-((t * 300) % 360)}px)`; });
     }
   }
-  if (document.body.classList.contains("tc")) {
+  if (document.body.classList.contains("tc") && !D.transition) {
     document.getElementById("sweep").style.transform = `rotate(${t * 45}deg)`;
     SEGS[i].el.style.transformOrigin = "540px 940px";
     SEGS[i].el.style.transform = `scale(${1 + 0.025 * clamp(lt / segs[i].dur)})`;
@@ -1046,11 +1056,37 @@ function seek(t) {
              edge.style.width = edge.style.height = 2 * (R + 18) + "px"; }
     }
   }
+  if (D.transition) transit(t, i);
   drawSubs(segs[i].outro ? null : segs[i].words, lt);       // в финале текст уже крупно на экране
+}
+
+// ---------- переходы между сегментами (поле transition выпуска) ----------
+// Закон вектора: уходящий и входящий кадры движутся в одну сторону с одной скоростью, стык — прямо в движении, без наложения
+const TW = 0.28;
+const eIn4 = x => Math.pow(clamp(x), 4), eOut4 = x => 1 - Math.pow(1 - clamp(x), 4);
+function transit(t, i) {
+  const segs = D.segs, fl = document.getElementById("tflash");
+  SEGS.forEach(g => { g.el.style.transform = ""; g.el.style.filter = ""; g.el.style.opacity = ""; });
+  fl.style.opacity = 0;
+  const dOut = i + 1 < segs.length ? segs[i + 1].start - t : 99;   // до следующего стыка
+  const dIn = t - segs[i].start;                                     // после прошлого стыка
+  const el = SEGS[i].el, kind = D.transition;
+  if (i > 0 && dIn < TW) {                // входящий: подхватывает движение с середины пути
+    const r = 1 - eOut4(dIn / TW);        // power4.out: стартовая скорость = конечной скорости уходящего (power4.in)
+    if (kind === "push") { el.style.transform = `translateX(${r * 1080}px)`; el.style.filter = `blur(${r * 18}px)`; }
+    if (kind === "zoom") { el.style.transform = `scale(${1 - r * 0.6})`; el.style.filter = `blur(${r * 14}px)`; }
+    if (kind === "flash") { el.style.transform = `scale(${1 + r * 0.12})`; fl.style.opacity = r * 2; }
+  } else if (dOut < TW) {                 // уходящий: разгон до самого стыка
+    const r = eIn4(1 - dOut / TW);        // power4.in: разгон, на стыке — максимальная скорость
+    if (kind === "push") { el.style.transform = `translateX(${-r * 1080}px)`; el.style.filter = `blur(${r * 18}px)`; }
+    if (kind === "zoom") { el.style.transform = `scale(${1 + r * 0.8})`; el.style.filter = `blur(${r * 14}px)`; el.style.opacity = 1 - r * 0.3; }
+    if (kind === "flash") { el.style.transform = `scale(${1 + r * 0.1})`; fl.style.opacity = r * 2; }
+  }
 }
 
 function draw(g, lt) {
   const P = g.parts, s = g.s;
+  if (s.scene) { SCN.draw(g, lt); return; }
   if (!P.lines) return;
   const hl = g === SEGS[0] ? lt + 0.7 : lt;        // первый кадр = обложка: заголовок уже на месте
   P.lines.forEach((sp, j) => { const k = eOut((hl - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
@@ -1509,7 +1545,8 @@ function drawSubs(words, lt) {
   const box = document.getElementById("subs");
   if (!words || !words.length) { box.innerHTML = ""; return; }
   const groups = []; let cur = [];
-  words.forEach(w => { if (cur.length && (cur.length >= 3 || w[1] - cur[cur.length - 1][2] > 0.2)) { groups.push(cur); cur = []; } cur.push(w); });
+  const maxW = D.subs_style === "slam" ? 1 : 3;              // «slam» — одно слово крупно
+  words.forEach(w => { if (cur.length && (cur.length >= maxW || w[1] - cur[cur.length - 1][2] > 0.2)) { groups.push(cur); cur = []; } cur.push(w); });
   if (cur.length) groups.push(cur);
   let g = null; groups.forEach(gr => { if (gr[0][1] - 0.05 <= lt) g = gr; });
   if (!g || lt > g[g.length - 1][2] + 0.6) { box.innerHTML = ""; return; }
@@ -1520,7 +1557,7 @@ function drawSubs(words, lt) {
   const inner = document.getElementById("subsin");
   const fit = Math.min(1, 720 / inner.offsetWidth);       // длинная строка ужимается в поля
   const k = eOut((lt - g[0][1] + 0.05) / 0.18);       // без перелёта, чтобы не вылезать за края
-  box.style.transform = `scale(${fit * (0.88 + 0.12 * k)})`;
+  box.style.transform = D.subs_style === "slam" ? `scale(${fit * (1.35 - 0.35 * eOut((lt - g[0][1] + 0.05) / 0.12))})` : `scale(${fit * (0.88 + 0.12 * k)})`;
 }
 
 // Проверка раскладки: выход за безопасную зону и наложение текстов
@@ -1530,13 +1567,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx, .chip, .stamp2, .num, .card2"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc, .sx, .chip, .num")].filter(vis);
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

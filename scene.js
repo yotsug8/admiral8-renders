@@ -22,7 +22,7 @@ const SCN = (() => {
       if (S.bg.tex) bg.classList.add("tx-" + S.bg.tex);
     }
     g.parts.lines = [];                       // сцена рисует заголовки сама
-    g.sc = { root, items: {}, anims: [], vids: [], lots: [], list: [] };
+    g.sc = { root, items: {}, anims: [], vids: [], lots: [], models: [], list: [] };
     (S.items || []).forEach((it, k) => add(g, it, root, it.id || "i" + k));
   }
 
@@ -87,6 +87,9 @@ const SCN = (() => {
       box.classList.add("vidbox");
       const pre = document.getElementById("preload");
       g.sc.vids.push({ cv: $("canvas", null, box), it, imgs: it.clip.frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) });
+    } else if (T === "model") {
+      box.classList.add("modelbox");
+      g.sc.models.push({ box, it });
     } else if (T === "lottie") {
       box.classList.add("lotbox");
       g.sc.lots.push({ box, it });
@@ -194,6 +197,56 @@ const SCN = (() => {
     return els.flatMap(e => { if (!e._split) e._split = new SplitText(e.querySelectorAll("em").length && e.dataset.split !== "all" ? e.querySelectorAll("em") : e, { type: "words,chars" }); return e._split.chars; });   // words — чтобы слово не рвалось при переносе
   }
 
+  // ---------- 3D-модели героев: GLB из файлов игры (tools/dota_export.py), части привязываются к скелету героя ----------
+  async function load(g) {
+    for (const m of g.sc.models) {
+      const { THREE, GLTFLoader } = window.T3, it = m.it, L = new GLTFLoader();
+      const parse = b64 => new Promise((ok, no) => {
+        const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+        L.parse(bin, "", ok, no);
+      });
+      const [base, ...parts] = await Promise.all(it.glb.map(parse));
+      const root = new THREE.Group(); root.add(base.scene);
+      const bones = {}; base.scene.traverse(o => { if (o.isBone) bones[o.name] = o; });
+      for (const p of parts) {
+        p.scene.traverse(o => {
+          if (!o.isSkinnedMesh) return;
+          const bs = o.skeleton.bones.map(bn => {
+            if (bones[bn.name]) return bones[bn.name];
+            const par = bn.parent && bones[bn.parent.name];       // кости меха и ткани — к родителю героя
+            if (par && bn.parent !== par) par.add(bn);
+            return bn;
+          });
+          o.bind(new THREE.Skeleton(bs, o.skeleton.boneInverses), o.bindMatrix);
+        });
+        root.add(p.scene);
+      }
+      const W = it.w, H = it.h;
+      const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      r.setPixelRatio(1); r.setSize(W, H); r.outputColorSpace = THREE.SRGBColorSpace;
+      m.box.appendChild(r.domElement);
+      const sc = new THREE.Scene();
+      sc.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a2420, it.ambient ?? 1.5));
+      const key = new THREE.DirectionalLight(0xffffff, it.key ?? 2.4); key.position.set(2, 3, 2.6); sc.add(key);
+      const rim = new THREE.DirectionalLight(new THREE.Color(it.rim || "#5fd4c4"), it.rim_power ?? 2.2); rim.position.set(-2.5, 1.5, -2); sc.add(rim);
+      sc.add(root);
+      root.rotation.y = (it.yaw ?? 25) * Math.PI / 180;
+      const mixer = new THREE.AnimationMixer(base.scene);
+      const clip = base.animations.find(a => a.name === it.anim) || base.animations[0];
+      if (clip) mixer.clipAction(clip).play();
+      mixer.setTime(0);
+      // Камера: кадр по габаритам героя в начале анимации, дальше не двигается
+      root.updateMatrixWorld(true);
+      const bb = new THREE.Box3().setFromObject(root, true), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());
+      const fov = it.fov || 28, cam = new THREE.PerspectiveCamera(fov, W / H, 0.01, 1000);
+      const fit = Math.max(sz.y, sz.x * H / W) / (2 * Math.tan(fov * Math.PI / 360)) * (it.zoom ? 1 / it.zoom : 1.08);
+      cam.position.set(c.x, c.y + sz.y * (it.tilt ?? 0.04), c.z + fit + sz.z / 2); cam.lookAt(c.x, c.y, c.z);
+      // Без ухода с места: корневая кость возвращается на стартовую точку по горизонтали
+      const rootBone = base.scene.getObjectByProperty("isBone", true), r0 = rootBone ? rootBone.position.clone() : null;
+      Object.assign(m, { r, sc, cam, mixer, rootBone, r0, clip });
+    }
+  }
+
   // ---------- таймлайн сцены (после загрузки шрифтов и картинок) ----------
   function timeline(g, isFirst) {
     const S = g.s.scene, tl = gsap.timeline({ paused: true });
@@ -209,6 +262,7 @@ const SCN = (() => {
     // Старт клипа и Lottie: поле start, иначе время появления
     const start = it => when(g, it.start ?? (typeof it.in === "object" ? it.in.at : null) ?? it.at ?? 0);
     g.sc.vids.forEach(v => { v.cv.width = v.it.w; v.cv.height = v.it.h; v.t0 = start(v.it); });
+    g.sc.models.forEach(o => { o.t0 = start(o.it); });
     g.sc.lots.forEach(o => {
       o.t0 = start(o.it);
       o.a = lottie.loadAnimation({ container: o.box, renderer: "svg", loop: false, autoplay: false, animationData: o.it.data,
@@ -238,6 +292,12 @@ const SCN = (() => {
   function draw(g, lt) {
     g.sc.tl.seek(Math.max(0, lt), false);       // false — onUpdate срабатывает и при перемотке (счётчики)
     g.sc.anims.forEach(o => drawAnim(o.A, lt));
+    g.sc.models.forEach(m => {
+      if (!m.r) return;
+      m.mixer.setTime(Math.max(0, lt - (m.t0 || 0)) * (m.it.speed || 1));
+      if (m.rootBone && m.it.in_place !== false) { m.rootBone.position.x = m.r0.x; m.rootBone.position.z = m.r0.z; }
+      m.r.render(m.sc, m.cam);
+    });
     g.sc.vids.forEach(v => {
       const n = v.imgs.length; if (!n) return;
       let i = Math.floor((lt - v.t0) * v.it.clip.fps);
@@ -251,5 +311,5 @@ const SCN = (() => {
       o.box.style.visibility = lt < o.t0 ? "hidden" : "visible";   // до старта анимации не видно
     });
   }
-  return { build, timeline, draw };
+  return { build, load, timeline, draw };
 })();

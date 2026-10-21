@@ -28,6 +28,9 @@ on:
       anims:
         description: "ключи героев через пробел: анимированный рендер webm → кадры webp"
         default: ""
+      textures:
+        description: "текстуры Poly Haven (CC0) через пробел; ?категория — только список (например ?wood ?metal)"
+        default: ""
 
 permissions:
   contents: write
@@ -52,6 +55,7 @@ jobs:
           LQPREFIX: ${{ inputs.lqprefix }}
           ANIMS: ${{ inputs.anims }}
           SOUNDS: ${{ inputs.sounds }}
+          TEXTURES: ${{ inputs.textures }}
         run: |
           set +e                                   # любая ошибка — в лог, ветка всё равно пушится
           mkdir -p a
@@ -149,6 +153,20 @@ jobs:
               except Exception as e:
                   print(pre, "ошибка:", e)
               import time; time.sleep(3)
+          # Текстуры Poly Haven (лицензия CC0): «?категория» — список ключей в лог, иначе — цветовая карта 2K в a/tex/
+          for t in os.environ.get("TEXTURES", "").split():
+              try:
+                  if t.startswith("?"):
+                      res = json.loads(urllib.request.urlopen(urllib.request.Request(f"https://api.polyhaven.com/assets?t=textures&c={t[1:]}", headers={"User-Agent": "admiral8-renders/1.0"}), timeout=60).read())
+                      print("текстуры", t[1:], ":", " ".join(sorted(res)))
+                      continue
+                  fl = json.loads(urllib.request.urlopen(urllib.request.Request(f"https://api.polyhaven.com/files/{t}", headers={"User-Agent": "admiral8-renders/1.0"}), timeout=60).read())
+                  url = fl["Diffuse"]["2k"]["jpg"]["url"]
+                  os.makedirs("a/tex", exist_ok=True)
+                  open(f"a/tex/{t}.jpg", "wb").write(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=120).read())
+                  print("текстура", t, url)
+              except Exception as e:
+                  print("текстура", t, "ошибка:", e)
           PY
           # Анимированные рендеры: webm с альфой (VP9) → кадры webp без потерь, родная частота, полный размер, общий кроп по всем кадрам
           for k in $ANIMS; do

@@ -22,7 +22,7 @@ const SCN = (() => {
       if (S.bg.tex) bg.classList.add("tx-" + S.bg.tex);
     }
     g.parts.lines = [];                       // сцена рисует заголовки сама
-    g.sc = { root, items: {}, anims: [], list: [] };
+    g.sc = { root, items: {}, anims: [], vids: [], lots: [], list: [] };
     (S.items || []).forEach((it, k) => add(g, it, root, it.id || "i" + k));
   }
 
@@ -79,6 +79,14 @@ const SCN = (() => {
     } else if (T === "anim") {
       box.classList.add("animbox");
       g.sc.anims.push({ A: makeAnim(box, it.anim), box, it });
+    } else if (T === "video") {
+      // Клип: кадры заранее нарезаны под размер элемента (facts_video.py), рисуются на холсте по времени сцены
+      box.classList.add("vidbox");
+      const pre = document.getElementById("preload");
+      g.sc.vids.push({ cv: $("canvas", null, box), it, imgs: it.clip.frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) });
+    } else if (T === "lottie") {
+      box.classList.add("lotbox");
+      g.sc.lots.push({ box, it });
     } else if (T === "shape") {
       box.innerHTML = shape(it);
     } else if (T === "row" || T === "col" || T === "panel") {
@@ -195,6 +203,14 @@ const SCN = (() => {
       const widest = () => Math.max(...[...box.querySelectorAll(".ln > span")].map(s => s.scrollWidth));
       while (fs > 20 && widest() > it.w - (it.pad || 0) * 2) { fs -= 2; box.style.fontSize = fs + "px"; }
     });
+    // Старт клипа и Lottie: поле start, иначе время появления
+    const start = it => when(g, it.start ?? (typeof it.in === "object" ? it.in.at : null) ?? it.at ?? 0);
+    g.sc.vids.forEach(v => { v.cv.width = v.it.w; v.cv.height = v.it.h; v.t0 = start(v.it); });
+    g.sc.lots.forEach(o => {
+      o.t0 = start(o.it);
+      o.a = lottie.loadAnimation({ container: o.box, renderer: "svg", loop: false, autoplay: false, animationData: o.it.data,
+                                   rendererSettings: { preserveAspectRatio: o.it.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet" } });
+    });
     g.sc.anims.forEach(o => { const b = o.box; placeAnim(o.A, b.offsetWidth / 2, b.offsetHeight, b.offsetWidth, b.offsetHeight); o.A.cv.style.position = "absolute"; });
     // Камера: медленный наезд на весь сегмент (можно выключить или задать)
     const cam = S.camera === false ? null : Object.assign({ from: 1, to: 1.03, x: 0, y: 0 }, S.camera || {});
@@ -219,6 +235,18 @@ const SCN = (() => {
   function draw(g, lt) {
     g.sc.tl.seek(Math.max(0, lt), false);       // false — onUpdate срабатывает и при перемотке (счётчики)
     g.sc.anims.forEach(o => drawAnim(o.A, lt));
+    g.sc.vids.forEach(v => {
+      const n = v.imgs.length; if (!n) return;
+      let i = Math.floor((lt - v.t0) * v.it.clip.fps);
+      i = v.it.loop ? ((i % n) + n) % n : Math.max(0, Math.min(n - 1, i));   // до старта — первый кадр, после конца — последний
+      v.cv.getContext("2d").drawImage(v.imgs[i], 0, 0, v.cv.width, v.cv.height);
+    });
+    g.sc.lots.forEach(o => {
+      const tot = o.a.totalFrames; let f = (lt - o.t0) * o.a.frameRate * (o.it.speed || 1);
+      f = o.it.loop ? ((f % tot) + tot) % tot : Math.max(0, Math.min(tot - 1, f));
+      o.a.goToAndStop(f, true);
+      o.box.style.visibility = lt < o.t0 ? "hidden" : "visible";   // до старта анимации не видно
+    });
   }
   return { build, timeline, draw };
 })();

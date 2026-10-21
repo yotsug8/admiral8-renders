@@ -37,6 +37,10 @@
   font: 900 34px/1 Unbounded; background: rgba(10,12,16,.75); transform: translate(-50%, -50%) rotate(-8deg); opacity: 0; white-space: nowrap; }
 .hero2 img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(12px 16px 0 rgba(0,0,0,.55)); }
 
+.vidbox { border-radius: 16px; background: #000; }
+.vidbox canvas { display: block; width: 100%; height: 100%; border-radius: inherit; }
+.lotbox svg { display: block; }
+
 /* ---------- рамки-«составные объекты» ---------- */
 .fr-plate { border-radius: 18px; border: 4px solid rgba(255,255,255,.18); box-shadow: 10px 12px 0 rgba(0,0,0,.5); }
 .fr-ticket { border-radius: 14px; border: 4px dashed rgba(255,255,255,.35); }

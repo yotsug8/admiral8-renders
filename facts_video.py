@@ -394,12 +394,100 @@ def anim_frames(key):
     return dict(fps=fps, frames=res)
 
 
+# Справочник сцен (должен совпадать с scene.js / scene.css) — для проверки описания
+SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie"}
+SC_IN = {"fade", "rise", "drop", "pop", "slam", "left", "right", "wipe", "iris", "stamp", "draw", "lines", "chars", "type", "none"}
+SC_FX = SC_IN | {"pulse", "shake", "jump", "gray", "color", "dim", "show", "hide", "out", "move", "mark", "stamps", "count", "swap"}
+SC_TEX = {"noise", "paper", "wood", "metal", "grid", "scan", "halftone", "stone"}
+SC_FRAMES = {"plate", "corners", "rivets", "tape", "ticket", "cap"}
+SC_SOUNDS = {"stamp", "bubble", "tick", "pop", "whoosh"}
+
+
+def check_scene(sc, label):
+    """Опечатки в сцене молча ломают эффект — проверяем заранее и пишем, что не так."""
+    warn, ids, cues = [], set(), set((sc.get("cues") or {}).keys()) | set((sc.get("at") or {}).keys())
+    def at_ok(at, where):
+        if isinstance(at, str):
+            key = re.split(r"[+\-]", at)[0]
+            if key not in cues:
+                warn.append(f"{where}: метка «{key}» не объявлена в cues")
+    def walk(items, prefix=None):
+        for k, it in enumerate(items or []):
+            iid = it.get("id") or (f"{prefix}.{k}" if prefix else f"i{k}")
+            ids.add(iid)
+            t = it.get("type", "text")
+            if t not in SC_TYPES:
+                warn.append(f"{iid}: неизвестный type «{t}»")
+            if it.get("tex") and it["tex"] not in SC_TEX:
+                warn.append(f"{iid}: неизвестная текстура «{it['tex']}»")
+            for f in ([it["frame"]] if isinstance(it.get("frame"), str) else it.get("frame") or []):
+                if f not in SC_FRAMES:
+                    warn.append(f"{iid}: неизвестная рамка «{f}»")
+            i = it.get("in")
+            if i:
+                fx = i if isinstance(i, str) else i.get("fx")
+                if fx not in SC_IN:
+                    warn.append(f"{iid}: неизвестное появление «{fx}»")
+                at_ok(it.get("at") if isinstance(i, str) else i.get("at", it.get("at")), iid)
+            if t in ("row", "col", "panel"):
+                walk([dict(it.get("child") or {}, **c) for c in it.get("items", [])], iid)
+    walk(sc.get("items"))
+    for e in sc.get("fx", []):
+        if e.get("fx") not in SC_FX:
+            warn.append(f"fx: неизвестный эффект «{e.get('fx')}»")
+        tg = (e.get("target") or "@all").split(" ")[0]
+        if tg != "@all" and tg.rstrip("*").rstrip(".") not in ids:
+            warn.append(f"fx «{e.get('fx')}»: нет элемента «{tg}»")
+        at_ok(e.get("at"), f"fx «{e.get('fx')}»")
+    for e in sc.get("sounds", []):
+        if e.get("kind", "pop") not in SC_SOUNDS:
+            warn.append(f"звук: неизвестный «{e.get('kind')}»")
+        at_ok(e.get("at"), "звук")
+    for k, v in (sc.get("at") or {}).items():
+        if v is None:
+            warn.append(f"метка «{k}»: слово не найдено в озвучке")
+    for w in warn:
+        print(f"    ⚠ {label}: {w}")
+    return warn
+
+
+def video_frames(node):
+    """Клип из файла → кадры JPG под размер элемента (обрезка по центру), по желанию — звук клипа.
+    Поля: src "file:…", from (с), dur (с), w, h, audio (громкость звука клипа, 0 — без звука)."""
+    import hashlib
+    path = HERE / node["src"].split(":", 1)[1]
+    w, h = int(node.get("w", 880)), int(node.get("h", 495))
+    a, d = float(node.get("from", 0)), float(node.get("dur", 6))
+    key = hashlib.md5(f"{path}|{w}|{h}|{a}|{d}".encode()).hexdigest()[:10]
+    out = WORK / f"vid_{key}"
+    if not out.exists():
+        out.mkdir(parents=True)
+        subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
+                        "-vf", f"fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
+                        "-q:v", "3", str(out / "%04d.jpg")], check=True)
+    res = dict(fps=FPS, frames=[f.as_uri() for f in sorted(out.glob("*.jpg"))])
+    if float(node.get("audio", 0)) > 0:
+        wav = out / "a.wav"
+        if not wav.exists():
+            subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
+                            "-vn", "-ac", "1", "-ar", str(SR), str(wav)], check=True)
+        res["wav"] = str(wav)
+    return res
+
+
 def resolve_scene(node, heroes, items):
-    """Обход описания сцены: "src": "hero:…/item:…/ability:…/file:…" → file:// URI, "anim": "ключ" → кадры анимации."""
+    """Обход описания сцены: "src": "hero:…/item:…/ability:…/file:…" → file:// URI, "anim": "ключ" → кадры анимации,
+    видео → кадры, lottie → JSON анимации внутрь описания."""
     if isinstance(node, list):
         return [resolve_scene(x, heroes, items) for x in node]
     if not isinstance(node, dict):
         return node
+    if node.get("type") == "video" and isinstance(node.get("src"), str):
+        node = dict(node, clip=video_frames(node))
+        node.pop("src")
+    if node.get("type") == "lottie" and isinstance(node.get("src"), str):
+        node = dict(node, data=json.load(open(HERE / node["src"].split(":", 1)[1], encoding="utf-8")))
+        node.pop("src")
     out = {}
     for k, v in node.items():
         if k == "src" and isinstance(v, str) and v.split(":", 1)[0] in ("hero", "item", "ability", "file"):
@@ -430,6 +518,7 @@ def prepare(ep, heroes, items):
             if sc.get("cues"):
                 sc["at"] = {k: cue_time(seg["words"], c) for k, c in sc.pop("cues").items()}
                 print("    метки сцены:", {k: (round(t, 2) if t is not None else "НЕ НАЙДЕНО") for k, t in sc["at"].items()})
+            check_scene(sc, "hook" if f.get("hook") else "outro" if f.get("outro") else f"факт {i}")
             seg.update(scene=sc, hook=bool(f.get("hook")), outro=bool(f.get("outro")), headline="", sfx=f.get("sfx", []),
                        at=[], watermark=WATERMARK)
         elif f.get("outro"):
@@ -521,6 +610,8 @@ def _render_chunk(args):
             # PNG без потерь, быстрый режим кодирования (в ~1,7 раза быстрее обычного скриншота)
             png = base64.b64decode(cdp.send("Page.captureScreenshot", {"format": "png", "optimizeForSpeed": True})["data"])
             ff.stdin.write(png)
+            if fi == 0:
+                (WORK / "cover.png").write_bytes(png)         # первый кадр собран — он же обложка
             if fi in checks:
                 problems += [f"{t:.1f}с: {b}" for b in page.evaluate("() => audit()")]
                 full = Image.open(BytesIO(png)).convert("RGB")
@@ -673,8 +764,26 @@ def mix_audio(segs, total, wav_path):
         pos = np.linspace(0, 1, L); x *= np.where(pos < .4, (pos / .4) ** 1.5, ((1 - pos) / .6) ** 2)
         return x / np.abs(x).max()
     SND = {"stamp": (stamp, 0.42), "bubble": (chime, 0.16), "tick": (tick(), 0.12), "pop": (pop(), 0.18), "whoosh": (whoosh(), 0.12)}
+    def scene_at(sc, at):
+        if isinstance(at, str):
+            key, _, off = at.partition("+")
+            base = (sc.get("at") or {}).get(key)
+            return None if base is None else base + (float(off) if off else 0)
+        return float(at or 0)
+    def clips(items):
+        for it in items or []:
+            if it.get("type") == "video" and it.get("clip", {}).get("wav"):
+                yield it
+            yield from clips(it.get("items"))
     for s in segs:
         sc = s.get("scene") or {}
+        for it in clips(sc.get("items")):                 # звук клипа с момента его старта
+            i_ = it.get("in")
+            t0 = scene_at(sc, it.get("start", (i_.get("at") if isinstance(i_, dict) else None) or it.get("at") or 0))
+            if t0 is not None:
+                with wave.open(it["clip"]["wav"]) as w_:
+                    snd = np.frombuffer(w_.readframes(w_.getnframes()), np.int16).astype(np.float32) / 32768
+                add(s["start"] + t0, snd, float(it.get("audio", 0)))
         for e in sc.get("sounds", []):
             at = e.get("at", 0)
             if isinstance(at, str):
@@ -705,8 +814,16 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
     problems = render_frames(segs, total, video, qa, ep.get("theme", ""), ep)
     mix_audio(segs, total, wav)
+    # Громкость к стандарту площадок (−14 LUFS, пики не выше −1,5 dBTP): TikTok и Shorts всё равно выравнивают,
+    # а тихий ролик рядом с соседними звучит слабее
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
+                    "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000",
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
+    stem = out_path.stem
+    cover = out_path.with_name((stem.replace("facts_", "cover_", 1) if stem.startswith("facts_") else "cover_" + stem) + ".png")
+    if (WORK / "cover.png").exists() and not os.environ.get("FV_QA_ONLY"):
+        shutil.copy(WORK / "cover.png", cover)
+        print(f"обложка: {cover}")
     print(f"готово: {out_path} ({total:.1f} с)")
     if problems:
         print("ПРОВЕРКА РАСКЛАДКИ: элементы за безопасной зоной:")

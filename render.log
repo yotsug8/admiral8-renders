@@ -1,0 +1,15 @@
+== Факты demo_scene
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+    метки сцены: {'afk': 2.74, 'check': 3.28}
+  [1] 4.5с: [curious] Кто победит, если все десять игроков уйдут в AFK? Проверим.
+    метки сцены: {'timer': 0.0, 'score': 1.04, 'creeps': 2.14}
+  [2] 4.4с: [calm] Таймер бежит, счёт ноль на ноль. [curious] Крипы воюют сами по себе.
+    метки сцены: {'tex': 0.0, 'stamp': 1.4, 'swap': 4.54}
+  [3] 6.4с: [excited] Текстуры, рамки и штампы собираются из готовых деталей. [calm] Любой текст можно заменить на лету.
+  [4] 3.0с: [confident] Подпишись и поставь лайк.
+  кадров: 549, потоков: 4, 46 с
+обложка: out/cover_demo_scene.png
+готово: out/facts_demo_scene.mp4 (18.3 с)
+ПРОВЕРКА РАСКЛАДКИ: элементы за безопасной зоной:
+   5.8с: за зоной: «0 : 0» [26,731,982,808]
+рендер занял 85 с

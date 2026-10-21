@@ -22,7 +22,7 @@ const SCN = (() => {
       if (S.bg.tex) bg.classList.add("tx-" + S.bg.tex);
     }
     g.parts.lines = [];                       // сцена рисует заголовки сама
-    g.sc = { root, items: {}, anims: [], vids: [], lots: [], models: [], list: [] };
+    g.sc = { root, items: {}, anims: [], vids: [], lots: [], models: [], stages: [], list: [] };
     (S.items || []).forEach((it, k) => add(g, it, root, it.id || "i" + k));
   }
 
@@ -87,6 +87,9 @@ const SCN = (() => {
       box.classList.add("vidbox");
       const pre = document.getElementById("preload");
       g.sc.vids.push({ cv: $("canvas", null, box), it, imgs: it.clip.frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) });
+    } else if (T === "stage") {
+      box.classList.add("modelbox");
+      g.sc.stages.push({ box, it });
     } else if (T === "model") {
       box.classList.add("modelbox");
       g.sc.models.push({ box, it });
@@ -198,29 +201,42 @@ const SCN = (() => {
   }
 
   // ---------- 3D-модели героев: GLB из файлов игры (tools/dota_export.py), части привязываются к скелету героя ----------
-  async function load(g) {
-    for (const m of g.sc.models) {
-      const { THREE, GLTFLoader } = window.T3, it = m.it, L = new GLTFLoader();
-      const parse = b64 => new Promise((ok, no) => {
-        const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
-        L.parse(bin, "", ok, no);
-      });
-      const [base, ...parts] = await Promise.all(it.glb.map(parse));
-      const root = new THREE.Group(); root.add(base.scene);
-      const bones = {}; base.scene.traverse(o => { if (o.isBone) bones[o.name] = o; });
-      for (const p of parts) {
-        p.scene.traverse(o => {
-          if (!o.isSkinnedMesh) return;
-          const bs = o.skeleton.bones.map(bn => {
-            if (bones[bn.name]) return bones[bn.name];
-            const par = bn.parent && bones[bn.parent.name];       // кости меха и ткани — к родителю героя
-            if (par && bn.parent !== par) par.add(bn);
-            return bn;
-          });
-          o.bind(new THREE.Skeleton(bs, o.skeleton.boneInverses), o.bindMatrix);
+  // Герой из набора GLB (база + части): части привязываются к скелету героя по именам костей
+  async function hero(glbs, animName) {
+    const { THREE, GLTFLoader } = window.T3, L = new GLTFLoader();
+    const parse = b64 => new Promise((ok, no) => {
+      const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+      L.parse(bin, "", ok, no);
+    });
+    const [base, ...parts] = await Promise.all(glbs.map(parse));
+    const root = new THREE.Group(); root.add(base.scene);
+    const bones = {}; base.scene.traverse(o => { if (o.isBone) bones[o.name] = o; });
+    for (const p of parts) {
+      p.scene.traverse(o => {
+        if (!o.isSkinnedMesh) return;
+        const bs = o.skeleton.bones.map(bn => {
+          if (bones[bn.name]) return bones[bn.name];
+          const par = bn.parent && bones[bn.parent.name];       // кости меха и ткани — к родителю героя
+          if (par && bn.parent !== par) par.add(bn);
+          return bn;
         });
-        root.add(p.scene);
-      }
+        o.bind(new THREE.Skeleton(bs, o.skeleton.boneInverses), o.bindMatrix);
+      });
+      root.add(p.scene);
+    }
+    const mixer = new THREE.AnimationMixer(base.scene);
+    const clip = base.animations.find(a => a.name === animName) || base.animations[0];
+    if (clip) mixer.clipAction(clip).play();
+    mixer.setTime(0);
+    const rootBone = base.scene.getObjectByProperty("isBone", true), r0 = rootBone ? rootBone.position.clone() : null;
+    return { root, base, mixer, clip, rootBone, r0, names: base.animations.map(a => a.name) };
+  }
+
+  async function load(g) {
+    for (const st of g.sc.stages) await stage(st);
+    for (const m of g.sc.models) {
+      const { THREE } = window.T3, it = m.it;
+      const { root, mixer, clip, rootBone, r0 } = await hero(it.glb, it.anim);
       const W = it.w, H = it.h;
       const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       r.setPixelRatio(1); r.setSize(W, H); r.outputColorSpace = THREE.SRGBColorSpace;
@@ -231,20 +247,109 @@ const SCN = (() => {
       const rim = new THREE.DirectionalLight(new THREE.Color(it.rim || "#5fd4c4"), it.rim_power ?? 2.2); rim.position.set(-2.5, 1.5, -2); sc.add(rim);
       sc.add(root);
       root.rotation.y = (it.yaw ?? 25) * Math.PI / 180;
-      const mixer = new THREE.AnimationMixer(base.scene);
-      const clip = base.animations.find(a => a.name === it.anim) || base.animations[0];
-      if (clip) mixer.clipAction(clip).play();
-      mixer.setTime(0);
       // Камера: кадр по габаритам героя в начале анимации, дальше не двигается
       root.updateMatrixWorld(true);
       const bb = new THREE.Box3().setFromObject(root, true), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());
       const fov = it.fov || 28, cam = new THREE.PerspectiveCamera(fov, W / H, 0.01, 1000);
       const fit = Math.max(sz.y, sz.x * H / W) / (2 * Math.tan(fov * Math.PI / 360)) * (it.zoom ? 1 / it.zoom : 1.08);
       cam.position.set(c.x, c.y + sz.y * (it.tilt ?? 0.04), c.z + fit + sz.z / 2); cam.lookAt(c.x, c.y, c.z);
-      // Без ухода с места: корневая кость возвращается на стартовую точку по горизонтали
-      const rootBone = base.scene.getObjectByProperty("isBone", true), r0 = rootBone ? rootBone.position.clone() : null;
       Object.assign(m, { r, sc, cam, mixer, rootBone, r0, clip });
     }
+  }
+
+  // ---------- 3D-площадка: несколько героев, вода с кругами, берега, движение камеры ----------
+  // it.heroes: { ключ: [GLB…] }, it.actors: [{ hero, anim, x, z, y, yaw, speed, phase }], it.water: { level, color }, it.cam: { pos, look, to: { pos, look } }
+  async function stage(st) {
+    const { THREE } = window.T3, it = st.it, W = it.w, H = it.h;
+    const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    r.setPixelRatio(1); r.setSize(W, H); r.outputColorSpace = THREE.SRGBColorSpace;
+    st.box.appendChild(r.domElement);
+    const sc = new THREE.Scene();
+    const sky = new THREE.Color(it.sky || "#1d3a3a");
+    sc.background = sky; sc.fog = new THREE.Fog(sky, it.fog_near ?? 18, it.fog_far ?? 60);
+    sc.add(new THREE.HemisphereLight(0xe6f0ff, 0x2a3020, it.ambient ?? 1.4));
+    const sun = new THREE.DirectionalLight(new THREE.Color(it.sun || "#fff1d6"), it.key ?? 2.6); sun.position.set(6, 10, 6); sc.add(sun);
+    const rim = new THREE.DirectionalLight(new THREE.Color(it.rim || "#5fd4c4"), it.rim_power ?? 1.6); rim.position.set(-6, 4, -6); sc.add(rim);
+    const lvl = (it.water && it.water.level) ?? 0;
+    // Дно и берега — фото-текстуры из assets/tex
+    const TL = new THREE.TextureLoader(), tex = (n, rep) => { const t = TL.load(`assets/tex/${n}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); t.colorSpace = THREE.SRGBColorSpace; return t; };
+    const bed = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tex(it.bed || "cobble", 14), roughness: 1, color: 0x6f7d78 }));
+    bed.rotation.x = -Math.PI / 2; bed.position.y = lvl - (it.depth ?? 2.2); sc.add(bed);
+    const bankMat = new THREE.MeshStandardMaterial({ map: tex(it.bank || "forest", 6), roughness: 1 });
+    // Дальний берег — пологий склон за рекой (ближнего нет: камера стоит на нём)
+    const bank = new THREE.Mesh(new THREE.BoxGeometry(120, 6, 40), bankMat);
+    bank.position.set(0, lvl - 2.2, -(it.river_width ?? 16) / 2 - 20); bank.rotation.x = 0.12; sc.add(bank);
+    // Вода: волны в вершинах, круги вокруг героев, блик по Френелю
+    const actorsXZ = new Array(8).fill(0).map(() => new THREE.Vector3(999, 0, 999));
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 200, 200), new THREE.ShaderMaterial({
+      transparent: true, fog: true,
+      uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
+        t: { value: 0 }, col: { value: new THREE.Color((it.water && it.water.color) || "#2f8f8a") }, deep: { value: new THREE.Color("#0f3b46") },
+        A: { value: actorsXZ }, op: { value: (it.water && it.water.opacity) ?? 0.78 } }]),
+      vertexShader: `uniform float t; varying vec3 wp; varying float h;
+        #include <fog_pars_vertex>
+        void main(){ vec3 p = position; vec4 w = modelMatrix * vec4(p,1.);
+          h = sin(w.x*.9+t*1.6)*.05 + sin(w.z*1.3-t*1.2)*.04 + sin((w.x+w.z)*2.1+t*2.3)*.02;
+          w.y += h; wp = w.xyz; vec4 mvPosition = viewMatrix * w; gl_Position = projectionMatrix * mvPosition;
+          #include <fog_vertex>
+        }`,
+      fragmentShader: `uniform float t; uniform vec3 col; uniform vec3 deep; uniform vec3 A[8]; uniform float op; varying vec3 wp; varying float h;
+        #include <fog_pars_fragment>
+        void main(){ float ring = 0.;
+          for (int i=0;i<8;i++){ float d = length(wp.xz - A[i].xz); float f = fract(d*.7 - t*.5);   // круги расходятся от героя
+            ring += smoothstep(.05, 0., min(f, 1.-f)) * exp(-d*.45) * smoothstep(1.2, 2.4, d); }
+          vec3 c = mix(deep, col, .55 + h*4.);
+          vec3 V = normalize(cameraPosition - wp); float fr = pow(1.-max(V.y,0.), 3.);
+          c += vec3(.75,.9,.95)*fr*.35 + vec3(.85,.95,1.)*min(ring,1.)*.3;
+          gl_FragColor = vec4(c, op + fr*.15);
+          #include <fog_fragment>
+        }` }));
+    water.rotation.x = -Math.PI / 2; water.position.y = lvl; water.renderOrder = 2; sc.add(water);
+    // Герои
+    const actors = [];
+    for (const a of it.actors || []) {
+      const h = await hero(it.heroes[a.hero], a.anim);
+      h.root.position.set(a.x || 0, lvl + (a.y ?? -1.2), a.z || 0);
+      h.root.rotation.y = (a.yaw || 0) * Math.PI / 180;
+      h.root.scale.setScalar(a.scale || 1);
+      sc.add(h.root); actors.push(Object.assign(h, { a }));
+    }
+    actors.slice(0, 8).forEach((h, k) => actorsXZ[k].set(h.root.position.x, 0, h.root.position.z));
+    // Брызги у героев с splash: капли летят по параболе, время каждой капли — по кругу (кадры повторяемы)
+    const drops = [];
+    actors.filter(h => h.a.splash).forEach((h, k) => {
+      const n = h.a.splash === true ? 70 : h.a.splash, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3);
+      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xe8fbff, size: it.drop_size || 0.22, transparent: true, opacity: .9, depthWrite: false }));
+      let sd = 7 + k * 13; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+      const P = Array.from({ length: n }, () => ({ a: rnd() * 6.283, r: 1.2 + rnd() * 1.8, vy: 3 + rnd() * 4, vr: 1 + rnd() * 2, life: .7 + rnd() * .6, ph: rnd() }));
+      sc.add(pts); drops.push({ pts, P, x: h.root.position.x, z: h.root.position.z });
+    });
+    const cam = new THREE.PerspectiveCamera(it.fov || 38, W / H, 0.1, 200);
+    Object.assign(st, { r, sc, cam, water, actors, drops, lvl });
+  }
+
+  function drawStage(st, lt, dur) {
+    const { THREE } = window.T3, it = st.it, c = it.cam || {};
+    st.water.material.uniforms.t.value = lt;
+    st.drops.forEach(d => {
+      const a = d.pts.geometry.attributes.position;
+      d.P.forEach((p, i) => {
+        const tau = ((lt / p.life + p.ph) % 1) * p.life, rr = p.r + p.vr * tau;
+        a.setXYZ(i, d.x + Math.cos(p.a) * rr, st.lvl + Math.max(-.2, p.vy * tau - 4.9 * tau * tau), d.z + Math.sin(p.a) * rr);
+      });
+      a.needsUpdate = true;
+    });
+    st.actors.forEach(h => {
+      h.mixer.setTime(Math.max(0, lt * (h.a.speed || 1) + (h.a.phase || 0)));
+      if (h.rootBone) { h.rootBone.position.x = h.r0.x; h.rootBone.position.z = h.r0.z; }   // на месте, без ухода
+    });
+    // Камера: плавный переход от pos/look к to.pos/to.look за время сегмента
+    const e = (x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)(Math.min(1, lt / dur));
+    const P0 = new THREE.Vector3(...(c.pos || [0, 4, 14])), L0 = new THREE.Vector3(...(c.look || [0, 1, 0]));
+    const P1 = c.to ? new THREE.Vector3(...(c.to.pos || c.pos)) : P0, L1 = c.to ? new THREE.Vector3(...(c.to.look || c.look)) : L0;
+    st.cam.position.lerpVectors(P0, P1, e); st.cam.lookAt(new THREE.Vector3().lerpVectors(L0, L1, e));
+    st.r.render(st.sc, st.cam);
   }
 
   // ---------- таймлайн сцены (после загрузки шрифтов и картинок) ----------
@@ -292,6 +397,7 @@ const SCN = (() => {
   function draw(g, lt) {
     g.sc.tl.seek(Math.max(0, lt), false);       // false — onUpdate срабатывает и при перемотке (счётчики)
     g.sc.anims.forEach(o => drawAnim(o.A, lt));
+    g.sc.stages.forEach(st => { if (st.r) drawStage(st, lt, g.s.dur); });
     g.sc.models.forEach(m => {
       if (!m.r) return;
       m.mixer.setTime(Math.max(0, lt - (m.t0 || 0)) * (m.it.speed || 1));

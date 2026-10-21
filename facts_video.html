@@ -1568,13 +1568,13 @@ function audit() {
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
   const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx, .chip, .stamp2, .num, .card2"), ...document.querySelectorAll("#subs span")];
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx .ln > span, .chip, .stamp2, .num, .card2"), ...document.querySelectorAll("#subs span")];
   items.filter(vis).forEach(e => {
     const r = R(e);
     if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20)}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
-  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc, .sx, .chip, .num")].filter(vis);
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc, .sx .ln > span, .chip, .num")].filter(vis);   // текст сцены — по строкам, а не по рамке
   // Субтитры: прямоугольник по видимым словам
   const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({

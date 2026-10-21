@@ -394,6 +394,23 @@ def anim_frames(key):
     return dict(fps=fps, frames=res)
 
 
+def resolve_scene(node, heroes, items):
+    """Обход описания сцены: "src": "hero:…/item:…/ability:…/file:…" → file:// URI, "anim": "ключ" → кадры анимации."""
+    if isinstance(node, list):
+        return [resolve_scene(x, heroes, items) for x in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for k, v in node.items():
+        if k == "src" and isinstance(v, str) and v.split(":", 1)[0] in ("hero", "item", "ability", "file"):
+            out[k] = image_ref(v, heroes, items)
+        elif k == "anim" and isinstance(v, str):
+            out[k] = anim_frames(v)
+        else:
+            out[k] = resolve_scene(v, heroes, items)
+    return out
+
+
 def prepare(ep, heroes, items):
     segs, t = [], 0.0
     parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
@@ -407,7 +424,15 @@ def prepare(ep, heroes, items):
         pad = float(ep.get("pad", PAD))      # пауза после фрагмента: можно задать в выпуске, чтобы уложиться в 45 с
         dur = len(pcm) / SR + pad + (0.6 if i == len(parts) - 1 else 0) + float(f.get("hold", 0))   # в конце чуть дольше пауза; hold — задержать кадр
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
-        if f.get("outro"):
+        if f.get("scene"):
+            # Универсальная сцена (SCENES.md): картинки по ссылкам, анимации героев, метки из озвучки
+            sc = resolve_scene(f["scene"], heroes, items)
+            if sc.get("cues"):
+                sc["at"] = {k: cue_time(seg["words"], c) for k, c in sc.pop("cues").items()}
+                print("    метки сцены:", {k: (round(t, 2) if t is not None else "НЕ НАЙДЕНО") for k, t in sc["at"].items()})
+            seg.update(scene=sc, hook=bool(f.get("hook")), outro=bool(f.get("outro")), headline="", sfx=f.get("sfx", []),
+                       at=[], watermark=WATERMARK)
+        elif f.get("outro"):
             thumbs = []
             for fact in ep["facts"]:
                 v = fact.get("visual", {})
@@ -508,11 +533,12 @@ def _render_chunk(args):
     return problems, qa
 
 
-def render_frames(segs, total, video_path, qa_path, theme=""):
+def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     """Кадры рендерятся параллельно в нескольких браузерах (FV_WORKERS, по умолчанию — по числу ядер),
     куски склеиваются без перекодирования."""
     from concurrent.futures import ProcessPoolExecutor
     data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
+                transition=(opts or {}).get("transition"), subs_style=(opts or {}).get("subs"),   # переход и стиль субтитров (SCENES.md)
                 badge=os.environ.get("FV_BADGE", ""),   # плашка сверху (для прослушки голосов на видео)
                 segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
     # Ключевые моменты для проверки и контрольного листа
@@ -633,6 +659,32 @@ def mix_audio(segs, total, wav_path):
             for t0, name in zip(s.get("at") or [], s.get("sfx") or []):
                 if t0 is not None and name:
                     add(s["start"] + t0, sfx(name, 1.4), 0.25)
+    # Звуки сцен (SCENES.md, поле sounds): синтезированные, под событие на экране
+    rng = np.random.default_rng(7)
+    def tick():
+        x = np.sin(2 * np.pi * 1800 * tt(0.05)) * np.exp(-tt(0.05) * 90)
+        return x / np.abs(x).max()
+    def pop():
+        b = tt(0.12); f = 420 + 500 * (b / 0.12) ** 0.5
+        x = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-b * 30) * np.minimum(1, b / 0.004)
+        return x / np.abs(x).max()
+    def whoosh(d=0.45):
+        L = int(d * SR); x = rng.normal(0, 1, L); x = x - np.convolve(x, np.ones(30) / 30, "same")
+        pos = np.linspace(0, 1, L); x *= np.where(pos < .4, (pos / .4) ** 1.5, ((1 - pos) / .6) ** 2)
+        return x / np.abs(x).max()
+    SND = {"stamp": (stamp, 0.42), "bubble": (chime, 0.16), "tick": (tick(), 0.12), "pop": (pop(), 0.18), "whoosh": (whoosh(), 0.12)}
+    for s in segs:
+        sc = s.get("scene") or {}
+        for e in sc.get("sounds", []):
+            at = e.get("at", 0)
+            if isinstance(at, str):
+                key, _, off = at.partition("+")
+                base = (sc.get("at") or {}).get(key)
+                if base is None:
+                    continue
+                at = base + (float(off) if off else 0)
+            snd, gain = SND.get(e.get("kind", "pop"), SND["pop"])
+            add(s["start"] + at, snd, gain * float(e.get("gain", 1)))
     pcm = (np.clip(mix, -1, 1) * 32767).astype(np.int16)
     with wave.open(str(wav_path), "wb") as w:
         w.setnchannels(1)
@@ -651,7 +703,7 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     out_path = Path(out_path)
     video, wav = WORK / "video.mp4", WORK / "audio.wav"
     qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
-    problems = render_frames(segs, total, video, qa, ep.get("theme", ""))
+    problems = render_frames(segs, total, video, qa, ep.get("theme", ""), ep)
     mix_audio(segs, total, wav)
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)

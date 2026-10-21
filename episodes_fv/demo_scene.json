@@ -1,0 +1,499 @@
+{
+ "_note": "Демо возможностей сцен (SCENES.md). Не для публикации: текст-заглушка без фактов.",
+ "voice_id": "6ccdfb6b21e14501adc1fbcb44e50082",
+ "fish_speed": 1.1,
+ "transition": "push",
+ "subs": "box",
+ "hook": {
+  "voice": "[curious] Кто победит, если все десять игроков уйдут в AFK? Проверим.",
+  "scene": {
+   "bg": {
+    "grad": [
+     "#13261a",
+     "#0d1013",
+     "#0d1013",
+     "#2a1212"
+    ]
+   },
+   "cues": {
+    "afk": "AFK",
+    "check": "проверим"
+   },
+   "items": [
+    {
+     "id": "q",
+     "type": "text",
+     "text": "Кто победит,|если все 10|уйдут *AFK?*",
+     "x": 60,
+     "y": 236,
+     "w": 880,
+     "size": 92,
+     "in": "lines"
+    },
+    {
+     "id": "lr",
+     "type": "chip",
+     "text": "Свет",
+     "x": 60,
+     "y": 610,
+     "fill": "rad"
+    },
+    {
+     "id": "rad",
+     "type": "row",
+     "x": 60,
+     "y": 690,
+     "w": 880,
+     "h": 236,
+     "gap": 12,
+     "child": {
+      "type": "card",
+      "border": "rad",
+      "stamp": "AFK"
+     },
+     "items": [
+      {
+       "src": "hero:juggernaut"
+      },
+      {
+       "src": "hero:crystal_maiden"
+      },
+      {
+       "src": "hero:earthshaker"
+      },
+      {
+       "src": "hero:sniper"
+      },
+      {
+       "src": "hero:hoodwink"
+      }
+     ]
+    },
+    {
+     "id": "vs",
+     "type": "text",
+     "text": "*?*",
+     "x": 60,
+     "y": 950,
+     "w": 880,
+     "size": 120,
+     "align": "center",
+     "in": {
+      "fx": "slam",
+      "at": "check"
+     }
+    },
+    {
+     "id": "ld",
+     "type": "chip",
+     "text": "Тьма",
+     "x": 60,
+     "y": 1110,
+     "fill": "dire"
+    },
+    {
+     "id": "dire",
+     "type": "row",
+     "x": 60,
+     "y": 1190,
+     "w": 880,
+     "h": 236,
+     "gap": 12,
+     "child": {
+      "type": "card",
+      "border": "dire",
+      "stamp": "AFK"
+     },
+     "items": [
+      {
+       "src": "hero:axe"
+      },
+      {
+       "src": "hero:silencer"
+      },
+      {
+       "src": "hero:riki"
+      },
+      {
+       "src": "hero:muerta"
+      },
+      {
+       "src": "hero:techies"
+      }
+     ]
+    }
+   ],
+   "fx": [
+    {
+     "target": "rad.*",
+     "fx": "stamps",
+     "at": "afk",
+     "stagger": 0.07
+    },
+    {
+     "target": "rad.*",
+     "fx": "gray",
+     "at": "afk+0.1",
+     "stagger": 0.07
+    },
+    {
+     "target": "dire.*",
+     "fx": "stamps",
+     "at": "afk+0.35",
+     "stagger": 0.07
+    },
+    {
+     "target": "dire.*",
+     "fx": "gray",
+     "at": "afk+0.45",
+     "stagger": 0.07
+    },
+    {
+     "target": "q",
+     "fx": "jump",
+     "at": "check+0.4"
+    }
+   ],
+   "sounds": [
+    {
+     "kind": "stamp",
+     "at": "afk+0.2",
+     "gain": 0.6
+    },
+    {
+     "kind": "stamp",
+     "at": "afk+0.55",
+     "gain": 0.6
+    },
+    {
+     "kind": "pop",
+     "at": "check"
+    }
+   ]
+  }
+ },
+ "facts": [
+  {
+   "voice": "[calm] Таймер бежит, счёт ноль на ноль. [curious] Крипы воюют сами по себе.",
+   "scene": {
+    "bg": {
+     "tex": "grid"
+    },
+    "cues": {
+     "timer": "таймер",
+     "score": "счёт",
+     "creeps": "крипы"
+    },
+    "items": [
+     {
+      "id": "t",
+      "type": "text",
+      "text": "Игра|*без игроков*",
+      "x": 60,
+      "y": 236,
+      "w": 880,
+      "size": 96,
+      "in": "lines"
+     },
+     {
+      "id": "board",
+      "type": "panel",
+      "x": 60,
+      "y": 500,
+      "w": 880,
+      "h": 330,
+      "tex": "metal",
+      "frame": "rivets",
+      "in": {
+       "fx": "iris",
+       "at": 0.1
+      },
+      "items": [
+       {
+        "id": "clk",
+        "type": "number",
+        "value": "35:00",
+        "x": 0,
+        "y": 40,
+        "w": 880,
+        "size": 170,
+        "cls": "sx center"
+       },
+       {
+        "id": "score",
+        "type": "text",
+        "text": "0 : 0",
+        "font": "cap",
+        "size": 64,
+        "x": 0,
+        "y": 230,
+        "w": 880,
+        "align": "center",
+        "color": "gold"
+       }
+      ]
+     },
+     {
+      "id": "lane",
+      "type": "panel",
+      "x": 60,
+      "y": 890,
+      "w": 880,
+      "h": 300,
+      "tex": "stone",
+      "frame": [
+       "plate",
+       "corners"
+      ],
+      "in": {
+       "fx": "rise",
+       "at": "creeps"
+      },
+      "items": [
+       {
+        "id": "l1",
+        "type": "chip",
+        "text": "линия",
+        "x": 30,
+        "y": 30,
+        "size": 28
+       },
+       {
+        "id": "ar",
+        "type": "shape",
+        "kind": "arrow",
+        "x": 90,
+        "y": 130,
+        "w": 300,
+        "h": 70,
+        "color": "rad",
+        "in": {
+         "fx": "draw",
+         "at": "creeps+0.2"
+        }
+       },
+       {
+        "id": "al",
+        "type": "shape",
+        "kind": "arrow",
+        "x": 490,
+        "y": 200,
+        "w": 300,
+        "h": 70,
+        "color": "dire",
+        "rot": 180,
+        "in": {
+         "fx": "draw",
+         "at": "creeps+0.3"
+        }
+       }
+      ]
+     },
+     {
+      "id": "note",
+      "type": "text",
+      "font": "body",
+      "text": "_Никто не управляет_ — линии толкают только крипы",
+      "x": 60,
+      "y": 1240,
+      "w": 880,
+      "size": 44,
+      "in": {
+       "fx": "rise",
+       "at": "creeps+0.4"
+      }
+     }
+    ],
+    "fx": [
+     {
+      "target": "clk",
+      "fx": "count",
+      "at": "timer",
+      "dur": 1.6,
+      "ease": "power1.in"
+     },
+     {
+      "target": "score",
+      "fx": "pulse",
+      "at": "score"
+     },
+     {
+      "target": "note",
+      "fx": "mark",
+      "at": "creeps+0.9"
+     }
+    ],
+    "sounds": [
+     {
+      "kind": "tick",
+      "at": "timer"
+     },
+     {
+      "kind": "tick",
+      "at": "timer+0.4"
+     },
+     {
+      "kind": "tick",
+      "at": "timer+0.8"
+     },
+     {
+      "kind": "whoosh",
+      "at": "creeps"
+     }
+    ]
+   }
+  },
+  {
+   "voice": "[excited] Текстуры, рамки и штампы собираются из готовых деталей. [calm] Любой текст можно заменить на лету.",
+   "scene": {
+    "bg": {
+     "tex": "halftone"
+    },
+    "cues": {
+     "tex": "текстуры",
+     "stamp": "штампы",
+     "swap": "заменить"
+    },
+    "items": [
+     {
+      "id": "t",
+      "type": "text",
+      "text": "Детали|*на выбор*",
+      "x": 60,
+      "y": 236,
+      "w": 880,
+      "size": 96,
+      "in": "chars"
+     },
+     {
+      "id": "c",
+      "type": "col",
+      "x": 60,
+      "y": 500,
+      "w": 880,
+      "h": 780,
+      "gap": 22,
+      "child": {
+       "type": "text",
+       "font": "cap",
+       "size": 46,
+       "pad": 34,
+       "in": {
+        "fx": "left",
+        "at": "tex",
+        "stagger": 0.1
+       }
+      },
+      "items": [
+       {
+        "text": "бумага",
+        "tex": "paper",
+        "frame": "tape",
+        "radius": 14
+       },
+       {
+        "text": "дерево",
+        "tex": "wood",
+        "frame": "plate"
+       },
+       {
+        "id": "sw",
+        "text": "камень",
+        "tex": "stone",
+        "frame": [
+         "plate",
+         "corners"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "st",
+      "type": "stamp",
+      "text": "Готово",
+      "x": 520,
+      "y": 640,
+      "rot": -10,
+      "in": {
+       "fx": "stamp",
+       "at": "stamp",
+       "rot": -10
+      }
+     }
+    ],
+    "fx": [
+     {
+      "target": "sw",
+      "fx": "swap",
+      "at": "swap",
+      "text": "металл"
+     },
+     {
+      "target": "st",
+      "fx": "shake",
+      "at": "stamp+0.25"
+     }
+    ],
+    "sounds": [
+     {
+      "kind": "stamp",
+      "at": "stamp+0.2"
+     },
+     {
+      "kind": "pop",
+      "at": "swap+0.14"
+     }
+    ]
+   }
+  }
+ ],
+ "outro": {
+  "voice": "[confident] Подпишись и поставь лайк.",
+  "scene": {
+   "bg": {
+    "grad": [
+     "#0d1013",
+     "#10202a"
+    ]
+   },
+   "items": [
+    {
+     "id": "w",
+     "type": "text",
+     "text": "Подпишись",
+     "x": 60,
+     "y": 300,
+     "w": 880,
+     "size": 150,
+     "align": "center",
+     "in": {
+      "fx": "chars",
+      "at": 0.05
+     },
+     "acc": "gold",
+     "fit": true
+    },
+    {
+     "id": "a",
+     "type": "anim",
+     "anim": "kunkka",
+     "x": 90,
+     "y": 520,
+     "w": 700,
+     "h": 900,
+     "in": {
+      "fx": "rise",
+      "at": 0.2
+     }
+    }
+   ],
+   "fx": [
+    {
+     "target": "w",
+     "fx": "jump",
+     "at": 1.0
+    }
+   ]
+  }
+ }
+}

@@ -43,7 +43,7 @@
 
 Дети контейнера получают id `родитель.0`, `родитель.1` … (если своего нет).
 
-**Текстуры** `tex`: `noise paper wood metal grid scan halftone stone`; `tint` — цвет/градиент под шумом.
+**Текстуры** `tex` — фото (Poly Haven, CC0): тёмные `wood oldwood doors metal plate stone blocks rock cliff leather forest`, светлые (тёмный текст) `planks rust cobble burlap concrete plaster`; бумага `paper parchment`; рисованные `noise grid scan halftone`. У всех фото-текстур фаска и затемнение; `tint` — свой оттенок поверх (например `["rgba(10,35,64,.5)", "rgba(10,35,64,.8)"]`). Новые текстуры — assets.yml, поле `textures`, список ключей: `?wood`, `?metal`, `?rock`.
 **Рамки** `frame` (можно списком): `plate corners rivets tape ticket cap`. `tape` не сочетается с `corners`/`rivets`.
 **Фон сцены** `bg`: `{"grad": [...]}`, `{"color": …}`, `{"tex": "grid"}`.
 

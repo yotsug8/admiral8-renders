@@ -39,7 +39,10 @@ const SCN = (() => {
     if (it.radius != null) css.borderRadius = it.radius + "px";
     if (it.border) css.setProperty("--bc", col(it.border));
     if (it.tex) box.classList.add("tx-" + it.tex);
-    if (it.tint) css.setProperty("--tb", `linear-gradient(180deg, ${[].concat(it.tint).map(col).join(", ")})`);
+    if (it.tint) {            // оттенок: под шумом у процедурных текстур, поверх фото у фото-текстур
+      const gr = `linear-gradient(180deg, ${[].concat(it.tint).map(col).join(", ")})`;
+      css.setProperty("--tb", gr); css.setProperty("--tov", gr);
+    }
     (it.frame ? [].concat(it.frame) : []).forEach(f => box.classList.add("fr-" + f));
     if (it.cls) box.className += " " + it.cls;
     if (it.pad != null) css.padding = it.pad + "px";

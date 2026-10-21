@@ -104,7 +104,7 @@ jobs:
           [ -z "$(ls out)" ] && exit 0
           if [ "$BR" = renders ]; then          # прошлые ролики сохраняем: берём ветку и докладываем новые файлы
             git clone -q --depth 1 -b renders "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" prev || mkdir prev
-            rm -rf prev/.git; cp -n prev/*.mp4 out/ 2>/dev/null || true
+            rm -rf prev/.git; cp -n prev/*.mp4 prev/cover_*.png out/ 2>/dev/null || true
           fi
           cd out
           # Страница-папка: список роликов со ссылками на скачивание
@@ -113,7 +113,7 @@ jobs:
             echo
             echo "Нажми на ссылку, чтобы скачать. Обновлено: $(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M')"
             echo
-            for f in $(ls -r *.mp4 *.mp3 2>/dev/null); do
+            for f in $(ls -r *.mp4 *.mp3 cover_*.png 2>/dev/null); do
               echo "- [$f](https://github.com/${{ github.repository }}/raw/$BR/$f)"
             done
           } > README.md

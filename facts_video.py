@@ -696,7 +696,7 @@ def mix_audio(segs, total, wav_path):
     n = int((total + 0.5) * SR)
     mix = np.zeros(n, np.float32)
     beat = 60 / 100
-    for k in range(int(total / beat) + 1):
+    for k in range(int(total / beat) + 1 if os.environ.get("FV_BEAT") else 0):   # фоновый бит выключен: стук слышно
         i = int(k * beat * SR)
         L = min(int(0.12 * SR), n - i)
         if L <= 0:

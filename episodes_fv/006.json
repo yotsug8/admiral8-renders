@@ -17,110 +17,108 @@
       "y": 0,
       "w": 1080,
       "h": 1920,
-      "sky": "#21403b",
-      "fog_near": 30,
-      "fog_far": 80,
-      "bed": "cobble",
-      "bank": "forest",
-      "river_width": 34,
+      "sky": "#bcd7dc",
+      "fog_near": 110,
+      "fog_far": 320,
       "water": {
-       "level": 0,
-       "color": "#2b8c88",
-       "opacity": 0.8
+       "color": "#3aa6a0",
+       "deep": "#0e4a55",
+       "opacity": 0.5
       },
       "actors": [
        {
         "hero": "pudge",
         "anim": "pudge_idle",
-        "x": -6.5,
-        "z": -9,
-        "y": -2.6,
-        "yaw": 35,
+        "x": -29.0,
+        "z": 1.0,
+        "y": -1.5,
+        "yaw": -2,
         "phase": 0.2
        },
        {
         "hero": "pudge",
         "anim": "pudge_flail",
-        "x": 5.5,
-        "z": -7,
-        "y": -3.0,
-        "yaw": -40,
+        "x": -19.4,
+        "z": 8.8,
+        "y": -1.5,
+        "yaw": -77,
         "phase": 0.6,
         "splash": true
        },
        {
         "hero": "pudge",
         "anim": "pudge_taunt_money_maker",
-        "x": 0,
-        "z": -2,
-        "y": -2.2,
-        "yaw": 5,
+        "x": -25.3,
+        "z": 7.6,
+        "y": -1.5,
+        "yaw": -32,
         "phase": 0.1
        },
        {
         "hero": "pudge",
         "anim": "pudge_idle_alt",
-        "x": -8,
-        "z": 2,
-        "y": -2.8,
-        "yaw": 50,
+        "x": -26.6,
+        "z": -5.8,
+        "y": -1.5,
+        "yaw": 13,
         "phase": 1.3
        },
        {
         "hero": "pudge",
         "anim": "pudge_stun",
-        "x": 7.5,
-        "z": 1.5,
-        "y": -2.7,
-        "yaw": -55,
+        "x": -13.2,
+        "z": 10.4,
+        "y": -1.5,
+        "yaw": -92,
         "phase": 0.4,
         "splash": 40
        },
        {
         "hero": "pudge",
         "anim": "victory",
-        "x": -2.5,
-        "z": -15,
-        "y": -2.4,
-        "yaw": 15,
+        "x": -18.6,
+        "z": -1.8,
+        "y": -1.5,
+        "yaw": -22,
         "phase": 0.9
        },
        {
         "hero": "pudge",
         "anim": "pudge_clown_taunt",
-        "x": 3,
-        "z": -16,
-        "y": -2.6,
-        "yaw": -10,
+        "x": -11.6,
+        "z": 4.2,
+        "y": -1.5,
+        "yaw": -47,
         "phase": 0.5
        }
       ],
       "cam": {
        "pos": [
-        0,
-        5.2,
-        16
+        -46,
+        10,
+        24
        ],
        "look": [
-        0,
-        2.4,
-        -6
+        -14,
+        1.5,
+        -4
        ],
        "to": {
         "pos": [
-         1.2,
-         4.2,
-         11.5
+         -40,
+         8,
+         19
         ],
         "look": [
-         0,
-         2.6,
-         -6
+         -14,
+         1.8,
+         -4
         ]
        }
       },
-      "fov": 42,
-      "drop_size": 0.38
+      "fov": 36,
+      "map": "river",
+      "sky_top": "#4f8fc8"
      },
      {
       "id": "t",

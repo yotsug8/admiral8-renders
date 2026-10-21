@@ -271,14 +271,29 @@ const SCN = (() => {
     const sun = new THREE.DirectionalLight(new THREE.Color(it.sun || "#fff1d6"), it.key ?? 2.6); sun.position.set(6, 10, 6); sc.add(sun);
     const rim = new THREE.DirectionalLight(new THREE.Color(it.rim || "#5fd4c4"), it.rim_power ?? 1.6); rim.position.set(-6, 4, -6); sc.add(rim);
     const lvl = (it.water && it.water.level) ?? 0;
+    let map = null;
+    if (it.map) {
+      // Кусок настоящей карты (tools/dota_export.py map): рельеф, деревья, камни, вода — с материалами как в игре
+      const gm = await new window.T3.GLTFLoader().loadAsync(D.http + `_game/maps/${it.map}.glb`);
+      sc.add(gm.scene);
+      map = window.T3.prepareDotaMap(THREE, gm.scene, D.http + `_game/maps/${it.map}_tex/`, { water: it.water || {}, sun: it.sun_dir });
+      await map.ready;
+      // Небо: вертикальный градиент на большой сфере (в игре сверху неба не видно — делаем в тон туману)
+      const skyGeo = new THREE.SphereGeometry(900, 32, 16);
+      sc.add(new THREE.Mesh(skyGeo, new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+        uniforms: { top: { value: new THREE.Color(it.sky_top || "#5f9ad0") }, bot: { value: new THREE.Color(it.sky || "#cfe3e6") } },
+        vertexShader: "varying float h; void main(){ h = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }",
+        fragmentShader: "uniform vec3 top, bot; varying float h; void main(){ gl_FragColor = vec4(mix(bot, top, smoothstep(0., .45, h)), 1.); }" })));
+    }
     // Дно и берега — фото-текстуры из assets/tex
     const TL = new THREE.TextureLoader(), tex = (n, rep) => { const t = TL.load(`assets/tex/${n}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); t.colorSpace = THREE.SRGBColorSpace; return t; };
+    const own = !map;
     const bed = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tex(it.bed || "cobble", 14), roughness: 1, color: 0x6f7d78 }));
-    bed.rotation.x = -Math.PI / 2; bed.position.y = lvl - (it.depth ?? 2.2); sc.add(bed);
+    bed.rotation.x = -Math.PI / 2; bed.position.y = lvl - (it.depth ?? 2.2); if (own) sc.add(bed);
     const bankMat = new THREE.MeshStandardMaterial({ map: tex(it.bank || "forest", 6), roughness: 1 });
     // Дальний берег — пологий склон за рекой (ближнего нет: камера стоит на нём)
     const bank = new THREE.Mesh(new THREE.BoxGeometry(120, 6, 40), bankMat);
-    bank.position.set(0, lvl - 2.2, -(it.river_width ?? 16) / 2 - 20); bank.rotation.x = 0.12; sc.add(bank);
+    bank.position.set(0, lvl - 2.2, -(it.river_width ?? 16) / 2 - 20); bank.rotation.x = 0.12; if (own) sc.add(bank);
     // Вода: волны в вершинах, круги вокруг героев, блик по Френелю
     const actorsXZ = new Array(8).fill(0).map(() => new THREE.Vector3(999, 0, 999));
     const water = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 200, 200), new THREE.ShaderMaterial({
@@ -304,7 +319,7 @@ const SCN = (() => {
           gl_FragColor = vec4(c, op + fr*.15);
           #include <fog_fragment>
         }` }));
-    water.rotation.x = -Math.PI / 2; water.position.y = lvl; water.renderOrder = 2; sc.add(water);
+    water.rotation.x = -Math.PI / 2; water.position.y = lvl; water.renderOrder = 2; if (own) sc.add(water);
     // Герои
     const actors = [];
     for (const a of it.actors || []) {
@@ -326,12 +341,13 @@ const SCN = (() => {
       sc.add(pts); drops.push({ pts, P, x: h.root.position.x, z: h.root.position.z });
     });
     const cam = new THREE.PerspectiveCamera(it.fov || 38, W / H, 0.1, 200);
-    Object.assign(st, { r, sc, cam, water, actors, drops, lvl });
+    Object.assign(st, { r, sc, cam, water, actors, drops, lvl, map });
   }
 
   function drawStage(st, lt, dur) {
     const { THREE } = window.T3, it = st.it, c = it.cam || {};
     st.water.material.uniforms.t.value = lt;
+    if (st.map) st.map.update(lt);
     st.drops.forEach(d => {
       const a = d.pts.geometry.attributes.position;
       d.P.forEach((p, i) => {

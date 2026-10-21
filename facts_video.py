@@ -398,7 +398,8 @@ def anim_frames(key):
 SC_TYPES = {"text", "chip", "stamp", "number", "img", "hero", "card", "anim", "shape", "row", "col", "panel", "video", "lottie"}
 SC_IN = {"fade", "rise", "drop", "pop", "slam", "left", "right", "wipe", "iris", "stamp", "draw", "lines", "chars", "type", "none"}
 SC_FX = SC_IN | {"pulse", "shake", "jump", "gray", "color", "dim", "show", "hide", "out", "move", "mark", "stamps", "count", "swap"}
-SC_TEX = {"noise", "paper", "wood", "metal", "grid", "scan", "halftone", "stone"}
+SC_TEX = {"noise", "grid", "scan", "halftone", "paper", "parchment", "wood", "oldwood", "doors", "planks", "metal", "plate", "rust",
+          "stone", "blocks", "rock", "cliff", "cobble", "leather", "burlap", "concrete", "plaster", "forest"}
 SC_FRAMES = {"plate", "corners", "rivets", "tape", "ticket", "cap"}
 SC_SOUNDS = {"stamp", "bubble", "tick", "pop", "whoosh"}
 

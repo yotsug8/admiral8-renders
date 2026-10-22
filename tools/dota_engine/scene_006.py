@@ -50,18 +50,25 @@ def spinner(t):
     return (x, y, WAIST + 8 * math.sin(math.pi * sm(1.3, 4.3, t)), 7 * wob * math.sin(t * 6.9),
             YAW_CAM + 25 + 360 * turns + 25 * wob * math.sin(t * 5.4), 0)
 
+# у каждого свои анимации: ни одна не повторяется у двух Пуджей; разовые — ровно на свою длину (иначе замирают)
 ACTORS = {
-    "swim":   dict(keys=swim,   anims=[(0, "a8_swim"), (6.8, "a8_backfloat")]),
-    "float":  dict(keys=floater, anims=[(0, "a8_backfloat"), (6.0, "pudge_idle"), (6.9, "victory")]),
-    "bob":    dict(keys=bobber, anims=[(0, "pudge_idle_alt"), (5.6, "pudge_flail"), (7.2, "pudge_idle")]),
-    "spin":   dict(keys=spinner, anims=[(0, "victory"), (4.3, "pudge_stun"), (8.8, "pudge_idle")]),
-    "p1":     actor_static(-30, -175, 15, [(0, "pudge_idle"), (2.0, "ftp_dendi_idle_look"), (7.6, "victory")]),
-    "p2":     actor_static(30, 20, -30, [(0, "ftp_dendi_idle_stomp"), (4.0, "pudge_rot"), (8.4, "pudge_flail")]),
+    "swim":   dict(keys=swim,    anims=[(0, "a8_swim"), (6.8, "a8_backfloat")]),
+    "float":  dict(keys=floater, anims=[(0, "pudge_stun"), (6.0, "ftp_dendi_victory")]),
+    "bob":    dict(keys=bobber,  anims=[(0, "pudge_idle_alt"), (2.9, "pudge_ti7_immortal_idle"), (5.6, "ti7_hh_flail"), (7.6, "hh_idle")]),
+    "spin":   dict(keys=spinner, anims=[(0, "trapper_victory_animation"), (4.3, "pudge_ti7_immortal_stun"), (8.8, "hh_victory")]),
+    "p1":     actor_static(-30, -175, 15, [(0, "pudge_idle"), (1.0, "pudge_taunt_money_maker"), (7.93, "victory")]),
+    "p2":     actor_static(30, 20, -30, [(0, "ftp_dendi_idle_stomp"), (2.07, "ftp_dendi_idle_look"), (9.07, "pudge_flail")]),
 }
-# камера: ниже по течению, медленный наезд
+_seen = {}
+for k, a in ACTORS.items():
+    for _, sq in a["anims"]:
+        assert sq not in _seen, f"анимация {sq} повторяется у {k} и {_seen[sq]}"
+        _seen[sq] = k
+# камера: ближе к группе, плавный наезд и лёгкий проворот
 def cam(t):
-    x, y, _ = at(lerp(230, 260, sm(0, DUR, t)), 0)
-    return (x, y, 0, lerp(1000, 880, sm(0, DUR, t)), 30, YAW_UP)
+    k = sm(0, DUR, t)
+    x, y, _ = at(lerp(170, 230, k), lerp(-30, 40, k))
+    return (x, y, 0, lerp(760, 600, k), lerp(28, 25, k), YAW_UP + lerp(-7, 7, k))
 
 def kv(name, d, ind=0):
     s = "\t" * ind

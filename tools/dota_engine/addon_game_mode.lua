@@ -131,3 +131,7 @@ Convars:RegisterCommand("a8_cam", function(_, x, y, z, dist, pitch, yaw)
 	A8_PLAY = nil
 	A8_Cam(tonumber(x), tonumber(y), tonumber(z), tonumber(dist), tonumber(pitch), tonumber(yaw))
 end, "камера вручную: x y z дальность наклон поворот", 0)
+Convars:RegisterCommand("a8_dur", function(_, ...)
+	local e = nil; for _, a in pairs(A8_ACT) do e = a.ent break end
+	for _, n in ipairs({ ... }) do print("[a8d] " .. n .. " " .. tostring(e:SequenceDuration(n))) end
+end, "длительности анимаций", 0)

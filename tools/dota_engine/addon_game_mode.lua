@@ -3,6 +3,8 @@
 --   a8_t <сек>     — поставить всех в момент времени (для проверки кадра)
 --   a8_play        — проиграть сцену с начала (перед этим в консоли: startmovie <имя> tga)
 --   a8_reload      — перечитать сцену; a8_time <0..1> — время суток; a8_where — справка по карте
+--   a8_black       — увести камеру (сразу после сцены: по этому скачку sky_comp.py находит её конец)
+--   a8_mark <имя>  — метка в консольном логе
 print("[a8] addon loaded")
 local MODEL = "models/a8/pudge/pudge_a8.vmdl"
 local PARTS = { "back", "belt", "bracer", "hair", "leftarm", "leftweapon", "righthook", "weapon" }
@@ -55,7 +57,15 @@ function A8_Cam(x, y, z, dist, pitch, yaw)
 		PlayerResource:SetCameraTarget(0, A8_CAMT)
 	end
 	A8_CAMT:SetAbsOrigin(Vector(x, y, z))
+	PlayerResource:SetCameraTarget(0, A8_CAMT)   -- заново каждый раз: иначе камера однажды срывается на героя
 	CustomGameEventManager:Send_ServerToAllClients("a8_cam", { x = x, y = y, z = z, dist = dist, pitch = pitch, yaw = yaw, h = 0, lerp = 1 })
+end
+
+-- Конец сцены в записи: на следующем тике после последнего кадра камера уводится — резкий скачок картинки,
+-- по нему sky_comp.py отрезает ровно сцену. (Чёрным кадр не становится: высоту камеры дота берёт с земли.)
+function A8_Black()
+	local c = A8_CAMK and A8_CAMK[0] or { 1516, -1660 }
+	A8_Cam(c[1], c[2], -400, 10, 89, 0)
 end
 
 function A8_Load()
@@ -142,11 +152,17 @@ Convars:RegisterCommand("a8_play", function()
 		if not A8_PLAY then return nil end
 		local t = GameRules:GetGameTime() - A8_PLAY
 		A8_Pose(math.min(t, A8_DUR))
-		if t >= A8_DUR then print("[a8] play done") A8_PLAY = nil return nil end
+		if t >= A8_DUR then
+			A8_PLAY = nil
+			GameRules:GetGameModeEntity():SetContextThink("a8_black", function() A8_Black() print("[a8] play done") return nil end, 0)
+			return nil
+		end
 		return 0
 	end, "a8_play", 0)
 	print("[a8] play")
 end, "проиграть сцену", 0)
+Convars:RegisterCommand("a8_black", function() A8_PLAY = nil A8_Black() end, "чёрный кадр-метка", 0)
+Convars:RegisterCommand("a8_mark", function(_, s) print("[a8] mark " .. tostring(s)) end, "метка в логе", 0)
 Convars:RegisterCommand("a8_where", function()
 	for _, cls in ipairs({ "dota_item_rune_spawner_powerup", "dota_item_rune_spawner_bounty", "ent_dota_fountain" }) do
 		for _, e in pairs(Entities:FindAllByClassname(cls)) do print("[a8w] " .. cls .. " " .. tostring(e:GetAbsOrigin())) end

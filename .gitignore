@@ -5,3 +5,4 @@ __pycache__/
 *.mp4
 qa/
 _game/
+node_modules/

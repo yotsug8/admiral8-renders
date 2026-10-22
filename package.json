@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "description": "Зависимости tools/map_crop.mjs (вырезка куска карты из glTF)",
+  "type": "module",
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1"
+  }
+}

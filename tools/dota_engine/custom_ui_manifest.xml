@@ -1,0 +1,6 @@
+<root>
+	<scripts>
+		<include src="file://{resources}/scripts/custom_game/a8_cam.js" />
+	</scripts>
+	<Panel />
+</root>

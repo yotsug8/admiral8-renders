@@ -460,7 +460,8 @@ def video_frames(node):
     path = HERE / node["src"].split(":", 1)[1]
     w, h = int(node.get("w", 880)), int(node.get("h", 495))
     a, d = float(node.get("from", 0)), float(node.get("dur", 6))
-    key = hashlib.md5(f"{path}|{w}|{h}|{a}|{d}".encode()).hexdigest()[:10]
+    st = path.stat()   # размер и время файла в ключе: новый клип с тем же именем не возьмёт старые кадры из кэша
+    key = hashlib.md5(f"{path}|{st.st_size}|{st.st_mtime_ns}|{w}|{h}|{a}|{d}".encode()).hexdigest()[:10]
     out = WORK / f"vid_{key}"
     if not out.exists():
         out.mkdir(parents=True)

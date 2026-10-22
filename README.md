@@ -79,6 +79,10 @@
 - `facts_video.py` — подготовка (озвучка, выравнивание субтитров, картинки), рендер кадров, звук, режим дублей.
 - `facts_video.html` — шаблон: стили, раскладки, анимации, проверка раскладки `audit()`.
 - `episodes_fv/` — выпуски. `voice/` — выбранные дубли. `assets/` — логотипы команд/турниров, иконки способностей. `fonts/` — шрифты.
-- `tools/` — извлечение файлов игры (`vpk_tool.py`, `dota_export.py`, `map_crop.mjs`), текстуры; `tools/blender/` — 3D-сцены в Blender (сборка, анимации, эффекты, проверки).
+- `scene.js`, `scene.css` — сцены из JSON (SCENES.md); `dota_map.js` — материалы карты для 3D-площадки в браузере.
+- `covers/` — обложки выпусков (HTML-исходники и PNG).
+- `tools/` — извлечение файлов игры (`vpk_tool.py`, `dota_export.py`, `map_crop.mjs`) и текстуры.
+- `tools/dota_engine/` — 3D-ролики прямо в движке доты: мод с режиссёром сцен, перевод своих анимаций в формат игры, запись.
+- `tools/blender/` — те же сцены в Blender (запасной путь).
 - `.github/workflows/render.yml` — рендер (push) и дубли озвучки (ручной запуск с `takes`). Нужен секрет `FISH_API_KEY`.
 - `.github/workflows/assets.yml` — скачать героев, предметы, способности, логотипы (OpenDota, Liquipedia) в ветку `assets`.

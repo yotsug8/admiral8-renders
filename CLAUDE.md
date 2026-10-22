@@ -30,44 +30,33 @@
 
 ## Выпуски
 - 005 «Кунка за 7 лет» — опубликован (хронология патчей, тема `k`). 7.41: ром переработан (не складывается из разных источников, от Корабля вдвое сильнее), аспекты удалены у всех.
-- 006 «Пуджи на водопое» — **в работе**. Сейчас: 7 Пуджей в настоящей реке из карты (3D через three.js, программный WebGL — медленно и блёкло). Денису не нравится: «текстуры без шейдеров, теней нет, несочные цвета», хочет **разные анимации** (цепочки по 2–3 действия у каждого Пуджа).
+- 006 «Пуджи на водопое» — сцена готова в движке доты (`tools/dota_engine/scene_006.py`, последний дубль `_game/engine_check/take3.mp4`). Не вставлена в шаблон (заголовок, шум реки). Денис говорил, что выкладывать скорее всего не будет — это проба нового способа.
 
-## Следующий шаг: 006 в Blender на ПК Дениса (RTX 2060 Super)
-- Blender 5.2.2: `D:\SteamLibrary\steamapps\common\Blender\blender.exe`
-- Source2Viewer-CLI: `C:\Users\kunkk\Desktop\ClaudeCode\s2v\Source2Viewer-CLI.exe` (ValveResourceFormat 20.1)
-- Дота: `D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota` (pak01_dir.vpk, maps\dota.vpk, gameinfo.gi)
-- Python 3.11 (`py -3.11`) с pillow, numpy, playwright (+chromium), imageio-ffmpeg уже стоят; node есть.
-- Экспорт мира (с реальным gameinfo все материалы найдутся):
-  `Source2Viewer-CLI -i <дота>\maps\dota.vpk --vpk_filepath maps/dota/world.vwrld_c -o world.glb -d --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt --game <дота>\gameinfo.gi`
-- Пудж: `-i <дота>\pak01_dir.vpk --vpk_filepath models/heroes/pudge/<часть>.vmdl_c ... --gltf_export_animations` (части: pudge, back, belt, bracer, hair, leftarm, leftweapon, righthook, weapon; без `_refit`). Части скинятся к скелету Пуджа по именам костей. У Пуджа 295 анимаций: pudge_idle, pudge_idle_alt, pudge_flail, pudge_taunt_money_maker, pudge_clown_taunt, victory, pudge_stun, pudge_rot, pudge_attack1/2, pudge_meathook_start/end, pudge_dismember_*, ftp_dendi_idle_stomp, pudge_death и др.
-- Река в координатах glTF (Y вверх, ~метры): вода около y≈0; середина реки около x=-20, z=3.5; удачный ракурс: камера (-40, 9, 18) → цель (-20.5, 1.3, 3.5); Пуджи по пояс (y≈-1.5), расставлены вглубь кадра (вертикальное видео узкое).
-- Террейн — шейдер multiblend: 4 слоя (g_tColor0..3 в extras.vmat.TextureParams), веса `_TEXCOORD_1.xyz`, мягкость `_TEXCOORD_2.xyz`, цвет вершин `_TEXCOORD_3.rgb`, альфа цветовых текстур — маска смешивания; тинты g_vColorTint/TintB по g_tTintMasks; UV = поворот/масштаб `g_flTexCoordScale/Rotate`. Готовая формула — `dota_map.js` (порт multiblend.frag из ValveResourceFormat). В Blender собрать то же нодами.
-- Вода water_dota в glTF без текстур — сделать свою (прозрачность, отражение неба, рябь).
-- Итог Blender (1080×1920, 30 к/с, Eevee) вставить в сцену шаблона типом `video`, заголовок «Пуджи на водопое», `subs: none`, `ambience: river`.
-- **Файлы игры не коммитить в публичный репозиторий** — только `_game/` (в .gitignore). Это правило уже сработало как блок при попытке выгрузки.
+## Окружение (ПК Дениса)
+- Дота: `D:\SteamLibrary\steamapps\common\dota 2 beta` (игра — `game\dota`, Workshop Tools — `content\`, `game\bin\win64\resourcecompiler.exe`).
+- Source2Viewer-CLI: `C:\Users\kunkk\Desktop\ClaudeCode\s2v\Source2Viewer-CLI.exe`. Blender 5.2: `D:\SteamLibrary\steamapps\common\Blender\blender.exe`.
+- Python 3.11 (`py -3.11`) с pillow, numpy, playwright, imageio-ffmpeg; node с `@gltf-transform` (package.json в корне).
+- Экран 2560×1440 (масштаб 125 %), RTX 2060 Super 8 ГБ.
+- **Файлы игры не коммитить** — только `_game/` и папки доты (в .gitignore). На Windows нельзя называть файлы `con`, `nul`, `aux` и т. п.
+- git на этом ПК не авторизован в GitHub: push делает Денис (`git push origin main`), коммиты — от имени `Claude <noreply@anthropic.com>`.
+
+## 3D-ролики в движке доты (основной путь)
+Картинка 1:1 как в игре, сцена 11,5 с пишется за ~6 с.
+- Мод `admiral8`: игра — `game\dota_addons\admiral8`, исходники моделей и Panorama — `content\dota_addons\admiral8`. Копии скриптов в репозитории: `tools/dota_engine/` (addon_game_mode.lua, a8_cam.js, custom_ui_manifest.xml).
+- Свои анимации: делаются в Blender (`tools/blender/pudge_cast.py`), переводятся в DMX `blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка модели в content>` и вписываются в vmdl (AnimFile). Модель `models/a8/pudge/pudge_a8.vmdl` = разобранный S2V Пудж + `a8_swim`, `a8_backfloat`. Сборка: `resourcecompiler.exe -nop4 -i <vmdl>` (ошибки про vtex материалов не мешают). Длительность клипа в DMX — только типом `datamodel.Time`.
+- Сцена: `py -3.11 tools/dota_engine/scene_006.py` пишет `scripts/a8_scene.txt` (ключи положения/углов по 10 в секунду, анимации по времени, камера) и сам проверяет, что все в воде и не ближе 185 ед. друг к другу.
+- Запуск: `dota2.exe -tools -novid -condebug -console -netconport 29001 -windowed -noborder -w 1080 -h 1920 -nojoy +engine_no_focus_sleep 0 +sv_cheats 1 +dota_launch_custom_game admiral8 dota`. Команды — `py -3.11 tools/dota_engine/dota_console.py "команда"` (сетевая консоль только с -tools). Лог — `game/dota/console.log`.
+- Окно рисует кадры только на переднем плане и после щелчка по нему: вывести окно «Dota 2» (процесс dota2.exe) вперёд, растянуть SetWindowPos до 864×1536 (логических), щёлкнуть (computer-use, доступ к «Dota 2»/«dota2.exe» Денис дал). Без этого снимки чёрные или одинаковые.
+- Команды мода: `a8_t <сек>` — кадр сцены, `a8_play` — проиграть, `a8_reload` — перечитать сцену, `a8_cam x y z дальность наклон поворот`, `a8_time 0..1`, `a8_where`. Скрипт мода не может вызвать `screenshot`/`startmovie` — только консоль.
+- Запись: `bash tools/dota_engine/record.sh <имя>` (startmovie TGA при host_framerate 30 → вырезка 810×1440 из кадра 1080×1440 → 1080×1920 mp4 и лист кадров).
+- Карта: игра x = −Blender_y·39.37, y = Blender_x·39.37. Вода в доте по щиколотку (≈16 ед.): стоящих опускать на −45, лежащих держать у поверхности (0…10), иначе тело скрывает дно. Широкая вода: центр (1516, −1660), ось реки (−0.70, 0.715), ширина ~1400 ед. Сухо (песок у святилища): (124, −913). Карта воды — `tools/dota_engine/water_map.py`.
+- Камера: поворот 0 — смотрим на север; модель с yaw 270 смотрит в камеру. Свет в этом месте реки родной сумеречный (днём, `a8_time` подтверждает день).
+
+## 3D в Blender (запасной путь)
+- Скрипты — `tools/blender/` (сборка сцены, свои анимации, ветер и брызги, проверки `qa_scene.py`/`check_motion.py`, финиш в шаблон). Рендер Eevee ~8–11 с/кадр. Вид `FIRST=1` Денис счёл ближе всего к доте, формула освещения доты (`GAME=1`) ему не понравилась.
+- Вода в Blender была своя: реальная вода доты лежит не там, где низина.
 
 ## Полезное
-- Локальная проверка без голоса: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python facts_video.py episodes_fv/NNN.json qa/t.mp4`.
+- Локальная проверка без голоса: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python facts_video.py episodes_fv/NNN.json qa/t.mp4`. Для видео-сцен `FV_WORKERS=4`.
 - Демо всех возможностей сцен: `episodes_fv/demo_scene.json`.
 - Звук: громкость выравнивается к −14 LUFS (кроме FV_SILENT); фонового бита нет (`FV_BEAT=1` вернёт).
-
-## Состояние 006 в Blender (2026-10-22) — ролик собран: out/006.mp4 (локально, не в git)
-- Всё в `_game/` (не в git): мир `world/world.gltf`, вырезка `maps/river.glb` (центр glTF 10,−40, r 190 — иначе на фоне пустота), Пудж `models/pudge/*.glb` (части экспортировать с `--gltf_export_animations`).
-- Сборка: `blender -b --factory-startup -P tools/blender/build_006.py -- preview 1,150 | quick | sheet | top | check | render [с по]`; труппа и свои анимации — `tools/blender/pudge_cast.py`; ветер и брызги — `fx_006.py`; финиш (mp4 → шаблон → листы по секундам) — `py -3.11 tools/blender/finish_006.py`. Выгрузка из доты — `tools/blender/export_world.bat`, `export_pudge.bat`.
-- 6 Пуджей (7 с крюками без касаний в брод не помещаются), масштаб 0.85, высокий ракурс. Вид `FIRST=1` (тёплое солнце, AgX Punchy, тёмная бирюзовая вода) — его Денис счёл ближе всего к доте; режим `GAME=1` (формула освещения доты) и подбор по скриншотам ему не понравились.
-- Проверки до рендера (запуск: `blender -b _game/blend/scene006.blend -P tools/blender/<скрипт>`): `qa_scene.py` (QA_OK обязателен), `check_motion.py` (замирания, оружие сквозь тело), `pack_layout.py`, `fit_positions.py`, `river_width.py`. Рендер ~8 с/кадр при ветре только на видимых объектах (на всех 8600 — CPU-упор).
-- Точь-в-точь как в игре можно только рендером в движке доты (Workshop Tools уже стоят, `startmovie`), но свои анимации (кроль и т.п.) там невозможны.
-- Шаблон: `FV_WORKERS=4` для видео-сцен (16 браузеров съедают память); кэш кадров видео теперь учитывает размер/время файла.
-
-## Ролики в движке доты (начато 2026-10-22, вместо Blender для сцен с героями)
-Денис выбрал этот путь: картинка 1:1 как в игре, рендер быстрый. Workshop Tools установлены.
-- Мод `admiral8`: исходники — `D:\SteamLibrary\steamapps\common\dota 2 beta\content\dota_addonsdmiral8`, игра — `...\game\dota_addonsdmiral8`. Копии скриптов — `tools/dota_engine/` (addon_game_mode.lua, a8_cam.js, custom_ui_manifest.xml).
-- Модель `models/a8/pudge/pudge_a8.vmdl` = разобранный Пудж (S2V) + свои анимации `a8_swim`, `a8_backfloat`. Перевод анимаций Blender → DMX: `blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка модели в content>` (образец — pudge_idle.dmx, точность 0.001; длительность обязательно типом datamodel.Time). Сборка: `game/bin/win64/resourcecompiler.exe -nop4 -i <vmdl>` (ошибки про vtex материалов не мешают).
-- Запуск: `dota2.exe -tools -novid -condebug -console -netconport 29001 -nojoy +engine_no_focus_sleep 0 +sv_cheats 1 +dota_launch_custom_game admiral8 dota`. Команды в консоль — `py -3.11 tools/dota_engine/dota_console.py "команда"` (netcon работает ТОЛЬКО с -tools). Лог — `game/dota/console.log`, снимки `screenshot` → `game/dota/screenshots/*.tga`.
-- Lua-команды мода: `a8_cam x y z дальность наклон поворот`, `a8_put x y dz поворот [анимация]`, `a8_where` (руны, фонтаны, высоты). `script_reload` перечитывает Lua. Камера: невидимая мишень + PlayerResource:SetCameraTarget; наклон/поворот/дальность — Panorama GameUI.SetCamera*. Интерфейс скрыт Panorama.
-- Координаты: игра x = −Blender_y·39.37, y = Blender_x·39.37. Место из сцены Blender (124,−913) в игре — СУХОЙ песок у святилища. Настоящая вода: (1520,−1450), (1920,−2050), (−1960,1210) и др. (water_map.py в _game). Река в доте по щиколотку (≈16 ед.), «по пояс» = опускать героя ниже дна (dz ≈ −40…−60).
-- Блокеры: скрипт мода НЕ может делать screenshot/startmovie (FCVAR) — только консоль. Дота НЕ рисует кадры, когда окно не в фокусе (снимки попиксельно одинаковые) — нужен доступ computer-use к окну «Dota 2» (Денис разрешил вариант 1: я сам вывожу окно вперёд) или чтобы Денис держал окно открытым.
-- ПРОБА УДАЛАСЬ (2026-10-22 15:27): Пудж с a8_swim в воде (1520,−1450, dz −40) записан `startmovie a8test/f jpg` при `host_framerate 30` → `game/dota/movie/<дата>/a8test/f*.jpg`, 1900×1200, ~реальное время. Пример: `_game/engine_check/engine_test.mp4`.
-- Рисует только окно в фокусе: окно «Dota 2» (hwnd ищется по заголовку, процесс dota2.exe) вывести вперёд (ShowWindow 3 + SetForegroundWindow) и ЩЁЛКНУТЬ по нему (computer-use, доступ к «Dota 2» и «dota2.exe» Денис дал). Без щелчка кадр чёрный/замёрзший.
-- Дальше: поворот Пуджа лёжа для кроля (SetAngles pitch), 6 Пуджей и сценарий по времени в Lua, низкий ракурс камеры, днём (освещение сейчас сумеречное — проверить SetTimeOfDay), вертикальный кадр (окно выше экрана нельзя — снимать 1900×1200 и кадрировать, либо окно 1080×1638), качество jpg (startmovie по умолчанию quality 50 — найти параметр/использовать tga).
-- Следующий шаг: вывести окно доты вперёд → `a8_put 1520 -1450 -40 200 a8_swim`, `a8_cam 1520 -1450 0 1000 40 0` → снимок → подобрать камеру → `startmovie a8test jpg` / `endmovie` (проверить запись и частоту, host_framerate 30) → затем шесть Пуджей и сценарий.

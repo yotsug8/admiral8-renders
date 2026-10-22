@@ -1,124 +1,26 @@
 {
- "_note": "Пуджи на водопое: 3D-модели из файлов игры (_game/models/pudge), рендер локальный. Без озвучки и субтитров — музыка в TikTok.",
+ "_note": "Пуджи на водопое: сцена в Blender 5.2 (Eevee) на настоящей реке из карты — _game/scripts/build_006.py, итог _game/renders/006_river.mp4 (файлы игры не коммитятся). Без озвучки и субтитров — музыка в TikTok.",
  "voice_id": "6ccdfb6b21e14501adc1fbcb44e50082",
  "subs": "none",
  "facts": [
   {
    "voice": "водопой",
-   "hold": 11,
+   "hold": 9.8,
    "scene": {
     "camera": false,
     "ambience": "river",
     "items": [
      {
-      "id": "s",
-      "type": "stage",
+      "id": "v",
+      "type": "video",
+      "src": "file:_game/renders/006_river.mp4",
       "x": 0,
       "y": 0,
       "w": 1080,
       "h": 1920,
-      "sky": "#bcd7dc",
-      "fog_near": 110,
-      "fog_far": 320,
-      "water": {
-       "color": "#3aa6a0",
-       "deep": "#0e4a55",
-       "opacity": 0.5
-      },
-      "actors": [
-       {
-        "hero": "pudge",
-        "anim": "pudge_idle",
-        "x": -26.2,
-        "z": 5.9,
-        "y": -1.5,
-        "yaw": -2,
-        "phase": 0.2
-       },
-       {
-        "hero": "pudge",
-        "anim": "pudge_flail",
-        "x": -21.22,
-        "z": 7.54,
-        "y": -1.5,
-        "yaw": -77,
-        "phase": 0.6,
-        "splash": true
-       },
-       {
-        "hero": "pudge",
-        "anim": "pudge_taunt_money_maker",
-        "x": -22.42,
-        "z": 0.94,
-        "y": -1.5,
-        "yaw": -32,
-        "phase": 0.1
-       },
-       {
-        "hero": "pudge",
-        "anim": "pudge_idle_alt",
-        "x": -17.38,
-        "z": 2.66,
-        "y": -1.5,
-        "yaw": 13,
-        "phase": 1.3
-       },
-       {
-        "hero": "pudge",
-        "anim": "pudge_stun",
-        "x": -17.26,
-        "z": -2.18,
-        "y": -1.5,
-        "yaw": -92,
-        "phase": 0.4,
-        "splash": 40
-       },
-       {
-        "hero": "pudge",
-        "anim": "victory",
-        "x": -11.26,
-        "z": 0.82,
-        "y": -1.5,
-        "yaw": -22,
-        "phase": 0.9
-       },
-       {
-        "hero": "pudge",
-        "anim": "pudge_clown_taunt",
-        "x": -11.14,
-        "z": -4.02,
-        "y": -1.5,
-        "yaw": -47,
-        "phase": 0.5
-       }
-      ],
-      "cam": {
-       "pos": [
-        -40.5,
-        9,
-        18.5
-       ],
-       "look": [
-        -20.5,
-        1.2,
-        3.5
-       ],
-       "to": {
-        "pos": [
-         -36.5,
-         7.5,
-         15.5
-        ],
-        "look": [
-         -20.5,
-         1.4,
-         3.5
-        ]
-       }
-      },
-      "fov": 42,
-      "map": "river",
-      "sky_top": "#4f8fc8"
+      "from": 0,
+      "dur": 11.5,
+      "audio": 0
      },
      {
       "id": "t",
@@ -127,7 +29,7 @@
       "x": 60,
       "y": 236,
       "w": 880,
-      "size": 104,
+      "size": 86,
       "z": 5
      }
     ]

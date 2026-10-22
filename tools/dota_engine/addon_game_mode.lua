@@ -11,6 +11,9 @@ function Precache(ctx)
 	PrecacheModel(MODEL, ctx)
 	for _, p in ipairs(PARTS) do PrecacheModel("models/heroes/pudge/" .. p .. ".vmdl", ctx) end
 	PrecacheModel("models/development/invisiblebox.vmdl", ctx)
+	-- деревья карты: в пользовательской игре их модели сами не подгружаются, и вместо деревьев остаются пни
+	local tr = LoadKeyValues("scripts/a8_trees.txt")
+	if tr then for _, m in pairs(tr.models) do PrecacheModel(m, ctx) end end
 	PrecacheUnitByNameSync("npc_dota_hero_pudge", ctx)
 end
 
@@ -95,10 +98,29 @@ function A8_Pose(t)
 	A8_Cam(c[1], c[2], c[3], c[4], c[5], c[6])
 end
 
+-- Деревья: в пользовательской игре на карте доты кроны не рисуются (остаются пни) — ставим те же модели сами
+function A8_FixTrees(cx, cy, r)
+	local tr = LoadKeyValues("scripts/a8_trees.txt")
+	if not tr then print("[a8] нет a8_trees.txt") return end
+	for _, e in ipairs(A8_TREES or {}) do e:RemoveSelf() end
+	A8_TREES = {}
+	for _, v in pairs(tr.list) do
+		local q = nums(v)
+		if (q[1] - cx) ^ 2 + (q[2] - cy) ^ 2 < r * r then
+			local e = SpawnEntityFromTableSynchronous("prop_dynamic", {
+				model = tr.models[tostring(q[4])], origin = Vector(q[1], q[2], q[3]), angles = Vector(0, q[5], 0),
+				modelscale = q[6], rendercolor = q[7] .. " " .. q[8] .. " " .. q[9], DefaultAnim = "idle" })
+			if e then table.insert(A8_TREES, e) end
+		end
+	end
+	print("[a8] деревья поставлены: " .. #A8_TREES)
+end
+
 function A8_Setup()
 	local hero = PlayerResource:GetSelectedHeroEntity(0)
 	if hero then hero:AddNoDraw(); hero:SetAbsOrigin(Vector(6000, 6000, 0)) end
 	GameRules:SetTimeOfDay(0.5)
+	A8_FixTrees(1516, -1660, 3200)
 	A8_Load()
 	A8_Pose(0)
 	print("[a8] setup done")
@@ -135,3 +157,35 @@ Convars:RegisterCommand("a8_dur", function(_, ...)
 	local e = nil; for _, a in pairs(A8_ACT) do e = a.ent break end
 	for _, n in ipairs({ ... }) do print("[a8d] " .. n .. " " .. tostring(e:SequenceDuration(n))) end
 end, "длительности анимаций", 0)
+Convars:RegisterCommand("a8_trees", function()
+	local all, up = 0, 0
+	for _, t in pairs(Entities:FindAllByClassname("ent_dota_tree")) do all = all + 1; if t:IsStanding() then up = up + 1 end end
+	print("[a8tr] деревьев " .. all .. ", стоят " .. up .. ", время " .. GameRules:GetTimeOfDay() .. ", день " .. tostring(GameRules:IsDaytime()))
+end, "деревья и время", 0)
+-- свой свет: дневные настройки стороны Света (default_RF), вокруг сцены
+Convars:RegisterCommand("a8_light", function(_, inner, outer, scale)
+	if A8_LIGHT then A8_LIGHT:RemoveSelf() end
+	local c = A8_CAMK and A8_CAMK[0] or { 1516, -1660 }
+	A8_LIGHT = SpawnEntityFromTableSynchronous("ent_dota_lightinfo", {
+		origin = Vector(c[1], c[2], 300), inner_radius = tonumber(inner) or 3000, outer_radius = tonumber(outer) or 6000,
+		light_direction_day = "66 0 0", color_day = "216 208 207", light_scale_day = tonumber(scale) or 5,
+		ambient_color_day = "63 144 169", ambient_scale_day = 5, ambient_direction_day = "0 23 0",
+		shadow_color_day = "230 175 177", shadow_scale_day = 1, shadow_ground_scale_day = 1, shadow_secondary_color_day = "230 175 177",
+		specular_color_day = "81 196 232", specular_direction_day = "64 283 0", specular_power_day = -1,
+		fog_color_day = "149 239 255", fog_start_day = 1250, fog_end_day = 4500,
+		skybox_material_day = "materials/skybox/sky_dota_000.vmat", skybox_tint_color_day = "255 255 255 0",
+		height_fog_color_day = "199 229 248", height_fog_density_day = 0,
+		color_night = "216 208 207", light_scale_night = 5, ambient_color_night = "63 144 169", ambient_scale_night = 5,
+	})
+	print("[a8] light " .. tostring(A8_LIGHT))
+end, "свой дневной свет", 0)
+Convars:RegisterCommand("a8_treemodels", function()
+	local m = {}
+	for _, t in pairs(Entities:FindAllByClassname("ent_dota_tree")) do local n = t:GetModelName() m[n] = (m[n] or 0) + 1 end
+	for n, c in pairs(m) do print("[a8tm] " .. c .. " " .. n) end
+end, "модели деревьев", 0)
+Convars:RegisterCommand("a8_testtree", function(_, model, x, y)
+	PrecacheModelAsync = PrecacheModelAsync
+	local e = SpawnEntityFromTableSynchronous("prop_dynamic", { model = model, origin = Vector(tonumber(x), tonumber(y), 0) })
+	print("[a8tt] " .. model .. " -> " .. tostring(e) .. " " .. tostring(e and e:GetModelName()))
+end, "тест модели дерева", 0)

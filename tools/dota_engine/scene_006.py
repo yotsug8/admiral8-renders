@@ -9,6 +9,7 @@ D = (0.0, 1.0)                             # камера смотрит на с
 P = (1.0, 0.0)                             # вправо в кадре
 YAW_UP = 0.0                               # поворот камеры (GameUI)
 YAW_CAM = 270.0                            # лицом к камере (модель с yaw 270 смотрит на юг)
+CAM_PITCH = float(os.environ.get("CAM_PITCH", 48))   # выше — без пустого горизонта и тумана
 WAIST = -45                                # по пояс: река в доте по щиколотку
 SWIM_Z = float(os.environ.get("SWIM_Z", 0))   # лёжа: тело у поверхности, иначе его закрывает дно
 FLOAT_Z = float(os.environ.get("FLOAT_Z", 5))
@@ -67,8 +68,8 @@ for k, a in ACTORS.items():
 # камера: ближе к группе, плавный наезд и лёгкий проворот
 def cam(t):
     k = sm(0, DUR, t)
-    x, y, _ = at(lerp(170, 230, k), lerp(-30, 40, k))
-    return (x, y, 0, lerp(760, 600, k), lerp(28, 25, k), YAW_UP + lerp(-7, 7, k))
+    x, y, _ = at(lerp(250, 270, k), lerp(-10, 30, k))
+    return (x, y, 0, lerp(1000, 860, k), CAM_PITCH, YAW_UP + lerp(-6, 6, k))
 
 def kv(name, d, ind=0):
     s = "\t" * ind

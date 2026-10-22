@@ -98,7 +98,9 @@ function A8_Pose(t)
 	A8_Cam(c[1], c[2], c[3], c[4], c[5], c[6])
 end
 
--- Деревья: в пользовательской игре на карте доты кроны не рисуются (остаются пни) — ставим те же модели сами
+-- Деревья: в пользовательской игре модели деревьев с морфингом (*_vmorf) не рисуются — остаются пни.
+-- Ставим на их места кино-версии тех же моделей (*_sfm, без морфинга) — scripts/a8_trees.txt
+A8_FRONT_Y = -1640
 function A8_FixTrees(cx, cy, r)
 	local tr = LoadKeyValues("scripts/a8_trees.txt")
 	if not tr then print("[a8] нет a8_trees.txt") return end
@@ -106,10 +108,11 @@ function A8_FixTrees(cx, cy, r)
 	A8_TREES = {}
 	for _, v in pairs(tr.list) do
 		local q = nums(v)
-		if (q[1] - cx) ^ 2 + (q[2] - cy) ^ 2 < r * r then
+		local front = q[2] < A8_FRONT_Y and math.abs(q[1] - cx) < 750   -- между камерой и сценой: не закрывать кадр
+		if (q[1] - cx) ^ 2 + (q[2] - cy) ^ 2 < r * r and not front then
 			local e = SpawnEntityFromTableSynchronous("prop_dynamic", {
 				model = tr.models[tostring(q[4])], origin = Vector(q[1], q[2], q[3]), angles = Vector(0, q[5], 0),
-				modelscale = q[6], rendercolor = q[7] .. " " .. q[8] .. " " .. q[9], DefaultAnim = "idle" })
+				modelscale = q[6], rendercolor = q[7] .. " " .. q[8] .. " " .. q[9] })
 			if e then table.insert(A8_TREES, e) end
 		end
 	end
@@ -189,3 +192,8 @@ Convars:RegisterCommand("a8_testtree", function(_, model, x, y)
 	local e = SpawnEntityFromTableSynchronous("prop_dynamic", { model = model, origin = Vector(tonumber(x), tonumber(y), 0) })
 	print("[a8tt] " .. model .. " -> " .. tostring(e) .. " " .. tostring(e and e:GetModelName()))
 end, "тест модели дерева", 0)
+Convars:RegisterCommand("a8_temptree", function(_, x, y, model)
+	local p = Vector(tonumber(x), tonumber(y), 0)
+	local t = model and CreateTempTreeWithModel(p, 600, model) or CreateTempTree(p, 600)
+	print("[a8tt] temp tree " .. tostring(t) .. " " .. tostring(t and t:GetModelName()))
+end, "временное дерево", 0)

@@ -53,8 +53,8 @@
 
 ## Состояние 006 в Blender (2026-10-22) — ролик собран: out/006.mp4 (локально, не в git)
 - Всё в `_game/` (не в git): мир `world/world.gltf`, вырезка `maps/river.glb` (центр glTF 10,−40, r 190 — иначе на фоне пустота), Пудж `models/pudge/*.glb` (части экспортировать с `--gltf_export_animations`).
-- Сборка: `blender -b --factory-startup -P _game/scripts/build_006.py -- preview 1,150 | quick | sheet | top | check | render [с по]`; труппа и свои анимации — `pudge_cast.py`; ветер и брызги — `fx_006.py`; финиш (mp4 → шаблон → листы по секундам) — `py -3.11 _game/scripts/finish_006.py`.
+- Сборка: `blender -b --factory-startup -P tools/blender/build_006.py -- preview 1,150 | quick | sheet | top | check | render [с по]`; труппа и свои анимации — `tools/blender/pudge_cast.py`; ветер и брызги — `fx_006.py`; финиш (mp4 → шаблон → листы по секундам) — `py -3.11 tools/blender/finish_006.py`. Выгрузка из доты — `tools/blender/export_world.bat`, `export_pudge.bat`.
 - 6 Пуджей (7 с крюками без касаний в брод не помещаются), масштаб 0.85, высокий ракурс. Вид `FIRST=1` (тёплое солнце, AgX Punchy, тёмная бирюзовая вода) — его участник счёл ближе всего к доте; режим `GAME=1` (формула освещения доты) и подбор по скриншотам ему не понравились.
-- Проверки до рендера: `qa_scene.py` (QA_OK обязателен), `pack_layout.py`, `river_width.py`. Рендер ~8 с/кадр при ветре только на видимых объектах (на всех 8600 — CPU-упор).
+- Проверки до рендера (запуск: `blender -b _game/blend/scene006.blend -P tools/blender/<скрипт>`): `qa_scene.py` (QA_OK обязателен), `check_motion.py` (замирания, оружие сквозь тело), `pack_layout.py`, `fit_positions.py`, `river_width.py`. Рендер ~8 с/кадр при ветре только на видимых объектах (на всех 8600 — CPU-упор).
 - Точь-в-точь как в игре можно только рендером в движке доты (Workshop Tools уже стоят, `startmovie`), но свои анимации (кроль и т.п.) там невозможны.
 - Шаблон: `FV_WORKERS=4` для видео-сцен (16 браузеров съедают память); кэш кадров видео теперь учитывает размер/время файла.

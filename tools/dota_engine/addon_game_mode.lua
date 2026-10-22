@@ -197,3 +197,8 @@ Convars:RegisterCommand("a8_temptree", function(_, x, y, model)
 	local t = model and CreateTempTreeWithModel(p, 600, model) or CreateTempTree(p, 600)
 	print("[a8tt] temp tree " .. tostring(t) .. " " .. tostring(t and t:GetModelName()))
 end, "временное дерево", 0)
+Convars:RegisterCommand("a8_sky", function(_, mat, tint)
+	if A8_SKY then A8_SKY:RemoveSelf() end
+	A8_SKY = SpawnEntityFromTableSynchronous("env_sky", { skyname = mat or "materials/skybox/sky_dota_000.vmat", tint_color = tint or "255 255 255", brightnessscale = 1, StartDisabled = 0 })
+	print("[a8] sky " .. tostring(A8_SKY))
+end, "небо", 0)

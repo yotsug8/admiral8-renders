@@ -1,24 +1,66 @@
 #!/usr/bin/env bash
 # Запись сцены из движка доты и сборка вертикального mp4: tools/dota_engine/record.sh <имя дубля>
 # Нужны: дота в режиме инструментов с модом admiral8 (см. CLAUDE.md) и окно «Dota 2» на переднем плане.
+# startmovie и a8_play идут одной строкой — выполняются в одном кадре, поэтому сцена начинается с первого
+# кадра записи, а host_framerate 30 привязывает кадры к тикам: ровно 345 кадров — ровно 11,5 с сцены.
 set -e
 NAME=${1:?имя дубля}
 HERE=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$HERE/../.." && pwd)
 GAME="D:/SteamLibrary/steamapps/common/dota 2 beta/game/dota"
 LOG="$GAME/console.log"; OUT="$REPO/_game/engine_check"; mkdir -p "$OUT"
+FPS=${FPS:-20}          # потолок кадров в секунду: на полной скорости диск не успевает писать TGA и кадры теряются
 C() { py -3.11 "$HERE/dota_console.py" "$@"; }
-C "fog_override_enable 0" "fog_enable 0" "r_farz 60000" "a8_reload" "a8_t 0"; sleep 3   # без тумана: небо подставит sky_comp.py
-n=$(grep -a -c "" "$LOG")
-C "host_framerate 30" "startmovie a8/$NAME tga" "a8_play"
-for i in $(seq 1 90); do tail -n +"$n" "$LOG" | grep -a -q "play done" && break; sleep 2; done
-C "endmovie" "host_framerate 0"; sleep 3
-M=$(ls -dt "$GAME/movie/"*/a8 | head -1)
+# Настройки Дениса на время дубля меняются и потом возвращаются как были (а не «по умолчанию»):
+# прокрутка камеры у края окна и колесо (мышь не должна трогать камеру) и потолок кадров.
+get() { py -3.11 "$HERE/dota_console.py" --get "$1" | grep -o '= *[^ ]*' | head -1 | tr -d '= "'; }
+OLD_EDGE=$(get dota_camera_edgemove); OLD_ZOOM=$(get dota_camera_disable_zoom); OLD_FPS=$(get fps_max)
+echo "настройки до дубля: edgemove=$OLD_EDGE disable_zoom=$OLD_ZOOM fps_max=$OLD_FPS"
+[ -n "$OLD_EDGE" ] && [ -n "$OLD_ZOOM" ] && [ -n "$OLD_FPS" ] || { echo "не прочитал настройки доты — не трогаю их"; exit 1; }
+trap 'C "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "host_framerate 0" "fps_max $OLD_FPS"' EXIT
+C "dota_camera_edgemove 0" "dota_camera_disable_zoom 1"
+C "fog_override_enable 0" "fog_enable 0" "r_farz 60000" "fps_max $FPS"
+# Дубль пишется только пока окно доты впереди; если его увели (щелчок мимо) — кадров меньше, пробуем снова.
+for TRY in 1 2 3; do
+  TOK="${NAME}_$(date +%H%M%S)"
+  C "a8_reload" "a8_t 0"; sleep 3
+  # окно доты рисует кадры только на переднем плане: вывести его прямо перед записью
+  FG=$(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/focus.ps1")")
+  echo "$FG" | grep -q "fg=True" || { echo "окно доты не вышло на передний план: $FG"; continue; }
+  sleep 2
+  C "a8_mark $TOK" "host_framerate 30" "startmovie a8/$NAME tga; a8_play"
+  # ждём «play done» строго после своей метки: по числу строк лога искать нельзя (буферизация, прошлые дубли)
+  for i in $(seq 1 150); do
+    awk -v m="mark $TOK" 'index($0, m) { s = 1 } s && /play done/ { f = 1 } END { exit !f }' "$LOG" && break
+    sleep 2
+  done
+  C "endmovie" "host_framerate 0"; sleep 3
+  # папка и число кадров — из лога своей записи (не «самая новая папка»: при пустой записи это был бы прошлый дубль)
+  read -r M FR < <(py -3.11 - "$LOG" "mark $TOK" <<'PY2'
+import re, sys
+log = open(sys.argv[1], encoding="utf-8", errors="replace").read()
+log = log[log.rfind(sys.argv[2]):]
+m = re.findall(r"Finishing movie: (movie/\S+)/[^/\s]+ \[(\d+) frames", log)
+print(*(m[-1] if m else ("-", 0)))
+PY2
+)
+  M="$GAME/$M"
+  echo "попытка $TRY: $M, кадров $FR"
+  [ "${FR:-0}" -ge 345 ] && break
+  echo "кадров мало — окно доты уводили с переднего плана, пишу заново"
+done
+[ "${FR:-0}" -ge 345 ] || { echo "дубль не записан за 3 попытки"; exit 1; }
 FF=$(py -3.11 -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
-# кадр игры 1080×1440 → вертикаль 810×1440 по центру → 1080×1920
 SKYOUT="$OUT/${NAME}_sky"; rm -rf "${SKYOUT:?}"
 py -3.11 "$HERE/sky_comp.py" "$M" "$SKYOUT" "$REPO/_game/sky/sky_dota_000_psd_ceb026ce_ft.png"
+# кадр игры 1080×1440 → вертикаль 810×1440 по центру → 1080×1920
 "$FF" -y -loglevel error -framerate 30 -i "$SKYOUT/f%05d.png" -frames:v 345 \
   -vf "crop=810:1440:135:0,scale=1080:1920:flags=lanczos" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p "$OUT/$NAME.mp4"
+py -3.11 -c "
+import subprocess, sys
+d = subprocess.run([sys.argv[1], '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', sys.argv[2]],
+                   capture_output=True, text=True).stdout.strip()
+print('длина ролика:', d, 'с'); assert abs(float(d) - 11.5) < 0.1, 'длина не 11,5 с!'
+" "${FF%ffmpeg.exe}ffprobe.exe" "$OUT/$NAME.mp4" 2>/dev/null || echo "(ffprobe не проверил длину)"
 rm -f "$OUT"/sec_*.png
 "$FF" -y -loglevel error -i "$OUT/$NAME.mp4" -vf fps=2 "$OUT/sec_%02d.png"
 py -3.11 - "$OUT" "$NAME" <<'PY'

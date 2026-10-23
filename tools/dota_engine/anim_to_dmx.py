@@ -1,33 +1,26 @@
-# Свои анимации Пуджа (из tools/blender/pudge_cast.py) → DMX для движка доты.
-# blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка исходников модели в content>
-# Образец — настоящая стойка pudge_idle.dmx: по ней находится переход «Blender → движок» (масштаб и оси одним преобразованием M
+# Свои анимации героя (скрипт Blender, например tools/blender/kunkka_race.py) → DMX для движка доты.
+# blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка исходников модели в content> <модель .glb> <префикс> <скрипт>
+#   префикс — как у файлов разобранной модели (kunkka → kunkka_idle.dmx); скрипт задаёт CUSTOM {имя: действие} и LOOPING
+# Образец — настоящая стойка <префикс>_idle.dmx: по ней находится переход «Blender → движок» (масштаб и оси одним преобразованием M
 # и поправка C_b для каждой кости), потом каждая поза своей анимации переводится и записывается каналами, как у Valve.
 import bpy, sys, os, math
 from mathutils import Matrix, Vector, Quaternion
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import datamodel
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
-OUT = sys.argv[sys.argv.index("--") + 1]
-SRC_IDLE = os.path.join(OUT, "pudge_pudge_idle.dmx")
+OUT, GLB, PREFIX, SCRIPT = sys.argv[sys.argv.index("--") + 1:][:4]
+SRC_IDLE = os.path.join(OUT, f"{PREFIX}_idle.dmx")
 FPS = 30; SPEED = FPS / 24.0
 def log(*a): print("[dmx]", *a, flush=True)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
-bpy.ops.import_scene.gltf(filepath=os.path.join(REPO, "_game", "models", "pudge", "pudge.glb"), bone_heuristic="BLENDER")
+bpy.ops.import_scene.gltf(filepath=GLB, bone_heuristic="BLENDER")
 arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
 ACTS = {a.name: a for a in bpy.data.actions}
 
-# --- запечь свои анимации тем же кодом, что в сцене Blender (часть pudge_cast.py до траекторий)
-src = open(os.path.join(REPO, "tools", "blender", "pudge_cast.py"), encoding="utf-8").read()
-src = src[:src.index("# ---------- траектории носителей")]
-def _fcurves(act):
-    return [fc for ly in act.layers for st in ly.strips for cb in st.channelbags for fc in cb.fcurves]
-def align_signs(acts): return 0
-WATER_Z = 1.6; PUDGE_Z = 0.0
-C = Vector((0, 0, 0)); DIR = Vector((0, 1, 0)); PERP = Vector((1, 0, 0)); CAM0 = (0, -10, 0)
-exec(compile(src, "pudge_cast_part", "exec"))
-CUSTOM = {"a8_swim": ("swim_crawl", ACTS["swim_crawl"]), "a8_backfloat": ("back_float", ACTS["back_float"])}
+# --- свои анимации: скрипт ставит их на скелет (arm, sc, ACTS, FPS) и задаёт CUSTOM
+exec(compile(open(SCRIPT, encoding="utf-8").read(), SCRIPT, "exec"))
 
 # --- позы Blender (пространство скелета) по кадрам
 def bl_mats(action, frames, src_fps):
@@ -75,7 +68,7 @@ def dmx_world(k, loc=local):
         W[n] = (W[par] if par else Matrix.Identity(4)) @ loc(n, k)
     return W
 idle_dmx = [dmx_world(k) for k in range(NI)]
-idle_bl = bl_mats(ACTS["pudge_idle"], range(NI), 24)
+idle_bl = bl_mats(ACTS["idle"], range(NI), 24)
 common = [n for n in order if n in idle_bl[0]]
 log("кадров стойки", NI, "костей DMX", len(order), "общих", len(common))
 
@@ -130,9 +123,9 @@ def write(name, action, nframes, loop_src_idle=True):
             lay["values"] = datamodel.make_array(vals, datamodel.Quaternion)
         lay["times"] = datamodel.make_array([datamodel.Time(x) for x in times], datamodel.Time) if hasattr(datamodel, "Time") else times
         if "curvetypes" in lay and lay["curvetypes"]: lay["curvetypes"] = datamodel.make_array([lay["curvetypes"][0]] * len(times), int)
-    path = os.path.join(OUT, f"pudge_{name}.dmx")
+    path = os.path.join(OUT, f"{PREFIX}_{name}.dmx")
     dm2.write(path, "binary", 9)
     log("записано", path, "кадров", len(frames))
-for name, (_, act) in CUSTOM.items():
+for name, act in CUSTOM.items():
     write(name, act, int(act.frame_range[1]))
 log("готово")

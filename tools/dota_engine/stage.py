@@ -218,11 +218,12 @@ class Stage:
     # ---- запись ----
     def write(self, out=OUT):
         n = int(self.dur * self.kf) + 1
-        seen = {}
+        seen = {}                                          # у одинаковых моделей анимации не повторяются
         for k, a in self.actors.items():
             for _, sq, *_r in a["anims"]:
-                assert sq not in seen, f"анимация {sq} повторяется у {k} и {seen[sq]}"
-                seen[sq] = k
+                key = (a["model"], sq)
+                assert key not in seen, f"анимация {sq} повторяется у {k} и {seen[key]}"
+                seen[key] = k
         scene = {"duration": self.dur, "actors": {}, "camera": {}}
         for name in self.actors:
             P = self.pts(name); keys = {}; prev = None

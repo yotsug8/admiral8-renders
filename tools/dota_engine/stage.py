@@ -6,8 +6,15 @@
 #
 # motion(t, pts) получает мировые точки якорей и возвращает (x, y, z, наклон, поворот, крен) — так
 # движение описывается «от якоря к якорю», а сами якоря решатель может сдвигать.
-# Проверки по всей длине: все в воде (если задана карта воды), модели не касаются в мире, никто не
-# обрезан краем кадра, фигуры не сливаются в одно пятно. Решатель понемногу раздвигает нарушителей.
+# Проверки по всей длине: все в воде (если задана карта воды), на суше — не в скале, здании или дереве
+# (если задана карта земли), модели не касаются в мире, никто не обрезан краем кадра, фигуры не
+# сливаются в одно пятно. Решатель понемногу раздвигает нарушителей.
+#
+# Любой герой или модель: st.actor(..., hero="kunkka") или model="models/..vmdl", parts=[...].
+# Земля: Stage(..., ground=Ground()) — z актёров считается от земли (в игре — GetGroundHeight), без неё
+# z абсолютный (так стоят Пуджи 006 в реке). Точки можно задавать и на карте: world=[(x, y), ...].
+# Движение по пути: path(точки, скорость) — положение, поворот по ходу; скорость бега — anims.stride.
+# Частицы: st.fx(t, "particles/...vpcf", at=(x, y) или at="актёр", z=0, dur=0).
 import math, os
 from project import Cam, overlap
 
@@ -31,8 +38,11 @@ def water_map():
 
 class Stage:
     def __init__(self, cam, dur, kf=10, ref=None, wet=None, min_gap=185, min_wet=60,
-                 safe_x=0.72, safe_y=0.96, max_over=0.35, under=-110, max_h=0.62):
+                 safe_x=0.72, safe_y=0.96, max_over=0.35, under=-110, max_h=0.62, ground=None, trees=None):
         self.cam, self.dur, self.kf = cam, dur, kf
+        self.ground = ground                               # карта земли (ground_map.Ground) или None
+        self.trees = trees                                 # (cx, cy, r, clear) — где ставить деревья
+        self.fxs, self.heroes = [], []
         self.ref = dur * 0.6 if ref is None else ref      # по какому моменту якоря переводятся в мир
         self.wet, self.min_gap, self.min_wet = wet, min_gap, min_wet
         self.safe_x, self.safe_y, self.max_over, self.under = safe_x, safe_y, max_over, under
@@ -41,15 +51,68 @@ class Stage:
 
     def cam_at(self, t):
         x, y, z, d, p, yw = self.cam(t)
+        if self.ground:                                    # высоту точки, куда смотрит камера, дота берёт с земли
+            z = self.gz(x, y)
         return Cam((x, y, z), d, p, yw)
 
-    def actor(self, name, anchors, motion, anims, z=-45, box=(75, -25, 190)):
-        """anchors — точки в кадре; z — высота, на которой стоит фигура (по ней якорь переводится в мир)."""
-        self.actors[name] = dict(anchors=[list(a) for a in anchors], motion=motion, anims=anims, z=z, box=box)
+    def cam_blocked(self, cm, tree_r=150, aims=()):
+        """Что мешает камере: земля или дерево на луче к актёрам (aims — их точки) или деревья у самой
+        камеры (None — всё чисто)."""
+        if not self.ground:
+            return None
+        P = cm.pos
+        for A in aims:
+            for k in range(1, 19):
+                q = [P[i] + (A[i] - P[i]) * k / 20 for i in range(3)]
+                if self.gz(q[0], q[1]) > q[2] - 40:
+                    return f"земля на луче камеры ({q[0]:.0f}, {q[1]:.0f})"
+                # деревья: убирать их у камеры нельзя — от деревьев карты остаются пни, которые не спрятать
+                if q[2] - self.gz(q[0], q[1]) < 520 and self.ground.blocked(q[0], q[1], tree_r) == 2:
+                    return f"дерево на луче камеры ({q[0]:.0f}, {q[1]:.0f})"
+                if q[2] - self.gz(q[0], q[1]) < 450 and self.ground.building(q[0], q[1], 60):
+                    return f"{self.ground.building(q[0], q[1], 60)[0]} на луче камеры ({q[0]:.0f}, {q[1]:.0f})"
+        if self.ground.blocked(P[0], P[1], tree_r + 60) == 2:
+            return f"камера в деревьях ({P[0]:.0f}, {P[1]:.0f})"
+        return None
+
+    def actor(self, name, anchors, motion, anims, z=None, box=(75, -25, 190),
+              hero=None, model=None, parts=None, world=None):
+        """anchors — точки в кадре (или world — точки карты, их решатель не двигает);
+        z — высота фигуры: от земли, если у площадки есть карта земли (по умолчанию 0), иначе абсолютная (−45).
+        hero — герой игры (тело и стандартные части сами); model/parts — любая модель.
+        anims — [(время, анимация) или (время, анимация, скорость проигрывания)]."""
+        if z is None:
+            z = 0 if self.ground else -45
+        if hero:
+            from hero_parts import hero_model
+            if model is None:
+                model, parts = hero_model(hero)
+            self.heroes.append("npc_dota_hero_" + hero)
+        self.actors[name] = dict(anchors=[list(a) for a in (anchors or [])], motion=motion, anims=anims, z=z, box=box,
+                                 model=model, parts=parts, world=[tuple(w) for w in world] if world else None)
+
+    def fx(self, t, name, at=(0, 0), z=0, dur=0):
+        """Частица в момент t: at — точка карты (x, y) или имя актёра (или (имя, dx, dy)); z — от земли."""
+        if isinstance(at, str):
+            at = (at, 0, 0)
+        self.fxs.append((t, name, at, z, dur))
+
+    def gz(self, x, y):
+        """Высота земли под точкой (0 без карты земли — z актёров тогда абсолютный)."""
+        return self.ground.h(x, y) if self.ground else 0.0
 
     def pts(self, name):
-        a = self.actors[name]; c = self.cam_at(self.ref)
-        return [c.place(sx, sy, a["z"] + MID)[:2] + (a["z"],) for sx, sy in a["anchors"]]
+        a = self.actors[name]
+        if a["world"]:
+            return [(x, y, a["z"]) for x, y in a["world"]]
+        c = self.cam_at(self.ref); out = []
+        for sx, sy in a["anchors"]:
+            g = 0.0
+            for _ in range(4):                             # высота зависит от места, место — от высоты
+                x, y, _z = c.place(sx, sy, g + a["z"] + MID)
+                g = self.gz(x, y)
+            out.append((x, y, a["z"]))
+        return out
 
     def keys(self, name, t, pts=None):
         return self.actors[name]["motion"](t, pts or self.pts(name))
@@ -67,10 +130,16 @@ class Stage:
             t = i / self.kf; cm = self.cam_at(t)
             pos = {k: self.keys(k, t, P[k]) for k in names}
             vis = {k: pos[k][2] - self.actors[k]["z"] >= self.under for k in names}
-            box = {k: cm.box(*pos[k][:3], *self.actors[k]["box"]) for k in names if vis[k]}
+            box = {k: cm.box(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]), *self.actors[k]["box"])
+                   for k in names if vis[k]}
+            aims = [(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]) + MID) for k in names if vis[k]]
+            if self.cam_blocked(cm, aims=aims):
+                note("камера", ("камера",), 1.0, t)
             for k in names:
                 if self.wet and self.wet(*pos[k][:2]) < self.min_wet:
                     note("вода", (k,), self.min_wet - self.wet(*pos[k][:2]), t)
+                if self.ground and self.ground.blocked(*pos[k][:2]):
+                    note("занято", (k,), 1.0, t)
                 if k in box:
                     b = box[k]
                     note("край", (k,), max(-self.safe_x - b[0], b[2] - self.safe_x,
@@ -86,9 +155,11 @@ class Stage:
 
     def _center(self, name, t):
         p = self.keys(name, t)
-        return self.cam_at(t).screen(p[0], p[1], p[2] + MID)
+        return self.cam_at(t).screen(p[0], p[1], p[2] + self.gz(p[0], p[1]) + MID)
 
     def _shift(self, name, dx, dy):
+        if self.actors[name]["world"]:                     # точки карты заданы жёстко — не двигаем
+            return
         for a in self.actors[name]["anchors"]:
             a[0] += dx; a[1] += dy
 
@@ -112,19 +183,32 @@ class Stage:
                     self._shift(b, -step * dx / L, -step * dy / L)
                 elif kind == "край":                       # внутрь кадра с той стороны, где вылезает
                     k = who[0]; a = self.actors[k]; pp = self.keys(k, t)
-                    b = self.cam_at(t).box(*pp[:3], *a["box"])
+                    b = self.cam_at(t).box(pp[0], pp[1], pp[2] + self.gz(pp[0], pp[1]), *a["box"])
                     self._shift(k, -step * (b[2] > self.safe_x) + step * (b[0] < -self.safe_x),
                                 -step * (b[3] > self.safe_y) + step * (b[1] < -self.safe_y))
                 elif kind == "крупно":                     # слишком близко к камере — дальше, то есть выше в кадре
                     self._shift(who[0], 0, -step)
                 elif kind == "вода":                       # к камере: вода в кадре лежит внизу
                     self._shift(who[0], 0, step)
+                elif kind == "занято":                     # к ближайшему свободному месту, в долях кадра
+                    k = who[0]; pp = self.keys(k, t); d = self.ground.free_dir(pp[0], pp[1])
+                    if d is None or self.actors[k]["world"]:
+                        raise SystemExit(f"площадка: {k} в {t:.1f} с стоит в скале/дереве ({pp[0]:.0f}, {pp[1]:.0f})")
+                    cm = self.cam_at(t); z0 = pp[2] + self.gz(pp[0], pp[1]) + MID
+                    a0 = cm.screen(pp[0], pp[1], z0); a1 = cm.screen(pp[0] + 30 * d[0], pp[1] + 30 * d[1], z0)
+                    L = math.hypot(a1[0] - a0[0], a1[1] - a0[1]) or 1.0
+                    self._shift(k, step * (a1[0] - a0[0]) / L, step * (a1[1] - a0[1]) / L)
+            if any(kind == "камера" for kind, _ in bad):
+                (_, _), (_, t) = next((k, v) for k, v in bad.items() if k[0] == "камера")
+                P = {k: self.keys(k, t) for k in self.actors}
+                aims = [(p[0], p[1], p[2] + self.gz(p[0], p[1]) + MID) for p in P.values()]
+                raise SystemExit(f"площадка: камере мешает {self.cam_blocked(self.cam_at(t), aims=aims)} в {t:.1f} с — поменять её путь")
         else:
             raise SystemExit("площадка: не удалось развести фигуры — " +
                              "; ".join(f"{k} {'/'.join(w)} {v:.2f} в {t:.1f} с" for (k, w), (v, t) in bad.items()))
         moved = []
         for k, v in self.actors.items():
-            d = max(math.dist(a, b) for a, b in zip(start[k], v["anchors"]))
+            d = max((math.dist(a, b) for a, b in zip(start[k], v["anchors"])), default=0)
             if d > 0.005:
                 moved.append(f"{k} на {d:.2f}")
         print(f"  площадка: проверки пройдены за {r} шагов" + (", сдвинуты: " + ", ".join(moved) if moved else ""))
@@ -136,7 +220,7 @@ class Stage:
         n = int(self.dur * self.kf) + 1
         seen = {}
         for k, a in self.actors.items():
-            for _, sq in a["anims"]:
+            for _, sq, *_r in a["anims"]:
                 assert sq not in seen, f"анимация {sq} повторяется у {k} и {seen[sq]}"
                 seen[sq] = k
         scene = {"duration": self.dur, "actors": {}, "camera": {}}
@@ -149,9 +233,28 @@ class Stage:
                     while ya - prev < -180: ya += 360
                 prev = ya
                 keys[str(i)] = f"{x:.1f} {y:.1f} {z:.1f} {pi:.1f} {ya:.1f} {ro:.1f}"
-            scene["actors"][name] = {"keys": keys, "anims": {str(i): f"{t} {s}" for i, (t, s) in enumerate(self.actors[name]["anims"])}}
+            a = self.actors[name]
+            act = {"keys": keys, "anims": {str(i): " ".join(str(v) for v in an) for i, an in enumerate(a["anims"])}}
+            if a["model"]:
+                act["model"] = a["model"]
+                act["parts"] = {str(i + 1): p for i, p in enumerate(a["parts"] or [])}
+            if self.ground:
+                act["ground"] = 1
+            scene["actors"][name] = act
         scene["camera"] = {str(i): "%.1f %.1f %.1f %.1f %.1f %.1f" % self.cam(i / self.kf) for i in range(n)}
         scene["kf"] = self.kf
+        if self.fxs:
+            fx = {}
+            for i, (t, nm, at, z, dur) in enumerate(self.fxs):
+                if isinstance(at[0], str):
+                    fx[str(i + 1)] = f"{t} {nm} {at[1]} {at[2]} {z} {dur} {at[0]}"
+                else:
+                    fx[str(i + 1)] = f"{t} {nm} {at[0]:.1f} {at[1]:.1f} {z} {dur}"
+            scene["fx"] = fx
+        if self.heroes:
+            scene["heroes"] = {str(i + 1): h for i, h in enumerate(dict.fromkeys(self.heroes))}
+        if self.trees:
+            scene["trees"] = " ".join(str(v) for v in self.trees)
         os.makedirs(os.path.dirname(out), exist_ok=True)
         open(out, "w", encoding="utf-8").write(_kv("Scene", scene))
         print("  сцена записана:", out, "актёров", len(self.actors), "ключей", n)
@@ -170,13 +273,64 @@ class Stage:
                 p = self.keys(k, t)
                 if p[2] - a["z"] < self.under:
                     continue
-                b = cm.box(*p[:3], *a["box"])
+                b = cm.box(p[0], p[1], p[2] + self.gz(p[0], p[1]), *a["box"])
                 X = lambda v: ox + W / 2 + v * W / 2; Y = lambda v: oy + H / 2 + v * H / 2
                 d.rectangle([X(b[0]), Y(b[1]), X(b[2]), Y(b[3])], outline=(120, 220, 140))
                 d.text((X(b[0]) + 2, Y(b[1]) + 2), k, fill=(230, 230, 230))
             d.text((ox + 6, oy - 14), f"{t:.1f} c", fill=(255, 220, 90))
         img.save(out, quality=92)
         print("  карта кадра:", out)
+
+
+def path(points, speed, start=0.0, turn=0.25, yaw_off=0.0, z=0.0):
+    """Движение по точкам с постоянной скоростью (ед./с): motion(t, pts) для st.actor.
+    points — индексы якорей актёра (по умолчанию все) или None; углы сглажены (дуга радиусом ~turn·отрезка),
+    поворот — по ходу движения (yaw доты: 0 — восток, 90 — север, 270 — на юг, к камере с поворотом 0).
+    До start стоит в первой точке, в конце пути — останавливается."""
+    def curve(P):
+        # сглаживание углов: каждую внутреннюю точку заменяем дугой Безье между точками на отрезках
+        pts = [P[0]]
+        for i in range(1, len(P) - 1):
+            a, b, c = P[i - 1], P[i], P[i + 1]
+            u = (b[0] + (a[0] - b[0]) * turn, b[1] + (a[1] - b[1]) * turn)
+            v = (b[0] + (c[0] - b[0]) * turn, b[1] + (c[1] - b[1]) * turn)
+            for k in range(9):
+                s = k / 8
+                pts.append(((1 - s) ** 2 * u[0] + 2 * s * (1 - s) * b[0] + s * s * v[0],
+                            (1 - s) ** 2 * u[1] + 2 * s * (1 - s) * b[1] + s * s * v[1]))
+        pts.append(P[-1])
+        L = [0.0]
+        for i in range(1, len(pts)):
+            L.append(L[-1] + math.dist(pts[i - 1], pts[i]))
+        return pts, L
+
+    cache = {}
+
+    def at(s, pts, L):
+        s = max(0.0, min(s, L[-1]))
+        i = max(1, next((j for j in range(1, len(L)) if L[j] >= s), len(L) - 1))
+        k = (s - L[i - 1]) / ((L[i] - L[i - 1]) or 1)
+        a, b = pts[i - 1], pts[i]
+        return a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k
+
+    def motion(t, p):
+        P = [q[:2] for q in (p if points is None else [p[i] for i in points])]
+        key = tuple(P)
+        if key not in cache:
+            cache.clear(); cache[key] = curve(P)
+        pts, L = cache[key]
+        s = speed * max(0.0, t - start)
+        x, y = at(s, pts, L)
+        a, b = at(s - 15, pts, L), at(s + 15, pts, L)            # направление — по соседним точкам пути
+        if s >= L[-1]:
+            a, b = at(L[-1] - 30, pts, L), at(L[-1], pts, L)
+        if s <= 0:
+            a, b = at(0, pts, L), at(30, pts, L)
+        yaw = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0])) + yaw_off
+        return (x, y, z, 0.0, yaw, 0.0)
+
+    motion.length = lambda p: curve([q[:2] for q in (p if points is None else [p[i] for i in points])])[1][-1]
+    return motion
 
 
 def _kv(name, d, ind=0):

@@ -1,8 +1,6 @@
 # Сцены: любой ролик из JSON
 
-Любой сегмент выпуска (`hook`, элемент `facts`, `outro`) может вместо готовой раскладки описать **сцену**: список элементов и таймлайн эффектов. Движок — `scene.js` + `scene.css`, анимация на GSAP (`vendor/gsap`, бесплатная лицензия GSAP). Рендер перематывает таймлайн сцены на время каждого кадра, поэтому кадры детерминированы.
-
-Пример со всеми возможностями — `episodes_fv/demo_scene.json`.
+Любой сегмент выпуска (`hook`, элемент `parts`, `outro`) может вместо готовой раскладки описать **сцену**: список элементов и таймлайн эффектов. Движок — `scene.js` + `scene.css`, анимация на GSAP (`vendor/gsap`, бесплатная лицензия GSAP). Рендер перематывает таймлайн сцены на время каждого кадра, поэтому кадры детерминированы.
 
 ```json
 { "voice": "…", "scene": { "bg": {…}, "cues": {…}, "items": […], "fx": […], "sounds": […], "camera": {…}, "cover": true } }
@@ -48,9 +46,6 @@
 2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (`S2V_CLI`).
 3. Имена анимаций героя — список печатает экспорт без фильтра (у Джаггернаута их 148).
 4. Кусок карты: файл карты `game/dota/maps/dota.vpk` + зависимости (`vpk_tool.py deps <список> <папка>` — список печатает экспорт как «Failed to load …»). Экспорт мира: `Source2Viewer-CLI -i dota.vpk --vpk_filepath maps/dota/world.vwrld_c -o world.glb -d --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt --game <сырые>/gameinfo.gi`, вырезка: `node tools/map_crop.mjs world.glb _game/maps/<имя>.glb <x> <z> <радиус>` (нужны `@gltf-transform/core` и `functions`), слои террейна — PNG в `_game/maps/<имя>_tex/`.
-
-## Сцены в Blender (006)
-Для роликов с настоящей картой и героями — рендер в Blender 5.2 (Eevee) на своём ПК, итог вставляется в сцену типом `video`. Скрипты — `tools/blender/` (сборка сцены, свои анимации, эффекты, проверки, финиш), файлы игры и рендеры — `_game/` (не в git). Подробности и команды — CLAUDE.md, раздел «Состояние 006 в Blender».
 
 ## 3D-площадка (`stage`)
 `{ "type": "stage", "map": "river", "actors": [{ "hero", "anim", "x", "y", "z", "yaw", "phase", "speed", "scale", "splash" }], "cam": { "pos", "look", "to": { "pos", "look" } }, "fov", "sky", "sky_top", "fog_near", "fog_far", "water": { "color", "deep", "opacity" } }` — герои в настоящей карте: террейн смешивается из 4 слоёв как в игре (dota_map.js), вода своя под цвет дотовской, небо — градиент. Без `map` — простая река своей отрисовки. `ambience: "river"` в сцене — шум воды.
@@ -101,4 +96,4 @@
 - Безопасная зона: x 60–940, y 150–1560; субтитры около y 1468.
 - Лесенка не дольше 0,5 с; перед кульминацией пауза 0,3–0,75 с.
 - Эффект — только под смысловое событие.
-- Проверка: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python3 facts_video.py episodes_fv/NNN.json qa/t.mp4`.
+- Проверка: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python3 video.py episodes/NNN.json qa/t.mp4`.

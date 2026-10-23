@@ -83,7 +83,7 @@ const SCN = (() => {
       box.classList.add("animbox");
       g.sc.anims.push({ A: makeAnim(box, it.anim), box, it });
     } else if (T === "video") {
-      // Клип: кадры заранее нарезаны под размер элемента (facts_video.py), рисуются на холсте по времени сцены
+      // Клип: кадры заранее нарезаны под размер элемента (video.py), рисуются на холсте по времени сцены
       box.classList.add("vidbox");
       const pre = document.getElementById("preload");
       g.sc.vids.push({ cv: $("canvas", null, box), it, imgs: it.clip.frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) });

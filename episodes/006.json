@@ -2,7 +2,7 @@
  "_note": "Пуджи на водопое: сцена в Blender 5.2 (Eevee) на настоящей реке из карты — _game/scripts/build_006.py, итог _game/renders/006_river.mp4 (файлы игры не коммитятся). Без озвучки и субтитров — музыка в TikTok.",
  "voice_id": "6ccdfb6b21e14501adc1fbcb44e50082",
  "subs": "none",
- "facts": [
+ "parts": [
   {
    "voice": "водопой",
    "hold": 9.8,

@@ -22,7 +22,7 @@
     ],
     "voice_file": "voice/003/hook.mp3"
   },
-  "facts": [
+  "parts": [
     {
       "layout": "timer",
       "headline": "Уснул|*в матче*",

@@ -58,8 +58,15 @@ for i, j in enumerate(pick):
     bb = m.getbbox()
     if bb:
         layer = Image.new("RGB", img.size)
-        # горизонт неба — у нижней границы пустоты, чтобы облака сходились к земле
-        layer.paste(sky, (0, bb[3] - sky.height))
+        # горизонт неба — у нижней границы пустоты, чтобы облака сходились к земле;
+        # пустота выше картинки неба (камера на уровне глаз) — небо крупнее, по центру, иначе сверху чёрная полоса
+        sk = sky
+        if bb[3] > sky.height:
+            k = bb[3] / sky.height
+            big = sky.resize((round(sky.width * k), bb[3]), Image.LANCZOS)
+            x0 = (big.width - img.width) // 2
+            sk = big.crop((x0, 0, x0 + img.width, bb[3]))
+        layer.paste(sk, (0, bb[3] - sk.height))
         img = Image.composite(layer, img, m)
     img.save(os.path.join(out, f"f{i:05d}.png"))
 print("кадров с небом:", NEED)

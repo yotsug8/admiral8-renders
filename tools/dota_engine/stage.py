@@ -53,8 +53,8 @@ class Stage:
 
     def cam_at(self, t):
         x, y, z, d, p, yw = self.cam(t)
-        if self.ground:                                    # высоту точки, куда смотрит камера, дота берёт с земли
-            z = self.gz(x, y)
+        if self.ground:                                    # точка взгляда: земля под ней + z (сдвиг по высоте, крупные планы)
+            z = self.gz(x, y) + z
         return Cam((x, y, z), d, p, yw)
 
     def cam_blocked(self, cm, tree_r=150, aims=()):

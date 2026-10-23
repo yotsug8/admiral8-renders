@@ -91,3 +91,6 @@ if AUTO:
                      (11.2, fr.over("pudge", "sniper")), (13.1, fr.two("pudge", "sniper"))])
 print(f"  крюк вылетел {T_REL:.2f} с, долетел {T_HIT:.2f}, притянул {T_BACK:.2f}")
 st.write()
+if os.environ.get("DUMP"):                           # для рендера в Blender (tools/blender/render_scene.py)
+    st.dump_json(os.path.join(HERE, "..", "..", "_game", "hook", "scene.json"),
+                 focus=[(0.0, "pudge"), (3.8, "pudge"), (8.5, "sniper"), (11.2, "sniper"), (13.1, "pudge")])

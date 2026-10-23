@@ -7,7 +7,7 @@ import bpy, sys, os, json, math, re
 from mathutils import Vector
 
 args = sys.argv[sys.argv.index("--") + 1:]
-SCENE, OUT = args[0], args[1]
+SCENE, OUT = os.path.abspath(args[0]), os.path.abspath(args[1])   # Blender пишет относительные пути от корня диска
 PICK = None if len(args) < 3 or args[2] in ("all", "") else [int(x) for x in args[2].split(",")]
 HALF = len(args) > 3 and args[3] == "half"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -52,11 +52,13 @@ def glb_of(model):
 
 # ---------- герои
 ACTORS = {}
+HERO_OBJS = set()                                     # всё, из чего собраны герои: луч камеры сквозь них не проверяется
 for name, a in D["actors"].items():
     if not a["hero"]:
         continue
     info = TROUPE[a["hero"]]
     objs, acts = imp(os.path.join(RND, os.path.basename(info["glb"])))   # с текстурами
+    HERO_OBJS.update(objs)
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
     PARTS = []
@@ -65,7 +67,7 @@ for name, a in D["actors"].items():
     for p in a["parts"] or []:
         if not os.path.exists(glb_of(p)):
             continue
-        po, _ = imp(glb_of(p))
+        po, _ = imp(glb_of(p)); HERO_OBJS.update(po)
         # как в игре (bone merge): скелет части остаётся, его кости с теми же именами повторяют кости тела,
         # свои кости части (шапка, борода, полы плаща) едут за ними — иначе такие куски отрываются и пропадают
         for pa in [o for o in po if o.type == "ARMATURE"]:
@@ -151,7 +153,8 @@ MAP_HAS_TREES = False
 if MAP:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import dota_map
-    mobjs = dota_map.load(os.path.join(REPO, "_game", MAP), os.path.join(REPO, "_game", "world"))
+    mobjs = dota_map.load(os.path.join(REPO, "_game", MAP), os.path.join(REPO, "_game", "world"),
+                         ground_z=min(W(*a["keys"][0][:3]).z for a in D["actors"].values()))
     MAP_HAS_TREES = any("tree" in o.name.lower() for o in mobjs)
     print("  карта:", MAP, "объектов", len(mobjs), "деревья в карте" if MAP_HAS_TREES else "деревьев в карте нет")
 else:
@@ -201,32 +204,174 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 light("SUN", (50, 0, 45), 4.6, (1.0, 0.84, 0.64))          # тёплое солнце с юго-востока (камеры в основном с юга)
-light("SUN", (68, 0, -150), 4.2, (0.58, 0.74, 1.0))         # контровой сильнее — обводка силуэтов        # холодный контровой с северо-запада — обводит силуэты
+light("SUN", (68, 0, -150), 4.2, (0.58, 0.74, 1.0))         # холодный контровой с северо-запада — обводит силуэты
+LIGHT_KEY, LIGHT_RIM = 900, 1400                            # свет плана (Вт): ключевой у камеры, контровой за героем
 
-# ---------- камера: как у доты (цель, дальность, наклон, поворот), резкость — на герое плана
+# ---------- камера
+# Если в сцене есть планы (shots: [начало, план, кто, на кого, настройки]) — камера и свет плана считаются здесь,
+# по настоящим костям головы (лица крупно, у каждого плана свой объектив). Иначе — камера доты из сцены как есть.
+#   close  кто            крупно: голова и плечи, глаза в верхней трети, сбоку-спереди (ang, °), чуть снизу
+#   over   кто, на_кого   через плечо «кто» на «на_кого», длинный объектив сжимает расстояние между ними
+# Камера всегда с южной стороны от линии героев (правило 180°). Свет плана: мягкий ключевой сбоку от камеры
+# и холодный контровой из-за героя плана — лица светлые и обведены, как в примерах.
 cam_d = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_d); sc.collection.objects.link(cam); sc.camera = cam
 cam_d.sensor_fit = "VERTICAL"; cam_d.angle_y = math.radians(FOV_Y); cam_d.clip_start = 0.05; cam_d.clip_end = 400
 cam_d.dof.use_dof = True
-focus = sorted(D["focus"])
-for f, (tx, ty, tz, dist, pitch, yaw) in enumerate(D["camera"]):
-    p, y_ = math.radians(pitch), math.radians(yaw)
-    fwd = Vector((-math.sin(y_) * math.cos(p), math.cos(y_) * math.cos(p), -math.sin(p)))
-    tgt = Vector((tx, ty, tz)); pos = tgt - fwd * dist
-    cam.location = W(*pos); cam.rotation_euler = (W(*tgt) - W(*pos)).to_track_quat("-Z", "Y").to_euler()
+
+
+def hand_held(f):
     tt = f / FPS                                       # «с рук»: медленное дыхание кадра, без тряски
     cam.rotation_euler.x += math.radians(0.35 * math.sin(tt * 1.3) + 0.15 * math.sin(tt * 3.1))
     cam.rotation_euler.z += math.radians(0.30 * math.sin(tt * 0.9 + 1.0) + 0.12 * math.sin(tt * 2.7))
-    who = [w for t, w in focus if t <= f / FPS + 1e-6]
-    who = who[-1] if who else None
-    if who and who in D["actors"]:
-        k = D["actors"][who]["keys"][f]; hz = ACTORS[who]["info"]["head_z"] if who in ACTORS else 100
-        fd = (W(k[0], k[1], k[2] + hz * 0.85) - cam.location).length
-        cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
-        cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
-    cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-for fc in (cam.animation_data.action.fcurves if hasattr(cam.animation_data.action, "fcurves") else []):
-    for kp in fc.keyframe_points:
-        kp.interpolation = "CONSTANT"                      # склейки — без промежуточных кадров
+
+
+def head(name, f):
+    """Глаза героя в кадре f (кость головы) и куда он смотрит (по горизонтали)."""
+    A = ACTORS[name]; sc.frame_set(f)
+    pb = A["arm"].pose.bones.get(A["info"].get("head_bone") or "head")
+    h = A["arm"].matrix_world @ pb.head
+    face = A["root"].matrix_world.to_3x3() @ Vector((0, -1, 0)); face.z = 0
+    return h, face.normalized()
+
+
+def avg_head(name, f0, f1):
+    hs = [head(name, f) for f in range(f0, max(f0 + 1, f1), 6)]
+    return sum((h for h, _ in hs), Vector()) / len(hs), hs[0][1]
+
+
+def rotz(v, deg):
+    a = math.radians(deg); return Vector((v.x * math.cos(a) - v.y * math.sin(a), v.x * math.sin(a) + v.y * math.cos(a), v.z))
+
+
+def clear(cands, aims, who):
+    """Позиция камеры, откуда лучи к героям чистые. Если на луче только деревья карты — их убираем на время плана
+    (киношный приём: кадр важнее дерева); камни и здания не трогаем — тогда следующий вариант."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    for C in cands:
+        hits = set()
+        for P in aims:
+            o_ = C.copy()
+            for _ in range(12):                        # все помехи на луче, не только первая
+                d = P - o_
+                if d.length < 0.8:
+                    break
+                hit, loc, nor, idx, obj, _m = sc.ray_cast(dg, o_, d.normalized(), distance=d.length - 0.8)
+                if not hit:
+                    break
+                if obj.original not in HERO_OBJS:
+                    hits.add(obj.original)
+                o_ = loc + d.normalized() * 0.02
+        if all("tree" in h.name.lower() for h in hits):
+            if hits:
+                print(f"    камера {who}: убираю на план деревья", sorted(h.name for h in hits))
+            return C, hits
+        print(f"    камера {who}: луч задевает", sorted(h.name for h in hits)[:3], "— другой вариант")
+    return cands[0], set()
+
+
+SOUTH = lambda v: -v.x                                 # юг карты (игра −y) — это −x в Blender
+SHOTS = sorted(D.get("shots") or [], key=lambda x: x[0])
+plans = []                                             # (f0, f1, позиция, точка взгляда, угол, резкость на, точка резкости, f-число, герой света)
+for i, (t0, kind, who, other, o) in enumerate(SHOTS):
+    f0 = int(round(t0 * FPS)); f1 = int(round(SHOTS[i + 1][0] * FPS)) if i + 1 < len(SHOTS) else N
+    fov = math.radians(o.get("fov", 40))
+    if kind == "close":
+        H, face = avg_head(who, f0, f1)
+        hz = ACTORS[who]["info"]["head_z"] * S
+        vis = o.get("size", 0.42) * hz                 # высота кадра: от груди до макушки
+        d = vis / (2 * math.tan(fov / 2))
+        ang = o.get("ang", 35)
+        def at(a_):
+            C = max((H + rotz(face, sg * a_) * d for sg in (1, -1)), key=SOUTH)
+            C.z = H.z - 0.06 * d                       # чуть снизу — герой весомее
+            return C
+        C, hide = clear([at(a_) for a_ in (ang, ang + 15, ang - 15, ang + 30)], [H], who)
+        T = H - Vector((0, 0, vis * 0.17))             # глаза — в верхней трети
+        plans.append((f0, f1, C, T, fov, who, H, o.get("fstop", 1.2), who, hide))
+    else:                                              # over
+        F, _ = avg_head(who, f0, min(f1, f0 + 6)); B, _ = avg_head(other, f0, min(f1, f0 + 6))
+        u = F - B; u.z = 0; u.normalize(); n = Vector((-u.y, u.x, 0))
+        n = n if SOUTH(n) > 0 else -n
+        # передний — у края кадра (x_f доли полукадра), дальний — по другую сторону (x_b): отступ назад b подбирается,
+        # сбоку — на ширину плеч переднего; чем длиннее объектив, тем дальше камера и тем крупнее дальний
+        def at(side):
+            s_ = ACTORS[who]["info"].get("radius", 60) * S * side
+            tx = math.tan(fov / 2) * 9 / 16
+            xf, xb = o.get("xf", 0.55), o.get("xb", -0.3)
+            L_ = (F - B).xy.length
+            lo_, hi_ = 0.3, 200.0
+            for _ in range(60):                        # угол между передним и дальним падает с отступом
+                b_ = (lo_ + hi_) / 2
+                if math.atan(s_ / b_) - math.atan(s_ / (b_ + L_)) > math.atan((xf - xb) * tx):
+                    lo_ = b_
+                else:
+                    hi_ = b_
+            C = F + u * b_ + n * s_
+            C.z = F.z + o.get("up", 0.12) * ACTORS[who]["info"]["head_z"] * S
+            v = F - C; v.z = 0
+            v = max((rotz(v, sg * math.degrees(math.atan(xf * tx))) for sg in (1, -1)), key=lambda w: w.dot(n))
+            v = v.normalized() * (B - C).xy.length
+            v.z = (B.z - C.z) - o.get("down", 0) * ACTORS[other]["info"]["head_z"] * S   # на голову дальнего (down — ниже, чтобы передний поднялся в кадр)
+            return C, v, b_, s_
+        sd = o.get("side", 0.8)
+        opts = [at(k * sd) for k in (1, 0.7, 1.4, 0.5, 2.0)]
+        C, hide = clear([x[0] for x in opts], [F, B], who)
+        C, v, b_, s_ = next(x for x in opts if x[0] is C)
+        print(f"  через плечо {who}: отступ {b_:.1f} м, сбоку {s_:.1f} м")
+        plans.append((f0, f1, C, C + v, fov, other, B, o.get("fstop", 2.0), other, hide))
+
+if plans:
+    key = bpy.data.objects.new("key", bpy.data.lights.new("key", "AREA")); sc.collection.objects.link(key)
+    key.data.shape = "DISK"; key.data.size = 3.0; key.data.color = (1.0, 0.9, 0.78)
+    rim = bpy.data.objects.new("rim", bpy.data.lights.new("rim", "AREA")); sc.collection.objects.link(rim)
+    rim.data.shape = "DISK"; rim.data.size = 2.0; rim.data.color = (0.62, 0.78, 1.0)
+    hidden = set().union(*[p[9] for p in plans])
+    for f0, f1, C, T, fov, fw, FP, fst, lw, hide in plans:
+        for h in hidden:                               # убранные деревья — только на своём плане
+            h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
+        L, _ = avg_head(lw, f0, f1)
+        tocam = C - L; tocam.z = 0; tocam.normalize()
+        for f in range(f0, f1):
+            fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
+            k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)
+            cam.location = C + (T - C) * 0.06 * k      # медленный наезд
+            cam.rotation_euler = (T - cam.location).to_track_quat("-Z", "Y").to_euler()
+            hand_held(f)
+            cam_d.angle_y = fov; cam_d.keyframe_insert("lens", frame=f)
+            cam_d.dof.focus_distance = (fp - cam.location).length; cam_d.dof.aperture_fstop = fst
+            cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
+            cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
+            for lo, dirv, dist, up, en in ((key, rotz(tocam, 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM)):
+                lo.location = L + dirv * dist + Vector((0, 0, up))
+                lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()
+                lo.data.energy = en
+                lo.keyframe_insert("location", frame=f); lo.keyframe_insert("rotation_euler", frame=f); lo.data.keyframe_insert("energy", frame=f)
+    print("  планы:", [(p[0], p[1], p[5]) for p in plans])
+else:
+    focus = sorted(D["focus"])
+    for f, (tx, ty, tz, dist, pitch, yaw) in enumerate(D["camera"]):
+        p, y_ = math.radians(pitch), math.radians(yaw)
+        fwd = Vector((-math.sin(y_) * math.cos(p), math.cos(y_) * math.cos(p), -math.sin(p)))
+        tgt = Vector((tx, ty, tz)); pos = tgt - fwd * dist
+        cam.location = W(*pos); cam.rotation_euler = (W(*tgt) - W(*pos)).to_track_quat("-Z", "Y").to_euler()
+        hand_held(f)
+        who = [w for t, w in focus if t <= f / FPS + 1e-6]
+        who = who[-1] if who else None
+        if who and who in D["actors"]:
+            k = D["actors"][who]["keys"][f]; hz = ACTORS[who]["info"]["head_z"] if who in ACTORS else 100
+            fd = (W(k[0], k[1], k[2] + hz * 0.85) - cam.location).length
+            cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
+            cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
+        cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
+for idb in [cam, cam_d, bpy.data.objects.get("key"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
+    if idb is None:
+        continue
+    for owner in (idb, getattr(idb, "data", None)):
+        ad = getattr(owner, "animation_data", None)
+        act = ad.action if ad else None
+        for fc in (getattr(act, "fcurves", None) or []):
+            for kp in fc.keyframe_points:
+                kp.interpolation = "CONSTANT"          # склейки — без промежуточных кадров
 
 # ---------- рендер
 for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):

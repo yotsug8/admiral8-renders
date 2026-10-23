@@ -275,7 +275,7 @@ class Stage:
         open(out, "w", encoding="utf-8").write(_kv("Scene", scene))
         print("  сцена записана:", out, "актёров", len(self.actors), "ключей", n)
 
-    def dump_json(self, out, fps=30, focus=(), map=None):
+    def dump_json(self, out, fps=30, focus=(), map=None, shots=None):
         """Сцена покадрово для рендера в Blender: актёры (положение с высотой земли, поворот), анимации, частицы,
         камера (цель, высота взгляда над землёй, дальность, наклон, поворот) и на кого наводить резкость (focus: [(t, актёр)])."""
         import json
@@ -284,6 +284,8 @@ class Stage:
         d = {"fps": fps, "frames": n, "dur": self.dur, "actors": {}, "camera": [], "fx": [], "focus": list(focus)}
         if map:                                            # кусок настоящей карты (tools/map_crop.mjs), путь от _game
             d["map"] = map
+        if shots:                                          # планы для Blender: камеру и свет считает render_scene.py по костям героев
+            d["shots"] = [list(x) for x in shots]
         for k, a in self.actors.items():
             fr = []
             for i in range(n):

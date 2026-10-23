@@ -51,19 +51,23 @@ for name, a in D["actors"].items():
     objs, acts = imp(os.path.join(RND, os.path.basename(info["glb"])))   # с текстурами
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
+    PARTS = []
+    root = bpy.data.objects.new(name + "_root", None); sc.collection.objects.link(root)
+    arm.parent = root
     for p in a["parts"] or []:
         if not os.path.exists(glb_of(p)):
             continue
         po, _ = imp(glb_of(p))
-        for o in [o for o in po if o.type == "MESH"]:
-            for m in o.modifiers:
-                if m.type == "ARMATURE":
-                    m.object = arm
-            o.parent = arm
-        for o in [o for o in po if o.type == "ARMATURE"]:
-            bpy.data.objects.remove(o)
-    root = bpy.data.objects.new(name + "_root", None); sc.collection.objects.link(root)
-    arm.parent = root
+        # как в игре (bone merge): скелет части остаётся, его кости с теми же именами повторяют кости тела,
+        # свои кости части (шапка, борода, полы плаща) едут за ними — иначе такие куски отрываются и пропадают
+        for pa in [o for o in po if o.type == "ARMATURE"]:
+            for pb in pa.pose.bones:
+                if pb.name in arm.pose.bones:
+                    c = pb.constraints.new("COPY_TRANSFORMS"); c.target = arm; c.subtarget = pb.name
+            pa.parent = arm.parent; pa.matrix_world = arm.matrix_world.copy()
+            PARTS.append(pa)
+    for pa in PARTS:
+        pa.parent = root; pa.matrix_world = arm.matrix_world.copy()
     # свои анимации (рот под голос и т. п.) — тем же скриптом, что для доты
     if any(str(x[1]).startswith("a8_") for x in a["anims"]):
         os.environ["A8_WHO"] = a["hero"]
@@ -181,7 +185,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 light("SUN", (50, 0, 45), 4.6, (1.0, 0.84, 0.64))          # тёплое солнце с юго-востока (камеры в основном с юга)
-light("SUN", (62, 0, -150), 3.0, (0.58, 0.74, 1.0))        # холодный контровой с северо-запада — обводит силуэты
+light("SUN", (68, 0, -150), 4.2, (0.58, 0.74, 1.0))         # контровой сильнее — обводка силуэтов        # холодный контровой с северо-запада — обводит силуэты
 
 # ---------- камера: как у доты (цель, дальность, наклон, поворот), резкость — на герое плана
 cam_d = bpy.data.cameras.new("cam"); cam = bpy.data.objects.new("cam", cam_d); sc.collection.objects.link(cam); sc.camera = cam
@@ -193,12 +197,15 @@ for f, (tx, ty, tz, dist, pitch, yaw) in enumerate(D["camera"]):
     fwd = Vector((-math.sin(y_) * math.cos(p), math.cos(y_) * math.cos(p), -math.sin(p)))
     tgt = Vector((tx, ty, tz)); pos = tgt - fwd * dist
     cam.location = W(*pos); cam.rotation_euler = (W(*tgt) - W(*pos)).to_track_quat("-Z", "Y").to_euler()
+    tt = f / FPS                                       # «с рук»: медленное дыхание кадра, без тряски
+    cam.rotation_euler.x += math.radians(0.35 * math.sin(tt * 1.3) + 0.15 * math.sin(tt * 3.1))
+    cam.rotation_euler.z += math.radians(0.30 * math.sin(tt * 0.9 + 1.0) + 0.12 * math.sin(tt * 2.7))
     who = [w for t, w in focus if t <= f / FPS + 1e-6]
     who = who[-1] if who else None
     if who and who in D["actors"]:
         k = D["actors"][who]["keys"][f]; hz = ACTORS[who]["info"]["head_z"] if who in ACTORS else 100
         fd = (W(k[0], k[1], k[2] + hz * 0.85) - cam.location).length
-        cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.9 if fd < 6 else 1.6   # крупно — фон сильно размыт
+        cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
         cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
     cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
 for fc in (cam.animation_data.action.fcurves if hasattr(cam.animation_data.action, "fcurves") else []):
@@ -215,8 +222,17 @@ sc.render.resolution_x, sc.render.resolution_y = 1080, 1920
 sc.render.resolution_percentage = 50 if HALF else 100
 try:
     sc.eevee.taa_render_samples = 24
+    sc.eevee.bokeh_max_size = 260
 except AttributeError:
     pass
+try:                                                      # свечение светлого и виньетка
+    sc.use_nodes = True; ct = sc.node_tree
+    rl = next(n for n in ct.nodes if n.type == 'R_LAYERS'); comp = next(n for n in ct.nodes if n.type == 'COMPOSITE')
+    gl = ct.nodes.new('CompositorNodeGlare'); gl.glare_type = 'FOG_GLOW'; gl.threshold = 0.85; gl.size = 7
+    lens = ct.nodes.new('CompositorNodeLensdist'); lens.inputs['Distortion'].default_value = -0.012; lens.inputs['Dispersion'].default_value = 0.004
+    ct.links.new(rl.outputs['Image'], gl.inputs['Image']); ct.links.new(gl.outputs['Image'], lens.inputs['Image']); ct.links.new(lens.outputs['Image'], comp.inputs['Image'])
+except Exception as e:
+    print('композитор:', e)
 try:
     sc.view_settings.view_transform = "AgX"; sc.view_settings.look = "AgX - Medium High Contrast"
 except TypeError:

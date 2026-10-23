@@ -87,9 +87,28 @@ r = imageio_ffmpeg.read_frames(TAKE); meta = next(r); W, H = meta["size"]
 enc = subprocess.Popen([FF, "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", "30", "-i", "-", "-i", wav,
                         "-c:v", "libx264", "-crf", "15", "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT],
                        stdin=subprocess.PIPE)
+from PIL import ImageFilter, ImageEnhance
+GRADE = os.environ.get("GRADE")                    # 1 — киношная обработка (для рендера Blender): свечение, виньетка, контраст
+yy, xx = np.mgrid[0:H, 0:W]
+VIG = (1 - 0.32 * np.clip((((xx - W / 2) / (W * 0.62)) ** 2 + ((yy - H / 2) / (H * 0.62)) ** 2) - 0.35, 0, 1) ** 1.2)[..., None]
+
+
+def grade(img):
+    a = np.asarray(img).astype(np.float32) / 255
+    bright = np.clip((a - 0.72) / 0.28, 0, 1) * a                     # светлое — мягко светится
+    glow = np.asarray(Image.fromarray((bright * 255).astype(np.uint8)).resize((W // 4, H // 4)).filter(ImageFilter.GaussianBlur(9)).resize((W, H))).astype(np.float32) / 255
+    a = 1 - (1 - a) * (1 - glow * 0.55)                               # «экран»
+    a = a * VIG
+    img = Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8))
+    img = ImageEnhance.Contrast(img).enhance(1.08); img = ImageEnhance.Color(img).enhance(1.12)
+    return img
+
+
 n = 0
 for k, b in enumerate(r):
     img = Image.frombytes("RGB", (W, H), b)
+    if GRADE:
+        img = grade(img)
     ov = overlay(k / 30)
     if ov is not None:
         img.paste(ov, (0, 1400), ov)

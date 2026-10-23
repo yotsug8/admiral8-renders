@@ -3,8 +3,8 @@
 #   A 0–3,8    сбоку: Снайпер крупно справа, Пудж вдали слева. Снайпер: «Ближе не подходи. Я стреляю дальше всех.»
 #   B 3,8–8,5  крупно Пудж (рот под звук — a8_p1): «Дальше всех? Мой крюк — тысяча триста.»
 #   C 8,5–11,2 крупно Снайпер опускает голову к винтовке (a8_s2): «А у меня... пятьсот пятьдесят.»
-#   D 11,2–13,1 из-за плеча Пуджа: бросок, цепь летит со скоростью крюка 1600, Снайпера дёргает к Пуджу
-#   E 13,1–15  оба крупно, Снайпер оглушён. Пудж (a8_p2): «Привет.»
+#   D 11,2–12,75 из-за плеча Пуджа: бросок, цепь летит со скоростью крюка 1600, Снайпера дёргает к Пуджу
+#   E 12,75–15 через плечо Снайпера на Пуджа крупно, Снайпер оглушён. Пудж (a8_p2): «Привет.»
 # Свои анимации — tools/blender/hook_talk.py (по громкости голосов _game/hook/voices.json). Звук и подписи — hook_mix.py.
 # py -3.11 tools/dota_engine/scene_hook.py
 import math, os, sys
@@ -93,5 +93,11 @@ print(f"  крюк вылетел {T_REL:.2f} с, долетел {T_HIT:.2f}, п
 st.write()
 if os.environ.get("DUMP"):                           # для рендера в Blender (tools/blender/render_scene.py)
     st.dump_json(os.path.join(HERE, "..", "..", "_game", "hook", "scene.json"),
-                 focus=[(0.0, "pudge"), (3.8, "pudge"), (8.5, "sniper"), (11.2, "sniper"), (13.1, "pudge")],
-                 map="maps/radiant_field.glb")     # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75
+                 focus=[(0.0, "pudge"), (3.8, "pudge"), (8.5, "sniper"), (11.2, "sniper"), (12.75, "pudge")],
+                 map="maps/radiant_field.glb",
+                 # планы Blender: (начало, план, кто, [на кого], настройки) — см. render_scene.py, раздел «камера»
+                 shots=[(0.0, "over", "sniper", "pudge", {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}),
+                        (3.8, "close", "pudge", None, {"size": 0.85, "fov": 34}),
+                        (8.5, "close", "sniper", None, {"size": 0.85, "fov": 34}),
+                        (11.2, "over", "pudge", "sniper", {"fov": 30, "xf": 0.8, "up": 0.3}),
+                        (12.75, "over", "sniper", "pudge", {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45})])     # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75

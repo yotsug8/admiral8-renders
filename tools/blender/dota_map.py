@@ -2,7 +2,7 @@
 # как в игре — земля смешивается из 4 слоёв (свой шейдер multiblend по параметрам vmat), прочее — с дизерингом альфы.
 # Взято из сборки сцены 006. Использование: import dota_map; objs = dota_map.load(путь_к_glb, папка_текстур)
 # Оси: Blender x = игра y / 39.37, Blender y = −игра x / 39.37, z = игра z / 39.37.
-import bpy, math, os
+import bpy, bmesh, math, os, re
 from mathutils import Vector
 
 GAME = 0; FIRST = 1
@@ -168,7 +168,14 @@ def fix_prop(mat, v):
 
 
 
-def load(glb, tex_dir):
+def hide_mat(mat):
+    """Материал невидим (и без тени)."""
+    mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial"); tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    nt.links.new(tr.outputs[0], out.inputs[0]); mat.surface_render_method = "DITHERED"
+
+
+def load(glb, tex_dir, ground_z=None):
     """Импорт куска карты и настройка материалов. Возвращает объекты карты."""
     global TEX
     TEX = tex_dir
@@ -182,6 +189,8 @@ def load(glb, tex_dir):
         sh = v.get("ShaderName", "")
         if sh == "multiblend.vfx":
             multiblend(mat, v); nmb += 1
+        elif re.search(r"tree_(magical|blossoms)", v.get("Name", "")):
+            hide_mat(mat)                              # варианты листвы (события, сезоны): в выгрузке все сразу поверх обычной, в игре — нет
         elif sh == "water_dota.vfx":
             mat["_water"] = 1
         elif v:
@@ -192,5 +201,42 @@ def load(glb, tex_dir):
         names = [ms.material.name for ms in o.material_slots if ms.material]
         if any(bpy.data.materials[n].get("_water") for n in names) or any(n.startswith(("tools", "black")) for n in names):
             o.hide_render = True; o.hide_viewport = True
-    log("объектов", len(objs), "земля (multiblend)", nmb)
+    # камни и стены на скалах: самих скал в выгрузке нет (сверху, как в игре, не видно) — снизу они висят в воздухе
+    dg = bpy.context.evaluated_depsgraph_get(); floating = 0
+
+    def floats(c, low):
+        """Под куском нет земли ближе 2 м; или земли нет вовсе (край вырезанной карты), а кусок выше героев."""
+        hit, loc, *_ = bpy.context.scene.ray_cast(dg, Vector((c.x, c.y, low - 0.05)), Vector((0, 0, -1)))
+        return (hit and low - loc.z > 2.0) or (not hit and ground_z is not None and low > ground_z + 2.0)
+    for o in objs:
+        if o.type != "MESH" or o.hide_render:
+            continue
+        if re.search(r"glow_\d", o.name):              # плоские карточки «свечения» — в игре мягкие, здесь квадраты
+            o.hide_render = True; o.hide_viewport = True; floating += 1; continue
+        if not re.search(r"stone_wall|cliff|rock|mod_radiant|mod_dire", o.name, re.I):
+            continue
+        # слитые меши (agg_merge) несут и землю, и скалы — проверяется каждый связный кусок отдельно
+        bm = bmesh.new(); bm.from_mesh(o.data); bm.faces.ensure_lookup_table()
+        mw = o.matrix_world; seen = set(); drop = []
+        for f0 in bm.faces:
+            if f0.index in seen:
+                continue
+            part, stack = [], [f0]; seen.add(f0.index)
+            while stack:
+                f = stack.pop(); part.append(f)
+                for e in f.edges:
+                    for g in e.link_faces:
+                        if g.index not in seen:
+                            seen.add(g.index); stack.append(g)
+            pts = [mw @ v.co for f in part for v in f.verts]
+            low = min(q.z for q in pts); c = sum(pts, Vector()) / len(pts)
+            if not floats(c, low):
+                continue
+            drop += part
+        if drop and len(drop) == len(bm.faces):
+            o.hide_render = True; o.hide_viewport = True; floating += 1
+        elif drop and o.data.users == 1:
+            bmesh.ops.delete(bm, geom=list(set(drop)), context="FACES"); bm.to_mesh(o.data); floating += 1
+        bm.free()
+    log("объектов", len(objs), "земля (multiblend)", nmb, "убрано висящих камней и карточек свечения", floating)
     return objs

@@ -20,6 +20,7 @@ class Cam:
         self.f = (fh[0] * math.cos(p), fh[1] * math.cos(p), -math.sin(p))  # вперёд
         self.r = (math.cos(y), math.sin(y), 0.0)                           # вправо в кадре
         self.u = (fh[0] * math.sin(p), fh[1] * math.sin(p), math.cos(p))   # вверх в кадре
+        self.target = tuple(target)
         self.pos = tuple(target[i] - dist * self.f[i] for i in range(3))
         self.ty = math.tan(math.radians(FOV_Y) / 2)
         self.tx = self.ty * GAME_W / GAME_H

@@ -120,7 +120,7 @@ function A8_Load()
 	A8_FX = {}
 	for _, v in ipairs(list(A8_SC.fx)) do
 		local q = nums(v)
-		A8_FX[#A8_FX + 1] = { t = q[1], name = q[2], x = q[3] or 0, y = q[4] or 0, z = q[5] or 0, dur = q[6] or 0, who = q[7] }
+		A8_FX[#A8_FX + 1] = { t = q[1], name = q[2], x = q[3] or 0, y = q[4] or 0, z = q[5] or 0, dur = q[6] or 0, who = q[7], to = q[8] }
 	end
 	print("[a8] scene loaded, duration " .. A8_DUR)
 end
@@ -142,7 +142,7 @@ function A8_Pose(t, nocam)
 		local want = a.anims[1]
 		for _, e in ipairs(a.anims) do if t >= e.t then want = e end end
 		if want ~= a.cur then
-			a.ent:ResetSequence(want.s); a.cur = want
+			pcall(function() a.ent:ResetSequence(want.s) end); a.cur = want   -- у служебных моделей (острие крюка) анимаций нет
 			if want.r ~= 1 or a.rate then   -- у prop_dynamic нет метода SetPlaybackRate — только вход сущности
 				DoEntFireByInstanceHandle(a.ent, "SetPlaybackRate", tostring(want.r), 0, nil, nil); a.rate = want.r end
 		end
@@ -166,6 +166,27 @@ function A8_SendCamKeys()
 end
 
 function A8_FxPlay(f)
+	-- цепь (крюк Пуджа): от руки актёра who к актёру to, оба конца следуют за ними
+	if f.to and f.who and A8_ACT[f.to] and A8_ACT[f.who] then
+		local a, b = A8_ACT[f.who].ent, A8_ACT[f.to].ent
+		local p = ParticleManager:CreateParticle(f.name, PATTACH_CUSTOMORIGIN, a)
+		ParticleManager:SetParticleAlwaysSimulate(p)
+		ParticleManager:SetParticleControlEnt(p, 0, a, PATTACH_POINT_FOLLOW, "attach_weapon_chain_rt", a:GetAbsOrigin(), true)
+		ParticleManager:SetParticleControlEnt(p, 1, b, PATTACH_ABSORIGIN_FOLLOW, nil, b:GetAbsOrigin(), true)
+		ParticleManager:SetParticleControl(p, 2, Vector(1600, 1300, 100))
+		ParticleManager:SetParticleControl(p, 3, Vector(f.dur > 0 and f.dur or 2, 0, 0))
+		ParticleManager:SetParticleControl(p, 4, Vector(1, 0, 0))
+		ParticleManager:SetParticleControl(p, 5, Vector(0, 0, 0))
+		ParticleManager:SetParticleControlEnt(p, 7, a, PATTACH_CUSTOMORIGIN, nil, a:GetOrigin(), true)
+		print("[a8] fx цепь " .. f.name .. " " .. f.who .. " → " .. f.to)
+		A8_FXP = A8_FXP or {}
+		A8_FXP[#A8_FXP + 1] = p
+		if f.dur > 0 then
+			GameRules:GetGameModeEntity():SetContextThink("a8_fx" .. p, function()
+				ParticleManager:DestroyParticle(p, false); ParticleManager:ReleaseParticleIndex(p) return nil end, f.dur)
+		end
+		return p
+	end
 	local pos = Vector(f.x, f.y, 0)
 	local a = f.who and A8_ACT[f.who]
 	if a then pos = a.ent:GetAbsOrigin() + Vector(f.x, f.y, 0) end

@@ -1,5 +1,5 @@
 # Свои анимации героя (скрипт Blender, например tools/blender/kunkka_race.py) → DMX для движка доты.
-# blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка исходников модели в content> <модель .glb> <префикс> <скрипт>
+# blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка исходников модели в content> <модель .glb> <префикс> <скрипт> [стойка=idle]
 #   префикс — как у файлов разобранной модели (kunkka → kunkka_idle.dmx); скрипт задаёт CUSTOM {имя: действие} и LOOPING
 # Образец — настоящая стойка <префикс>_idle.dmx: по ней находится переход «Blender → движок» (масштаб и оси одним преобразованием M
 # и поправка C_b для каждой кости), потом каждая поза своей анимации переводится и записывается каналами, как у Valve.
@@ -8,8 +8,10 @@ from mathutils import Matrix, Vector, Quaternion
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import datamodel
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
-OUT, GLB, PREFIX, SCRIPT = sys.argv[sys.argv.index("--") + 1:][:4]
-SRC_IDLE = os.path.join(OUT, f"{PREFIX}_idle.dmx")
+ARGS = sys.argv[sys.argv.index("--") + 1:]
+OUT, GLB, PREFIX, SCRIPT = ARGS[:4]
+IDLE = ARGS[4] if len(ARGS) > 4 else "idle"         # стойка-образец: у Пуджа pudge_idle, у Снайпера sniper_idle
+SRC_IDLE = os.path.join(OUT, f"{PREFIX}_{IDLE}.dmx")
 FPS = 30; SPEED = FPS / 24.0
 def log(*a): print("[dmx]", *a, flush=True)
 
@@ -68,7 +70,7 @@ def dmx_world(k, loc=local):
         W[n] = (W[par] if par else Matrix.Identity(4)) @ loc(n, k)
     return W
 idle_dmx = [dmx_world(k) for k in range(NI)]
-idle_bl = bl_mats(ACTS["idle"], range(NI), 24)
+idle_bl = bl_mats(ACTS[IDLE], range(NI), 24)
 common = [n for n in order if n in idle_bl[0]]
 log("кадров стойки", NI, "костей DMX", len(order), "общих", len(common))
 

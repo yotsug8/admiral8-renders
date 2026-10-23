@@ -93,11 +93,12 @@ class Stage:
         self.actors[name] = dict(anchors=[list(a) for a in (anchors or [])], motion=motion, anims=anims, z=z, box=box,
                                  model=model, parts=parts, world=[tuple(w) for w in world] if world else None)
 
-    def fx(self, t, name, at=(0, 0), z=0, dur=0):
-        """Частица в момент t: at — точка карты (x, y) или имя актёра (или (имя, dx, dy)); z — от земли."""
+    def fx(self, t, name, at=(0, 0), z=0, dur=0, to=None):
+        """Частица в момент t: at — точка карты (x, y) или имя актёра (или (имя, dx, dy)); z — от земли.
+        to — второй актёр: цепь от руки актёра at к актёру to (крюк Пуджа), оба конца следуют за ними."""
         if isinstance(at, str):
             at = (at, 0, 0)
-        self.fxs.append((t, name, at, z, dur))
+        self.fxs.append((t, name, at, z, dur, to))
 
     def gz(self, x, y):
         """Высота земли под точкой (0 без карты земли — z актёров тогда абсолютный)."""
@@ -260,9 +261,9 @@ class Stage:
         scene["kf"] = self.kf
         if self.fxs:
             fx = {}
-            for i, (t, nm, at, z, dur) in enumerate(self.fxs):
+            for i, (t, nm, at, z, dur, to) in enumerate(self.fxs):
                 if isinstance(at[0], str):
-                    fx[str(i + 1)] = f"{t} {nm} {at[1]} {at[2]} {z} {dur} {at[0]}"
+                    fx[str(i + 1)] = f"{t} {nm} {at[1]} {at[2]} {z} {dur} {at[0]}" + (f" {to}" if to else "")
                 else:
                     fx[str(i + 1)] = f"{t} {nm} {at[0]:.1f} {at[1]:.1f} {z} {dur}"
             scene["fx"] = fx

@@ -39,7 +39,7 @@
 - Python 3.11 (`py -3.11`) с pillow, numpy, playwright, imageio-ffmpeg; node с `@gltf-transform` (package.json в корне).
 - Экран 2560×1440 (масштаб 125 %), RTX 2060 Super 8 ГБ.
 - **Файлы игры не коммитить** — только `_game/` и папки доты (в .gitignore). На Windows нельзя называть файлы `con`, `nul`, `aux` и т. п.
-- git на этом ПК не авторизован в GitHub: push делает Денис (`git push origin main`), коммиты — от имени `Claude <noreply@anthropic.com>`.
+- GitHub: вход сохранён в Git Credential Manager (Windows), Claude отправляет сам (`git push origin main`); коммиты — от имени `Claude <noreply@anthropic.com>`. Готовые ролики — в ветку `renders` (через `git worktree` в `_game/renders_wt`, ссылка в README ветки).
 
 ## 3D-ролики в движке доты (основной путь)
 Картинка 1:1 как в игре, сцена 11,5 с пишется за ~6 с.

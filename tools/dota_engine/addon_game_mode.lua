@@ -143,7 +143,8 @@ function A8_Pose(t)
 		for _, e in ipairs(a.anims) do if t >= e.t then want = e end end
 		if want ~= a.cur then
 			a.ent:ResetSequence(want.s); a.cur = want
-			if want.r ~= 1 or a.rate then a.ent:SetPlaybackRate(want.r); a.rate = want.r end
+			if want.r ~= 1 or a.rate then   -- у prop_dynamic нет метода SetPlaybackRate — только вход сущности
+				DoEntFireByInstanceHandle(a.ent, "SetPlaybackRate", tostring(want.r), 0, nil, nil); a.rate = want.r end
 		end
 	end
 	local c = sample(A8_CAMK, t)

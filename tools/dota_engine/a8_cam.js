@@ -45,7 +45,7 @@
 		var g = function (j) { return K[Math.max(lo, Math.min(hi, Math.max(0, Math.min(n - 1, j))))]; };
 		var c = [];
 		for (var j = 0; j < 6; j++) c.push(cr(g(i - 1)[j], g(i)[j], g(i + 1)[j], g(i + 2)[j], s));
-		apply(c[0], c[1], c[2], c[3], c[4], c[5], 0);
+		apply(c[0], c[1], c[2], c[3], c[4], c[5], -1);   // −1 — мгновенно (0 у доты — плавный довод, на склейках камера не успевает)
 		$.Schedule(0, tick);
 	}
 	GameEvents.Subscribe("a8_camplay", function (d) { START = d.start; $.Msg("[a8] camplay " + K.length + " ключей"); tick(); });

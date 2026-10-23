@@ -133,7 +133,7 @@ local function sample(keys, t)
 	return r
 end
 
-function A8_Pose(t)
+function A8_Pose(t, nocam)
 	for _, a in pairs(A8_ACT) do
 		local s = sample(a.keys, t)
 		local z = s[3] + (a.ground and A8_Ground(s[1], s[2]) or 0)
@@ -147,8 +147,22 @@ function A8_Pose(t)
 				DoEntFireByInstanceHandle(a.ent, "SetPlaybackRate", tostring(want.r), 0, nil, nil); a.rate = want.r end
 		end
 	end
+	if nocam then return end   -- проигрывание: камеру ставит интерфейс каждый кадр (a8_camkeys)
 	local c = sample(A8_CAMK, t)
 	A8_Cam(c[1], c[2], c[3], c[4], c[5], c[6])
+end
+
+-- таблица камеры интерфейсу частями (событие не может быть большим)
+function A8_SendCamKeys()
+	local n = #A8_CAMK; local part, buf, cnt = 0, {}, 0
+	for i = 0, n do
+		local c = A8_CAMK[i]
+		buf[#buf + 1] = string.format("%.1f %.1f %.1f %.1f %.2f %.2f", c[1], c[2], c[3], c[4], c[5], c[6]); cnt = cnt + 1
+		if cnt == 120 or i == n then
+			CustomGameEventManager:Send_ServerToAllClients("a8_camkeys", { part = part, kf = A8_KF, dur = A8_DUR, keys = table.concat(buf, " ") })
+			part = part + 1; buf = {}; cnt = 0
+		end
+	end
 end
 
 function A8_FxPlay(f)
@@ -270,16 +284,19 @@ Convars:RegisterCommand("a8_reload", function()
 end, "перечитать сцену", 0)
 Convars:RegisterCommand("a8_time", function(_, v) GameRules:SetTimeOfDay(tonumber(v) or 0.5) print("[a8] day " .. tostring(GameRules:IsDaytime())) end, "время суток", 0)
 Convars:RegisterCommand("a8_play", function()
-	A8_PLAY = GameRules:GetGameTime()
 	A8_FxClear()
+	A8_SendCamKeys()
+	PlayerResource:SetCameraTarget(0, nil)   -- иначе серверная цель и интерфейс тянут камеру по очереди
+	A8_PLAY = GameRules:GetGameTime()
+	CustomGameEventManager:Send_ServerToAllClients("a8_camplay", { start = A8_PLAY })
 	for _, a in pairs(A8_ACT) do a.cur = nil end
 	local prev = -1
 	GameRules:GetGameModeEntity():SetThink(function()
 		if not A8_PLAY then return nil end
 		local t = GameRules:GetGameTime() - A8_PLAY
-		A8_Pose(math.min(t, A8_DUR))
+		A8_Pose(math.min(t, A8_DUR), true)
 		A8_FxStep(prev, math.min(t, A8_DUR)); prev = t
-		if t >= A8_DUR then
+		if t >= A8_DUR + 2 / 30 then   -- последняя поза держится ещё 2 кадра: запись не захватывает кадр после сцены
 			A8_PLAY = nil
 			GameRules:GetGameModeEntity():SetContextThink("a8_black", function() A8_Black() print("[a8] play done") return nil end, 0)
 			return nil

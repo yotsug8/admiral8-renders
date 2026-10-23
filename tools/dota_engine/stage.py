@@ -275,6 +275,27 @@ class Stage:
         open(out, "w", encoding="utf-8").write(_kv("Scene", scene))
         print("  сцена записана:", out, "актёров", len(self.actors), "ключей", n)
 
+    def dump_json(self, out, fps=30, focus=()):
+        """Сцена покадрово для рендера в Blender: актёры (положение с высотой земли, поворот), анимации, частицы,
+        камера (цель, высота взгляда над землёй, дальность, наклон, поворот) и на кого наводить резкость (focus: [(t, актёр)])."""
+        import json
+        n = int(round(self.dur * fps))
+        P = {k: self.pts(k) for k in self.actors}
+        d = {"fps": fps, "frames": n, "dur": self.dur, "actors": {}, "camera": [], "fx": [], "focus": list(focus)}
+        for k, a in self.actors.items():
+            fr = []
+            for i in range(n):
+                x, y, z, pi, ya, ro = self.keys(k, i / fps, P[k])
+                fr.append([round(x, 2), round(y, 2), round(z + self.gz(x, y), 2), round(pi, 2), round(ya, 2), round(ro, 2)])
+            hero = next((h[len("npc_dota_hero_"):] for h in self.heroes if a["model"] and h[len("npc_dota_hero_"):] in a["model"]), None)
+            d["actors"][k] = {"hero": hero, "model": a["model"], "parts": a["parts"], "anims": [list(x) for x in a["anims"]], "keys": fr}
+        for i in range(n):
+            x, y, z, dist, pitch, yaw = self.cam(i / fps)
+            d["camera"].append([round(x, 2), round(y, 2), round(self.gz(x, y) + z, 2), round(dist, 2), round(pitch, 3), round(yaw, 3)])
+        d["fx"] = [list(f) for f in self.fxs]
+        json.dump(d, open(out, "w", encoding="utf-8"), ensure_ascii=False)
+        print("  сцена для Blender:", out, "кадров", n)
+
     def frame_map(self, out, cols=6, rows=2):
         """Картинка композиции по расчёту: рамки фигур в кадре в разные секунды."""
         from PIL import Image, ImageDraw

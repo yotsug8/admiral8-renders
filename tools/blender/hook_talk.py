@@ -32,7 +32,7 @@ def base_pose(action, t):
     ad = arm.animation_data or arm.animation_data_create(); ad.action = ACTS[action]
     try: ad.action_slot = ACTS[action].slots[0]
     except Exception: pass
-    n = ACTS[action].frame_range[1]; f = (t * 24.0) % n
+    n = ACTS[action].frame_range[1]; f = (t * globals().get("IMPORT_FPS", 24.0)) % n   # анимации glb легли в кадры с частотой импорта
     sc.frame_set(int(f), subframe=f - int(f))
 
 

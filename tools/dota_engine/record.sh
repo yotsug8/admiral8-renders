@@ -21,10 +21,12 @@ get() { py -3.11 "$HERE/dota_console.py" --get "$1" | grep -o '= *[^ ]*' | head 
 OLD_EDGE=$(get dota_camera_edgemove); OLD_ZOOM=$(get dota_camera_disable_zoom); OLD_FPS=$(get fps_max)
 # полоски здоровья над вышками и юнитами (интерфейс мод скрывает, а их — нет): на время дубля выключить
 OLD_HB=$(get dota_hud_healthbars)
+# глубина резкости размывает всё за героями — на время дубля выключить
+OLD_DOF=$(get r_depth_of_field); OLD_DOF=${OLD_DOF:-1}
 echo "настройки до дубля: edgemove=$OLD_EDGE disable_zoom=$OLD_ZOOM fps_max=$OLD_FPS"
 [ -n "$OLD_EDGE" ] && [ -n "$OLD_ZOOM" ] && [ -n "$OLD_FPS" ] && [ -n "$OLD_HB" ] || { echo "не прочитал настройки доты — не трогаю их"; exit 1; }
-trap 'C "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "host_framerate 0" "fps_max $OLD_FPS" "dota_hud_healthbars $OLD_HB"' EXIT
-C "dota_camera_edgemove 0" "dota_camera_disable_zoom 1" "dota_hud_healthbars 0"
+trap 'C "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "host_framerate 0" "fps_max $OLD_FPS" "dota_hud_healthbars $OLD_HB" "r_depth_of_field $OLD_DOF"' EXIT
+C "dota_camera_edgemove 0" "dota_camera_disable_zoom 1" "dota_hud_healthbars 0" "r_depth_of_field 0"
 C "fog_override_enable 0" "fog_enable 0" "r_farz 60000" "fps_max $FPS"
 # Дубль пишется только пока окно доты впереди; если его увели (щелчок мимо) — кадров меньше, пробуем снова.
 for TRY in 1 2 3; do
@@ -59,9 +61,9 @@ done
 FF=$(py -3.11 -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
 SKYOUT="$OUT/${NAME}_sky"; rm -rf "${SKYOUT:?}"
 py -3.11 "$HERE/sky_comp.py" "$M" "$SKYOUT" "$REPO/_game/sky/sky_dota_000_psd_ceb026ce_ft.png" "$NEED"
-# кадр игры 1080×1440 → вертикаль 810×1440 по центру → 1080×1920
+# кадр игры 1080×1440 → вертикаль 810×1440 по центру → 1080×1920 (выше 1440 окно не поднять — высота экрана; растяжение с лёгкой резкостью)
 "$FF" -y -loglevel error -framerate 30 -i "$SKYOUT/f%05d.png" -frames:v "$NEED" \
-  -vf "crop=810:1440:135:0,scale=1080:1920:flags=lanczos" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p "$OUT/$NAME.mp4"
+  -vf "crop=810:1440:135:0,scale=1080:1920:flags=lanczos,unsharp=5:5:0.45:5:5:0" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p "$OUT/$NAME.mp4"
 py -3.11 -c "
 import subprocess, sys
 d = subprocess.run([sys.argv[1], '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', sys.argv[2]],

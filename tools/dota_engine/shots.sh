@@ -10,9 +10,10 @@ get() { py -3.11 "$HERE/dota_console.py" --get "$1" | grep -o '= *[^ ]*' | head 
 # полоски здоровья над вышками и юнитами (интерфейс мод скрывает, а их — нет): на время дубля выключить
 # и прокрутку камеры у края окна и колесом: иначе курсор участник тащит обзор (возвращается как было)
 OLD_HB=$(get dota_hud_healthbars); OLD_EDGE=$(get dota_camera_edgemove); OLD_ZOOM=$(get dota_camera_disable_zoom)
+OLD_DOF=$(get r_depth_of_field); OLD_DOF=${OLD_DOF:-1}   # глубина резкости размывает фон
 [ -n "$OLD_HB" ] && [ -n "$OLD_EDGE" ] && [ -n "$OLD_ZOOM" ] || { echo "не прочитал настройки доты"; exit 1; }
-trap 'C "dota_hud_healthbars $OLD_HB" "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM"' EXIT
-C "dota_hud_healthbars 0" "dota_camera_edgemove 0" "dota_camera_disable_zoom 1"
+trap 'C "dota_hud_healthbars $OLD_HB" "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "r_depth_of_field $OLD_DOF"' EXIT
+C "dota_hud_healthbars 0" "dota_camera_edgemove 0" "dota_camera_disable_zoom 1" "r_depth_of_field 0"
 C "a8_reload"; sleep 4
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/focus.ps1")"
 FILES=()

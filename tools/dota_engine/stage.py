@@ -8,7 +8,7 @@
 # движение описывается «от якоря к якорю», а сами якоря решатель может сдвигать.
 # Проверки по всей длине: все в воде (если задана карта воды), на суше — не в скале, здании или дереве
 # (если задана карта земли), модели не касаются в мире, никто не обрезан краем кадра, фигуры не
-# сливаются в одно пятно. Решатель понемногу раздвигает нарушителей.
+# сливаются в одно пятно, луч камеры к каждой фигуре не задевает деревья и землю. Решатель понемногу раздвигает нарушителей.
 #
 # Любой герой или модель: st.actor(..., hero="kunkka") или model="models/..vmdl", parts=[...].
 # Земля: Stage(..., ground=Ground()) — z актёров считается от земли (в игре — GetGroundHeight), без неё
@@ -37,6 +37,8 @@ def water_map():
 
 
 class Stage:
+    AIR = 120                                  # выше этого над своей высотой фигура в полёте
+
     def __init__(self, cam, dur, kf=10, ref=None, wet=None, min_gap=185, min_wet=60,
                  safe_x=0.72, safe_y=0.96, max_over=0.35, under=-110, max_h=0.62, ground=None, trees=None):
         self.cam, self.dur, self.kf = cam, dur, kf
@@ -119,7 +121,8 @@ class Stage:
 
     # ---- проверки ----
     def problems(self):
-        n = int(self.dur * self.kf) + 1
+        ck = min(self.kf, 10)                              # проверки — 10 раз в секунду, ключи пишутся с kf
+        n = int(self.dur * ck) + 1
         names = list(self.actors); P = {k: self.pts(k) for k in names}
         worst = {}                                         # (вид, кто) -> (насколько, время)
 
@@ -127,16 +130,20 @@ class Stage:
             if v > worst.get((kind, who), (0, 0))[0]:
                 worst[(kind, who)] = (v, t)
         for i in range(n):
-            t = i / self.kf; cm = self.cam_at(t)
+            t = i / ck; cm = self.cam_at(t)
             pos = {k: self.keys(k, t, P[k]) for k in names}
             vis = {k: pos[k][2] - self.actors[k]["z"] >= self.under for k in names}
             box = {k: cm.box(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]), *self.actors[k]["box"])
                    for k in names if vis[k]}
-            aims = [(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]) + MID) for k in names if vis[k]]
-            if self.cam_blocked(cm, aims=aims):
+            if self.cam_blocked(cm):                        # сама камера в деревьях — менять её путь
                 note("камера", ("камера",), 1.0, t)
+            else:
+                for k in names:                            # дерево или земля на луче к фигуре — её сдвинуть
+                    if vis[k] and self.cam_blocked(cm, aims=[(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]) + MID)]):
+                        note("луч", (k,), 1.0, t)
+            air = {k: pos[k][2] - self.actors[k]["z"] > self.AIR for k in names}   # в полёте
             for k in names:
-                if self.wet and self.wet(*pos[k][:2]) < self.min_wet:
+                if self.wet and not air[k] and self.wet(*pos[k][:2]) < self.min_wet:
                     note("вода", (k,), self.min_wet - self.wet(*pos[k][:2]), t)
                 if self.ground and self.ground.blocked(*pos[k][:2]):
                     note("занято", (k,), 1.0, t)
@@ -148,9 +155,11 @@ class Stage:
             for x in range(len(names)):
                 for y in range(x + 1, len(names)):
                     a, b = names[x], names[y]
-                    note("касание", (a, b), self.min_gap - math.dist(pos[a][:2], pos[b][:2]), t)
-                    if a in box and b in box:
-                        note("пятно", (a, b), overlap(box[a], box[b]) - self.max_over, t)
+                    note("касание", (a, b), self.min_gap - math.dist(pos[a][:3], pos[b][:3]), t)   # с высотой: летящий не касается стоящих
+                    if a in box and b in box and not air[a] and not air[b]:   # пролёт перед кем-то — движение, не слипание
+                        ha, hb = box[a][3] - box[a][1], box[b][3] - box[b][1]
+                        if max(ha, hb) < 2 * min(ha, hb):          # передний план вдвое крупнее заднего — не пятно
+                            note("пятно", (a, b), overlap(box[a], box[b]) - self.max_over, t)
         return {k: v for k, v in worst.items() if v[0] > 0}
 
     def _center(self, name, t):
@@ -160,8 +169,10 @@ class Stage:
     def _shift(self, name, dx, dy):
         if self.actors[name]["world"]:                     # точки карты заданы жёстко — не двигаем
             return
+        c = self.cam_at(self.ref)                          # не выше горизонта (с запасом): иначе точка улетает в бесконечность
+        top = -c.f[2] / math.hypot(c.f[0], c.f[1]) / c.ty + 0.12
         for a in self.actors[name]["anchors"]:
-            a[0] += dx; a[1] += dy
+            a[0] += dx; a[1] = max(a[1] + dy, top)
 
     def solve(self, step=0.015, rounds=900):
         """Раздвигает якоря, пока все проверки не пройдут. Печатает, кого и насколько сдвинул."""
@@ -188,6 +199,9 @@ class Stage:
                                 -step * (b[3] > self.safe_y) + step * (b[1] < -self.safe_y))
                 elif kind == "крупно":                     # слишком близко к камере — дальше, то есть выше в кадре
                     self._shift(who[0], 0, -step)
+                elif kind == "луч":                        # к середине кадра и ближе: там луч идёт над открытым местом
+                    k = who[0]; c = self._center(k, t)
+                    self._shift(k, -step * (1 if c[0] > 0 else -1), step * 0.5)
                 elif kind == "вода":                       # к камере: вода в кадре лежит внизу
                     self._shift(who[0], 0, step)
                 elif kind == "занято":                     # к ближайшему свободному месту, в долях кадра
@@ -222,7 +236,7 @@ class Stage:
         for k, a in self.actors.items():
             for _, sq, *_r in a["anims"]:
                 key = (a["model"], sq)
-                assert key not in seen, f"анимация {sq} повторяется у {k} и {seen[key]}"
+                assert seen.get(key, k) == k, f"анимация {sq} повторяется у {k} и {seen[key]}"
                 seen[key] = k
         scene = {"duration": self.dur, "actors": {}, "camera": {}}
         for name in self.actors:

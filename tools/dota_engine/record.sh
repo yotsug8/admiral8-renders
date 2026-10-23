@@ -60,7 +60,9 @@ done
 [ "${FR:-0}" -ge "$NEED" ] || { echo "дубль не записан за 3 попытки"; exit 1; }
 FF=$(py -3.11 -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())")
 SKYOUT="$OUT/${NAME}_sky"; rm -rf "${SKYOUT:?}"
-py -3.11 "$HERE/sky_comp.py" "$M" "$SKYOUT" "$REPO/_game/sky/sky_dota_000_psd_ceb026ce_ft.png" "$NEED"
+# мод держит последнюю позу ещё 2 кадра (a8_play), скачок камеры — после них: от скачка отсчитать NEED + 2,
+# в ролик пойдут первые NEED
+py -3.11 "$HERE/sky_comp.py" "$M" "$SKYOUT" "$REPO/_game/sky/sky_dota_000_psd_ceb026ce_ft.png" "$((NEED + 2))"
 # кадр игры 1080×1440 → вертикаль 810×1440 по центру → 1080×1920 (выше 1440 окно не поднять — высота экрана; растяжение с лёгкой резкостью)
 "$FF" -y -loglevel error -framerate 30 -i "$SKYOUT/f%05d.png" -frames:v "$NEED" \
   -vf "crop=810:1440:135:0,scale=1080:1920:flags=lanczos,unsharp=5:5:0.45:5:5:0" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p "$OUT/$NAME.mp4"

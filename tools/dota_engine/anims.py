@@ -52,6 +52,8 @@ class Model:
         for ch in a["channels"]:
             s = a["samplers"][ch["sampler"]]; t = self._acc(s["input"]); v = self._acc(s["output"])
             path = ch["target"]["path"]
+            if path not in ("translation", "rotation", "scale"):   # веса морфов (мимика) — не кости
+                continue
             if path == "rotation":
                 vals = np.array([v[min(np.searchsorted(t, x), len(v) - 1)] for x in T])
             else:

@@ -13,6 +13,7 @@ sys.path.insert(0, HERE)
 from stage import Stage
 from ground_map import Ground
 from hero_parts import hero_model
+from framing import Framer
 
 DUR = 15.0
 P, S = (-4250.0, -3220.0), (-3350.0, -3220.0)      # Пудж и Снайпер: поляна на светлой стороне, 900 ед. по прямой
@@ -73,6 +74,7 @@ def tip(t, p):                                      # острие крюка: �
 
 
 st = Stage(cam, DUR, kf=30, ground=Ground(), trees=(-3800, -3200, 2400, 0))
+AUTO = os.environ.get("AUTO")       # 1 — камера автокамерой (framing.py), иначе — ручная cam(t)
 st.actor("pudge", None, stand(P, 0),
          [(0, "pudge_idle"), (3.8, "a8_p1"), (8.6, "pudge_idle"), (T_THROW, "pudge_meathook_start"),
           (round(T_THROW + 0.9, 2), "pudge_meathook_end"), (round(T_THROW + 1.5, 2), "pudge_idle"), (13.1, "a8_p2")],
@@ -82,5 +84,10 @@ st.actor("sniper", None, sniper,
          hero="sniper", model="models/a8/sniper/sniper_a8.vmdl", parts=hero_model("sniper")[1], world=[S])
 st.actor("tip", None, tip, [(0, "idle")], model="models/development/invisiblebox.vmdl", parts=[], world=[P])
 st.fx(round(T_REL, 2), "particles/units/heroes/hero_pudge/pudge_meathook.vpcf", at="pudge", to="tip", dur=round(T_BACK - T_REL + 0.15, 2))
+if AUTO:
+    fr = Framer(st, line=("pudge", "sniper"), side=-1)        # камера к югу от линии Пудж → Снайпер, как в ручных планах
+    fr.skip = {"tip"}
+    st.cam = fr.cut([(0.0, fr.over("sniper", "pudge")), (3.8, fr.close("pudge")), (8.5, fr.close("sniper")),
+                     (11.2, fr.over("pudge", "sniper")), (13.1, fr.two("pudge", "sniper"))])
 print(f"  крюк вылетел {T_REL:.2f} с, долетел {T_HIT:.2f}, притянул {T_BACK:.2f}")
 st.write()

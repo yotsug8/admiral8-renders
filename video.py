@@ -1,12 +1,12 @@
 """
 Ролик «несколько фактов о Доте»: озвучка, субтитры по словам, графика на HTML/CSS.
 
-Кадры рисует браузер (Playwright + Chromium) по шаблону facts_video.html.
+Кадры рисует браузер (Playwright + Chromium) по шаблону video.html.
 Python готовит данные: озвучку (Fish Audio, запасной — edge-tts), героев и иконки, звук.
 
 Запуск:
-    python facts_video.py episodes_fv/002.json out/facts_002.mp4    # рендер выпуска
-    python facts_video.py --takes episodes_fv/002.json out           # дубли озвучки на выбор
+    python video.py episodes/002.json out/002.mp4    # рендер выпуска
+    python video.py --takes episodes/002.json out           # дубли озвучки на выбор
 Локальная проверка вёрстки без сети: FV_QA_ONLY=1 FV_FAKE_TTS=1 FV_QA_DIR=папка
 """
 import asyncio
@@ -525,7 +525,7 @@ def resolve_scene(node, heroes, items):
 
 def prepare(ep, heroes, items):
     segs, t = [], 0.0
-    parts = ep["facts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
+    parts = ep["parts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
     if ep.get("hook"):                       # короткий хук перед фактами
         parts = [dict(ep["hook"], hook=True)] + parts
     for i, f in enumerate(parts):
@@ -547,7 +547,7 @@ def prepare(ep, heroes, items):
                        at=[], watermark=WATERMARK)
         elif f.get("outro"):
             thumbs = []
-            for fact in ep["facts"]:
+            for fact in ep["parts"]:
                 v = fact.get("visual", {})
                 # Для сетки и таймера — иконка предмета, иначе герой; thumb в выпуске — явная картинка
                 if v.get("thumb"):
@@ -626,7 +626,7 @@ def _render_chunk(args):
                                      "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])   # WebGL для 3D-моделей
         page = br.new_page(viewport={"width": 1080, "height": 1920}, device_scale_factor=1)
         page.on("pageerror", lambda e: problems.append(f"JS-ошибка: {e}"))
-        page.goto((HERE / "facts_video.html").as_uri())
+        page.goto((HERE / "video.html").as_uri())
         page.evaluate("d => init(d)", data)
         cdp = page.context.new_cdp_session(page)
         for fi in frames:
@@ -898,7 +898,7 @@ def voice_takes(ep, out_dir, n=3):
     global FISH_SPEED
     base_speed = FISH_SPEED
     # Задание: имя, текст, число дублей, темп (speed во фрагменте — свой темп, например медленнее для хука)
-    jobs = [(f"f{i}", f["voice"], n, f.get("speed")) for i, f in enumerate(ep["facts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
+    jobs = [(f"f{i}", f["voice"], n, f.get("speed")) for i, f in enumerate(ep["parts"], 1) if not f.get("voice_file")]   # выбранные не трогаем
     for name in ("hook", "outro"):           # хук и финал — тоже дублями, если дубль ещё не выбран
         part = ep.get(name)
         if part and part.get("voice") and not part.get("voice_file"):
@@ -983,9 +983,9 @@ def audition(ep_path, voices_arg, out_dir):
     for k, (vid, name) in enumerate(pairs, 1):
         ep = json.loads(json.dumps(base))
         ep["voice_id"] = vid.strip()
-        ep["facts"] = ep["facts"][:1]
+        ep["parts"] = ep["parts"][:1]
         ep.pop("outro", None)
-        for part in [ep.get("hook")] + ep["facts"]:
+        for part in [ep.get("hook")] + ep["parts"]:
             if part:
                 part.pop("voice_file", None)
         for f in WORK.glob("v*.mp3"):

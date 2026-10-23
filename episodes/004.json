@@ -26,7 +26,7 @@
     "speed": 1.0,
     "voice_file": "voice/004/hook.mp3"
   },
-  "facts": [
+  "parts": [
     {
       "layout": "xray",
       "headline": "Досмотр|в *аэропорту*",

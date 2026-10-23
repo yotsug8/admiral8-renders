@@ -97,10 +97,10 @@ def grade(img):
     a = np.asarray(img).astype(np.float32) / 255
     bright = np.clip((a - 0.72) / 0.28, 0, 1) * a                     # светлое — мягко светится
     glow = np.asarray(Image.fromarray((bright * 255).astype(np.uint8)).resize((W // 4, H // 4)).filter(ImageFilter.GaussianBlur(9)).resize((W, H))).astype(np.float32) / 255
-    a = 1 - (1 - a) * (1 - glow * 0.55)                               # «экран»
+    a = 1 - (1 - a) * (1 - glow * 0.2)                                # «экран» — слабо: сильнее белит картинку
     a = a * VIG
     img = Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8))
-    img = ImageEnhance.Contrast(img).enhance(1.08); img = ImageEnhance.Color(img).enhance(1.12)
+    img = ImageEnhance.Contrast(img).enhance(1.05); img = ImageEnhance.Color(img).enhance(1.05)
     return img
 
 

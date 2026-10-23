@@ -46,6 +46,25 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
+def fix_hero_mats(objs):
+    """Материалы героев из выгрузки S2V: прозрачность и металличность там взяты из маски доты (detailmask) — кожа
+    просвечивала (дыра под шеей Пуджа) и блестела как металл. Непрозрачно, не металл, матовость кожи."""
+    for o in objs:
+        for ms in getattr(o, "material_slots", []):
+            m = ms.material
+            if not m or not m.node_tree or m.get("_a8"):
+                continue
+            b = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+            if not b:
+                continue
+            for name, val in (("Alpha", 1.0), ("Metallic", 0.0), ("Roughness", 0.62), ("Emission Strength", 0.0)):
+                for l in list(b.inputs[name].links):
+                    m.node_tree.links.remove(l)
+                b.inputs[name].default_value = val
+            b.inputs["Specular IOR Level"].default_value = 0.35
+            m.surface_render_method = "DITHERED"; m["_a8"] = 1
+
+
 def glb_of(model):
     return os.path.join(RND, model.replace("/", "_").replace(".vmdl", ".glb"))
 
@@ -58,7 +77,8 @@ for name, a in D["actors"].items():
         continue
     info = TROUPE[a["hero"]]
     objs, acts = imp(os.path.join(RND, os.path.basename(info["glb"])))   # с текстурами
-    HERO_OBJS.update(objs)
+    HERO_OBJS.update(objs); fix_hero_mats(objs)
+    head = next((o for o in objs if o.type == "MESH" and o.data.shape_keys), None)   # голова с морфами лица
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
     PARTS = []
@@ -67,7 +87,7 @@ for name, a in D["actors"].items():
     for p in a["parts"] or []:
         if not os.path.exists(glb_of(p)):
             continue
-        po, _ = imp(glb_of(p)); HERO_OBJS.update(po)
+        po, _ = imp(glb_of(p)); HERO_OBJS.update(po); fix_hero_mats(po)
         # как в игре (bone merge): скелет части остаётся, его кости с теми же именами повторяют кости тела,
         # свои кости части (шапка, борода, полы плаща) едут за ними — иначе такие куски отрываются и пропадают
         for pa in [o for o in po if o.type == "ARMATURE"]:
@@ -80,11 +100,16 @@ for name, a in D["actors"].items():
         pa.parent = root; pa.matrix_world = arm.matrix_world.copy()
     # свои анимации (рот под голос и т. п.) — тем же скриптом, что для доты
     if any(str(x[1]).startswith("a8_") for x in a["anims"]):
-        os.environ["A8_WHO"] = a["hero"]
+        os.environ["A8_WHO"] = a["hero"]; os.environ["A8_FACE"] = "1" if head else ""   # рот морфами — челюсть костью слабее
         g = {"arm": arm, "sc": sc, "ACTS": ACTS, "FPS": FPS, "IMPORT_FPS": FPS, "__file__": os.path.join(REPO, "tools", "blender", "hook_talk.py")}
         exec(compile(open(g["__file__"], encoding="utf-8").read(), g["__file__"], "exec"), g)
         ACTS.update(g["CUSTOM"])
     ACTORS[name] = dict(arm=arm, root=root, acts=ACTS, info=info)
+    if head:                                          # мимика: речь по тексту и громкости, эмоции из сценария, моргание
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import face
+        face.animate(head, name, D, json.load(open(os.path.join(os.path.dirname(SCENE), "voices.json"), encoding="utf-8")), FPS, N,
+                     jaw=0.75 if info.get("jaw") else 1.0)
 
     # анимации — дорожками NLA: каждая следующая поверх, разовые держат последний кадр
     ad = arm.animation_data or arm.animation_data_create(); ad.action = None
@@ -203,9 +228,14 @@ def light(kind, rot, energy, color):
     d = bpy.data.lights.new(kind + str(energy), kind); d.energy = energy; d.color = color
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
-light("SUN", (50, 0, 45), 4.6, (1.0, 0.84, 0.64))          # тёплое солнце с юго-востока (камеры в основном с юга)
-light("SUN", (68, 0, -150), 4.2, (0.58, 0.74, 1.0))         # холодный контровой с северо-запада — обводит силуэты
-LIGHT_KEY, LIGHT_RIM = 900, 1400                            # свет плана (Вт): ключевой у камеры, контровой за героем
+# свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
+LOOK = dict(sun=4.0, back=4.2, key=800, rim=1100, expo=0.15, view="AgX", look="AgX - Punchy", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
+    k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else float(v)
+bg.inputs["Strength"].default_value = LOOK["sky"]
+light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце с юго-востока (камеры в основном с юга)
+light("SUN", (68, 0, -150), LOOK["back"], (0.58, 0.74, 1.0))   # холодный контровой с северо-запада — обводит силуэты
+LIGHT_KEY, LIGHT_RIM = LOOK["key"], LOOK["rim"]             # свет плана (Вт): ключевой у камеры, контровой за героем
 
 # ---------- камера
 # Если в сцене есть планы (shots: [начало, план, кто, на кого, настройки]) — камера и свет плана считаются здесь,
@@ -395,8 +425,8 @@ try:                                                      # свечение с�
 except Exception as e:
     print('композитор:', e)
 try:
-    sc.view_settings.view_transform = "AgX"; sc.view_settings.look = "AgX - Medium High Contrast"
-    sc.view_settings.exposure = 0.35 if MAP else 0.0          # карта темнее поля: тени деревьев и зданий
+    sc.view_settings.view_transform = LOOK["view"]; sc.view_settings.look = LOOK["look"]
+    sc.view_settings.exposure = LOOK["expo"]
 except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"

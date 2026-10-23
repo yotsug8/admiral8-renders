@@ -12,6 +12,7 @@ MW = arm.matrix_world
 X = Vector((1, 0, 0)); Z = Vector((0, 0, 1))
 VOICES = json.load(open(os.environ.get("A8_VOICES", r"C:\Users\kunkk\Desktop\ClaudeCode\admiral8-renders\_game\hook\voices.json"), encoding="utf-8"))
 WHO = os.environ.get("A8_WHO", "pudge")
+JAW_K = 0.35 if os.environ.get("A8_FACE") else 1.0      # в Blender рот ведут морфы лица (face.py), кость челюсти — только помогает
 
 
 def sm(a, b, t):
@@ -84,7 +85,7 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0):
         base_pose(base, t)
         v = loud[k]; dv = loud[k] - loud[max(0, k - 3)]
         turn("head", X, R(nod * max(0.0, dv) * 3 + 2 * v))
-        turn("jaw0_0", X, R(jaw_max * v + grin * sm(end, end + 0.4, t)))
+        turn("jaw0_0", X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
     return pose
 
 

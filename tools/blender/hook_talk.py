@@ -53,6 +53,16 @@ def smooth_series(fn, n, up=0.6, down=0.25):
     return vals
 
 
+def soft(vals, tau=0.25):
+    """Сглаживание без запаздывания (вперёд и назад, постоянная времени tau с): движения головы без рывков."""
+    a = 1 - math.exp(-1 / (FPS * tau)); out = list(vals)
+    for rng in (range(1, len(out)), range(len(out) - 2, -1, -1)):
+        for i in rng:
+            j = i - 1 if rng.step > 0 else i + 1
+            out[i] = out[j] + (out[i] - out[j]) * a
+    return out
+
+
 def bake(name, dur, pose):
     n = int(dur * FPS); keyed = []
     for k in range(n + 1):
@@ -80,25 +90,35 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0):
     """Пудж говорит: челюсть по громкости, кивок на нарастании громкости; grin — рот чуть приоткрыт после реплики."""
     loud = smooth_series(voice(line, off), int(dur * FPS))
     end = off + VOICES[line]["dur"]
+    # кивок — только на ударениях (рост громкости), в 3,5 раза слабее, чем было, и сглажен 0,25 с: без рывков
+    nods = soft([(nod * max(0.0, loud[k] - loud[max(0, k - 3)]) * 3 + 2 * loud[k]) / 3.5 for k in range(len(loud))])
+
+    base_pose(base, 0.0)                                 # покачивание головы самой стойки — приглушить к её начальной позе
+    calm = {b.name: b.rotation_quaternion.copy() for b in arm.pose.bones if b.name == "head" or "neck" in b.name}
 
     def pose(t, k):
         base_pose(base, t)
-        v = loud[k]; dv = loud[k] - loud[max(0, k - 3)]
-        turn("head", X, R(nod * max(0.0, dv) * 3 + 2 * v))
+        for nm, q in calm.items():
+            b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65)
+        bpy.context.view_layer.update()
+        v = loud[k]
+        turn("head", X, R(nods[k]))
         turn("jaw0_0", X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
     return pose
 
 
 if WHO == "pudge":
-    CUSTOM = {"a8_p1": bake("a8_p1", 4.9, talker("portrait", "p1", 0.1, 4.9)),
+    CUSTOM = {"a8_p1": bake("a8_p1", 4.9, talker("pudge_idle", "p1", 0.1, 4.9)),
               "a8_p2": bake("a8_p2", 2.4, talker("pudge_idle", "p2", 0.5, 2.4, jaw_max=26, nod=7, grin=7))}
 else:
-    def look_gun(t, k, loud=smooth_series(voice("s2", 0.3), int(3.2 * FPS))):
+    _l = smooth_series(voice("s2", 0.3), int(3.2 * FPS))
+    _sway = soft([1.6 * _l[k] * math.sin(k / FPS * 4) for k in range(len(_l))])   # покачивание головой, пока говорит — слабо и плавно
+
+    def look_gun(t, k):
         base_pose("sniper_idle", t)
-        d = sm(0.15, 0.7, t)                                   # опустил голову к винтовке
-        v = loud[k]
+        d = sm(0.1, 1.1, t)                                    # опускает голову к винтовке — за секунду
         turn("neck_1", X, R(14 * d))
-        turn("head", X, R(26 * d + 6 * v * math.sin(t * 9)))   # пока говорит — покачивает головой
-        turn("head", Z, R(5 * v * math.sin(t * 6)))
+        turn("head", X, R(26 * d + _sway[k]))
+        turn("head", Z, R(_sway[k] * 0.8))
     CUSTOM = {"a8_s2": bake("a8_s2", 3.2, look_gun)}
 LOOPING = {k: False for k in CUSTOM}

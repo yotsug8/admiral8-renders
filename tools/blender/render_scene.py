@@ -65,6 +65,80 @@ def fix_hero_mats(objs):
             m.surface_render_method = "DITHERED"; m["_a8"] = 1
 
 
+def close_neck(head, objs):
+    """Шея: у героев доты голова и тело — отдельные сетки, под подбородком щель (камера игры её не видит — всегда сверху).
+    Нижняя открытая кромка головы соединяется перемычкой с ближайшими точками тела; вершины перемычки привязаны к костям,
+    как эти точки тела, — шея тянется при любом наклоне головы."""
+    import bmesh
+    from mathutils.kdtree import KDTree
+    body = [o for o in objs if o.type == "MESH" and o is not head and len(o.data.vertices) > 50]
+    if not body:
+        return
+    bm = bmesh.new(); bm.from_mesh(head.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0003)   # glTF режет сетку по швам развёртки — сшить, иначе кромка дробится
+    edges = [e for e in bm.edges if len(e.link_faces) == 1]
+    loops, used = [], set()                               # открытые кромки → петли
+    for e0 in edges:
+        if e0.index in used:
+            continue
+        loop = [e0.verts[0]]; used.add(e0.index); v = e0.verts[1]
+        while v is not loop[0]:
+            loop.append(v)
+            nxt = next((e for e in v.link_edges if len(e.link_faces) == 1 and e.index not in used), None)
+            if nxt is None:
+                break
+            used.add(nxt.index); v = nxt.other_vert(v)
+        if len(loop) > 5:
+            loops.append(loop)
+    if not loops:
+        bm.free(); return
+    neck = min(loops, key=lambda L: sum(v.co.z for v in L) / len(L))   # самая нижняя петля — шея
+    if neck[0].co.z > sum(v.co.z for v in bm.verts) / len(bm.verts):  # не ниже середины головы — это не шея
+        bm.free(); return
+    # ближайшие точки тела (в координатах головы; у всех частей героя одна система)
+    pts = []
+    for o in body:
+        M = head.matrix_world.inverted() @ o.matrix_world
+        for v in o.data.vertices:
+            pts.append((M @ v.co, o, v.index))
+    kd = KDTree(len(pts))
+    for i, (co, _, _) in enumerate(pts):
+        kd.insert(co, i)
+    kd.balance()
+    ctr = sum((v.co for v in neck), Vector()) / len(neck)
+    dl = bm.verts.layers.deform.verify(); uvl = bm.loops.layers.uv.active
+    shapes = list(bm.verts.layers.shape.values())
+    gname = {g.index: g.name for g in head.vertex_groups}
+    new = []
+    hh = max(v.co.z for v in bm.verts) - min(v.co.z for v in bm.verts)   # высота головы
+    for v in neck:
+        tgt = v.co + (ctr - v.co) * 0.3                    # «юбка» вниз и внутрь — уходит в грудь, щели не остаётся
+        tgt.z -= 0.35 * hh
+        co, o, vi = pts[kd.find(tgt)[1]]                   # кости — как у ближайшей точки тела
+        w = bm.verts.new(tgt)
+        for sh in shapes:
+            w[sh] = tgt.copy()
+        for g in o.data.vertices[vi].groups:              # кости — как у этой точки тела
+            name = o.vertex_groups[g.group].name
+            if name not in head.vertex_groups:
+                head.vertex_groups.new(name=name)
+            w[dl][head.vertex_groups[name].index] = g.weight
+        new.append(w)
+    for i in range(len(neck)):
+        j = (i + 1) % len(neck)
+        try:
+            f = bm.faces.new((neck[i], neck[j], new[j], new[i]))
+        except ValueError:
+            continue
+        if uvl:                                           # текстура — с кромки подбородка
+            src = next(iter(neck[i].link_loops))[uvl].uv.copy()
+            for l in f.loops:
+                l[uvl].uv = src
+    bmesh.ops.recalc_face_normals(bm, faces=[f for f in bm.faces if any(v in new for v in f.verts)])
+    bm.to_mesh(head.data); bm.free(); head.data.update()
+    print(f"  шея {head.name[:30]}: перемычка из {len(neck)} вершин, петель-кромок {len(loops)}: {sorted(len(L) for L in loops)}")
+
+
 def glb_of(model):
     return os.path.join(RND, model.replace("/", "_").replace(".vmdl", ".glb"))
 
@@ -79,6 +153,8 @@ for name, a in D["actors"].items():
     objs, acts = imp(os.path.join(RND, os.path.basename(info["glb"])))   # с текстурами
     HERO_OBJS.update(objs); fix_hero_mats(objs)
     head = next((o for o in objs if o.type == "MESH" and o.data.shape_keys), None)   # голова с морфами лица
+    if head:
+        close_neck(head, objs)
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
     PARTS = []
@@ -313,7 +389,7 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
         ang = o.get("ang", 35)
         def at(a_):
             C = max((H + rotz(face, sg * a_) * d for sg in (1, -1)), key=SOUTH)
-            C.z = H.z - 0.06 * d                       # чуть снизу — герой весомее
+            C.z = H.z + o.get("cz", 0.05) * d            # на уровне глаз, чуть сверху: снизу у героев доты виден стык головы и тела (игра смотрит сверху)
             return C
         C, hide = clear([at(a_) for a_ in (ang, ang + 15, ang - 15, ang + 30)], [H], who)
         T = H - Vector((0, 0, vis * 0.17))             # глаза — в верхней трети

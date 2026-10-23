@@ -100,4 +100,16 @@ if os.environ.get("DUMP"):                           # для рендера в 
                         (3.8, "close", "pudge", None, {"size": 0.85, "fov": 34}),
                         (8.5, "close", "sniper", None, {"size": 0.85, "fov": 34}),
                         (11.2, "over", "pudge", "sniper", {"fov": 30, "xf": 0.8, "up": 0.3}),
-                        (12.75, "over", "sniper", "pudge", {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45})])     # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75
+                        (12.75, "over", "sniper", "pudge", {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45})],
+                 voices={k: [("pudge" if k[0] == "p" else "sniper"), v] for k, v in VOICE.items()},
+                 # мимика (морфы лица, tools/blender/face.py): [начало, конец, кто, {морф: вес}]
+                 faces=[(0.0, 3.8, "sniper", {"squint": 0.5, "cheekRaiser": 0.4, "lipCornerPuller": 0.3, "browLowerer": 0.3}),   # целится, доволен собой
+                        (0.0, 3.8, "pudge", {"browLowerer": 0.3}),
+                        (3.8, 5.45, "pudge", {"innerBrowRaiser": 0.9, "outerBrowRaiser": 1.0, "upperLidRaiser": 0.7}),         # «Дальше всех?» — не верит
+                        (5.45, 8.6, "pudge", {"browLowerer": 0.7, "lipCornerPuller": 0.55, "cheekRaiser": 0.6, "squint": 0.4, "sharpLipPuller": 0.3}),  # «Мой крюк…» — ухмылка
+                        (8.5, 11.2, "sniper", {"innerBrowRaiser": 0.9, "lipCornerDepressor": 0.6, "eyeDown": 0.4, "chinRaiser": 0.3}),   # «А у меня…» — сник
+                        (8.6, 11.2, "pudge", {"lipCornerPuller": 0.4, "squint": 0.3}),
+                        (11.2, 12.7, "pudge", {"browLowerer": 0.9, "noseWrinkler": 0.6, "lipStretcher": 0.5, "jawClencher": 1.0}),       # бросок — усилие
+                        (11.65, 12.25, "sniper", {"upperLidRaiser": 1.0, "innerBrowRaiser": 1.0, "outerBrowRaiser": 1.0, "jawOpen": 0.4}),  # видит крюк
+                        (12.25, 15.0, "sniper", {"eyeClosed": 0.55, "browLowerer": 0.5, "jawOpen": 0.25, "lipStretcher": 0.4}),     # оглушён
+                        (12.75, 15.0, "pudge", {"lipCornerPuller": 1.0, "cheekRaiser": 0.7, "dimpler": 0.4, "outerBrowRaiser": 0.5, "squint": 0.3})])  # «Привет.»     # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75

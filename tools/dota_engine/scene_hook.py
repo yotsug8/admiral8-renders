@@ -93,4 +93,5 @@ print(f"  крюк вылетел {T_REL:.2f} с, долетел {T_HIT:.2f}, п
 st.write()
 if os.environ.get("DUMP"):                           # для рендера в Blender (tools/blender/render_scene.py)
     st.dump_json(os.path.join(HERE, "..", "..", "_game", "hook", "scene.json"),
-                 focus=[(0.0, "pudge"), (3.8, "pudge"), (8.5, "sniper"), (11.2, "sniper"), (13.1, "pudge")])
+                 focus=[(0.0, "pudge"), (3.8, "pudge"), (8.5, "sniper"), (11.2, "sniper"), (13.1, "pudge")],
+                 map="maps/radiant_field.glb")     # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75

@@ -24,8 +24,16 @@ sc = bpy.context.scene
 sc.render.fps = FPS                                   # до импорта: анимации glb лягут в кадры 30 в секунду
 
 
+MAP = D.get("map")                                    # кусок настоящей карты (tools/map_crop.mjs) — оси как у выгрузки карты
+
+
 def W(x, y, z):
+    if MAP:                                           # Blender x = игра y, Blender y = −игра x (так выгружена карта)
+        return Vector((y * S, -x * S, z * S))
     return Vector((x * S, y * S, (z - BASE) * S))
+
+
+YAW0 = 0 if MAP else 90                               # поворот модели: при осях карты поворот доты переходит как есть
 
 
 def imp(path):
@@ -97,7 +105,7 @@ for name, a in D["actors"].items():
         st.blend_type = "REPLACE"
     # положение и поворот покадрово (модель смотрит в −Y, поворот доты 0 — на восток)
     for f, (x, y, z, pi, ya, ro) in enumerate(a["keys"]):
-        root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + 90))
+        root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
 
 # ---------- цепь крюка: от правой руки Пуджа (weapon_rt_1) к острию (актёр tip)
@@ -138,26 +146,34 @@ for t0, fxname, at, z, dur, *rest in D["fx"]:
         for o in (link, head):
             o.hide_render = True; o.keyframe_insert("hide_render", frame=f)
 
-# ---------- земля, деревья карты, небо
-bpy.ops.mesh.primitive_plane_add(size=400, location=(D["actors"][next(iter(D["actors"]))]["keys"][0][0] * S,
-                                                    D["actors"][next(iter(D["actors"]))]["keys"][0][1] * S, -0.02))
-ground = bpy.context.object; gm = bpy.data.materials.new("ground"); gm.use_nodes = True; nt = gm.node_tree
-bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
-tc = nt.nodes.new("ShaderNodeTexCoord"); mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (90, 90, 90)
-img = nt.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(os.path.join(REPO, "assets", "tex", "forest.jpg"))
-nt.links.new(tc.outputs["UV"], mp.inputs["Vector"]); nt.links.new(mp.outputs["Vector"], img.inputs["Vector"])
-noise = nt.nodes.new("ShaderNodeTexNoise"); noise.inputs["Scale"].default_value = 0.35; noise.inputs["Detail"].default_value = 6
-grass = nt.nodes.new("ShaderNodeValToRGB")                      # трава: два оттенка зелёного пятнами
-grass.color_ramp.elements[0].color = (0.07, 0.17, 0.03, 1); grass.color_ramp.elements[1].color = (0.20, 0.34, 0.06, 1)
-nt.links.new(noise.outputs["Fac"], grass.inputs["Fac"])
-mix = nt.nodes.new("ShaderNodeMixRGB"); mix.blend_type = "OVERLAY"; mix.inputs["Fac"].default_value = 0.6   # трава + фактура земли
-nt.links.new(grass.outputs["Color"], mix.inputs["Color1"]); nt.links.new(img.outputs["Color"], mix.inputs["Color2"])
-nt.links.new(mix.outputs["Color"], bsdf.inputs["Base Color"])
-bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.25
-nt.links.new(img.outputs["Color"], bump.inputs["Height"]); nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
-bsdf.inputs["Roughness"].default_value = 0.95; ground.data.materials.append(gm)
+# ---------- земля: настоящая карта (если есть) или поле; деревья карты; небо
+MAP_HAS_TREES = False
+if MAP:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import dota_map
+    mobjs = dota_map.load(os.path.join(REPO, "_game", MAP), os.path.join(REPO, "_game", "world"))
+    MAP_HAS_TREES = any("tree" in o.name.lower() for o in mobjs)
+    print("  карта:", MAP, "объектов", len(mobjs), "деревья в карте" if MAP_HAS_TREES else "деревьев в карте нет")
+else:
+    bpy.ops.mesh.primitive_plane_add(size=400, location=(D["actors"][next(iter(D["actors"]))]["keys"][0][0] * S,
+                                                        D["actors"][next(iter(D["actors"]))]["keys"][0][1] * S, -0.02))
+    ground = bpy.context.object; gm = bpy.data.materials.new("ground"); gm.use_nodes = True; nt = gm.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    tc = nt.nodes.new("ShaderNodeTexCoord"); mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (90, 90, 90)
+    img = nt.nodes.new("ShaderNodeTexImage"); img.image = bpy.data.images.load(os.path.join(REPO, "assets", "tex", "forest.jpg"))
+    nt.links.new(tc.outputs["UV"], mp.inputs["Vector"]); nt.links.new(mp.outputs["Vector"], img.inputs["Vector"])
+    noise = nt.nodes.new("ShaderNodeTexNoise"); noise.inputs["Scale"].default_value = 0.35; noise.inputs["Detail"].default_value = 6
+    grass = nt.nodes.new("ShaderNodeValToRGB")                      # трава: два оттенка зелёного пятнами
+    grass.color_ramp.elements[0].color = (0.07, 0.17, 0.03, 1); grass.color_ramp.elements[1].color = (0.20, 0.34, 0.06, 1)
+    nt.links.new(noise.outputs["Fac"], grass.inputs["Fac"])
+    mix = nt.nodes.new("ShaderNodeMixRGB"); mix.blend_type = "OVERLAY"; mix.inputs["Fac"].default_value = 0.6   # трава + фактура земли
+    nt.links.new(grass.outputs["Color"], mix.inputs["Color1"]); nt.links.new(img.outputs["Color"], mix.inputs["Color2"])
+    nt.links.new(mix.outputs["Color"], bsdf.inputs["Base Color"])
+    bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.25
+    nt.links.new(img.outputs["Color"], bump.inputs["Height"]); nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+    bsdf.inputs["Roughness"].default_value = 0.95; ground.data.materials.append(gm)
 
-trees = json.load(open(os.path.join(os.path.dirname(SCENE), "trees.json"), encoding="utf-8"))
+trees = [] if MAP_HAS_TREES else json.load(open(os.path.join(os.path.dirname(SCENE), "trees.json"), encoding="utf-8"))
 tcol = {}
 for x, y, z, model, yaw, scale in trees:
     if model not in tcol:
@@ -168,7 +184,7 @@ for x, y, z, model, yaw, scale in trees:
             c.objects.link(o)
         tcol[model] = c
     e = bpy.data.objects.new("tree", None); e.instance_type = "COLLECTION"; e.instance_collection = tcol[model]
-    sc.collection.objects.link(e); e.location = W(x, y, z); e.rotation_euler = (0, 0, math.radians(yaw)); e.scale = (scale,) * 3
+    sc.collection.objects.link(e); e.location = W(x, y, z); e.rotation_euler = (0, 0, math.radians(yaw + YAW0 - 90)); e.scale = (scale,) * 3
 
 world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True; wn = world.node_tree
 bg = next(n for n in wn.nodes if n.type == "BACKGROUND")
@@ -235,6 +251,7 @@ except Exception as e:
     print('композитор:', e)
 try:
     sc.view_settings.view_transform = "AgX"; sc.view_settings.look = "AgX - Medium High Contrast"
+    sc.view_settings.exposure = 0.35 if MAP else 0.0          # карта темнее поля: тени деревьев и зданий
 except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"

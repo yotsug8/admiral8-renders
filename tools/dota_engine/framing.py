@@ -52,7 +52,7 @@ class Framer:
         hero = next((h[len("npc_dota_hero_"):] for h in self.st.heroes if a["model"] and h[len("npc_dota_hero_"):] in a["model"]), None)
         if hero:
             return cast(hero)[2]
-        return dict(head_z=120, top=140)
+        return dict(head_z=120, top=140, radius=60)
 
     def _side_ok(self, cam_xy, t):
         if not self.line:
@@ -61,7 +61,7 @@ class Framer:
         cross = (b[0] - a[0]) * (cam_xy[1] - a[1]) - (b[1] - a[1]) * (cam_xy[0] - a[0])
         return 0.0 if cross * self.side > 0 else 1.0
 
-    def _solve(self, t, wants, pitch, zoff, look_from, D=250.0):
+    def _solve(self, t, wants, pitch, zoff, look_from, D=250.0, widths=()):
         """wants: [(мировая точка, x, y, вес)] — где в кадре должна оказаться точка. Подбираются положение камеры (x, y)
         и поворот; точка взгляда — на расстоянии D перед камерой (дальность сама по себе ничего не решает)."""
         ctr = np.mean([w[0][:2] for w in wants], 0)
@@ -80,10 +80,15 @@ class Framer:
                 sx, sy = cm.screen(*P)
                 c += w * ((sx - x) ** 2 + (0 if y is None else (sy - y) ** 2))
             c += 5 * self._side_ok(cm.pos[:2], t)
+            for P, r, mx in widths:                       # ширина героя в кадре (с одеждой: плащ, наплечники, крюк)
+                fwd = cm.view(*P)[0]
+                hw = r / max(fwd, 1.0) / cm.tx
+                if hw > mx:
+                    c += 6 * (hw - mx) ** 2 + 0.6 * (hw - mx)
             for n in self.st.actors:                     # не влезать в героя: ближе его габарита (руки, оружие) нельзя
                 if n in self.skip:
                     continue
-                q = self._pos(n, t); r = max(90.0, 0.75 * self._info(n)["top"])
+                q = self._pos(n, t); r = 1.6 * self._info(n).get("radius", 80) + 40   # ширина героя (руки, горб) + запас
                 dd = math.hypot(cm.pos[0] - q[0], cm.pos[1] - q[1])
                 if dd < r:
                     c += 4 * (1 - dd / r)
@@ -115,52 +120,120 @@ class Framer:
                 return q
         return q
 
-    # ---- планы: каждый — функция t0 → камера (решается в момент склейки)
+    # ---- планы — операторские шаблоны: камера считается формулами (свободный подбор уводил её в траву и вдаль)
+    def _aim(self, C, L, t, aims):
+        """Камера в точке C (мир) смотрит в точку L → (цель x, y, высота взгляда над землёй, дальность, наклон, поворот)."""
+        gz = self.st.gz
+        C = np.array(C, float); C[2] = max(C[2], gz(C[0], C[1]) + 70)          # не ниже травы
+        L = np.array(L, float)
+        h0 = math.hypot(L[0] - C[0], L[1] - C[1])
+        C[2] = max(C[2], L[2] + h0 * math.tan(math.radians(1.5)))   # вверх дота смотреть не даёт (берёт свой наклон — вид сверху)
+        dirv = (L - C) / (np.linalg.norm(L - C) + 1e-6)
+        L = C + dirv * 250                                 # точка взгляда на том же луче в 250 ед.: большая дальность у доты ломает вид
+        d = L - C; h = math.hypot(d[0], d[1])
+        yaw = math.degrees(math.atan2(-d[0], d[1])); pitch = math.degrees(math.atan2(-d[2], h))
+        cam = (float(L[0]), float(L[1]), float(L[2] - gz(L[0], L[1])), float(math.hypot(h, d[2])), float(pitch), float(yaw))
+        cm = Cam((L[0], L[1], L[2]), cam[3], pitch, yaw)
+        bad = (self.st.cam_blocked(cm, aims=[tuple(a) for a in aims]) if self.st.ground else None) or (self._side_ok(C[:2], t) and "не та сторона")
+        if self.st.ground and (self.st.ground.blocked(C[0], C[1], 80) or gz(C[0], C[1]) > C[2] - 40):
+            bad = bad or "камера в скале, здании или под землёй"
+        return cam, bad or None
+
+    def _best(self, variants):
+        """Из вариантов (камера, помеха): без помех; иначе — хотя бы не в стене и без деревьев (пусть с другой стороны
+        от линии героев); иначе первый. Помеха печатается."""
+        for c, bad in variants:
+            if not bad:
+                return c, 0.0
+        for c, bad in variants:
+            if bad == "не та сторона":
+                return c, 0.5
+        print("    все варианты с помехой:", variants[0][1])
+        return variants[0][0], 1.0
+
+    @staticmethod
+    def _rot(v, deg):
+        a = math.radians(deg); return np.array([v[0] * math.cos(a) - v[1] * math.sin(a), v[0] * math.sin(a) + v[1] * math.cos(a)])
+
     def close(self, name, size=0.55):
+        """Крупно: перед героем под углом 35° (с нужной стороны), на уровне глаз; глаза — в верхней трети."""
         def shot(t0):
-            i = self._info(name); P = self._pos(name, t0)
-            eye = P + [0, 0, i["head_z"] + 8]; chest = P + [0, 0, i["head_z"] * (1 - size)]
-            lf = self._front(name, t0, 35)
-            return self._solve(t0, [(eye, 0.0, -0.33, 3), (chest, 0.0, 0.62, 1)], 2.0, i["head_z"], lf, 150)
+            i = self._info(name); P = self._pos(name, t0); yaw = math.radians(self.st.keys(name, t0)[4])
+            face = np.array([math.cos(yaw), math.sin(yaw)])
+            eye = P + [0, 0, i["head_z"] + 8]
+            span = i["head_z"] * size + 8                         # от груди до глаз
+            d = span / ((0.33 + 0.62) * 0.653)                    # глаза на −0.33, грудь на +0.62 доли полукадра
+            d = max(d, 1.6 * i.get("radius", 60) + 30)
+            L = eye + [0, 0, -0.14 * d * 0.653 * 2 / 2]           # смотрим чуть ниже глаз: глаза уходят в верхнюю треть
+            vs = []
+            for ang in (35, -35, 50, -50, 20, -20):
+                dirv = self._rot(face, ang)
+                C = np.array([P[0] + dirv[0] * d, P[1] + dirv[1] * d, eye[2]])
+                vs.append(self._aim(C, L, t0, [eye]))
+            return self._best(vs)
         return shot
 
     def over(self, fg, bg):
+        """Через плечо: за передним на продолжении линии от дальнего, сдвиг вбок на ширину переднего; смотрим на дальнего."""
         def shot(t0):
-            fi, bi = self._info(fg), self._info(bg)
-            F, B = self._pos(fg, t0), self._pos(bg, t0)
-            back = F[:2] + (F[:2] - B[:2]) / (np.linalg.norm(F[:2] - B[:2]) + 1e-6) * 300
-            def make(sg):
-                wants = [(F + [0, 0, fi["head_z"] * 0.85], 0.55 * sg, 0.2, 2),            # плечо — сбоку, не на весь кадр
-                         (B + [0, 0, bi["head_z"]], -0.12 * sg, -0.18, 3), (B, -0.12 * sg, 0.35, 1)]
-                return self._solve(t0, wants, 5.0, fi["head_z"] * 0.75, back)
-            return self._either(make)
+            fi, bi = self._info(fg), self._info(bg); F, B = self._pos(fg, t0), self._pos(bg, t0)
+            u = (F[:2] - B[:2]) / (np.linalg.norm(F[:2] - B[:2]) + 1e-6); n = np.array([-u[1], u[0]])
+            r = 1.8 * fi.get("radius", 60)
+            L = B + [0, 0, bi["head_z"] * 0.75]
+            vs = []
+            for up in (0.95, 1.4, 1.9):                 # выше — если позади переднего ступени или склон
+                for sg in (1, -1):
+                    for back, side in ((2.6, 1.15), (2.0, 1.0), (1.5, 0.9), (1.2, 0.8), (1.0, 0.7), (0.6, 0.5), (0.45, 0.45), (3.2, 1.3)):
+                        x, y = F[0] + u[0] * r * back + n[0] * r * side * sg, F[1] + u[1] * r * back + n[1] * r * side * sg
+                        C = np.array([x, y, max(F[2], self.st.gz(x, y)) + fi["head_z"] * up])
+                        vs.append(self._aim(C, L, t0, [L]))
+            c, err = self._best(vs)
+            if err >= 1.0:                                   # за передним некуда встать (скалы, деревья) — общий план двоих
+                print(f"    через плечо {fg} не встать — план «двое»")
+                return self.two(fg, bg)(t0)
+            return c, err
         return shot
 
     def two(self, a, b):
+        """Двое: на перпендикуляре к середине между героями; оба с одеждой помещаются в 70 % ширины кадра."""
         def shot(t0):
             ai, bi = self._info(a), self._info(b); A, B = self._pos(a, t0), self._pos(b, t0)
-            mid = (A[:2] + B[:2]) / 2; d = B[:2] - A[:2]; n = np.array([-d[1], d[0]]) / (np.linalg.norm(d) + 1e-6)
-            lf = mid + n * 500 * self.side
-            def make(sg):
-                sa, sb = -0.36 * sg, 0.36 * sg
-                wants = [(A + [0, 0, ai["head_z"]], sa, -0.25, 2), (B + [0, 0, bi["head_z"]], sb, -0.25, 2),
-                         (A + [0, 0, ai["head_z"] * 0.3], sa, 0.75, 0.5), (B + [0, 0, bi["head_z"] * 0.3], sb, 0.75, 0.5)]
-                return self._solve(t0, wants, 3.0, max(ai["head_z"], bi["head_z"]) * 0.8, lf)
-            return self._either(make)
+            mid = (A + B) / 2; u = (B[:2] - A[:2]) / (np.linalg.norm(B[:2] - A[:2]) + 1e-6); n = np.array([-u[1], u[0]])
+            half = np.linalg.norm(B[:2] - A[:2]) / 2 + 1.6 * max(ai.get("radius", 60), bi.get("radius", 60))
+            tx = 0.653 * 1080 / 1440
+            d = half / (0.70 * tx)
+            hz = max(ai["head_z"], bi["head_z"])
+            L = mid + [0, 0, hz * 0.6]
+            vs = []
+            for sg in (self.side, -self.side):
+                for ang in (0, 15, -15):
+                    nn = self._rot(n * sg, ang)
+                    C = np.array([mid[0] + nn[0] * d, mid[1] + nn[1] * d, mid[2] + hz * 0.85])
+                    vs.append(self._aim(C, L, t0, [A + [0, 0, ai["head_z"]], B + [0, 0, bi["head_z"]]]))
+            return self._best(vs)
         return shot
 
     def wide(self, *names):
+        """Общий: все целиком, сбоку от линии героев, чуть сверху."""
         def shot(t0):
             P = [self._pos(n, t0) for n in names]; I = [self._info(n) for n in names]
-            ctr = np.mean([p[:2] for p in P], 0)
+            ctr = np.mean(P, 0)
             if len(names) > 1:
-                d = P[-1][:2] - P[0][:2]; n = np.array([-d[1], d[0]]) / (np.linalg.norm(d) + 1e-6)
+                d = P[-1][:2] - P[0][:2]; u = d / (np.linalg.norm(d) + 1e-6); n = np.array([-u[1], u[0]])
+                half = np.linalg.norm(d) / 2 + 2 * max(i.get("radius", 60) for i in I)
             else:
-                n = np.array([0.0, -1.0])
-            lf = ctr + n * 900 * self.side
-            xs = np.linspace(-0.45, 0.45, len(names)) if len(names) > 1 else [0.0]
-            wants = [(p + [0, 0, i["top"]], x, -0.1, 1) for p, i, x in zip(P, I, xs)] + [(p, x, 0.55, 1) for p, x in zip(P, xs)]
-            return self._solve(t0, wants, 8.0, 90, lf, 500)
+                n = np.array([0.0, -1.0]); half = 2.5 * I[0].get("radius", 60)
+            tx = 0.653 * 1080 / 1440
+            dist = max(half / (0.6 * tx), max(i["top"] for i in I) * 1.6 / (2 * 0.653 * 0.6))
+            top = max(i["top"] for i in I)
+            L = ctr + [0, 0, top * 0.45]
+            vs = []
+            for sg in (self.side, -self.side):
+                for ang in (0, 20, -20):
+                    nn = self._rot(n * sg, ang)
+                    C = np.array([ctr[0] + nn[0] * dist, ctr[1] + nn[1] * dist, ctr[2] + top * 1.1])
+                    vs.append(self._aim(C, L, t0, [p + [0, 0, i["head_z"]] for p, i in zip(P, I)]))
+            return self._best(vs)
         return shot
 
     def cut(self, plan):

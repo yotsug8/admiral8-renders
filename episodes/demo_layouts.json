@@ -1,0 +1,14 @@
+{
+  "_": "Образец общих раскладок video.html (duo, block, grid, notes) — для проверки tools/check.py и как пример полей (README).",
+  "parts": [
+    { "layout": "duo", "headline": "Два героя|и *связь*", "voice": "Пудж тянет Кунку крюком через всю реку.",
+      "visual": { "heroes": ["pudge", "kunkka"], "caption": "крюк через реку" } },
+    { "layout": "block", "headline": "Один герой|и *число*", "voice": "У Пуджа больше всего здоровья на старте.",
+      "visual": { "heroes": ["pudge"], "number": "1300", "label": "дальность крюка" } },
+    { "layout": "grid", "headline": "Сетка|*иконок*", "voice": "Двенадцать Танго — это целый лес.",
+      "visual": { "number": "12 Танго", "icons": "tango", "count": 12, "label": "целый *лес*" } },
+    { "layout": "notes", "headline": "Патч|*смайликами*", "voice": "Патч описали смайликами. Расшифровка: Блинк стал дешевле.",
+      "visual": { "version": "7.33", "emoji": ["🗡️ ⬇️ 💰", "🏃 ➡️ 🌲"], "emoji_note": "так выглядел патч", "icon": "blink",
+                  "decoded": "Блинк дешевле", "cues": { "decode": "расшифровка" } } }
+  ]
+}

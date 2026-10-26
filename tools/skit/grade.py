@@ -3,7 +3,7 @@
 # (без мигания): строится по кадрам ролика, применяется к каждому кадру.
 #   py -3.11 tools/skit/grade.py target                     цель из примеров → _game/study/grade_target.json
 #   py -3.11 tools/skit/grade.py <видео> <выход.mp4>        прогнать ролик (для проверки; в сведении — GRADE=match в mix.py)
-import glob, json, os, subprocess, sys
+import glob, json, math, os, subprocess, sys
 import numpy as np
 import imageio_ffmpeg
 
@@ -57,16 +57,19 @@ def target():
 
 class Grade:
     """Кривая яркости и усиление цвета под цель; strength — доля (1 — точно под примеры)."""
-    def __init__(self, src_frames, strength=0.4):   # 0,85 — пересвет (участник: «засвечено сильно»)
+    def __init__(self, src_frames, strength=0.4, color=1.0, warm_hue=-4.0):
+        # strength — яркость (0,85 — пересвет, участник: «засвечено сильно»); color — цвет отдельно (кожа героев в текстурах
+        # доты блёклая, игровой шейдер её досыщает); warm_hue — тёплые оттенки к красному (кожа была бежевой: 44° против 40°)
         t = json.load(open(TARGET)) if os.path.exists(TARGET) else target()
         s = measure(src_frames)
         xs = np.array([0.0] + s["L"] + [100.0]); ys = np.array([0.0] + t["L"] + [100.0])
         ys = xs + (ys - xs) * strength
         xs, idx = np.unique(xs, return_index=True); ys = np.maximum.accumulate(ys[idx])   # монотонно
         self.lut = np.interp(np.arange(0, 100.25, 0.25), xs, ys)
-        k = [min(2.2, max(0.8, 1 + (tc / max(sc, 1) - 1) * strength)) for tc, sc in zip(t["C"], s["C"])]
+        k = [min(2.2, max(0.8, 1 + (tc / max(sc, 1) - 1) * color)) for tc, sc in zip(t["C"], s["C"])]
+        self.hue = math.radians(warm_hue)
         self.kc = k                                                     # усиление цвета: тени, полутона, света
-        self.db = (t["b_mid"] - s["b_mid"]) * strength * 0.5            # теплота — вполовину (у примеров свет разный)
+        self.db = (t["b_mid"] - s["b_mid"]) * color * 0.3            # теплота — вполовину (у примеров свет разный)
         self.info = f"тени/полутона/света: цвет ×{k[0]:.2f} ×{k[1]:.2f} ×{k[2]:.2f}, теплее на {self.db:.1f}; " \
                     f"яркость {s['L'][3]:.0f}→{np.interp(s['L'][3], xs, ys):.0f} (25%), {s['L'][5]:.0f}→{np.interp(s['L'][5], xs, ys):.0f} (50%)"
 
@@ -76,6 +79,10 @@ class Grade:
         w_sh = np.clip((40 - l) / 20, 0, 1); w_hi = np.clip((l - 60) / 20, 0, 1); w_mid = 1 - w_sh - w_hi
         k = (self.kc[0] * w_sh + self.kc[1] * w_mid + self.kc[2] * w_hi)[..., None]
         lab[..., 1:] *= k
+        if self.hue:                                                    # тёплые (10–75°) поворачиваются к красному
+            h = np.arctan2(lab[..., 2], lab[..., 1]); w = np.clip(1 - np.abs(np.degrees(h) - 42) / 33, 0, 1) * self.hue
+            a_, b_ = lab[..., 1].copy(), lab[..., 2].copy()
+            lab[..., 1] = a_ * np.cos(w) - b_ * np.sin(w); lab[..., 2] = a_ * np.sin(w) + b_ * np.cos(w)
         C = np.hypot(lab[..., 1], lab[..., 2]); top = 62.0              # мягкий потолок: серое поднимается, а уже яркое
         lab[..., 1:] *= (top * np.tanh(C / top) / np.maximum(C, 1e-3))[..., None]   # (кровь, фартук) не кислотное
         lab[..., 2] += self.db * w_mid

@@ -494,14 +494,6 @@ try:
     sc.eevee.bokeh_max_size = 260
 except AttributeError:
     pass
-try:                                                      # свечение светлого и виньетка
-    sc.use_nodes = True; ct = sc.node_tree
-    rl = next(n for n in ct.nodes if n.type == 'R_LAYERS'); comp = next(n for n in ct.nodes if n.type == 'COMPOSITE')
-    gl = ct.nodes.new('CompositorNodeGlare'); gl.glare_type = 'FOG_GLOW'; gl.threshold = 0.85; gl.size = 7
-    lens = ct.nodes.new('CompositorNodeLensdist'); lens.inputs['Distortion'].default_value = -0.012; lens.inputs['Dispersion'].default_value = 0.004
-    ct.links.new(rl.outputs['Image'], gl.inputs['Image']); ct.links.new(gl.outputs['Image'], lens.inputs['Image']); ct.links.new(lens.outputs['Image'], comp.inputs['Image'])
-except Exception as e:
-    print('композитор:', e)
 try:
     sc.view_settings.view_transform = LOOK["view"]; sc.view_settings.look = LOOK["look"]
     sc.view_settings.exposure = LOOK["expo"]
@@ -509,14 +501,18 @@ except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"
 os.makedirs(OUT, exist_ok=True)
-frames = PICK if PICK is not None else range(N)
 import time
 t_start = time.time()
-for i, f in enumerate(frames):
-    sc.frame_set(f)
-    sc.render.filepath = os.path.join(OUT, f"f{f:05d}.png")
-    bpy.ops.render.render(write_still=True)
-    if i % 30 == 0:
-        el = time.time() - t_start
-        print(f"РЕНДЕР кадр {f} ({i + 1}/{len(frames)}), {el / (i + 1):.1f} с/кадр", flush=True)
-print("ГОТОВО", OUT, len(frames), "кадров", f"{time.time() - t_start:.0f} с")
+if PICK is None:                                          # весь ролик — анимацией: сцена не пересобирается на каждом кадре,
+    sc.frame_start, sc.frame_end = 0, N - 1               # готовые кадры пропускаются (продолжение после сбоя; A8_REDO=1 — заново)
+    sc.render.use_overwrite = bool(os.environ.get("A8_REDO"))
+    sc.render.use_placeholder = True                      # параллельный второй Blender возьмёт другие кадры
+    sc.render.filepath = os.path.join(OUT, "f#####")
+    bpy.ops.render.render(animation=True)
+    print("ГОТОВО", OUT, N, "кадров", f"{time.time() - t_start:.0f} с")
+else:
+    for i, f in enumerate(PICK):
+        sc.frame_set(f)
+        sc.render.filepath = os.path.join(OUT, f"f{f:05d}.png")
+        bpy.ops.render.render(write_still=True)
+    print("ГОТОВО", OUT, len(PICK), "кадров", f"{time.time() - t_start:.0f} с")

@@ -86,15 +86,16 @@ def bake(name, dur, pose):
     return act
 
 
-def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0):
-    """Пудж говорит: челюсть по громкости, кивок на нарастании громкости; grin — рот чуть приоткрыт после реплики."""
+def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="jaw0_0"):
+    """Пудж говорит: челюсть по громкости, кивок на нарастании громкости; grin — рот чуть приоткрыт после реплики.
+    Без челюсти (jaw=None) — только голова: кивки на ударениях."""
     loud = smooth_series(voice(line, off), int(dur * FPS))
     end = off + VOICES[line]["dur"]
     # кивок — только на ударениях (рост громкости), в 3,5 раза слабее, чем было, и сглажен 0,25 с: без рывков
     nods = soft([(nod * max(0.0, loud[k] - loud[max(0, k - 3)]) * 3 + 2 * loud[k]) / 3.5 for k in range(len(loud))])
 
     base_pose(base, 0.0)                                 # покачивание головы самой стойки — приглушить к её начальной позе
-    calm = {b.name: b.rotation_quaternion.copy() for b in arm.pose.bones if b.name == "head" or "neck" in b.name}
+    calm = {b.name: b.rotation_quaternion.copy() for b in arm.pose.bones if b.name == head or "neck" in b.name}
 
     def pose(t, k):
         base_pose(base, t)
@@ -102,12 +103,15 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0):
             b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65)
         bpy.context.view_layer.update()
         v = loud[k]
-        turn("head", X, R(nods[k]))
-        turn("jaw0_0", X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
+        turn(head, X, R(nods[k]))
+        if jaw:
+            turn(jaw, X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
     return pose
 
 
-if WHO == "pudge":
+if globals().get("A8_LIB"):                             # подключён как библиотека (tools/blender/skit_talk.py)
+    CUSTOM = {}
+elif WHO == "pudge":
     CUSTOM = {"a8_p1": bake("a8_p1", 4.9, talker("pudge_idle", "p1", 0.1, 4.9)),
               "a8_p2": bake("a8_p2", 2.4, talker("pudge_idle", "p2", 0.5, 2.4, jaw_max=26, nod=7, grin=7))}
 else:

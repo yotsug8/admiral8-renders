@@ -64,7 +64,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1):
     for name, (who, off) in (D.get("voices") or {}).items():
         if who != actor or name not in voices:
             continue
-        marks, loud = _speech(voices[name]["text"], voices[name]["env"], off, fps)
+        marks, loud = _speech(voices[name].get("say", voices[name]["text"]), voices[name]["env"], off, fps)
         for f in range(n):
             t = f / fps
             near = [(math.exp(-((t - tm) / 0.045) ** 2 / 2), v) for tm, v in marks if abs(t - tm) < 0.2]

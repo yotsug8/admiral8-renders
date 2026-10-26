@@ -1,0 +1,17 @@
+# «Крюк» в виде сценария: Снайпер хвастается дальностью атаки (550), крюк Пуджа бьёт на 1300 (scripts/npc/heroes).
+# Пудж стоит в 900 ед. — дальше выстрела, ближе крюка.
+# py -3.11 tools/skit/skit.py skits/kryuk.txt         пробы
+# py -3.11 tools/skit/skit.py skits/kryuk.txt --all   весь ролик
+название: kryuk
+карта: radiant_field                  # node tools/map_crop.mjs _game/world/world.gltf _game/maps/radiant_field.glb -81.8 -96.5 75
+герой pudge  -4250 -3220
+герой sniper -3350 -3220 стойка sniper_idle_aggressive
+голос pudge  sapi=Pavel
+голос sniper sapi=Pavel
+
+sniper: Ближе не подходи. Я стреляю дальше всех.   | доволен | вверх
+pudge:  Дальше всех?                               | не верит
+pudge:  Мой крюк — {1300|тысяча триста}.            | ухмылка
+sniper: А у меня... {550|пятьсот пятьдесят}.        | сник | вниз
+pudge > крюк sniper
+pudge:  Привет.                                    | улыбка

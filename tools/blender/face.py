@@ -54,7 +54,7 @@ def _speech(text, env, off, fps):
     return out, loud
 
 
-def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1):
+def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1.0):
     kb = head.data.shape_keys.key_blocks if head.data.shape_keys else None
     if kb is None:
         return
@@ -119,7 +119,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1):
     for k, vals in track.items():
         if max(vals) < 0.02:
             continue
-        sk = kb[k]
+        sk = kb[k]; top = jaw_cap if k == "jawOpen" else 1.0   # рот не шире, чем держит модель (у Пуджа дальше рвётся кожа)
         for f, v in enumerate(vals):
-            sk.value = min(1.0, max(0.0, v)); sk.keyframe_insert("value", frame=f)
+            sk.value = min(top, max(0.0, v)); sk.keyframe_insert("value", frame=f)
     print(f"  мимика {actor}: морфов в работе", sum(1 for v in track.values() if max(v) >= 0.02))

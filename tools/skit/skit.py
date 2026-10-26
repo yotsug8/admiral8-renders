@@ -42,7 +42,7 @@ EMO = {
 }
 EMO.update({"оглушен": EMO["оглушён"], "удивлен": EMO["удивлён"], "злость": EMO["злой"], "радость": EMO["улыбка"]})
 MOOD = {"вверх": "up", "вниз": "down"}
-SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie", "наезд": "push"}
+SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie", "наезд": "push", "средний": "medium"}
 # настройки планов render_scene.py (раздел «камера») — как в «Крюке»
 P_EST = {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}   # общий через плечо, длинный объектив
 P_CLOSE = {"size": 0.85, "fov": 34}
@@ -52,7 +52,11 @@ P_END = {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45}
 # селфи (эталон solevix, arbuzprodota): широкий объектив вплотную, лицо на 50–80 % ширины кадра, снизу на небо, камера качается
 # наезд: вполоборота на уровне глаз, объектив нормальный (без искажения селфи); на смене эмоции — от плеч к лицу
 P_PUSH = {"fov": 40, "width0": 0.38, "width": 0.78, "below": 0.05, "ang": 32, "sway": 0.35, "aim": -0.15, "fstop": 2.0}
+# средний: герой по колено с жестом, камера чуть снизу (небо за головой), фон размыт слабо, камера спокойная
+P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim": -0.1, "fstop": 4.0}
 P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
+OWN_GESTURES = {"крюк", "кулак", "плечи"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
+gest_t = lambda e: e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.2 if e["emo2"] else e["t0"]   # жест — на смене эмоции
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
 HOOK_V = 1600.0                                     # скорость крюка (scripts/npc/heroes/npc_dota_hero_pudge.txt)
 
@@ -83,15 +87,17 @@ def parse(path):
             sc["events"].append({"kind": "hook", "who": m[1], "to": m[3]})
         elif m := re.match(r"(\w+):\s*(.+)$", line):
             text, *tags = [x.strip() for x in re.split(r"\|(?![^{]*\})", m[2])]   # «|» внутри {1300|тысяча триста} — не метка
-            ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None}
+            ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None, "gesture": None}
             for tg in tags:
                 tg = tg.lower()
-                if tg in EMO: ev["emo"] = tg
+                if gm := re.match(r"жест\s+([a-zа-яё0-9_]+)(?:\s+([\d.]+))?$", tg):   # жест на смене эмоции (или с начала):
+                    ev["gesture"] = (gm[1], float(gm[2] or 1.0))                  # свой (skit_talk.GESTURES) или анимация игры
+                elif tg in EMO: ev["emo"] = tg
                 elif len(two := [x.strip() for x in re.split(r"→|>", tg)]) == 2 and all(x in EMO for x in two):
                     ev["emo"], ev["emo2"] = two                   # «ухмылка → крик»: вторая — с середины реплики
                 elif tg in MOOD: ev["mood"] = MOOD[tg]
                 elif tg in SHOT: ev["shot"] = SHOT[tg]
-                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи, наезд)")
+                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи, наезд, средний; жест <анимация> [с])")
             sc["events"].append(ev)
         else:
             raise err("не понял строку")
@@ -160,6 +166,8 @@ def shots(sc, lines, hooks):
             plan = (t, "close", who, None, dict(P_CLOSE))
         elif e["shot"] == "selfie":
             plan = (t, "selfie", who, None, dict(P_SELFIE))
+        elif e["shot"] == "medium":
+            plan = (t, "selfie", who, None, dict(P_MEDIUM))
         elif e["shot"] == "push":                         # камера та же, что селфи (render_scene), но наезд на смене эмоции
             a = e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.15 if e["emo2"] else e["t0"]
             plan = (t, "selfie", who, None, dict(P_PUSH, push=[round(a, 2), round(a + 0.45, 2)]))
@@ -252,8 +260,13 @@ def build(sc, V, folder):
         talk[k].append({"name": "a8_" + e["name"], "base": base, "line": e["name"], "off": round(e["t0"] - a0, 2), "dur": d,
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
                         "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
-                        **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {})})
+                        **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
+                        **({"gest": [{"kind": e["gesture"][0], "at": round(gest_t(e) - a0, 2), "len": e["gesture"][1]}]}
+                           if e["gesture"] and e["gesture"][0] in OWN_GESTURES else {})})
         anims[k] += [(a0, "a8_" + e["name"]), (round(a0 + d, 2), sc["cast"][k]["stance"] or base)]
+        if e["gesture"] and e["gesture"][0] not in OWN_GESTURES:   # анимация игры — если к месту (рот — морфами), потом стойка
+            g, glen = e["gesture"]; g0 = gest_t(e)
+            anims[k] += [(round(g0, 2), g), (round(g0 + glen + 0.5, 2), sc["cast"][k]["stance"] or base)]
     for h in hooks:
         anims[h["who"]] += [(h["t0"], "pudge_meathook_start"), (round(h["t0"] + 0.9, 2), "pudge_meathook_end"),
                             (round(h["t0"] + 1.5, 2), info[h["who"]]["idle"])]

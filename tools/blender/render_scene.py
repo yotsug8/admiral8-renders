@@ -184,6 +184,7 @@ def glb_of(model):
 
 
 # ---------- герои
+JAW_CAP = {"pudge": 0.55}                             # раскрытие рта морфом: дальше рот у модели не прорезан — кожа рвётся полосами
 ACTORS = {}
 HERO_OBJS = set()                                     # всё, из чего собраны герои: луч камеры сквозь них не проверяется
 for name, a in D["actors"].items():
@@ -228,7 +229,7 @@ for name, a in D["actors"].items():
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         import face
         face.animate(head, name, D, json.load(open(os.path.join(os.path.dirname(SCENE), "voices.json"), encoding="utf-8")), FPS, N,
-                     jaw=0.75 if info.get("jaw") else 1.0)
+                     jaw=0.75 if info.get("jaw") else 1.0, jaw_cap=JAW_CAP.get(a["hero"], 1.0))
 
     # анимации — дорожками NLA: каждая следующая поверх, разовые держат последний кадр
     ad = arm.animation_data or arm.animation_data_create(); ad.action = None
@@ -368,7 +369,7 @@ LOOK = dict(sun=4.0, back=4.2, key=1500, rim=1100, expo=0.7, amb=0.6, view="AgX"
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
-light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце с юго-востока (камеры в основном с юга)
+SUN = light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце; на планах — спереди-сбоку от камеры (ниже)
 light("SUN", (68, 0, -150), LOOK["back"], (0.58, 0.74, 1.0))   # холодный контровой с северо-запада — обводит силуэты
 LIGHT_KEY, LIGHT_RIM = LOOK["key"], LOOK["rim"]             # свет плана (Вт): ключевой у камеры, контровой за героем
 
@@ -532,6 +533,9 @@ if plans:
             h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
         L, _ = avg_head(lw, f0, f1)
         tocam = C - L; tocam.z = 0; tocam.normalize()
+        # солнце плана — спереди-сбоку от камеры, 45° над горизонтом: у лица ясная светлая сторона и форма (как в примерах)
+        sd = rotz(tocam, 40); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
+        SUN.keyframe_insert("rotation_euler", frame=f0)
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
             k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)
@@ -572,7 +576,7 @@ else:
             cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
         cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-for idb in [cam, cam_d, bpy.data.objects.get("key"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
+for idb in [cam, cam_d, SUN, bpy.data.objects.get("key"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
     if idb is None:
         continue
     for owner in (idb, getattr(idb, "data", None)):
@@ -615,7 +619,7 @@ for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):
 sc.render.resolution_x, sc.render.resolution_y = 1080, 1920
 sc.render.resolution_percentage = 50 if HALF else 100
 try:
-    sc.eevee.taa_render_samples = 24
+    sc.eevee.taa_render_samples = int(os.environ.get("A8_SAMPLES", 24))   # 64 — без зерна (пробы для сравнения с примерами)
     sc.eevee.bokeh_max_size = 260
 except AttributeError:
     pass

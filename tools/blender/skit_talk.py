@@ -8,7 +8,7 @@
 # Поза — игровая стойка, поверх неё повороты суставов в мире; ключи запекаются покадрово (bake).
 import json, math, os
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 R = math.radians
 MW = arm.matrix_world
@@ -28,6 +28,15 @@ def world(name):
 def turn(name, axis, ang):
     M = world(name); p = M.translation.copy()
     arm.pose.bones[name].matrix = MW.inverted() @ (Matrix.Translation(p) @ Matrix.Rotation(ang, 4, axis) @ Matrix.Translation(-p) @ M)
+    bpy.context.view_layer.update()
+
+
+def aim(root, tip, dirv, k):
+    """Развернуть кость root вокруг её начала так, чтобы tip (кость ниже по цепи) лёг на направление dirv; k — доля."""
+    p = world(root).translation.copy(); v0 = world(tip).translation - p
+    q = Quaternion().slerp(v0.rotation_difference(dirv.normalized() * v0.length), k)
+    M = world(root)
+    arm.pose.bones[root].matrix = MW.inverted() @ (Matrix.Translation(p) @ q.to_matrix().to_4x4() @ Matrix.Translation(-p) @ M)
     bpy.context.view_layer.update()
 
 
@@ -111,6 +120,31 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="
     return pose
 
 
+# Свои жесты (docs/ANIMATION.md: свои анимации, игровые — только если к месту): повороты костей в мире
+# (оси сцены: X — вбок, Y — назад от лица, Z — вверх; +X наклоняет вперёд-вниз), (кость, ось, градусы, дрожь°);
+# руку — прицелом: ("aim", плечо, кисть, направление) — кисть ложится на направление при любой стойке.
+# Вход 0,25 с с перелётом (рука «выстреливает»), удержание с дрожью кисти, выход 0,45 с.
+GESTURES = {
+    # «крюк»: рука с крюком выброшена к камере (вперёд, на своей стороне — лицо открыто) и трясёт им, корпус вперёд
+    "крюк": [("spine3", X, 6, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.45, -1, 0.05))), ("wrist_R", X, -15, 10),
+             ("head", X, -6, 0)],
+    # «кулак»: свободная рука сжата и поднята к плечу, плечи вверх
+    "кулак": [("clavicle_L", X, -10, 0), ("bicep_L", X, -40, 0), ("elbow_L", X, -70, 0), ("wrist_L", X, 10, 6)],
+    # «пожал плечами»: обе ключицы вверх, руки чуть в стороны, голова набок
+    "плечи": [("clavicle_R", Y, 12, 0), ("clavicle_L", Y, -12, 0), ("bicep_R", Y, 10, 0), ("bicep_L", Y, -10, 0), ("head", Y, 7, 0)],
+}
+
+
+def gesture_env(t, a, b):
+    if t <= a or t >= b + 0.45:
+        return 0.0
+    if t < a + 0.25:
+        x = (t - a) / 0.25; c = 1.7; return 1 + (c + 1) * (x - 1) ** 3 + c * (x - 1) ** 2   # ease-out-back: перелёт
+    if t <= b:
+        return 1.0
+    return 1 - sm(b, b + 0.45, t)
+
+
 TALK = json.loads(os.environ.get("A8_TALK", "[]"))
 MOOD = {"down": (14, 22), "up": (-5, -9)}              # (шея, голова) в градусах: наклон вперёд +
 
@@ -147,6 +181,15 @@ def speaker(s):
             turn(s["head"], Z, R(e * live * w(t, (0.27, 6.0), (0.63, 1.5))))
             turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
+        for g in s.get("gest") or []:                   # свои жесты поверх разговора
+            ge = gesture_env(t, g["at"], g["at"] + g["len"])
+            if ge:
+                for bone, ax, ang, wob in GESTURES[g["kind"]]:
+                    if bone == "aim":
+                        if ax in arm.pose.bones and ang in arm.pose.bones:
+                            aim(ax, ang, wob, min(1.0, ge))
+                    elif bone in arm.pose.bones:
+                        turn(bone, ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
     return full
 
 

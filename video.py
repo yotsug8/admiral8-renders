@@ -90,7 +90,7 @@ def fetch_image(path, cache_dir=None):
             return Image.open(BytesIO(data)).convert("RGBA")
         except Exception:
             continue
-    print("  нет картинки:", path.split("?")[0])
+    print("  ⚠ нет картинки на CDN:", path.split("?")[0])
     return None
 
 
@@ -339,7 +339,7 @@ def hero_cutout(key, heroes):
             from rembg import remove
             img = remove(img).convert("RGBA")
         except Exception as e:
-            print("  не удалось вырезать фон:", key, e)
+            print("  ⚠ не удалось вырезать фон:", key, e)
     bbox = img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
     if bbox:
         img = img.crop(bbox)
@@ -391,7 +391,7 @@ def anim_frames(key):
     from PIL import ImageFilter
     fs = sorted((HERE / "assets" / "anim" / key).glob("*.webp"))
     if not fs:
-        print("  нет анимации:", key)
+        print("  ⚠ нет анимации:", key)
     out_dir = WORK / f"anim_{key}"
     out_dir.mkdir(parents=True, exist_ok=True)
     res = []

@@ -7,7 +7,7 @@
 py -3.11 tools/skit/skit.py skits/<имя>.txt            голоса, scene.json, пробы (кадр середины каждого плана, лист probe.jpg)
 py -3.11 tools/skit/skit.py skits/<имя>.txt --all      весь ролик: кадры → mp4 → сведение (mix.py, GRADE=1)
 py -3.11 tools/skit/skit.py skits/<имя>.txt --plan     только голоса и scene.json
-py -3.11 tools/skit/skit.py skits/<имя>.txt --dota     ещё анимации разговора в DMX и сцена для движка доты
+py -3.11 tools/skit/skit.py skits/<имя>.txt --dota     ещё сцена для движка доты: анимации разговора в DMX, те же планы автокамерой
 ```
 Всё складывается в `_game/skits/<имя>/`. Сначала пробы, полный рендер — после «ок» (~2,5 с на кадр).
 

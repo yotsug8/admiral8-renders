@@ -180,6 +180,41 @@ def speaker(s):
     spine = next((b.name for nm in ("spine3", "spine_2", "spine2", "spine_1", "spine1") for b in arm.pose.bones if b.name.lower() == nm), None)
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
+    walk = s.get("walk")
+    if walk:
+        # шаг: бедро вперёд-назад, колено сгибается на выносе, стопа ровно, таз качается, руки в противоход, плечи скручиваются;
+        # частота — от скорости и длины ноги (шаг 0,7 ноги): ступни не скользят по земле
+        B = {b.name.lower(): b.name for b in arm.pose.bones}
+        leg = {sd: (B.get(f"thigh_{sd.lower()}") or B.get(f"hip_{sd.lower()}"), B.get(f"knee_{sd.lower()}"), B.get(f"ankle_{sd.lower()}"))
+               for sd in ("L", "R")}
+        base_pose(s["base"], 0.0)
+        thl, ank = leg["L"][0], leg["L"][2]
+        Lg = (world(thl).translation - world(ank).translation).length if thl and ank else 1.0
+        stride = 0.7 * Lg; wa, wl = walk["at"], walk["len"]
+
+        def stride_walk(t):
+            e_ = sm(wa, wa + 0.3, t) * (1 - sm(wa + wl - 0.3, wa + wl, t))
+            if e_ <= 0:
+                return
+            phi = math.pi * walk["v"] / stride * (t - wa)          # один период — два шага
+            for sd, sg in (("L", 1), ("R", -1)):
+                th, kn, an = leg[sd]
+                if not th:
+                    continue
+                a_th = -26 * sg * math.sin(phi); a_kn = 38 * max(0.0, sg * math.cos(phi)) + 6
+                turn(th, X, R(e_ * a_th))
+                if kn:
+                    turn(kn, X, R(e_ * a_kn))
+                if an:
+                    turn(an, X, R(-e_ * (a_th + a_kn) * 0.55))
+            for nm, sg in (("bicep_l", 1), ("bicep_r", -1)):
+                if nm in B:
+                    turn(B[nm], X, R(e_ * 16 * sg * math.sin(phi)))
+            if spine:
+                turn(spine, Z, R(e_ * 5 * math.sin(phi)))
+            rb = arm.pose.bones[0]; M = world(rb.name)               # таз: ниже в момент переноса веса
+            rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, e_ * 0.035 * Lg * math.cos(2 * phi)))) @ M)
+            bpy.context.view_layer.update()
 
     def full(t, k):
         pose(t, k)
@@ -198,6 +233,8 @@ def speaker(s):
             turn(s["head"], Z, R(e * live * w(t, (0.27, 6.0), (0.63, 1.5))))
             turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
+        if walk:                                        # свой шаг (после жестов: Т-поза верха, ноги шагают)
+            stride_walk(t)
         for g in s.get("gest") or []:                   # свои жесты поверх разговора
             ge = gesture_env(t, g["at"], g["at"] + g["len"], g["kind"] in SLOW)
             if ge:

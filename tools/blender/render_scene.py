@@ -656,6 +656,19 @@ for t0_, kind_, who_, *_r in SHOTS:
         print(f"  ДВИЖЕНИЕ {who_} {kind_}: поворот головы за кадр медиана {rs[len(rs) // 2]:.2f}°, макс {rs[-1]:.2f}°, "
               f"скачок {jerk:.2f}°; голова {min(wid) * 100:.0f}–{max(wid) * 100:.0f} % ширины кадра")
 
+if os.environ.get("A8_IDS"):                               # отладка: каждый объект — свой цвет (найти объект по пикселю)
+    ids = {}
+    for i, o in enumerate([o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render], 1):
+        m = bpy.data.materials.new(f"id{i}"); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
+        e = nt.nodes.new("ShaderNodeEmission"); outn = nt.nodes.new("ShaderNodeOutputMaterial")
+        e.inputs["Color"].default_value = ((i % 64) * 4 / 255, (i // 64 % 64) * 4 / 255, (i // 4096 % 64) * 4 / 255, 1)
+        nt.links.new(e.outputs[0], outn.inputs[0])
+        o.data = o.data.copy(); o.data.materials.clear(); o.data.materials.append(m)
+        ids[i] = o.name
+    sc.world = bpy.data.worlds.new("black"); sc.view_settings.view_transform = "Standard"; sc.view_settings.look = "None"
+    sc.view_settings.exposure = 0; sc.render.filter_size = 0; cam_d.dof.use_dof = False
+    os.makedirs(OUT, exist_ok=True); json.dump(ids, open(os.path.join(OUT, "ids.json"), "w", encoding="utf-8"), ensure_ascii=False)
+
 # ---------- рендер
 for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):
     try:

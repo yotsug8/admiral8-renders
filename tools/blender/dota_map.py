@@ -201,8 +201,10 @@ def load(glb, tex_dir, ground_z=None):
         names = [ms.material.name for ms in o.material_slots if ms.material]
         if any(bpy.data.materials[n].get("_water") for n in names) or any(n.startswith(("tools", "black")) for n in names):
             o.hide_render = True; o.hide_viewport = True
+        elif any(re.search(r"tree_(magical|blossoms)", n) for n in names):   # вариант дерева целиком: прозрачной была только
+            o.hide_render = True; o.hide_viewport = True                     # листва, голый ствол торчал чёрным столбом
     # камни и стены на скалах: самих скал в выгрузке нет (сверху, как в игре, не видно) — снизу они висят в воздухе
-    dg = bpy.context.evaluated_depsgraph_get(); floating = 0
+    dg = bpy.context.evaluated_depsgraph_get(); floating = 0; junk = 0
 
     def floats(c, low):
         """Под куском нет земли ближе 2 м; или земли нет вовсе (край вырезанной карты), а кусок выше героев."""
@@ -213,6 +215,11 @@ def load(glb, tex_dir, ground_z=None):
             continue
         if re.search(r"glow_\d", o.name):              # плоские карточки «свечения» — в игре мягкие, здесь квадраты
             o.hide_render = True; o.hide_viewport = True; floating += 1; continue
+        # служебное и эффекты, которых в игре так не видно (участник: «артефакты — объекты»): пни срубленных деревьев (stump),
+        # бирюзовые преломляющие кристаллы, карточки лучей света и пара (в Blender — светлые квадраты), птицы и рыбы
+        # в воздухе. Не трогать *_inspector: это и есть видимые деревья (без них листва висит клочками)
+        if re.search(r"stump|crystal\d*_refract|lightrays|vapors_|wildlife_", o.name, re.I):
+            o.hide_render = True; o.hide_viewport = True; junk += 1; continue
         if not re.search(r"stone_wall|cliff|rock|mod_radiant|mod_dire", o.name, re.I):
             continue
         # слитые меши (agg_merge) несут и землю, и скалы — проверяется каждый связный кусок отдельно
@@ -238,5 +245,5 @@ def load(glb, tex_dir, ground_z=None):
         elif drop and o.data.users == 1:
             bmesh.ops.delete(bm, geom=list(set(drop)), context="FACES"); bm.to_mesh(o.data); floating += 1
         bm.free()
-    log("объектов", len(objs), "земля (multiblend)", nmb, "убрано висящих камней и карточек свечения", floating)
+    log("объектов", len(objs), "земля (multiblend)", nmb, "убрано висящих камней и карточек свечения", floating, "служебного и эффектов", junk)
     return objs

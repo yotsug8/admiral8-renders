@@ -90,7 +90,11 @@ def parse(path):
             ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None, "gesture": None}
             for tg in tags:
                 tg = tg.lower()
-                if gx := re.match(r"утрировать\s+([\d.]+)$", tg):   # мимика сильнее предела модели (морфы за 1) — мемное искажение
+                if gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
+                    ev["walk"] = float(gw[1])
+                elif tg == "камера стоит":                         # камера не ведёт героя — он сам входит/подходит в кадре
+                    ev["still"] = True
+                elif gx := re.match(r"утрировать\s+([\d.]+)$", tg):   # мимика сильнее предела модели (морфы за 1) — мемное искажение
                     ev["exag"] = float(gx[1])
                 elif gv := re.match(r"реплика\s+([a-z0-9_]+)$", tg):   # настоящая реплика героя из игры (game_vo.py)
                     ev["game"] = gv[1]
@@ -112,6 +116,16 @@ def parse(path):
     if len(sc["cast"]) < 2:
         raise SystemExit("нужно хотя бы два героя")
     return sc
+
+
+def walk_progress(k, e):
+    """Доля пути при ходьбе: разгон за долю e, ровный ход, торможение за e (скорость в середине постоянна — шаг не скользит)."""
+    v = 1 / (1 - e)
+    if k < e:
+        return v * k * k / (2 * e)
+    if k > 1 - e:
+        return 1 - v * (1 - k) ** 2 / (2 * e)
+    return v * (k - e / 2)
 
 
 def troupe(hero):
@@ -175,7 +189,7 @@ def shots(sc, lines, hooks):
         elif e["shot"] == "selfie":
             plan = (t, "selfie", who, None, dict(P_SELFIE))
         elif e["shot"] == "medium":
-            plan = (t, "selfie", who, None, dict(P_MEDIUM))
+            plan = (t, "selfie", who, None, dict(P_MEDIUM, **({"static": True} if e.get("still") else {})))
         elif e["shot"] == "push":                         # камера та же, что селфи (render_scene), но наезд на смене эмоции
             a = e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.15 if e["emo2"] else e["t0"]
             plan = (t, "selfie", who, None, dict(P_PUSH, push=[round(a, 2), round(a + 0.45, 2)]))
@@ -243,9 +257,14 @@ def build(sc, V, folder):
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
         yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
+        ws = [(max(0.0, e["t0"] - LEAD), e["t1"], e["walk"]) for e in lines if e["who"] == who and e.get("walk")]
+        fx, fy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
 
         def at(t, p):
             x, y = pos[who]
+            for a, b, dist in ws:                         # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
+                k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
+                x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
             for h in hs:
                 if t >= h["hit"]:
                     k = min(1.0, (t - h["hit"]) / (h["back"] - h["hit"]))
@@ -269,6 +288,8 @@ def build(sc, V, folder):
         talk[k].append({"name": "a8_" + e["name"], "base": base, "line": e["name"], "off": round(e["t0"] - a0, 2), "dur": d,
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
                         "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
+                        **({"walk": {"at": round(max(0.0, e["t0"] - LEAD) - a0, 2), "len": round(e["t1"] - max(0.0, e["t0"] - LEAD), 2),
+                                     "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3)}} if e.get("walk") else {}),
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": e["gesture"][0], "at": round(gest_t(e) - a0, 2), "len": e["gesture"][1]}]}
                            if e["gesture"] and e["gesture"][0] in OWN_GESTURES else {})})

@@ -181,6 +181,19 @@ def speaker(s):
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
     walk = s.get("walk")
+    # земля — по стопам в обычной стойке; если поза их поднимает или опускает (шаг, Т-поза), таз сдвигается так,
+    # чтобы нижняя стопа стояла на земле (иначе ступни висели в воздухе)
+    feet_ground = None; feet = []
+    if walk or any(g["kind"] in ("тпоза", "выгнуться") for g in s.get("gest") or []):
+        Bf = {b.name.lower(): b.name for b in arm.pose.bones}
+        feet = [Bf[n] for n in ("ankle_l", "ankle_r") if n in Bf]
+        if feet:
+            base_pose(s["base"], 0.0); feet_ground = min(world(a).translation.z for a in feet)
+
+    def plant():
+        dz = min(world(a).translation.z for a in feet) - feet_ground
+        rb = arm.pose.bones[0]; M = world(rb.name)
+        rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, -dz))) @ M); bpy.context.view_layer.update()
     if walk:
         # шаг: бедро вперёд-назад, колено сгибается на выносе, стопа ровно, таз качается, руки в противоход, плечи скручиваются;
         # частота — от скорости и длины ноги (шаг 0,7 ноги): ступни не скользят по земле
@@ -189,6 +202,7 @@ def speaker(s):
                for sd in ("L", "R")}
         base_pose(s["base"], 0.0)
         thl, ank = leg["L"][0], leg["L"][2]
+        ankles = [leg[sd][2] for sd in ("L", "R") if leg[sd][2]]
         Lg = (world(thl).translation - world(ank).translation).length if thl and ank else 1.0
         stride = 0.7 * Lg; wa, wl = walk["at"], walk["len"]
 
@@ -212,8 +226,6 @@ def speaker(s):
                     turn(B[nm], X, R(e_ * 16 * sg * math.sin(phi)))
             if spine:
                 turn(spine, Z, R(e_ * 5 * math.sin(phi)))
-            rb = arm.pose.bones[0]; M = world(rb.name)               # таз: ниже в момент переноса веса
-            rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, e_ * 0.035 * Lg * math.cos(2 * phi)))) @ M)
             bpy.context.view_layer.update()
 
     def full(t, k):
@@ -233,8 +245,6 @@ def speaker(s):
             turn(s["head"], Z, R(e * live * w(t, (0.27, 6.0), (0.63, 1.5))))
             turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
-        if walk:                                        # свой шаг (после жестов: Т-поза верха, ноги шагают)
-            stride_walk(t)
         for g in s.get("gest") or []:                   # свои жесты поверх разговора
             ge = gesture_env(t, g["at"], g["at"] + g["len"], g["kind"] in SLOW)
             if ge:
@@ -257,6 +267,10 @@ def speaker(s):
                             aim(ax, ang, wob, min(1.0, ge))
                     elif bone in arm.pose.bones:
                         turn(bone, ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
+        if walk:                                        # шаг — после жестов (Т-поза сбрасывала и ноги — Пудж плыл, не шагая)
+            stride_walk(t)
+        if feet_ground is not None:                     # стопы на земле: Т-поза выпрямляет полусогнутые ноги стойки
+            plant()
     return full
 
 

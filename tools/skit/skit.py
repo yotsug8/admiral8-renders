@@ -189,7 +189,7 @@ def shots(sc, lines, hooks):
         elif e["shot"] == "selfie":
             plan = (t, "selfie", who, None, dict(P_SELFIE))
         elif e["shot"] == "medium":
-            plan = (t, "selfie", who, None, dict(P_MEDIUM, **({"static": True} if e.get("still") else {})))
+            plan = (t, "selfie", who, None, dict(P_MEDIUM, **({"static": True, "arrive": bool(e.get("walk"))} if e.get("still") else {})))
         elif e["shot"] == "push":                         # камера та же, что селфи (render_scene), но наезд на смене эмоции
             a = e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.15 if e["emo2"] else e["t0"]
             plan = (t, "selfie", who, None, dict(P_PUSH, push=[round(a, 2), round(a + 0.45, 2)]))

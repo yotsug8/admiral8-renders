@@ -521,8 +521,9 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
                     out[i_] = out[j_] + (out[i_] - out[j_]) * a_
             return out
         Hs = softv([h + up for h, _ in hs]); Fs = softv([fc for _, fc in hs], 0.6)
-        if o.get("static"):                            # камера стоит: герой может уйти из кадра (крюк утаскивает жертву)
-            Hs = [Hs[0]] * len(Hs); Fs = [Fs[0]] * len(Fs)
+        if o.get("static"):                            # камера стоит: герой уходит из кадра (крюк) или приходит в него (шаг) —
+            ref = -1 if o.get("arrive") else 0          # при шаге камера ставится от точки, куда он приходит
+            Hs = [Hs[ref]] * len(Hs); Fs = [Fs[ref]] * len(Fs)
         C0, hide = clear([Hs[0] + rotz(Fs[0], a_) * d_at(f0 / FPS) for a_ in (o.get("ang", 12), -o.get("ang", 12), 30, -30)], [Hs[0]], who)
         sgn = 1 if (C0 - Hs[0]).xy.angle_signed(Fs[0].xy, 0) <= 0 else -1
         track = {}

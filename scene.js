@@ -422,8 +422,9 @@ const SCN = (() => {
     });
     g.sc.vids.forEach(v => {
       const n = v.imgs.length; if (!n) return;
-      let i = Math.floor((lt - v.t0) * v.it.clip.fps);
-      i = v.it.loop ? ((i % n) + n) % n : Math.max(0, Math.min(n - 1, i));   // до старта — первый кадр, после конца — последний
+      const raw = Math.floor((lt - v.t0) * v.it.clip.fps);
+      const i = v.it.loop ? ((raw % n) + n) % n : Math.max(0, Math.min(n - 1, raw));   // до старта — первый кадр, после конца — последний
+      if (v.it.hold === false) v.cv.parentNode.style.visibility = raw < 0 || raw >= n ? "hidden" : "visible";   // врезка (мем): только пока идёт
       v.cv.getContext("2d").drawImage(v.imgs[i], 0, 0, v.cv.width, v.cv.height);
     });
     g.sc.lots.forEach(o => {

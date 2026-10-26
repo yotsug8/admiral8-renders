@@ -524,7 +524,7 @@ def meme(node):
     start = float(node["from"]) if "from" in node else max(0.0, min(m["peak"] - float(node.get("lead", 0.6)), m["dur"] - dur))
     out = {k: v for k, v in node.items() if k not in ("name", "lead")}
     return dict(out, type="video", src=f"file:_game/memes/{m['file']}", **{"from": round(start, 2)}, dur=dur,
-                audio=float(node.get("audio", 1 if m["audio"] else 0)))
+                audio=float(node.get("audio", 1 if m["audio"] else 0)), hold=node.get("hold", False))   # мем показался — и ушёл
 
 
 def resolve_scene(node, heroes, items):
@@ -855,10 +855,11 @@ def mix_audio(segs, total, wav_path):
         return x / np.abs(x).max()
     SND = {"stamp": (stamp, 0.42), "bubble": (chime, 0.16), "tick": (tick(), 0.12), "pop": (pop(), 0.18), "whoosh": (whoosh(), 0.12)}
     def scene_at(sc, at):
+        """Время в сцене: число, метка или «метка+0.3» / «метка-0.3» (как when() в scene.js)."""
         if isinstance(at, str):
-            key, _, off = at.partition("+")
-            base = (sc.get("at") or {}).get(key)
-            return None if base is None else base + (float(off) if off else 0)
+            m = re.match(r"^([^+\-]+)([+\-][\d.]+)?$", at)
+            base = (sc.get("at") or {}).get(m[1]) if m else None
+            return None if base is None else base + (float(m[2]) if m[2] else 0)
         return float(at or 0)
     def clips(items):
         for it in items or []:
@@ -891,13 +892,9 @@ def mix_audio(segs, total, wav_path):
                     snd = np.frombuffer(w_.readframes(w_.getnframes()), np.int16).astype(np.float32) / 32768
                 add(s["start"] + t0, snd, float(it.get("audio", 0)))
         for e in sc.get("sounds", []):
-            at = e.get("at", 0)
-            if isinstance(at, str):
-                key, _, off = at.partition("+")
-                base = (sc.get("at") or {}).get(key)
-                if base is None:
-                    continue
-                at = base + (float(off) if off else 0)
+            at = scene_at(sc, e.get("at", 0))
+            if at is None:
+                continue
             snd, gain = SND.get(e.get("kind", "pop"), SND["pop"])
             add(s["start"] + at, snd, gain * float(e.get("gain", 1)))
     pcm = (np.clip(mix, -1, 1) * 32767).astype(np.int16)

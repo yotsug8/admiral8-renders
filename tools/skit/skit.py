@@ -285,9 +285,15 @@ def build(sc, V, folder):
     return st, talk, info, SH, dur
 
 
-def dota(sc, st, talk, info, folder):
-    """Сцена для движка доты: анимации разговора → DMX → в модель героя (troupe.add_anims), потом scripts/a8_scene.txt."""
+def dota(sc, st, talk, info, folder, SH):
+    """Сцена для движка доты: анимации разговора → DMX → в модель героя (troupe.add_anims), камера — те же планы,
+    что в Blender, автокамерой (framing.py), потом scripts/a8_scene.txt."""
     from troupe import CONTENT, add_anims
+    from framing import Framer
+    a, b = list(sc["cast"])[:2]
+    fr = Framer(st, line=(a, b), side=-1)              # камера с юга от линии героев — как планы Blender
+    fr.skip = {k for k in st.actors if k.startswith("tip")}
+    st.cam = fr.cut([(t, fr.close(who) if kind == "close" else fr.over(who, other)) for t, kind, who, other, _ in SH])
     env = dict(os.environ, A8_VOICES=os.path.join(folder, "voices.json"))
     for k, specs in talk.items():
         h = sc["cast"][k]["hero"]
@@ -342,7 +348,7 @@ def main():
                              for e in sc["events"] if e["kind"] == "line"])
     st, talk, info, SH, dur = build(sc, V, folder)
     if "--dota" in flags:
-        dota(sc, st, talk, info, folder)
+        dota(sc, st, talk, info, folder, SH)
     if "--plan" in flags:
         return
     import imageio_ffmpeg

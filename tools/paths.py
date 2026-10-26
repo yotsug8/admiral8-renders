@@ -14,4 +14,3 @@ SCENE_TXT = os.path.join(ADDON, "scripts", "a8_scene.txt")             # сце�
 S2V = os.environ.get("S2V", os.environ.get("S2V_CLI", r"C:\Users\kunkk\Desktop\ClaudeCode\s2v\Source2Viewer-CLI.exe"))
 BLENDER = os.environ.get("BLENDER", r"D:\SteamLibrary\steamapps\common\Blender\blender.exe")
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-GAME_DATA = os.path.join(REPO, "_game")                                 # выгрузки из игры (не коммитятся)

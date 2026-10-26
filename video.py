@@ -728,7 +728,7 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     """Кадры рендерятся параллельно в нескольких браузерах (FV_WORKERS, по умолчанию — по числу ядер),
     куски склеиваются без перекодирования."""
     from concurrent.futures import ProcessPoolExecutor
-    import http.server, socketserver, threading, functools
+    import http.server, socketserver, threading
     # Локальный HTTP-сервер по папке репозитория: three.js грузит куски карты (_game/maps) через fetch, а с file:// он не работает
     class _Q(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **k): super().__init__(*a, directory=str(HERE), **k)

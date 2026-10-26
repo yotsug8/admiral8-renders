@@ -370,10 +370,38 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
-    k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else float(v)
+    k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
+skyr.color_ramp.elements[0].color = LOOK["horizon"]                # горизонт — светлее и теплее (фон не плоский)
+if LOOK["fog"] > 0 and MAP:                                         # дымка: даль светлеет и голубеет — глубина, как в доте;
+    haze = (0.62, 0.74, 0.92, 1)                                      # в материалах карты по расстоянию до камеры (объём гасил солнце)
+    for m in {ms.material for o in bpy.data.objects if o.type == "MESH" and o not in HERO_OBJS for ms in o.material_slots if ms.material}:
+        nt = m.node_tree if m.use_nodes else None
+        out = nt and next((n for n in nt.nodes if n.type == "OUTPUT_MATERIAL"), None)
+        if not out or not out.inputs["Surface"].links or m.get("_haze"):
+            continue
+        b = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if not b:
+            continue
+        cd = nt.nodes.new("ShaderNodeCameraData"); mr = nt.nodes.new("ShaderNodeMapRange")
+        mr.inputs["From Min"].default_value = 40; mr.inputs["From Max"].default_value = 280
+        mr.inputs["To Max"].default_value = min(0.7, 0.35 * LOOK["fog"])
+        nt.links.new(cd.outputs["View Distance"], mr.inputs["Value"])
+        # в саму поверхность: цвет тускнеет к дымке, она же светится — прозрачность листвы сохраняется (иначе «снег» на листьях)
+        dim = nt.nodes.new("ShaderNodeMix"); dim.data_type = "RGBA"; dim.inputs["B"].default_value = (0, 0, 0, 1)
+        srcc = b.inputs["Base Color"].links[0].from_socket if b.inputs["Base Color"].links else None
+        if srcc:
+            nt.links.new(srcc, dim.inputs["A"])
+        else:
+            dim.inputs["A"].default_value = b.inputs["Base Color"].default_value
+        nt.links.new(mr.outputs["Result"], dim.inputs["Factor"]); nt.links.new(dim.outputs["Result"], b.inputs["Base Color"])
+        for l in list(b.inputs["Emission Color"].links):
+            nt.links.remove(l)
+        b.inputs["Emission Color"].default_value = haze
+        nt.links.new(mr.outputs["Result"], b.inputs["Emission Strength"])
+        m["_haze"] = 1
 SUN = light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце; на планах — спереди-сбоку от камеры (ниже)
 light("SUN", (68, 0, -150), LOOK["back"], (0.58, 0.74, 1.0))   # холодный контровой с северо-запада — обводит силуэты
 LIGHT_KEY, LIGHT_RIM = LOOK["key"], LOOK["rim"]             # свет плана (Вт): ключевой у камеры, контровой за героем

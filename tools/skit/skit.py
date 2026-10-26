@@ -380,7 +380,8 @@ def main():
     if not args:
         raise SystemExit(__doc__ if __doc__ else "py -3.11 tools/skit/skit.py <сценарий.txt> [--plan | --all] [--dota]")
     sc = parse(args[0])
-    folder = os.path.join(REPO, "_game", "skits", sc["name"])
+    folder = os.path.join(REPO, "_game", "skits", *(["_check"] if os.environ.get("SKIT_FAKE") else []), sc["name"])   # проверка (гул) — отдельно:
+                                                          # иначе check.py подменял настоящие голоса гулом, и они переозвучивались
     n = {}
     for ev in sc["events"]:                               # имена реплик: pudge1, pudge2, sniper1…
         if ev["kind"] == "line":

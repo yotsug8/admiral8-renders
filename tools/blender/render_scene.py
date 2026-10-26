@@ -370,12 +370,12 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
 skyr.color_ramp.elements[0].color = LOOK["horizon"]                # горизонт — светлее и теплее (фон не плоский)
-if LOOK["fog"] > 0 and MAP:                                         # дымка: даль светлеет и голубеет — глубина, как в доте;
+if MAP:                                         # дымка: даль светлеет и голубеет — глубина, как в доте;
     haze = (0.62, 0.74, 0.92, 1)                                      # в материалах карты по расстоянию до камеры (объём гасил солнце)
     for m in {ms.material for o in bpy.data.objects if o.type == "MESH" and o not in HERO_OBJS for ms in o.material_slots if ms.material}:
         nt = m.node_tree if m.use_nodes else None
@@ -387,8 +387,19 @@ if LOOK["fog"] > 0 and MAP:                                         # дымка
             continue
         cd = nt.nodes.new("ShaderNodeCameraData"); mr = nt.nodes.new("ShaderNodeMapRange")
         mr.inputs["From Min"].default_value = 40; mr.inputs["From Max"].default_value = 280
-        mr.inputs["To Max"].default_value = min(0.7, 0.35 * LOOK["fog"])
+        mr.inputs["To Max"].default_value = min(0.7, 0.35 * LOOK["fog"])          # fog=0 — без дымки
         nt.links.new(cd.outputs["View Distance"], mr.inputs["Value"])
+        # фон под героев (участник: «подкорректируй фон по освещению, контрасту, цвету»): листва и земля карты темнее и холоднее
+        # героев — светлее (bg_gain), зелень к жёлтому (bg_warm, доля круга оттенков), сочнее (bg_sat)
+        hs = nt.nodes.new("ShaderNodeHueSaturation")
+        hs.inputs["Hue"].default_value = 0.5 - LOOK["bg_warm"]; hs.inputs["Saturation"].default_value = LOOK["bg_sat"]
+        hs.inputs["Value"].default_value = LOOK["bg_gain"]
+        srcb = b.inputs["Base Color"].links[0].from_socket if b.inputs["Base Color"].links else None
+        if srcb:
+            nt.links.new(srcb, hs.inputs["Color"])
+        else:
+            hs.inputs["Color"].default_value = b.inputs["Base Color"].default_value
+        nt.links.new(hs.outputs["Color"], b.inputs["Base Color"])
         # в саму поверхность: цвет тускнеет к дымке, она же светится — прозрачность листвы сохраняется (иначе «снег» на листьях)
         dim = nt.nodes.new("ShaderNodeMix"); dim.data_type = "RGBA"; dim.inputs["B"].default_value = (0, 0, 0, 1)
         srcc = b.inputs["Base Color"].links[0].from_socket if b.inputs["Base Color"].links else None

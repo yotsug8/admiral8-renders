@@ -507,6 +507,23 @@ def video_frames(node):
     return res
 
 
+def meme(node):
+    """Мем по имени из каталога _game/memes/catalog.json (tools/memes.py) → элемент video: кусок вокруг лучшего момента
+    (пик движения и громкости), со звуком. Поля: name, dur (1,6 с), lead (сколько до пика, 0,6 с), from — свой старт."""
+    cat_path = HERE / "_game" / "memes" / "catalog.json"
+    if not cat_path.exists():
+        raise SystemExit("нет каталога мемов: python tools/memes.py")
+    cat = json.load(open(cat_path, encoding="utf-8"))
+    m = cat.get(node["name"])
+    if m is None:
+        raise SystemExit(f"мем «{node['name']}» не найден; есть: {', '.join(cat)}")
+    dur = float(node.get("dur", 1.6))
+    start = float(node["from"]) if "from" in node else max(0.0, min(m["peak"] - float(node.get("lead", 0.6)), m["dur"] - dur))
+    out = {k: v for k, v in node.items() if k not in ("name", "lead")}
+    return dict(out, type="video", src=f"file:_game/memes/{m['file']}", **{"from": round(start, 2)}, dur=dur,
+                audio=float(node.get("audio", 1 if m["audio"] else 0)))
+
+
 def resolve_scene(node, heroes, items):
     """Обход описания сцены: "src": "hero:…/item:…/ability:…/file:…" → file:// URI, "anim": "ключ" → кадры анимации,
     видео → кадры, lottie → JSON анимации внутрь описания."""
@@ -514,6 +531,8 @@ def resolve_scene(node, heroes, items):
         return [resolve_scene(x, heroes, items) for x in node]
     if not isinstance(node, dict):
         return node
+    if node.get("type") == "meme":
+        node = meme(node)
     if node.get("type") == "video" and isinstance(node.get("src"), str):
         node = dict(node, clip=video_frames(node))
         node.pop("src")

@@ -9,6 +9,7 @@ import imageio_ffmpeg
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
+sys.stdout.reconfigure(encoding="utf-8")
 if len(sys.argv) < 4:
     raise SystemExit("py -3.11 tools/skit/mix.py <видео> <выход> <scene.json>")
 TAKE, OUT, SCENE = sys.argv[1:4]
@@ -96,7 +97,7 @@ enc = subprocess.Popen([FF, "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "
                         "-c:v", "libx264", "-crf", "15", "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT],
                        stdin=subprocess.PIPE)
 from PIL import ImageFilter, ImageEnhance
-GRADE = os.environ.get("GRADE")                    # 1 — киношная обработка (для рендера Blender): свечение, виньетка, контраст
+GRADE = os.environ.get("GRADE")                    # 1 — свечение, виньетка, контраст; match — цвет по примерам (grade.py)
 yy, xx = np.mgrid[0:H, 0:W]
 VIG = (1 - 0.32 * np.clip((((xx - W / 2) / (W * 0.62)) ** 2 + ((yy - H / 2) / (H * 0.62)) ** 2) - 0.35, 0, 1) ** 1.2)[..., None]
 
@@ -112,10 +113,16 @@ def grade(img):
     return img
 
 
+MATCH = None
+if GRADE == "match":                               # цветокоррекция по образцу (tools/skit/grade.py) вместо свечения
+    import grade as _g
+    MATCH = _g.Grade(_g.sample(TAKE)); print("цвет:", MATCH.info)
 n = 0
 for k, b in enumerate(r):
     img = Image.frombytes("RGB", (W, H), b)
-    if GRADE:
+    if MATCH:
+        img = Image.fromarray(MATCH(np.asarray(img)))
+    elif GRADE:
         img = grade(img)
     ov = overlay(k / 30)
     if ov is not None:

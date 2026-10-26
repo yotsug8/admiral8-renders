@@ -407,7 +407,7 @@ def main():
     subprocess.run([FF, "-y", "-v", "error", "-framerate", "30", "-i", os.path.join(out, "f%05d.png"), "-c:v", "libx264", "-crf", "12",
                     "-pix_fmt", "yuv420p", raw], check=True)
     subprocess.run([sys.executable, os.path.join(HERE, "mix.py"), raw, fin, os.path.join(folder, "scene.json")],
-                   env=dict(os.environ, GRADE="1"), check=True)
+                   env=dict(os.environ, GRADE="match"), check=True)
     print("готово:", fin)
 
 

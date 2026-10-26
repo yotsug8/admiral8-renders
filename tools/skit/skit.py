@@ -1,7 +1,7 @@
 # Сценка одной командой: короткий сценарий текстом → голоса → тайминг, планы, мимика → рендер в Blender → сведение.
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt            голоса, scene.json и пробы: по кадру на план (половинный размер)
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt --plan     только голоса и scene.json (без Blender)
-#   py -3.11 tools/skit/skit.py skits/kryuk.txt --all      весь ролик: кадры → mp4 → голоса и субтитры (hook_mix, GRADE)
+#   py -3.11 tools/skit/skit.py skits/kryuk.txt --all      весь ролик: кадры → mp4 → голоса и субтитры (mix.py, GRADE)
 #   ... --dota                                             ещё и сцена для движка доты (scripts/a8_scene.txt) с анимациями разговора
 # Всё складывается в _game/skits/<название>/. Сначала пробы — полный рендер только после «ок» (~2,5 с на кадр).
 #
@@ -20,8 +20,8 @@
 import json, math, os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 ENG = os.path.join(REPO, "tools", "dota_engine")
-sys.path.insert(0, HERE); sys.path.insert(0, ENG)
-BLENDER = os.environ.get("BLENDER", r"D:\SteamLibrary\steamapps\common\Blender\blender.exe")
+sys.path.insert(0, HERE); sys.path.insert(0, ENG); sys.path.insert(0, os.path.join(REPO, "tools"))
+from paths import BLENDER
 TROUPE = os.path.join(REPO, "_game", "data", "troupe.json")
 
 # эмоции — веса морфов лица (FACS доты, tools/blender/face.py); подобраны на «Крюке»
@@ -346,7 +346,7 @@ def main():
     raw = os.path.join(folder, sc["name"] + "_raw.mp4"); fin = os.path.join(folder, sc["name"] + ".mp4")
     subprocess.run([FF, "-y", "-v", "error", "-framerate", "30", "-i", os.path.join(out, "f%05d.png"), "-c:v", "libx264", "-crf", "12",
                     "-pix_fmt", "yuv420p", raw], check=True)
-    subprocess.run([sys.executable, os.path.join(ENG, "hook_mix.py"), raw, fin, os.path.join(folder, "scene.json")],
+    subprocess.run([sys.executable, os.path.join(HERE, "mix.py"), raw, fin, os.path.join(folder, "scene.json")],
                    env=dict(os.environ, GRADE="1"), check=True)
     print("готово:", fin)
 

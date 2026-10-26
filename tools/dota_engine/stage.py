@@ -12,14 +12,15 @@
 #
 # Любой герой или модель: st.actor(..., hero="kunkka") или model="models/..vmdl", parts=[...].
 # Земля: Stage(..., ground=Ground()) — z актёров считается от земли (в игре — GetGroundHeight), без неё
-# z абсолютный (так стоят Пуджи 006 в реке). Точки можно задавать и на карте: world=[(x, y), ...].
+# z абсолютный (так стоят в реке). Точки можно задавать и на карте: world=[(x, y), ...].
 # Движение по пути: path(точки, скорость) — положение, поворот по ходу; скорость бега — anims.stride.
 # Частицы: st.fx(t, "particles/...vpcf", at=(x, y) или at="актёр", z=0, dur=0).
 import math, os
 from project import Cam, overlap
 
-OUT = r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota_addons\admiral8\scripts\a8_scene.txt"
 HERE = os.path.dirname(os.path.abspath(__file__))
+import sys; sys.path.insert(0, os.path.join(HERE, ".."))
+from paths import SCENE_TXT as OUT                 # пути к игре — tools/paths.py
 MID = 80                                   # середина фигуры над её точкой
 # Рамка стоящего Пуджа с крюком и тесаком (75, -25, 190): полуширина, низ, верх — сверено со снимками игры.
 

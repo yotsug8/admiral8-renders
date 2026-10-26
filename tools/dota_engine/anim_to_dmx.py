@@ -1,4 +1,4 @@
-# Свои анимации героя (скрипт Blender, например tools/blender/kunkka_race.py) → DMX для движка доты.
+# Свои анимации героя (скрипт Blender, например tools/blender/skit_talk.py) → DMX для движка доты.
 # blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка исходников модели в content> <модель .glb> <префикс> <скрипт> [стойка=idle]
 #   префикс — как у файлов разобранной модели (kunkka → kunkka_idle.dmx); скрипт задаёт CUSTOM {имя: действие} и LOOPING
 # Образец — настоящая стойка <префикс>_idle.dmx: по ней находится переход «Blender → движок» (масштаб и оси одним преобразованием M

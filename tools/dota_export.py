@@ -12,7 +12,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
 GAME = Path(os.environ.get("FV_GAME_DIR", HERE / "_game"))
-CLI = os.environ.get("S2V_CLI", "Source2Viewer-CLI")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import S2V as CLI                      # Source2Viewer-CLI — tools/paths.py
 
 
 def cli(*args):

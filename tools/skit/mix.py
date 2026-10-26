@@ -1,26 +1,22 @@
-# Сведение сценки «Крюк»: дубль из игры + голоса по своим местам (−14 LUFS) + субтитры как в роликах канала
+# Сведение сценки: видео кадров + голоса по своим местам (−14 LUFS) + субтитры канала
 # (Manrope 800, 56 px, y 1468, по 1–3 слова, звучащее слово — на жёлтой плашке).
 # Время слов — по громкости реплики: начало и конец речи по звуку, слова распределены по длине.
-# py -3.11 tools/dota_engine/hook_mix.py  [дубль=_game/engine_check/hook.mp4] [выход=_game/engine_check/hook_final.mp4] [scene.json сценки]
+#   py -3.11 tools/skit/mix.py <видео> <выход> <scene.json>     GRADE=1 — киношная обработка: свечение, виньетка, контраст
+# Реплики и их места — из scene.json (voices: {имя: [актёр, сек]}), тексты и громкость — voices.json рядом с ним.
 import json, os, re, subprocess, sys
 import numpy as np
 import imageio_ffmpeg
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
-TAKE = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "_game", "engine_check", "hook.mp4")
-OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(REPO, "_game", "engine_check", "hook_final.mp4")
-SCENE = sys.argv[3] if len(sys.argv) > 3 else None   # scene.json сценки (tools/skit): реплики и длина — оттуда
-VO = os.path.dirname(os.path.abspath(SCENE)) if SCENE else os.path.join(REPO, "_game", "hook")
+if len(sys.argv) < 4:
+    raise SystemExit("py -3.11 tools/skit/mix.py <видео> <выход> <scene.json>")
+TAKE, OUT, SCENE = sys.argv[1:4]
+VO = os.path.dirname(os.path.abspath(SCENE))
 FF = imageio_ffmpeg.get_ffmpeg_exe()
 V = json.load(open(os.path.join(VO, "voices.json"), encoding="utf-8"))
-if SCENE:
-    _D = json.load(open(SCENE, encoding="utf-8"))
-    OFFS = {k: float(v[1]) for k, v in _D["voices"].items()}; DUR = float(_D["dur"])
-else:
-    src = open(os.path.join(HERE, "scene_hook.py"), encoding="utf-8").read()
-    OFFS = {k: float(v) for k, v in re.findall(r'"(\w+)":\s*([\d.]+)', re.search(r"VOICE = \{([^}]*)\}", src).group(1))}
-    DUR = float(re.search(r"^DUR = ([\d.]+)", src, re.M).group(1))
+_D = json.load(open(SCENE, encoding="utf-8"))
+OFFS = {k: float(v[1]) for k, v in _D["voices"].items()}; DUR = float(_D["dur"])
 
 # ---- слова и их время
 chunks = []                                     # (начало, конец, [слова], [время каждого слова])

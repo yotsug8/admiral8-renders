@@ -5,7 +5,8 @@ import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 from project import Cam, FOV_Y
 
-OUT = r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota_addons\admiral8\scripts\a8_scene.txt"
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from paths import SCENE_TXT as OUT
 C = (1516.0, -1660.0)
 PITCH = float(sys.argv[1]) if len(sys.argv) > 1 else 19.0
 TARGET = (C[0] - 10, C[1] + 250, 0.0)

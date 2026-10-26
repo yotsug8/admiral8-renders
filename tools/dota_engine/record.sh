@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Запись сцены из движка доты и сборка вертикального mp4: tools/dota_engine/record.sh <имя дубля>
-# Нужны: дота в режиме инструментов с модом admiral8 (см. CLAUDE.md) и окно «Dota 2» на переднем плане.
+# Нужны: дота в режиме инструментов с модом admiral8 (см. docs/DOTA_ENGINE.md) и окно «Dota 2» на переднем плане.
 # startmovie и a8_play идут одной строкой — выполняются в одном кадре, поэтому сцена начинается с первого
 # кадра записи, а host_framerate 30 привязывает кадры к тикам: кадров ровно длина сцены × 30 (11,5 с — 345).
 set -e
 NAME=${1:?имя дубля}
 HERE=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$HERE/../.." && pwd)
-GAME="D:/SteamLibrary/steamapps/common/dota 2 beta/game/dota"
+DOTA_ROOT=${DOTA_ROOT:-"D:/SteamLibrary/steamapps/common/dota 2 beta"}   # как в tools/paths.py
+GAME="$DOTA_ROOT/game/dota"
 LOG="$GAME/console.log"; OUT="$REPO/_game/engine_check"; mkdir -p "$OUT"
 # длина сцены — из файла сцены (duration), кадров = длина × 30
 SCENE="$GAME/../dota_addons/admiral8/scripts/a8_scene.txt"

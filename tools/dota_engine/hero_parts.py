@@ -46,8 +46,8 @@ def _all_defaults():
     return out
 
 
-S2V = r"C:\Users\kunkk\Desktop\ClaudeCode\s2v\Source2Viewer-CLI.exe"
-VPK = r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota\pak01_dir.vpk"
+sys.path.insert(0, os.path.join(HERE, ".."))
+from paths import S2V, VPK                          # пути к игре и S2V — tools/paths.py
 DATA = os.path.join(HERE, "..", "..", "_game", "data")
 
 

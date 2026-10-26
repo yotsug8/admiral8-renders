@@ -4,7 +4,8 @@
 set -e
 NAME=${1:?имя}; shift
 HERE=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$HERE/../.." && pwd)
-SHOTS="D:/SteamLibrary/steamapps/common/dota 2 beta/game/dota/screenshots"
+DOTA_ROOT=${DOTA_ROOT:-"D:/SteamLibrary/steamapps/common/dota 2 beta"}   # как в tools/paths.py
+SHOTS="$DOTA_ROOT/game/dota/screenshots"
 C() { py -3.11 "$HERE/dota_console.py" "$@"; }
 get() { py -3.11 "$HERE/dota_console.py" --get "$1" | grep -o '= *[^ ]*' | head -1 | tr -d '= "'; }
 # полоски здоровья над вышками и юнитами (интерфейс мод скрывает, а их — нет): на время дубля выключить

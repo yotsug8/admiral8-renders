@@ -58,6 +58,22 @@ def ffmpeg_exe():
     return imageio_ffmpeg.get_ffmpeg_exe()
 
 
+def loudnorm(path, target=-14.0):
+    """Фильтр выравнивания громкости к target LUFS в два прохода: замер, потом линейно (без «качания» громкости,
+    как у однопроходного loudnorm). Пики не выше −1,5 dBTP."""
+    base = f"loudnorm=I={target}:TP=-1.5:LRA=11"
+    err = subprocess.run([ffmpeg_exe(), "-hide_banner", "-i", str(path), "-af", base + ":print_format=json", "-f", "null", "-"],
+                         capture_output=True, text=True, errors="replace").stderr
+    try:
+        m = json.loads(err[err.rindex("{"):err.rindex("}") + 1])
+        if float(m["input_i"]) < -70:                  # тишина — мерить нечего
+            return base
+        return (f"{base}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}"
+                f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+    except (ValueError, KeyError):
+        return base
+
+
 def load_consts(name, consts_dir):
     """Справочник dotaconstants: из локальной папки или с GitHub (с кэшем)."""
     local = os.path.join(consts_dir, name)
@@ -897,7 +913,10 @@ def mix_audio(segs, total, wav_path):
                 continue
             snd, gain = SND.get(e.get("kind", "pop"), SND["pop"])
             add(s["start"] + at, snd, gain * float(e.get("gain", 1)))
-    pcm = (np.clip(mix, -1, 1) * 32767).astype(np.int16)
+    peak = float(np.abs(mix).max())                # не обрезать пики (хрип): уровень опустить целиком, громкость потом выровняет loudnorm
+    if peak > 0.98:
+        mix *= 0.98 / peak
+    pcm = (mix * 32767).astype(np.int16)
     with wave.open(str(wav_path), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
@@ -920,7 +939,7 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
     # Громкость к стандарту площадок (−14 LUFS, пики не выше −1,5 dBTP): TikTok и Shorts всё равно выравнивают,
     # а тихий ролик рядом с соседними звучит слабее
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
-                    *([] if os.environ.get("FV_SILENT") else ["-af", "loudnorm=I=-14:TP=-1.5:LRA=11"]), "-ar", "48000",   # без голоса не выравниваем: иначе фон раздувается
+                    *([] if os.environ.get("FV_SILENT") else ["-af", loudnorm(wav)]), "-ar", "48000",   # без голоса не выравниваем: иначе фон раздувается
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
     stem = out_path.stem
     cover = out_path.with_name((stem.replace("facts_", "cover_", 1) if stem.startswith("facts_") else "cover_" + stem) + ".png")

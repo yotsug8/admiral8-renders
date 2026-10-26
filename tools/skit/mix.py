@@ -84,8 +84,11 @@ for name, off in OFFS.items():
     mix[i:i + len(a)] += a[:len(mix) - i]
 mix = mix[:int(DUR * SR)]
 wav = os.path.join(VO, "mix.wav")
-subprocess.run([FF, "-y", "-v", "error", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", "-", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", str(SR), wav],
-               input=mix.tobytes(), check=True)
+raw_wav = os.path.join(VO, "mix_raw.wav")             # громкость к −14 LUFS в два прохода (video.loudnorm): без «качания»
+subprocess.run([FF, "-y", "-v", "error", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", "-", "-c:a", "pcm_f32le", raw_wav], input=mix.tobytes(), check=True)
+sys.path.insert(0, REPO)
+from video import loudnorm
+subprocess.run([FF, "-y", "-v", "error", "-i", raw_wav, "-af", loudnorm(raw_wav), "-ar", str(SR), wav], check=True)
 
 # ---- кадры с субтитрами → mp4 со звуком
 r = imageio_ffmpeg.read_frames(TAKE); meta = next(r); W, H = meta["size"]

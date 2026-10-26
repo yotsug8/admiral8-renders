@@ -53,9 +53,16 @@ def study(path, out):
                motion=round(float(np.median(motion)) if motion else 0, 2), motion_p90=round(float(np.percentile(motion, 90)) if motion else 0, 2))
     cols = 10; rows = (len(thumbs) + cols - 1) // cols; tw, th = 180, 320
     sheet = Image.new("RGB", (cols * tw, rows * (th + 16)), (18, 18, 22)); d = ImageDraw.Draw(sheet)
+    from PIL import ImageFont
+    fnt = None
+    for fp in ("arial.ttf", "DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):   # с кириллицей
+        try:
+            fnt = ImageFont.truetype(fp, 13); break
+        except OSError:
+            pass
     for i, (t, im, cut) in enumerate(thumbs):
         x, y = (i % cols) * tw, (i // cols) * (th + 16)
-        sheet.paste(im, (x, y + 16)); d.text((x + 4, y + 2), f"{t:.1f}" + (" СКЛЕЙКА" if cut else ""), fill=(255, 90, 90) if cut else (230, 220, 120))
+        sheet.paste(im, (x, y + 16)); d.text((x + 4, y + 2), f"{t:.1f}" + (" СКЛЕЙКА" if cut else ""), fill=(255, 90, 90) if cut else (230, 220, 120), font=fnt)
     sheet.save(os.path.join(out, name + "_sheet.jpg"), quality=82)
     return met
 

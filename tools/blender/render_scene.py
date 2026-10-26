@@ -177,7 +177,11 @@ for name, a in D["actors"].items():
     # свои анимации (рот под голос и т. п.) — тем же скриптом, что для доты
     if any(str(x[1]).startswith("a8_") for x in a["anims"]):
         os.environ["A8_WHO"] = a["hero"]; os.environ["A8_FACE"] = "1" if head else ""   # рот морфами — челюсть костью слабее
-        g = {"arm": arm, "sc": sc, "ACTS": ACTS, "FPS": FPS, "IMPORT_FPS": FPS, "__file__": os.path.join(REPO, "tools", "blender", "hook_talk.py")}
+        os.environ["A8_VOICES"] = os.path.join(os.path.dirname(SCENE), "voices.json")
+        talk = (D.get("talk") or {}).get(name)          # сценка из tools/skit: разговор любого героя по описанию
+        os.environ["A8_TALK"] = json.dumps(talk or [])
+        g = {"arm": arm, "sc": sc, "ACTS": ACTS, "FPS": FPS, "IMPORT_FPS": FPS,
+             "__file__": os.path.join(REPO, "tools", "blender", "skit_talk.py" if "talk" in D else "hook_talk.py")}
         exec(compile(open(g["__file__"], encoding="utf-8").read(), g["__file__"], "exec"), g)
         ACTS.update(g["CUSTOM"])
     ACTORS[name] = dict(arm=arm, root=root, acts=ACTS, info=info)

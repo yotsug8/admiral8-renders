@@ -62,6 +62,30 @@ def _game(text, name, out):
     shutil.copy(src, out)
 
 
+def fish_key():
+    """Ключ Fish: из окружения или из настроек Windows (setx пишет туда — приложение видит его только после перезапуска)."""
+    k = os.environ.get("FISH_API_KEY")
+    if not k and os.name == "nt":
+        import winreg
+        try:
+            k = winreg.QueryValueEx(winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment"), "FISH_API_KEY")[0]
+        except OSError:
+            k = None
+    return (k or "").strip() or None
+
+
+def _fishref(text, hero, out):
+    """Голос героя на любой текст: мгновенное клонирование Fish по образцу из его русской озвучки (game_vo.reference),
+    бесплатная модель s2.1-pro-free — без своей модели и без баланса API."""
+    import urllib.request, ormsgpack
+    sys.path.insert(0, HERE); import game_vo
+    wav, txt = game_vo.reference(hero)
+    payload = {"text": text, "format": "mp3", "references": [{"audio": open(wav, "rb").read(), "text": txt}]}
+    req = urllib.request.Request("https://api.fish.audio/v1/tts", data=ormsgpack.packb(payload), method="POST",
+                                 headers={"Authorization": "Bearer " + fish_key(), "Content-Type": "application/msgpack", "model": "s2.1-pro-free"})
+    open(out, "wb").write(urllib.request.urlopen(req, timeout=180).read())
+
+
 def _fake(text, voice, out):
     """Проверка без голоса (SKIT_FAKE=1): гул с громкостью по слогам, 0,075 с на букву."""
     t = np.arange(int(0.075 * len(text) * SR)) / SR
@@ -109,9 +133,11 @@ def make(folder, lines):
         eng = eng0
         if isinstance(v, dict) and eng0 not in v and "edge" in v and eng0 != "fake":   # у героя свой голос (Edge) — им, а не общим
             eng = "edge"
+        if isinstance(v, dict) and "ref" in v and eng0 != "fake" and fish_key():   # голос героя по образцу его озвучки (Fish)
+            eng = "fishref"
         if ln.get("game"):                                     # настоящая реплика героя из русской озвучки (tools/skit/game_vo.py)
             eng = "game"
-        v = v.get(eng, "") if isinstance(v, dict) else v
+        v = v.get("ref" if eng == "fishref" else eng, "") if isinstance(v, dict) else v
         if eng == "game":
             v = ln["game"]
         import video
@@ -122,7 +148,7 @@ def make(folder, lines):
             continue
         raw = os.path.join(folder, ln["name"] + (".raw.wav" if eng in ("sapi", "fake") else ".raw.mp3"))
         print(f"  голос {ln['name']} ({ln['who']}, {eng}{' ' + v if v else ''}): {say}")
-        {"fish": _fish, "sapi": _sapi, "edge": _edge, "fake": _fake, "game": _game}[eng](say, v, raw)
+        {"fish": _fish, "sapi": _sapi, "edge": _edge, "fake": _fake, "game": _game, "fishref": _fishref}[eng](say, v, raw)
         if pitch and eng != "game":
             r = 2 ** (pitch / 12); shifted = raw + ".p.wav"
             subprocess.run([_ff(), "-y", "-v", "error", "-i", raw, "-af", f"aresample={SR},asetrate={SR}*{r:.4f},aresample={SR},atempo={1 / r:.4f}", shifted], check=True)
@@ -139,7 +165,7 @@ def make(folder, lines):
         hop = SR // 30; n = len(a) // hop + 1
         rms = np.array([np.sqrt(np.mean(a[i * hop:(i + 1) * hop] ** 2)) if len(a[i * hop:(i + 1) * hop]) else 0 for i in range(n)])
         env = np.clip(rms / max(1e-6, np.percentile(rms, 95)), 0, 1)
-        h = heard(wav, say)
+        h = heard(wav, say) if eng != "fake" else None         # гул проверки (SKIT_FAKE) — не речь
         if h:
             print(f"    распознано: «{h[0]}» — совпадение {h[1]:.0%}" + ("  ⚠ ГОЛОС НЕ СОВПАЛ С ТЕКСТОМ" if h[1] < 0.6 else ""))
         db[ln["name"]] = {"text": video.show_text(ln["text"]), "say": say, "env": [round(float(x), 3) for x in env],

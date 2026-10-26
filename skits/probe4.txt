@@ -5,8 +5,8 @@
 карта: radiant_field
 герой pudge  -4250 -3220
 герой sniper -3350 -3220
-голос pudge  sapi=Pavel
-голос sniper sapi=Pavel pitch=3 edge=ru-RU-DmitryNeural
+голос pudge  ref=pudge sapi=Pavel
+голос sniper ref=sniper sapi=Pavel pitch=3
 
 sniper: Ближе не подходи. Я стреляю дальше всех. | доволен | средний | жест гордо 2
 pudge:  Дальше всех? | ухмылка | селфи

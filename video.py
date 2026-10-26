@@ -7,7 +7,8 @@ Python готовит данные: озвучку (Fish Audio, запасной
 Запуск:
     python video.py episodes/002.json out/002.mp4    # рендер выпуска
     python video.py --takes episodes/002.json out           # дубли озвучки на выбор
-Локальная проверка вёрстки без сети: FV_QA_ONLY=1 FV_FAKE_TTS=1 FV_QA_DIR=папка
+Локальная проверка вёрстки без сети: FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=папка
+Черновик за минуту (половина размера, 15 кадров/с): FV_DRAFT=1
 """
 import asyncio
 import json
@@ -665,8 +666,9 @@ def _render_chunk(args):
     import base64
     from io import BytesIO
     data, frames, checks, out_mp4, gl = args
+    draft = bool(os.environ.get("FV_DRAFT"))          # черновик: половина размера и 15 кадров/с — для «то / не то»
     ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "png",
-                           "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                           "-framerate", str(FPS // 2 if draft else FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
                            "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
     problems, qa = [], []
     with sync_playwright() as p:
@@ -682,7 +684,10 @@ def _render_chunk(args):
             t = fi / FPS
             page.evaluate("t => seek(t)", t)
             # PNG без потерь, быстрый режим кодирования (в ~1,7 раза быстрее обычного скриншота)
-            png = base64.b64decode(cdp.send("Page.captureScreenshot", {"format": "png", "optimizeForSpeed": True})["data"])
+            shot = {"format": "png", "optimizeForSpeed": True}
+            if draft:
+                shot["clip"] = {"x": 0, "y": 0, "width": 1080, "height": 1920, "scale": 0.5}
+            png = base64.b64decode(cdp.send("Page.captureScreenshot", shot)["data"])
             ff.stdin.write(png)
             if fi == 0:
                 (WORK / "cover.png").write_bytes(png)         # первый кадр собран — он же обложка
@@ -719,7 +724,7 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     for s in segs:
         checks |= {int((s["start"] + x) * FPS) + 1 for x in (1.2, s["dur"] * 0.55, s["dur"] - 0.5)}
     n = int(total * FPS)
-    frames = sorted(checks) if os.environ.get("FV_QA_ONLY") else list(range(n))   # быстрая проверка: только ключевые кадры
+    frames = sorted(checks) if os.environ.get("FV_QA_ONLY") else list(range(0, n, 2 if os.environ.get("FV_DRAFT") else 1))   # быстрая проверка: только ключевые кадры
     workers = max(1, int(os.environ.get("FV_WORKERS", os.cpu_count() or 2)))
     size = math.ceil(len(frames) / workers)
     gl = bool(re.search(r'"type": "(model|stage)"', json.dumps(data["segs"])))
@@ -920,7 +925,7 @@ def render(ep, out_path, consts_dir="dotaconstants/build"):
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
     stem = out_path.stem
     cover = out_path.with_name((stem.replace("facts_", "cover_", 1) if stem.startswith("facts_") else "cover_" + stem) + ".png")
-    if (WORK / "cover.png").exists() and not os.environ.get("FV_QA_ONLY"):
+    if (WORK / "cover.png").exists() and not os.environ.get("FV_QA_ONLY") and not os.environ.get("FV_DRAFT"):
         shutil.copy(WORK / "cover.png", cover)
         print(f"обложка: {cover}")
     print(f"готово: {out_path} ({total:.1f} с)")

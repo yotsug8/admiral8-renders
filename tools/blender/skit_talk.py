@@ -4,12 +4,111 @@
 #   base — стойка, line — реплика (громкость из A8_VOICES), off — когда в анимации начинается голос, dur — длина;
 #   jaw — кость челюсти (есть у Пуджа, Акса, Тайда; нет — говорит головой), head — кость головы;
 #   mood — «down»: опускает голову (сник), «up»: задирает подбородок (хвастается), иначе ровно.
-# Кивки, сглаживание и приглушённое качание стойки — из hook_talk.py (подключается как библиотека).
+# Поза — игровая стойка, поверх неё повороты суставов в мире; ключи запекаются покадрово (bake).
 import json, math, os
+import bpy
+from mathutils import Matrix, Vector
 
-A8_LIB = True
-_lib = os.path.join(os.path.dirname(os.path.abspath(globals().get("__file__", "skit_talk.py"))), "hook_talk.py")
-exec(compile(open(_lib, encoding="utf-8").read(), _lib, "exec"))
+R = math.radians
+MW = arm.matrix_world
+X = Vector((1, 0, 0)); Z = Vector((0, 0, 1))
+VOICES = json.load(open(os.environ["A8_VOICES"], encoding="utf-8"))   # voices.json сценки (tools/skit/voices.py)
+JAW_K = 0.35 if os.environ.get("A8_FACE") else 1.0      # в Blender рот ведут морфы лица (face.py), кость челюсти — только помогает
+
+
+def sm(a, b, t):
+    t = min(1.0, max(0.0, (t - a) / (b - a))); return t * t * (3 - 2 * t)
+
+
+def world(name):
+    return MW @ arm.pose.bones[name].matrix
+
+
+def turn(name, axis, ang):
+    M = world(name); p = M.translation.copy()
+    arm.pose.bones[name].matrix = MW.inverted() @ (Matrix.Translation(p) @ Matrix.Rotation(ang, 4, axis) @ Matrix.Translation(-p) @ M)
+    bpy.context.view_layer.update()
+
+
+def base_pose(action, t):
+    ad = arm.animation_data or arm.animation_data_create(); ad.action = ACTS[action]
+    try: ad.action_slot = ACTS[action].slots[0]
+    except Exception: pass
+    n = ACTS[action].frame_range[1]; f = (t * globals().get("IMPORT_FPS", 24.0)) % n   # анимации glb легли в кадры с частотой импорта
+    sc.frame_set(int(f), subframe=f - int(f))
+
+
+def voice(name, off):
+    """Громкость реплики в момент t сцены анимации (0…1), сглаженная: рот открывается быстро, закрывается мягче."""
+    env = VOICES[name]["env"]
+    def at(t):
+        i = int((t - off) * 30)
+        return env[i] if 0 <= i < len(env) else 0.0
+    return at
+
+
+def smooth_series(fn, n, up=0.6, down=0.25):
+    vals, v = [], 0.0
+    for k in range(n + 1):
+        x = fn(k / FPS); v += (x - v) * (up if x > v else down); vals.append(v)
+    return vals
+
+
+def soft(vals, tau=0.25):
+    """Сглаживание без запаздывания (вперёд и назад, постоянная времени tau с): движения головы без рывков."""
+    a = 1 - math.exp(-1 / (FPS * tau)); out = list(vals)
+    for rng in (range(1, len(out)), range(len(out) - 2, -1, -1)):
+        for i in rng:
+            j = i - 1 if rng.step > 0 else i + 1
+            out[i] = out[j] + (out[i] - out[j]) * a
+    return out
+
+
+def bake(name, dur, pose):
+    n = int(dur * FPS); keyed = []
+    for k in range(n + 1):
+        for pb in arm.pose.bones:
+            pb.matrix_basis = Matrix.Identity(4)
+        pose(k / FPS, k)
+        keyed.append({pb.name: pb.matrix.copy() for pb in arm.pose.bones})
+    act = bpy.data.actions.new(name); ad = arm.animation_data; ad.action = act
+    try: ad.action_slot = act.slots.new(id_type="OBJECT", name=arm.name)
+    except Exception: pass
+    for k, P in enumerate(keyed):
+        sc.frame_set(k)
+        for pb in arm.pose.bones:
+            pb.matrix_basis = Matrix.Identity(4)
+        for pb in sorted(arm.pose.bones, key=lambda b: len(b.parent_recursive)):
+            pb.matrix = P[pb.name]; bpy.context.view_layer.update()
+        for pb in arm.pose.bones:
+            for path in ("location", "rotation_quaternion", "scale"):
+                pb.keyframe_insert(path, frame=k)
+    act.frame_range = (0, n)
+    return act
+
+
+def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="jaw0_0"):
+    """Говорит: челюсть по громкости, кивок на нарастании громкости; grin — рот чуть приоткрыт после реплики.
+    Без челюсти (jaw=None) — только голова: кивки на ударениях."""
+    loud = smooth_series(voice(line, off), int(dur * FPS))
+    end = off + VOICES[line]["dur"]
+    # кивок — только на ударениях (рост громкости), слабый и сглаженный 0,25 с: без рывков
+    nods = soft([(nod * max(0.0, loud[k] - loud[max(0, k - 3)]) * 3 + 2 * loud[k]) / 3.5 for k in range(len(loud))])
+
+    base_pose(base, 0.0)                                 # покачивание головы самой стойки — приглушить к её начальной позе
+    calm = {b.name: b.rotation_quaternion.copy() for b in arm.pose.bones if b.name == head or "neck" in b.name}
+
+    def pose(t, k):
+        base_pose(base, t)
+        for nm, q in calm.items():
+            b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65)
+        bpy.context.view_layer.update()
+        v = loud[k]
+        turn(head, X, R(nods[k]))
+        if jaw:
+            turn(jaw, X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
+    return pose
+
 
 TALK = json.loads(os.environ.get("A8_TALK", "[]"))
 MOOD = {"down": (14, 22), "up": (-5, -9)}              # (шея, голова) в градусах: наклон вперёд +

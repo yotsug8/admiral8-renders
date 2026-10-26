@@ -1,6 +1,6 @@
 # Настоящая карта доты в Blender: кусок, вырезанный tools/map_crop.mjs из полной выгрузки (_game/world), с материалами
 # как в игре — земля смешивается из 4 слоёв (свой шейдер multiblend по параметрам vmat), прочее — с дизерингом альфы.
-# Взято из сборки сцены 006. Использование: import dota_map; objs = dota_map.load(путь_к_glb, папка_текстур)
+# Использование: import dota_map; objs = dota_map.load(путь_к_glb, папка_текстур)
 # Оси: Blender x = игра y / 39.37, Blender y = −игра x / 39.37, z = игра z / 39.37.
 import bpy, bmesh, math, os, re
 from mathutils import Vector

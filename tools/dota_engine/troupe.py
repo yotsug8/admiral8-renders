@@ -8,9 +8,8 @@ import json, os, re, shutil, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from hero_parts import S2V, VPK, hero_model
 
-GAME = r"D:\SteamLibrary\steamapps\common\dota 2 beta"
-CONTENT = os.path.join(GAME, "content", "dota_addons", "admiral8", "models", "a8")
-RC = os.path.join(GAME, "game", "bin", "win64", "resourcecompiler.exe")
+from paths import CONTENT as _CONTENT, RC
+CONTENT = os.path.join(_CONTENT, "models", "a8")
 DB = os.path.join(HERE, "..", "..", "_game", "data", "troupe.json")
 M2U = 39.37
 

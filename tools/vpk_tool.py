@@ -5,7 +5,8 @@
 # python vpk_tool.py deps <список> <папка>   — извлечь файлы из списка и всё, на что они ссылаются (материалы, текстуры, модели)
 import os, re, struct, sys
 
-ROOT = os.environ.get("DOTA_DIR", r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import GAME as ROOT                     # папка игры — tools/paths.py (DOTA_ROOT)
 DIR = os.path.join(ROOT, "pak01_dir.vpk")
 
 

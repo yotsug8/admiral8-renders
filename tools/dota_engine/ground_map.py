@@ -9,7 +9,9 @@ BUILD = os.path.join(HERE, "..", "..", "_game", "data", "buildings.txt")   # з�
 # сколько места занимает здание вокруг своей точки (ед.): сквозь них путь не проложить
 RADIUS = {"npc_dota_tower": 150, "npc_dota_barracks": 220, "npc_dota_fort": 380, "npc_dota_filler": 110,
           "ent_dota_shop": 150, "ent_dota_fountain": 450, "npc_dota_watch_tower": 110, "npc_dota_roshan_spawner": 0}
-LOG = r"D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota\console.log"
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from paths import GAME                              # папка игры — tools/paths.py
+LOG = os.path.join(GAME, "console.log")
 
 
 def grab(step=64, rad=8192):

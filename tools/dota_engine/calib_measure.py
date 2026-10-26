@@ -1,10 +1,11 @@
 # Где Пуджи на снимке калибровки: ищет в кадре розово-красные пятна (кожа и кровь) и печатает их середины
 # в долях половины кадра. py -3.11 tools/dota_engine/calib_measure.py [снимок.tga]
-import sys, glob
+import glob, os, sys
 import numpy as np
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from paths import GAME
 
-shot = sys.argv[1] if len(sys.argv) > 1 else sorted(
-    glob.glob(r"D:/SteamLibrary/steamapps/common/dota 2 beta/game/dota/screenshots/shot_*.tga"))[-1]
+shot = sys.argv[1] if len(sys.argv) > 1 else sorted(glob.glob(os.path.join(GAME, "screenshots", "shot_*.tga")))[-1]
 a = np.fromfile(shot, dtype=np.uint8, offset=18).reshape(1440, 1080, 4)[:, :, :3].astype(int)
 b, g, r = a[:, :, 0], a[:, :, 1], a[:, :, 2]        # TGA: BGRA
 m = (r > 90) & (r > g * 1.25) & (r > b * 1.25)      # кожа и кровь Пуджа

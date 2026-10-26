@@ -4,7 +4,7 @@
 # blender -b --factory-startup -P tools/blender/render_scene.py -- <scene.json> <папка кадров> [кадры: все | 75,150,300] [half]
 #   half — пробные кадры в половинном размере
 import bpy, sys, os, json, math, re
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 args = sys.argv[sys.argv.index("--") + 1:]
 SCENE, OUT = os.path.abspath(args[0]), os.path.abspath(args[1])   # Blender пишет относительные пути от корня диска
@@ -208,6 +208,8 @@ for name, a in D["actors"].items():
             st.repeat = max(1.0, seg / length)
         st.extrapolation = "HOLD_FORWARD"
         st.blend_type = "REPLACE"
+        if i:                                         # стык анимаций — плавно за 6 кадров (иначе голова скачет на 7° за кадр)
+            st.use_auto_blend = False; st.blend_in = min(6.0, (st.frame_end - st.frame_start) / 2)
     # положение и поворот покадрово (модель смотрит в −Y, поворот доты 0 — на восток)
     for f, (x, y, z, pi, ya, ro) in enumerate(a["keys"]):
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
@@ -299,7 +301,14 @@ skyr = wn.nodes.new("ShaderNodeValToRGB")
 skyr.color_ramp.elements[0].position = 0.0; skyr.color_ramp.elements[0].color = (0.42, 0.60, 0.86, 1)   # у горизонта
 skyr.color_ramp.elements[1].position = 0.35; skyr.color_ramp.elements[1].color = (0.08, 0.26, 0.74, 1)  # зенит
 wn.links.new(tcw.outputs["Generated"], sep.inputs["Vector"]); wn.links.new(sep.outputs["Z"], skyr.inputs["Fac"])
-wn.links.new(skyr.outputs["Color"], bg.inputs["Color"]); bg.inputs["Strength"].default_value = 0.9
+# облака (как в примерах — небо не плоское): шум по направлению, порог рампой, белое поверх градиента
+cn = wn.nodes.new("ShaderNodeTexNoise"); cn.inputs["Scale"].default_value = 2.2; cn.inputs["Detail"].default_value = 8
+cn.inputs["Roughness"].default_value = 0.6
+cr = wn.nodes.new("ShaderNodeValToRGB"); cr.color_ramp.elements[0].position = 0.5; cr.color_ramp.elements[1].position = 0.72
+cmx = wn.nodes.new("ShaderNodeMix"); cmx.data_type = "RGBA"; cmx.inputs["B"].default_value = (0.86, 0.89, 0.96, 1)
+wn.links.new(tcw.outputs["Generated"], cn.inputs["Vector"]); wn.links.new(cn.outputs["Fac"], cr.inputs["Fac"])
+wn.links.new(cr.outputs["Color"], cmx.inputs["Factor"]); wn.links.new(skyr.outputs["Color"], cmx.inputs["A"])
+wn.links.new(cmx.outputs["Result"], bg.inputs["Color"]); bg.inputs["Strength"].default_value = 0.9
 
 
 def light(kind, rot, energy, color):
@@ -396,6 +405,34 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
         C, hide = clear([at(a_) for a_ in (ang, ang + 15, ang - 15, ang + 30)], [H], who)
         T = H - Vector((0, 0, vis * 0.17))             # глаза — в верхней трети
         plans.append((f0, f1, C, T, fov, who, H, o.get("fstop", 1.2), who, hide))
+    elif kind == "selfie":
+        # селфи (эталон solevix, arbuzprodota): широкий объектив вплотную, лицо — width ширины кадра, камера ниже лица
+        # (below — доля отступа) смотрит вверх на небо и качается как в руке: вперёд-назад, вбок, с креном.
+        # Камера ведёт голову со сглаживанием 0,35 с — голова гуляет по кадру, но не уходит из него.
+        hw = ACTORS[who]["info"].get("head_w", 0.95)        # ширина головы, м (Пудж ~0,95)
+        d = hw / o.get("width", 0.7) / (2 * math.tan(fov / 2) * 9 / 16)
+        hs = [head(who, f) for f in range(f0, f1)]
+        up = Vector((0, 0, o.get("hup", 0.3)))             # центр лица выше кости головы (кость — у основания черепа)
+        def softv(vs, tau=0.35):
+            a_ = 1 - math.exp(-1 / (FPS * tau)); out = [v.copy() for v in vs]
+            for rng in (range(1, len(out)), range(len(out) - 2, -1, -1)):
+                for i_ in rng:
+                    j_ = i_ - 1 if rng.step > 0 else i_ + 1
+                    out[i_] = out[j_] + (out[i_] - out[j_]) * a_
+            return out
+        Hs = softv([h + up for h, _ in hs]); Fs = softv([fc for _, fc in hs], 0.6)
+        C0, hide = clear([Hs[0] + rotz(Fs[0], a_) * d for a_ in (o.get("ang", 12), -o.get("ang", 12), 30, -30)], [Hs[0]], who)
+        sgn = 1 if (C0 - Hs[0]).xy.angle_signed(Fs[0].xy, 0) <= 0 else -1
+        track = {}
+        for i_, f in enumerate(range(f0, f1)):
+            tt = f / FPS
+            a_ = sgn * o.get("ang", 12) + 9 * math.sin(tt * 2.0) + 3 * math.sin(tt * 4.7 + 1)          # вбок
+            dd = d * (1 + 0.10 * math.sin(tt * 2.6 + 0.5) + 0.04 * math.sin(tt * 5.3))                  # к лицу и от него
+            C = Hs[i_] + rotz(Fs[i_].normalized(), a_) * dd
+            C.z = Hs[i_].z - o.get("below", 0.45) * dd + 0.05 * dd * math.sin(tt * 3.1)
+            roll = math.radians(4 * math.sin(tt * 1.7 + 2) + 1.5 * math.sin(tt * 4.1))
+            track[f] = (C, Hs[i_] + Vector((0, 0, o.get("aim", 0.08) * dd)), roll)
+        plans.append((f0, f1, C0, Hs[0], fov, who, Hs[0], o.get("fstop", 1.4), who, hide, track))
     else:                                              # over
         F, _ = avg_head(who, f0, min(f1, f0 + 6)); B, _ = avg_head(other, f0, min(f1, f0 + 6))
         u = F - B; u.z = 0; u.normalize(); n = Vector((-u.y, u.x, 0))
@@ -434,7 +471,8 @@ if plans:
     rim = bpy.data.objects.new("rim", bpy.data.lights.new("rim", "AREA")); sc.collection.objects.link(rim)
     rim.data.shape = "DISK"; rim.data.size = 2.0; rim.data.color = (0.62, 0.78, 1.0)
     hidden = set().union(*[p[9] for p in plans])
-    for f0, f1, C, T, fov, fw, FP, fst, lw, hide in plans:
+    for f0, f1, C, T, fov, fw, FP, fst, lw, hide, *trk in plans:
+        trk = trk[0] if trk else None
         for h in hidden:                               # убранные деревья — только на своём плане
             h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
         L, _ = avg_head(lw, f0, f1)
@@ -442,14 +480,22 @@ if plans:
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
             k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)
-            cam.location = C + (T - C) * 0.06 * k      # медленный наезд
-            cam.rotation_euler = (T - cam.location).to_track_quat("-Z", "Y").to_euler()
-            hand_held(f)
+            if trk:                                    # селфи: камера покадрово (см. выше), крен — вокруг оси взгляда
+                Cf, Tf, roll = trk[f]; cam.location = Cf
+                q = (Tf - Cf).to_track_quat("-Z", "Y"); q.rotate(Matrix.Rotation(roll, 4, Tf - Cf)); cam.rotation_euler = q.to_euler()
+                fp = (Tf if fw not in ACTORS else fp)
+            else:
+                cam.location = C + (T - C) * 0.06 * k      # медленный наезд
+                cam.rotation_euler = (T - cam.location).to_track_quat("-Z", "Y").to_euler()
+                hand_held(f)
             cam_d.angle_y = fov; cam_d.keyframe_insert("lens", frame=f)
             cam_d.dof.focus_distance = (fp - cam.location).length; cam_d.dof.aperture_fstop = fst
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
             cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-            for lo, dirv, dist, up, en in ((key, rotz(tocam, 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM)):
+            lights = ((key, rotz(tocam, 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+            if trk:                                    # селфи: камера снизу, небо за головой — ключевой ниже и ближе к камере
+                lights = ((key, rotz(tocam, 35), 3.0, 0.5, LIGHT_KEY * 1.3), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+            for lo, dirv, dist, up, en in lights:
                 lo.location = L + dirv * dist + Vector((0, 0, up))
                 lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()
                 lo.data.energy = en
@@ -480,6 +526,30 @@ for idb in [cam, cam_d, bpy.data.objects.get("key"), bpy.data.objects.get("rim")
         for fc in (getattr(act, "fcurves", None) or []):
             for kp in fc.keyframe_points:
                 kp.interpolation = "CONSTANT"          # склейки — без промежуточных кадров
+
+# ---------- проверка движения (эталон: голова всё время плавно движется, без рывков): поворот кости головы за кадр
+# и доля ширины кадра, которую занимает голова, на крупных планах (close, selfie)
+for t0_, kind_, who_, *_r in SHOTS:
+    if kind_ not in ("close", "selfie") or who_ not in ACTORS:
+        continue
+    A = ACTORS[who_]; pb = A["arm"].pose.bones.get(A["info"].get("head_bone") or "head"); hw = A["info"].get("head_w", 0.95)
+    f0 = int(round(t0_ * FPS)); f1 = min(N, next((int(round(x[0] * FPS)) for x in SHOTS if x[0] > t0_), N))
+    rot, wid, prev = [], [], None
+    for f in range(f0, f1):
+        sc.frame_set(f)
+        M = A["arm"].matrix_world @ pb.matrix; q = M.to_quaternion()
+        if prev is not None:
+            rot.append(math.degrees(prev.rotation_difference(q).angle))
+        prev = q
+        Hc = M.translation; z_ = -(cam.matrix_world.inverted() @ Hc).z   # глубина головы по оси взгляда
+        wid.append(hw / (2 * z_ * math.tan(cam_d.angle_y / 2) * 9 / 16))
+    if os.environ.get("A8_DEBUG"):
+        print("  поворот по кадрам:", " ".join(f"{f0 + 1 + i}:{v:.1f}" for i, v in enumerate(rot)))
+        print("  ширина по кадрам:", " ".join(f"{v * 100:.0f}" for v in wid), "дальность", round((cam.matrix_world.translation - Hc).length, 2))
+    if rot:
+        rs = sorted(rot); jerk = max(abs(rot[i] - rot[i - 1]) for i in range(1, len(rot))) if len(rot) > 1 else 0
+        print(f"  ДВИЖЕНИЕ {who_} {kind_}: поворот головы за кадр медиана {rs[len(rs) // 2]:.2f}°, макс {rs[-1]:.2f}°, "
+              f"скачок {jerk:.2f}°; голова {min(wid) * 100:.0f}–{max(wid) * 100:.0f} % ширины кадра")
 
 # ---------- рендер
 for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):

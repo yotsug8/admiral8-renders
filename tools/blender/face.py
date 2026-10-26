@@ -2,6 +2,7 @@
 # Ключи пишутся на морфы головы на всю длину сцены (кадры сцены):
 #   речь   — по тексту реплики: буквы раскладываются по времени звучания (начало и конец речи — по громкости),
 #            каждая буква — форма рта (виземa), формы сливаются соседями; раскрытие рта умножается на громкость;
+#   крик   — D["mouth"][реплика]: раскрытие рта на громких местах умножается (рот до предела);
 #   эмоции — из сценария: [начало, конец, актёр, {морф: вес}], плавный вход и выход;
 #   жизнь  — моргание раз в 2–4,5 с и мелкие движения глаз.
 # Используется из render_scene.py: face.animate(head_obj, actor, D, voices_json, FPS, N)
@@ -65,6 +66,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1):
         if who != actor or name not in voices:
             continue
         marks, loud = _speech(voices[name].get("say", voices[name]["text"]), voices[name]["env"], off, fps)
+        mg = (D.get("mouth") or {}).get(name, 1.0)          # крик: рот на громком раскрывается сильнее (до предела)
         for f in range(n):
             t = f / fps
             near = [(math.exp(-((t - tm) / 0.045) ** 2 / 2), v) for tm, v in marks if abs(t - tm) < 0.2]
@@ -75,7 +77,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1):
             for x, v in near:
                 for k, val in v.items():
                     if k in track:
-                        g = val * (jaw * L if k == "jawOpen" else 1.0)
+                        g = val * (jaw * L * mg ** loud(t) if k == "jawOpen" else 1.0)
                         track[k][f] += gain * g * x / max(ws, 1.0)
 
     # эмоции из сценария: вход и выход 0,25 с

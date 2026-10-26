@@ -108,7 +108,7 @@ def grade(img):
     a = 1 - (1 - a) * (1 - glow * 0.2)                                # «экран» — слабо: сильнее белит картинку
     a = a * VIG
     img = Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8))
-    img = ImageEnhance.Contrast(img).enhance(1.05); img = ImageEnhance.Color(img).enhance(1.05)
+    img = ImageEnhance.Contrast(img).enhance(1.05); img = ImageEnhance.Color(img).enhance(1.15)   # насыщенность ~0,45 как в эталоне (было 1,05 — 0,39)
     return img
 
 

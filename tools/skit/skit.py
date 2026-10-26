@@ -37,16 +37,20 @@ EMO = {
     "злой": {"browLowerer": 1.0, "noseWrinkler": 0.5, "jawClencher": 0.7, "lipStretcher": 0.3, "squint": 0.3},
     "хмурый": {"browLowerer": 0.6, "lipCornerDepressor": 0.3, "chinRaiser": 0.3},
     "удивлён": {"innerBrowRaiser": 1.0, "outerBrowRaiser": 0.9, "upperLidRaiser": 0.8, "jawOpen": 0.3},
+    "крик": {"browLowerer": 1.0, "noseWrinkler": 0.8, "upperLidRaiser": 0.7, "upperLipRaiser": 0.9, "lowerLipDepressor": 0.7,
+             "lipStretcher": 0.6, "jawOpen": 0.45, "nostrilDilator": 0.8},
 }
 EMO.update({"оглушен": EMO["оглушён"], "удивлен": EMO["удивлён"], "злость": EMO["злой"], "радость": EMO["улыбка"]})
 MOOD = {"вверх": "up", "вниз": "down"}
-SHOT = {"крупно": "close", "через плечо": "over"}
+SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie"}
 # настройки планов render_scene.py (раздел «камера») — как в «Крюке»
 P_EST = {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}   # общий через плечо, длинный объектив
 P_CLOSE = {"size": 0.85, "fov": 34}
 P_OVER = {"fov": 30, "xf": 0.6, "xb": -0.3, "up": 0.25}
 P_ACT = {"fov": 30, "xf": 0.8, "up": 0.3}
 P_END = {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45}
+# селфи (эталон solevix, arbuzprodota): широкий объектив вплотную, лицо на 50–80 % ширины кадра, снизу на небо, камера качается
+P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
 HOOK_V = 1600.0                                     # скорость крюка (scripts/npc/heroes/npc_dota_hero_pudge.txt)
 
@@ -77,13 +81,15 @@ def parse(path):
             sc["events"].append({"kind": "hook", "who": m[1], "to": m[3]})
         elif m := re.match(r"(\w+):\s*(.+)$", line):
             text, *tags = [x.strip() for x in re.split(r"\|(?![^{]*\})", m[2])]   # «|» внутри {1300|тысяча триста} — не метка
-            ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "mood": None, "shot": None}
+            ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None}
             for tg in tags:
                 tg = tg.lower()
                 if tg in EMO: ev["emo"] = tg
+                elif len(two := [x.strip() for x in re.split(r"→|>", tg)]) == 2 and all(x in EMO for x in two):
+                    ev["emo"], ev["emo2"] = two                   # «ухмылка → крик»: вторая — с середины реплики
                 elif tg in MOOD: ev["mood"] = MOOD[tg]
                 elif tg in SHOT: ev["shot"] = SHOT[tg]
-                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}; вверх, вниз; крупно, через плечо)")
+                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи)")
             sc["events"].append(ev)
         else:
             raise err("не понял строку")
@@ -150,6 +156,8 @@ def shots(sc, lines, hooks):
             plan = (t, "over", other, who, dict(P_OVER))
         elif e["shot"] == "close":
             plan = (t, "close", who, None, dict(P_CLOSE))
+        elif e["shot"] == "selfie":
+            plan = (t, "selfie", who, None, dict(P_SELFIE))
         elif after_hook:                                  # после броска: через плечо цели на того, кто бросал
             plan = (max(t, after_hook["back"] + 0.07), "over", after_hook["to"], after_hook["who"], dict(P_END))
         elif i == 0:
@@ -167,7 +175,10 @@ def faces(sc, dur, lines, hooks):
     """Эмоции: своя реплика — в полную силу, потом держится вполсилы до следующей эмоции этого героя."""
     marks = {k: [] for k in sc["cast"]}                    # кто: [(начало, конец полной силы, эмоция)]
     for e in lines:
-        if e["emo"]:
+        if e["emo2"]:                                      # смена эмоции на середине реплики (громкое слово — обычно в конце)
+            mid = e["t0"] + 0.45 * (e["t1"] - e["t0"])
+            marks[e["who"]] += [(max(0.0, e["t0"] - LEAD), mid, EMO[e["emo"]]), (mid - 0.1, e["t1"] + 0.3, EMO[e["emo2"]])]
+        elif e["emo"]:
             marks[e["who"]].append((max(0.0, e["t0"] - LEAD), e["t1"] + 0.3, EMO[e["emo"]]))
     for h in hooks:
         marks[h["who"]].append((h["t0"], h["t0"] + 1.5, EMO["усилие"]))
@@ -228,12 +239,15 @@ def build(sc, V, folder):
                       [e["t0"] - LEAD for e in lines if e["who"] == k]) for k in sc["cast"]}
     for e in lines:
         k, a0 = e["who"], max(0.0, round(e["t0"] - LEAD, 2))
-        nxt = next((b for b in busy[k] if b > a0 + 0.01), dur)
-        d = round(min(e["t1"] + 0.6, nxt) - a0, 2)
+        if a0 < 1.0 and busy[k][0] >= a0 - 0.01:          # первая реплика в начале сцены — разговор с нулевого кадра (голова живая сразу)
+            a0 = 0.0
+        nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
+        d = round((min(e["t1"] + 0.6, nxt) if nxt else dur) - a0, 2)   # последняя реплика — до конца сцены (без стойки в хвосте)
         base = info[k]["idle"]
         talk[k].append({"name": "a8_" + e["name"], "base": base, "line": e["name"], "off": round(e["t0"] - a0, 2), "dur": d,
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
-                        "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0})
+                        "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
+                        **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {})})
         anims[k] += [(a0, "a8_" + e["name"]), (round(a0 + d, 2), sc["cast"][k]["stance"] or base)]
     for h in hooks:
         anims[h["who"]] += [(h["t0"], "pudge_meathook_start"), (round(h["t0"] + 0.9, 2), "pudge_meathook_end"),
@@ -277,6 +291,7 @@ def build(sc, V, folder):
     st.dump_json(os.path.join(folder, "scene.json"), focus=[(s[0], s[3] or s[2]) for s in SH],
                  **({"map": f"maps/{sc['map']}.glb"} if sc["map"] else {}),
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
+                 mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
                  talk={k: v for k, v in talk.items() if v})
     if dur > 35:
         print(f"  ВНИМАНИЕ: длина {dur:.1f} с — длиннее 35 с (CLAUDE.md): сократить реплики")
@@ -293,7 +308,7 @@ def dota(sc, st, talk, info, folder, SH):
     a, b = list(sc["cast"])[:2]
     fr = Framer(st, line=(a, b), side=-1)              # камера с юга от линии героев — как планы Blender
     fr.skip = {k for k in st.actors if k.startswith("tip")}
-    st.cam = fr.cut([(t, fr.close(who) if kind == "close" else fr.over(who, other)) for t, kind, who, other, _ in SH])
+    st.cam = fr.cut([(t, fr.close(who) if kind in ("close", "selfie") else fr.over(who, other)) for t, kind, who, other, _ in SH])
     env = dict(os.environ, A8_VOICES=os.path.join(folder, "voices.json"))
     for k, specs in talk.items():
         h = sc["cast"][k]["hero"]

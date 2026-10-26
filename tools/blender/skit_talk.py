@@ -3,7 +3,8 @@
 #   {name, base, line, off, dur, jaw, head, mood}
 #   base — стойка, line — реплика (громкость из A8_VOICES), off — когда в анимации начинается голос, dur — длина;
 #   jaw — кость челюсти (есть у Пуджа, Акса, Тайда; нет — говорит головой), head — кость головы;
-#   mood — «down»: опускает голову (сник), «up»: задирает подбородок (хвастается), иначе ровно.
+#   mood — «down»: опускает голову (сник), «up»: задирает подбородок (хвастается), иначе ровно;
+#   live — живость (плечи и голова всё время плавно движутся, 1 — по эталону), lean — на громком корпус вперёд (крик), jaw_max.
 # Поза — игровая стойка, поверх неё повороты суставов в мире; ключи запекаются покадрово (bake).
 import json, math, os
 import bpy
@@ -11,7 +12,7 @@ from mathutils import Matrix, Vector
 
 R = math.radians
 MW = arm.matrix_world
-X = Vector((1, 0, 0)); Z = Vector((0, 0, 1))
+X = Vector((1, 0, 0)); Y = Vector((0, 1, 0)); Z = Vector((0, 0, 1))
 VOICES = json.load(open(os.environ["A8_VOICES"], encoding="utf-8"))   # voices.json сценки (tools/skit/voices.py)
 JAW_K = 0.35 if os.environ.get("A8_FACE") else 1.0      # в Blender рот ведут морфы лица (face.py), кость челюсти — только помогает
 
@@ -122,6 +123,12 @@ def speaker(s):
     loud = smooth_series(voice(s["line"], s["off"]), int(s["dur"] * FPS))
     # без челюсти голова ещё и покачивается в такт речи — слабо и плавно, как Снайпер в «Крюке»
     sway = soft([(0 if s.get("jaw") else 1.6) * loud[k] * math.sin(k / FPS * 4) for k in range(len(loud))])
+    # живое тело (эталон: голова и плечи всё время движутся, но плавно): медленные синусы разных частот — плечи
+    # качаются и наклоняются, голова поворачивается и склоняется; lean — на громком подаётся корпусом вперёд (крик)
+    live = s.get("live", 1.0); ph = sum(map(ord, s["line"])) % 7
+    spine = next((b.name for b in arm.pose.bones if b.name in ("spine3", "spine2", "spine_2", "spine1")), None)
+    push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
+    w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
 
     def full(t, k):
         pose(t, k)
@@ -132,6 +139,14 @@ def speaker(s):
             turn(s["head"], X, R(mood[1] * d))
         if sway[k]:
             turn(s["head"], X, R(sway[k])); turn(s["head"], Z, R(sway[k] * 0.8))
+        if live:
+            e = sm(0.0, 0.4, t) * sm(s["dur"], s["dur"] - 0.4, t)   # к краям анимации — к стойке, стык без рывка
+            if spine:
+                turn(spine, X, R(e * live * (w(t, (0.42, 2.5), (0.9, 0.8)) + 9 * push[k])))
+                turn(spine, Y, R(e * live * w(t, (0.31, 3.0))))
+            turn(s["head"], Z, R(e * live * w(t, (0.27, 6.0), (0.63, 1.5))))
+            turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
+            turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
     return full
 
 

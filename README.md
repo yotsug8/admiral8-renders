@@ -70,7 +70,7 @@
 - `video.py` — озвучка, выравнивание субтитров, картинки, рендер кадров, звук, дубли.
 - `video.html` — шаблон: стили, раскладки, анимации, проверка раскладки `audit()`.
 - `scene.js`, `scene.css` — сцены из JSON ([SCENES.md](SCENES.md)); `dota_map.js` — материалы карты для 3D в браузере.
-- `episodes/` — сценарии выпусков, `voice/` — выбранные дубли, `covers/` — обложки, `assets/` — иконки и логотипы, `fonts/`, `vendor/` — шрифты и библиотеки с лицензиями.
+- `episodes/` — сценарии выпусков, `voice/` — выбранные дубли, `covers/` — обложки (HTML → PNG: `python tools/cover.py covers/cover_NNN.html`; картинки — только из `assets/`), `assets/` — иконки и логотипы, `fonts/`, `vendor/` — шрифты и библиотеки с лицензиями.
 - `tools/` — извлечение файлов игры (`vpk_tool.py`, `dota_export.py`, `map_crop.mjs`), текстуры; `paths.py` — пути к игре, S2V и Blender (переменные `DOTA_ROOT`, `S2V`, `BLENDER`).
 - `tools/skit/` — сценка одной командой: сценарий (`skits/*.txt`) → голоса → постановка → Blender → сведение.
 - `tools/blender/` — рендер сцены в Blender: герои, мимика, разговор, карта.

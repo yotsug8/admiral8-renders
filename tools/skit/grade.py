@@ -57,7 +57,7 @@ def target():
 
 class Grade:
     """Кривая яркости и усиление цвета под цель; strength — доля (1 — точно под примеры)."""
-    def __init__(self, src_frames, strength=0.85):
+    def __init__(self, src_frames, strength=0.4):   # 0,85 — пересвет (участник: «засвечено сильно»)
         t = json.load(open(TARGET)) if os.path.exists(TARGET) else target()
         s = measure(src_frames)
         xs = np.array([0.0] + s["L"] + [100.0]); ys = np.array([0.0] + t["L"] + [100.0])

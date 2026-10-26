@@ -639,6 +639,9 @@ def prepare(ep, heroes, items):
                        style=f.get("style", "stickers"),      # stickers — наклейки, list — список вопросов, hero — анимированный герой и значки
                        anim=anim_frames(f["anim"]) if f.get("anim") else None)
         else:
+            known = set(re.findall(r'layout === "(\w+)"', (HERE / "video.html").read_text(encoding="utf-8")))
+            if f.get("layout") not in known:          # опечатка в раскладке — пустой кадр без ошибки
+                print(f"    ⚠ часть {i}: неизвестная раскладка «{f.get('layout')}» (есть: {', '.join(sorted(known))}) — или задать scene")
             v = dict(f.get("visual", {}))
             if v.get("heroes"):
                 v["heroes"] = [hero_cutout(k, heroes).as_uri() for k in v["heroes"]]

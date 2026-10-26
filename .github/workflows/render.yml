@@ -1,5 +1,5 @@
 # Рендер выпуска в облаке GitHub (или дубли озвучки / прослушка голосов по кнопке).
-# Быстро: рендерится только изменённый выпуск, кадры — в 4 потока, зависимости из кэша.
+# Быстро: рендерится только изменённый выпуск, кадры — в 4 потока, зависимости, картинки и озвучка из кэша.
 name: render
 
 on:
@@ -47,6 +47,12 @@ jobs:
             ~/.cache/ms-playwright
             ~/.cache/huggingface
           key: render-deps-v2
+      # Кэш выпусков: справочники, картинки CDN, озвучка Fish и распознавание дублей — перерендер не делает их заново
+      - uses: actions/cache@v4
+        with:
+          path: cache
+          key: render-cache-${{ github.run_id }}
+          restore-keys: render-cache-
       - name: Какие выпуски рендерить
         id: eps
         if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}

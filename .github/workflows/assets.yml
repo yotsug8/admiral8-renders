@@ -6,10 +6,10 @@ on:
     inputs:
       heroes:
         description: "ключи героев через пробел"
-        default: "pudge chen centaur kunkka"
+        default: ""
       items:
         description: "ключи предметов через пробел"
-        default: "tango rapier"
+        default: ""
       abilities:
         description: "ключи способностей через пробел"
         default: ""
@@ -63,19 +63,21 @@ jobs:
           import os, urllib.request, io
           from PIL import Image
           from rembg import remove
-          import sys, re
+          import sys, re, json
           sys.stdout = open("a/log.txt", "w")      # лог кладём в ветку: логи Actions мне недоступны
           CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2"
           def get(url):
               req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
               return Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=30).read())).convert("RGBA")
           for k in os.environ["HEROES"].split():
-              im = get(f"{CDN}/videos/dota_react/heroes/renders/{k}.png")
-              print(k, im.size, "альфа min:", im.getextrema()[3][0])
-              if im.getextrema()[3][0] >= 250:
-                  im = remove(im).convert("RGBA")
-              bb = im.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
-              im.crop(bb).save(f"a/hero_{k}.png")
+              try:                                 # один неверный ключ не роняет остальных
+                  im = get(f"{CDN}/videos/dota_react/heroes/renders/{k}.png")
+                  print(k, im.size, "альфа min:", im.getextrema()[3][0])
+                  if im.getextrema()[3][0] >= 250:
+                      im = remove(im).convert("RGBA")
+                  bb = im.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
+                  im.crop(bb).save(f"a/hero_{k}.png")
+              except Exception as e: print("герой", k, "ошибка:", e)
           for k in os.environ["ITEMS"].split():
               try: get(f"{CDN}/images/dota_react/items/{k}.png").save(f"a/item_{k}.png")
               except Exception as e: print("предмет", k, "ошибка:", e)

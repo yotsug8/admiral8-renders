@@ -62,8 +62,8 @@ def load_consts(name, consts_dir):
     local = os.path.join(consts_dir, name)
     if os.path.exists(local):
         return json.load(open(local, encoding="utf-8"))
-    os.makedirs("cache", exist_ok=True)
-    cached = os.path.join("cache", name)
+    os.makedirs(HERE / "cache", exist_ok=True)
+    cached = os.path.join(HERE, "cache", name)
     if not os.path.exists(cached):
         with urllib.request.urlopen(CONSTS_URL + name, timeout=30) as r:
             data = r.read()
@@ -72,8 +72,9 @@ def load_consts(name, consts_dir):
     return json.load(open(cached, encoding="utf-8"))
 
 
-def fetch_image(path, cache_dir="cache"):
+def fetch_image(path, cache_dir=None):
     """Картинка с CDN Steam (с кэшем и повтором). None, если не вышло."""
+    cache_dir = cache_dir or HERE / "cache"
     os.makedirs(cache_dir, exist_ok=True)
     local = os.path.join(cache_dir, path.split("?")[0].strip("/").replace("/", "_"))
     if os.path.exists(local):
@@ -203,7 +204,22 @@ _WHISPER = None
 
 
 def align_words(path):
-    """Слова с таймингами из готовой озвучки (субтитры совпадают с тем, что звучит)."""
+    """Слова с таймингами из готовой озвучки (субтитры совпадают с тем, что звучит).
+    Результат кэшируется по содержимому файла: перерендер не распознаёт дубль заново."""
+    import hashlib
+    key = hashlib.md5(Path(path).read_bytes()).hexdigest()
+    cached = HERE / "cache" / "align" / f"{key}.json"
+    if cached.exists():
+        d = json.loads(cached.read_text(encoding="utf-8"))
+        _PROBS[:] = d["probs"]
+        return [tuple(w) for w in d["words"]]
+    words = _align_words(path)
+    cached.parent.mkdir(parents=True, exist_ok=True)
+    cached.write_text(json.dumps({"words": words, "probs": _PROBS}, ensure_ascii=False), encoding="utf-8")
+    return words
+
+
+def _align_words(path):
     global _WHISPER
     from faster_whisper import WhisperModel
     if _WHISPER is None:
@@ -283,7 +299,15 @@ def speak(text, path_mp3, voice_file=None, voice=None):
         return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
     if FISH_KEY and not os.environ.get("FV_FAKE_TTS"):
         try:
-            return align_to_script(text.replace("\u0301", ""), tts_fish(text, path_mp3, voice))
+            # озвучка кэшируется по тексту и настройкам голоса: перерендер не платит за неё заново
+            import hashlib
+            key = hashlib.md5(f"{text}|{voice or FISH_VOICE}|{FISH_MODEL}|{FISH_SPEED}|{FISH_TEMP}".encode()).hexdigest()
+            cached = HERE / "cache" / "tts" / f"{key}.mp3"
+            if not cached.exists():
+                cached.parent.mkdir(parents=True, exist_ok=True)
+                tts_fish(text, cached, voice, align=False)
+            shutil.copy(cached, path_mp3)
+            return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
         except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
             print(f"  ВНИМАНИЕ: Fish Audio не сработал ({e}), озвучка запасным голосом edge-tts")
     elif not FISH_KEY:
@@ -616,14 +640,15 @@ def _render_chunk(args):
     from playwright.sync_api import sync_playwright
     import base64
     from io import BytesIO
-    data, frames, checks, out_mp4 = args
+    data, frames, checks, out_mp4, gl = args
     ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "png",
                            "-framerate", str(FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
                            "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
     problems, qa = [], []
     with sync_playwright() as p:
-        br = p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security",
-                                     "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])   # WebGL для 3D-моделей
+        # WebGL (swiftshader) — только для 3D (model, stage): с ним каждый снимок кадра в 3 раза дольше
+        gl_args = ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] if gl else ["--disable-gpu"]
+        br = p.chromium.launch(args=["--allow-file-access-from-files", "--disable-web-security"] + gl_args)
         page = br.new_page(viewport={"width": 1080, "height": 1920}, device_scale_factor=1)
         page.on("pageerror", lambda e: problems.append(f"JS-ошибка: {e}"))
         page.goto((HERE / "video.html").as_uri())
@@ -673,7 +698,8 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     frames = sorted(checks) if os.environ.get("FV_QA_ONLY") else list(range(n))   # быстрая проверка: только ключевые кадры
     workers = max(1, int(os.environ.get("FV_WORKERS", os.cpu_count() or 2)))
     size = math.ceil(len(frames) / workers)
-    jobs = [(data, frames[k:k + size], checks, WORK / f"chunk_{j}.mp4") for j, k in enumerate(range(0, len(frames), size))]
+    gl = bool(re.search(r'"type": "(model|stage)"', json.dumps(data["segs"])))
+    jobs = [(data, frames[k:k + size], checks, WORK / f"chunk_{j}.mp4", gl) for j, k in enumerate(range(0, len(frames), size))]
     t0 = time.time()
     with ProcessPoolExecutor(len(jobs)) as ex:
         results = list(ex.map(_render_chunk, jobs))

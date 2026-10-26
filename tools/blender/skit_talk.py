@@ -122,16 +122,28 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="
 
 # Свои жесты (docs/ANIMATION.md: свои анимации, игровые — только если к месту): повороты костей в мире
 # (оси сцены: X — вбок, Y — назад от лица, Z — вверх; +X наклоняет вперёд-вниз), (кость, ось, градусы, дрожь°);
+# SPINE и HEAD — кости спины и головы этого героя (у Пуджа spine3, у Снайпера Spine_2);
 # руку — прицелом: ("aim", плечо, кисть, направление) — кисть ложится на направление при любой стойке.
 # Вход 0,25 с с перелётом (рука «выстреливает»), удержание с дрожью кисти, выход 0,45 с.
 GESTURES = {
     # «крюк»: рука с крюком выброшена к камере (вперёд, на своей стороне — лицо открыто) и трясёт им, корпус вперёд
-    "крюк": [("spine3", X, 6, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.45, -1, 0.05))), ("wrist_R", X, -15, 10),
-             ("head", X, -6, 0)],
+    "крюк": [("SPINE", X, 6, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.45, -1, 0.05))), ("wrist_R", X, -15, 10),
+             ("HEAD", X, -6, 0)],
+    # «тпоза»: всё тело плавно встаёт в позу скелета по умолчанию (Т-поза) — мемная странность (участник: «прикольно»)
+    "тпоза": [("TPOSE", None, 0, 0), ("aim", "bicep_L", "wrist_L", Vector((1, 0, 0.05))), ("aim", "elbow_L", "wrist_L", Vector((1, 0, 0.05))),
+              ("aim", "bicep_R", "wrist_R", Vector((-1, 0, 0.05))), ("aim", "elbow_R", "wrist_R", Vector((-1, 0, 0.05)))],   # руки в стороны — буква «Т»
+    # нелепые позы (участник: «летать без движения, в странных позах выгибаться»)
+    "парит": [("LIFT", None, 1.4, 0.08)],                         # поднимается и висит (м, покачивание м), тело застыло
+    "выгнуться": [("SPINE", X, -35, 0), ("HEAD", X, -40, 0), ("aim", "bicep_L", "wrist_L", Vector((0.3, 0.8, -0.4))),
+                  ("aim", "bicep_R", "wrist_R", Vector((-0.3, 0.8, -0.4)))],   # дуга назад, руки заломлены за спину
+    "скрутиться": [("SPINE", Z, 55, 0), ("HEAD", Z, -110, 0)],     # корпус в одну сторону, голова — в другую, как у совы
+    "дрожь": [("SPINE", Y, 0, 4), ("HEAD", Z, 0, 6), ("clavicle_L", X, 0, 5), ("clavicle_R", X, 0, 5)],
+    # «гордо»: грудь вперёд (корпус назад), подбородок вверх, свободная рука к груди — хвастается
+    "гордо": [("SPINE", X, -7, 0), ("HEAD", X, -9, 0), ("aim", "bicep_L", "wrist_L", Vector((-0.55, -0.7, 0.35))), ("wrist_L", Y, 10, 0)],
     # «кулак»: свободная рука сжата и поднята к плечу, плечи вверх
     "кулак": [("clavicle_L", X, -10, 0), ("bicep_L", X, -40, 0), ("elbow_L", X, -70, 0), ("wrist_L", X, 10, 6)],
     # «пожал плечами»: обе ключицы вверх, руки чуть в стороны, голова набок
-    "плечи": [("clavicle_R", Y, 12, 0), ("clavicle_L", Y, -12, 0), ("bicep_R", Y, 10, 0), ("bicep_L", Y, -10, 0), ("head", Y, 7, 0)],
+    "плечи": [("clavicle_R", Y, 12, 0), ("clavicle_L", Y, -12, 0), ("bicep_R", Y, 10, 0), ("bicep_L", Y, -10, 0), ("HEAD", Y, 7, 0)],
 }
 
 
@@ -160,7 +172,7 @@ def speaker(s):
     # живое тело (эталон: голова и плечи всё время движутся, но плавно): медленные синусы разных частот — плечи
     # качаются и наклоняются, голова поворачивается и склоняется; lean — на громком подаётся корпусом вперёд (крик)
     live = s.get("live", 1.0); ph = sum(map(ord, s["line"])) % 7
-    spine = next((b.name for b in arm.pose.bones if b.name in ("spine3", "spine2", "spine_2", "spine1")), None)
+    spine = next((b.name for nm in ("spine3", "spine_2", "spine2", "spine_1", "spine1") for b in arm.pose.bones if b.name.lower() == nm), None)
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
 
@@ -185,7 +197,20 @@ def speaker(s):
             ge = gesture_env(t, g["at"], g["at"] + g["len"])
             if ge:
                 for bone, ax, ang, wob in GESTURES[g["kind"]]:
-                    if bone == "aim":
+                    bone = {"SPINE": spine, "HEAD": s["head"]}.get(bone, bone)   # спина и голова — какие есть у героя
+                    if bone is None:
+                        continue
+                    if bone == "LIFT":                          # корень скелета вверх: висит в воздухе, лёгкое покачивание
+                        rb = arm.pose.bones[0]; M = world(rb.name)
+                        up = ge * ang + wob * math.sin(t * 2.2) * min(1.0, ge)
+                        rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, up))) @ M); bpy.context.view_layer.update()
+                    elif bone == "TPOSE":
+                        for pb in arm.pose.bones:
+                            pb.rotation_mode = "QUATERNION"
+                            pb.rotation_quaternion = pb.rotation_quaternion.slerp(Quaternion(), min(1.0, ge))
+                            pb.location = pb.location.lerp(Vector(), min(1.0, ge))
+                        bpy.context.view_layer.update()
+                    elif bone == "aim":
                         if ax in arm.pose.bones and ang in arm.pose.bones:
                             aim(ax, ang, wob, min(1.0, ge))
                     elif bone in arm.pose.bones:

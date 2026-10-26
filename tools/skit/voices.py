@@ -45,6 +45,16 @@ def _edge(text, voice, out):
     video.tts(text, out, voice=voice if voice and "Neural" in voice else None)
 
 
+def _game(text, name, out):
+    """Реплика героя из игры (выгружена в _game/vo/, tools/skit/game_vo.py) — копия файла."""
+    import shutil
+    sys.path.insert(0, HERE); import game_vo
+    src = game_vo.path(name)
+    if not os.path.exists(src):
+        raise SystemExit(f"нет реплики {name}: py -3.11 tools/skit/game_vo.py <герой> (выгрузка из русской озвучки)")
+    shutil.copy(src, out)
+
+
 def _fake(text, voice, out):
     """Проверка без голоса (SKIT_FAKE=1): гул с громкостью по слогам, 0,075 с на букву."""
     t = np.arange(int(0.075 * len(text) * SR)) / SR
@@ -66,10 +76,17 @@ def make(folder, lines):
     os.makedirs(folder, exist_ok=True)
     db_path = os.path.join(folder, "voices.json")
     db = json.load(open(db_path, encoding="utf-8")) if os.path.exists(db_path) else {}
-    eng = engine()
+    eng0 = engine()
     for ln in lines:
         v = ln.get("voice") or {}
+        eng = eng0
+        if isinstance(v, dict) and eng0 not in v and "edge" in v and eng0 != "fake":   # у героя свой голос (Edge) — им, а не общим
+            eng = "edge"
+        if ln.get("game"):                                     # настоящая реплика героя из русской озвучки (tools/skit/game_vo.py)
+            eng = "game"
         v = v.get(eng, "") if isinstance(v, dict) else v
+        if eng == "game":
+            v = ln["game"]
         import video
         say = video.say_text(ln["text"])                       # {7.33|семь тридцать три} → как произносить
         key = hashlib.md5(f"{eng}|{v}|{say}".encode()).hexdigest()[:12]
@@ -78,7 +95,7 @@ def make(folder, lines):
             continue
         raw = os.path.join(folder, ln["name"] + (".raw.wav" if eng in ("sapi", "fake") else ".raw.mp3"))
         print(f"  голос {ln['name']} ({ln['who']}, {eng}{' ' + v if v else ''}): {say}")
-        {"fish": _fish, "sapi": _sapi, "edge": _edge, "fake": _fake}[eng](say, v, raw)
+        {"fish": _fish, "sapi": _sapi, "edge": _edge, "fake": _fake, "game": _game}[eng](say, v, raw)
         a = _pcm(raw); os.remove(raw)
         # тишина по краям — прочь: время реплики в сценке = время звука
         on = np.where(np.abs(a) > SIL * max(1e-6, np.abs(a).max()))[0]

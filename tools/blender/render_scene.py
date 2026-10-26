@@ -224,6 +224,9 @@ for name, a in D["actors"].items():
         g = {"arm": arm, "sc": sc, "ACTS": ACTS, "FPS": FPS, "IMPORT_FPS": FPS, "__file__": os.path.join(REPO, "tools", "blender", "skit_talk.py")}
         exec(compile(open(g["__file__"], encoding="utf-8").read(), g["__file__"], "exec"), g)
         ACTS.update(g["CUSTOM"])
+    if head:                                          # ширина головы по модели (крупность планов), а не Пуджа на всех
+        bb = [head.matrix_world @ Vector(c) for c in head.bound_box]
+        info["head_w"] = round(max(max(v.x for v in bb) - min(v.x for v in bb), max(v.y for v in bb) - min(v.y for v in bb)), 3)
     ACTORS[name] = dict(arm=arm, root=root, acts=ACTS, info=info)
     if head:                                          # мимика: речь по тексту и громкости, эмоции из сценария, моргание
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -362,10 +365,12 @@ wn.links.new(bg.outputs["Background"], wmix.inputs[2]); wn.links.new(wmix.output
 
 def light(kind, rot, energy, color):
     d = bpy.data.lights.new(kind + str(energy), kind); d.energy = energy; d.color = color
+    if kind == "SUN":
+        d.angle = math.radians(10)                        # мягкий край тени (участник: «тени зачастую портят кадры»)
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=0.6, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -477,6 +482,8 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
                     out[i_] = out[j_] + (out[i_] - out[j_]) * a_
             return out
         Hs = softv([h + up for h, _ in hs]); Fs = softv([fc for _, fc in hs], 0.6)
+        if o.get("static"):                            # камера стоит: герой может уйти из кадра (крюк утаскивает жертву)
+            Hs = [Hs[0]] * len(Hs); Fs = [Fs[0]] * len(Fs)
         C0, hide = clear([Hs[0] + rotz(Fs[0], a_) * d_at(f0 / FPS) for a_ in (o.get("ang", 12), -o.get("ang", 12), 30, -30)], [Hs[0]], who)
         sgn = 1 if (C0 - Hs[0]).xy.angle_signed(Fs[0].xy, 0) <= 0 else -1
         track = {}

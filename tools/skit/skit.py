@@ -55,7 +55,7 @@ P_PUSH = {"fov": 40, "width0": 0.38, "width": 0.78, "below": 0.05, "ang": 32, "s
 # средний: герой по колено с жестом, камера чуть снизу (небо за головой), фон размыт слабо, камера спокойная
 P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim": -0.1, "fstop": 4.0}
 P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
-OWN_GESTURES = {"крюк", "кулак", "плечи"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
+OWN_GESTURES = {"крюк", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
 gest_t = lambda e: e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.2 if e["emo2"] else e["t0"]   # жест — на смене эмоции
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
 HOOK_V = 1600.0                                     # скорость крюка (scripts/npc/heroes/npc_dota_hero_pudge.txt)
@@ -79,18 +79,22 @@ def parse(path):
             if m[1] not in sc["cast"]:
                 raise err("сначала «герой»")
             sc["cast"][m[1]]["voice"].update(dict(re.findall(r"(fish|sapi|edge)=(\S+)", m[2])))
-        elif m := re.match(r"(\w+)\s*>\s*(\w+)\s+(\w+)$", line):
+        elif m := re.match(r"(\w+)\s*>\s*(\w+)\s+(\w+)\s*(?:\|\s*(цель))?$", line):   # «| цель» — план на жертву
             if m[2] != "крюк":
                 raise err("действие пока одно — крюк")
             if (sc["cast"].get(m[1]) or {}).get("hero") != "pudge":
                 raise err("крюк бросает только Пудж")
-            sc["events"].append({"kind": "hook", "who": m[1], "to": m[3]})
+            sc["events"].append({"kind": "hook", "who": m[1], "to": m[3], "frame": m[4]})
         elif m := re.match(r"(\w+):\s*(.+)$", line):
             text, *tags = [x.strip() for x in re.split(r"\|(?![^{]*\})", m[2])]   # «|» внутри {1300|тысяча триста} — не метка
             ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None, "gesture": None}
             for tg in tags:
                 tg = tg.lower()
-                if gm := re.match(r"жест\s+([a-zа-яё0-9_]+)(?:\s+([\d.]+))?$", tg):   # жест на смене эмоции (или с начала):
+                if gx := re.match(r"утрировать\s+([\d.]+)$", tg):   # мимика сильнее предела модели (морфы за 1) — мемное искажение
+                    ev["exag"] = float(gx[1])
+                elif gv := re.match(r"реплика\s+([a-z0-9_]+)$", tg):   # настоящая реплика героя из игры (game_vo.py)
+                    ev["game"] = gv[1]
+                elif gm := re.match(r"жест\s+([a-zа-яё0-9_]+)(?:\s+([\d.]+))?$", tg):   # жест на смене эмоции (или с начала):
                     ev["gesture"] = (gm[1], float(gm[2] or 1.0))                  # свой (skit_talk.GESTURES) или анимация игры
                 elif tg in EMO: ev["emo"] = tg
                 elif len(two := [x.strip() for x in re.split(r"→|>", tg)]) == 2 and all(x in EMO for x in two):
@@ -157,7 +161,11 @@ def shots(sc, lines, hooks):
         t = 0.0 if i == 0 else max(end + 0.05, e["t0"] - LEAD)   # склейка — не раньше, чем договорил предыдущий
         end = e.get("t1", e.get("back", 0.0))
         if kind == "hook":
-            out.append((t, "over", e["who"], e["to"], dict(P_ACT))); after_hook = e; last = None
+            if e.get("frame") == "цель":                  # камера стоит на жертве: крюк влетает из-за края и утаскивает её из кадра
+                out.append((t, "selfie", e["to"], None, dict(P_MEDIUM, static=True, sway=0.1)))
+            else:
+                out.append((t, "over", e["who"], e["to"], dict(P_ACT)))
+            after_hook = e; last = None
             continue
         who, other = e["who"], listener(sc, e["who"])
         if e["shot"] == "over":                           # через плечо слушателя на говорящего
@@ -188,11 +196,12 @@ def faces(sc, dur, lines, hooks):
     """Эмоции: своя реплика — в полную силу, потом держится вполсилы до следующей эмоции этого героя."""
     marks = {k: [] for k in sc["cast"]}                    # кто: [(начало, конец полной силы, эмоция)]
     for e in lines:
+        x = e.get("exag", 1.0); X = lambda shp: {k: round(v * x, 2) for k, v in shp.items()}   # «утрировать N»
         if e["emo2"]:                                      # смена эмоции на середине реплики (громкое слово — обычно в конце)
             mid = e["t0"] + 0.45 * (e["t1"] - e["t0"])
-            marks[e["who"]] += [(max(0.0, e["t0"] - LEAD), mid, EMO[e["emo"]]), (mid - 0.1, e["t1"] + 0.3, EMO[e["emo2"]])]
+            marks[e["who"]] += [(max(0.0, e["t0"] - LEAD), mid, X(EMO[e["emo"]])), (mid - 0.1, e["t1"] + 0.3, X(EMO[e["emo2"]]))]
         elif e["emo"]:
-            marks[e["who"]].append((max(0.0, e["t0"] - LEAD), e["t1"] + 0.3, EMO[e["emo"]]))
+            marks[e["who"]].append((max(0.0, e["t0"] - LEAD), e["t1"] + 0.3, X(EMO[e["emo"]])))
     for h in hooks:
         marks[h["who"]].append((h["t0"], h["t0"] + 1.5, EMO["усилие"]))
         marks[h["to"]].append((h["rel"], h["hit"] + 0.1, EMO["испуг"]))
@@ -377,7 +386,7 @@ def main():
         if ev["kind"] == "line":
             n[ev["who"]] = n.get(ev["who"], 0) + 1; ev["name"] = f"{ev['who']}{n[ev['who']]}"
     import voices
-    V = voices.make(folder, [{"name": e["name"], "who": e["who"], "text": e["text"], "voice": sc["cast"][e["who"]]["voice"]}
+    V = voices.make(folder, [{"name": e["name"], "who": e["who"], "text": e["text"], "voice": sc["cast"][e["who"]]["voice"], "game": e.get("game")}
                              for e in sc["events"] if e["kind"] == "line"])
     st, talk, info, SH, dur = build(sc, V, folder)
     if "--dota" in flags:

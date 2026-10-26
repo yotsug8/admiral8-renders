@@ -102,7 +102,7 @@ jobs:
           fi
           for n in ${{ steps.eps.outputs.list }}; do
             echo "== Выпуск $n" | tee -a out/render.log
-            FV_WORKERS=4 FV_SILENT="${{ inputs.silent }}" FV_DRAFT="${{ inputs.draft }}" python video.py "episodes/$n.json" "out/$n.mp4" 2>&1 | tee -a out/render.log
+            FV_WORKERS=4 FV_SILENT="${{ inputs.silent }}" FV_DRAFT="${{ inputs.draft }}" python video.py "episodes/$n.json" "out/$n${{ inputs.draft != '' && '_draft' || '' }}.mp4" 2>&1 | tee -a out/render.log
           done
           echo "рендер занял $(( $(date +%s) - T0 )) с" | tee -a out/render.log
       # Готовые ролики кладём в ветку renders: оттуда их удобно скачать и смотреть на GitHub

@@ -485,12 +485,17 @@ def video_frames(node):
     w, h = int(node.get("w", 880)), int(node.get("h", 495))
     a, d = float(node.get("from", 0)), float(node.get("dur", 6))
     st = path.stat()   # размер и время файла в ключе: новый клип с тем же именем не возьмёт старые кадры из кэша
-    key = hashlib.md5(f"{path}|{st.st_size}|{st.st_mtime_ns}|{w}|{h}|{a}|{d}".encode()).hexdigest()[:10]
+    key = hashlib.md5(f"{path}|{st.st_size}|{st.st_mtime_ns}|{w}|{h}|{a}|{d}|bars".encode()).hexdigest()[:10]
     out = WORK / f"vid_{key}"
     if not out.exists():
         out.mkdir(parents=True)
+        # чёрные поля вокруг картинки (мемы из TikTok, кино в вертикали) — срезать: поле ищет cropdetect
+        det = subprocess.run([ffmpeg_exe(), "-hide_banner", "-ss", str(a), "-t", str(d), "-i", str(path),
+                              "-vf", "cropdetect=24:2:0", "-f", "null", "-"], capture_output=True, text=True, errors="replace").stderr
+        crops = re.findall(r"crop=(\d+:\d+:\d+:\d+)", det)
+        bars = f"crop={max(set(crops), key=crops.count)}," if crops else ""
         subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
-                        "-vf", f"fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
+                        "-vf", f"{bars}fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
                         "-q:v", "3", str(out / "%04d.jpg")], check=True)
     res = dict(fps=FPS, frames=[f.as_uri() for f in sorted(out.glob("*.jpg"))])
     if float(node.get("audio", 0)) > 0:

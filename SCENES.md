@@ -38,12 +38,14 @@
 | `model` | `hero` (ключ, напр. `juggernaut`), `anim` (имя анимации), `parts` (`all` или список), `yaw` (°), `zoom`, `tilt`, `fov`, `rim` (цвет контрового света), `key`/`ambient` (яркость), `speed`, `start`, `in_place` | 3D-герой из файлов игры с одеждой и оружием, анимация по времени сцены |
 | `lottie` | `src` (`file:assets/lottie/….json`), `start`, `speed`, `loop`, `fit` (`cover`) | готовая анимация Lottie (например, с lottiefiles.com, бесплатные — формат Lottie JSON) |
 
+**Мем, клип или стикер со звуком** — тот же `video`: `{"type": "video", "src": "file:_game/memes/хэнк_понял.mp4", "from": 1.2, "dur": 1.5, "audio": 1, "in": {"fx": "pop", "at": "понял"}}` — врезка на смысловое событие, 1–2 с. Файлы мемов лежат локально в `_game/memes/` (не коммитятся), поэтому такой ролик рендерится локально.
+
 `src`: `hero:juggernaut`, `item:blink`, `ability:kunkka_torrent`, `file:assets/…`, `game:panorama/images/minimap/dotamap.png` (картинки из файлов игры).
 
 ## Ресурсы из файлов игры (3D, миникарта, иконки)
 Файлы игры не кладутся в публичный репозиторий: они лежат в `_game/` (в .gitignore), и ролики с ними рендерятся локально, а голос берётся готовым дублем из CI.
 1. На компьютере с дотой: `python tools/vpk_tool.py list <regex>` / `get <regex> <папка>` — достаёт сырые файлы из pak01_dir.vpk (без сторонних программ).
-2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (`S2V_CLI`).
+2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (путь — `tools/paths.py`, переменная `S2V`).
 3. Имена анимаций героя — список печатает экспорт без фильтра (у Джаггернаута их 148).
 4. Кусок карты: файл карты `game/dota/maps/dota.vpk` + зависимости (`vpk_tool.py deps <список> <папка>` — список печатает экспорт как «Failed to load …»). Экспорт мира: `Source2Viewer-CLI -i dota.vpk --vpk_filepath maps/dota/world.vwrld_c -o world.glb -d --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt --game <сырые>/gameinfo.gi`, вырезка: `node tools/map_crop.mjs world.glb _game/maps/<имя>.glb <x> <z> <радиус>` (нужны `@gltf-transform/core` и `functions`), слои террейна — PNG в `_game/maps/<имя>_tex/`.
 

@@ -61,7 +61,9 @@ def fix_hero_mats(objs):
                 for l in list(b.inputs[name].links):
                     m.node_tree.links.remove(l)
                 b.inputs[name].default_value = val
-            b.inputs["Specular IOR Level"].default_value = 0.35
+            for l in list(b.inputs["Specular IOR Level"].links):           # блик из маски доты (specmask) — серый налёт на всём герое,
+                m.node_tree.links.remove(l)                                # «выцветшая» кожа (насыщенность 0,2 при текстуре 0,43)
+            b.inputs["Specular IOR Level"].default_value = 0.2; b.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
             m.surface_render_method = "DITHERED"; m["_a8"] = 1
 
 
@@ -139,6 +141,44 @@ def close_neck(head, objs):
     print(f"  шея {head.name[:30]}: перемычка из {len(neck)} вершин, петель-кромок {len(loops)}: {sorted(len(L) for L in loops)}")
 
 
+def mouth_dark(head):
+    """Рот изнутри: у голов доты рот не прорезан — губы соединены гранями кожи, и на крике (jawOpen до предела) они
+    растягиваются в большие серые полосы вместо темноты рта. Грани, которые морф jawOpen растягивает (площадь больше
+    чем в 2 раза), получают атрибут a8_mouth = 1 по углам граней (вершины губ не трогаются); материал головы — своя
+    копия, цвет × тёмный по этому атрибуту."""
+    me = head.data; kb = me.shape_keys.key_blocks if me.shape_keys else None
+    if not kb or "jawOpen" not in kb:
+        return
+    base, jo = kb[0].data, kb["jawOpen"].data
+    def area(p, co):
+        v = [co[i].co for i in p.vertices]
+        return sum(((v[j] - v[0]).cross(v[j + 1] - v[0])).length / 2 for j in range(1, len(v) - 1))
+    attr = me.color_attributes.get("a8_mouth") or me.color_attributes.new("a8_mouth", "FLOAT_COLOR", "CORNER")
+    n_dark = 0
+    for p in me.polygons:
+        r = area(p, jo) / max(area(p, base), 1e-9)
+        x = min(1.0, max(0.0, (r - 1.6) / 1.4)); n_dark += x > 0.5
+        for li in p.loop_indices:
+            attr.data[li].color = (x, x, x, 1)
+    for ms in head.material_slots:
+        m = ms.material
+        if not m or not m.node_tree:
+            continue
+        m = m.copy(); ms.material = m                                 # своя копия: материал общий с телом
+        nt = m.node_tree; bsdf = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if not bsdf:
+            continue
+        ca = nt.nodes.new("ShaderNodeVertexColor"); ca.layer_name = "a8_mouth"
+        mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["B"].default_value = (0.03, 0.005, 0.005, 1)
+        src = bsdf.inputs["Base Color"].links[0].from_socket if bsdf.inputs["Base Color"].links else None
+        if src:
+            nt.links.new(src, mx.inputs["A"])
+        else:
+            mx.inputs["A"].default_value = bsdf.inputs["Base Color"].default_value
+        nt.links.new(ca.outputs["Color"], mx.inputs["Factor"]); nt.links.new(mx.outputs["Result"], bsdf.inputs["Base Color"])
+    print(f"  рот изнутри {head.name[:30]}: тёмных граней {n_dark} из {len(me.polygons)}")
+
+
 def glb_of(model):
     return os.path.join(RND, model.replace("/", "_").replace(".vmdl", ".glb"))
 
@@ -154,6 +194,7 @@ for name, a in D["actors"].items():
     HERO_OBJS.update(objs); fix_hero_mats(objs)
     head = next((o for o in objs if o.type == "MESH" and o.data.shape_keys), None)   # голова с морфами лица
     if head:
+        mouth_dark(head)                                          # до шеи: перемычка — снаружи
         close_neck(head, objs)
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
@@ -309,6 +350,13 @@ cmx = wn.nodes.new("ShaderNodeMix"); cmx.data_type = "RGBA"; cmx.inputs["B"].def
 wn.links.new(tcw.outputs["Generated"], cn.inputs["Vector"]); wn.links.new(cn.outputs["Fac"], cr.inputs["Fac"])
 wn.links.new(cr.outputs["Color"], cmx.inputs["Factor"]); wn.links.new(skyr.outputs["Color"], cmx.inputs["A"])
 wn.links.new(cmx.outputs["Result"], bg.inputs["Color"]); bg.inputs["Strength"].default_value = 0.9
+# небо в кадре — яркое, а на героев светит тёплее и слабее (голубой свет неба делал кожу серо-сиреневой, «выцветшей»)
+lp = wn.nodes.new("ShaderNodeLightPath"); amb = wn.nodes.new("ShaderNodeBackground"); tint = wn.nodes.new("ShaderNodeMix")
+tint.data_type = "RGBA"; tint.blend_type = "MULTIPLY"; tint.inputs["Factor"].default_value = 1.0; tint.inputs["B"].default_value = (1.0, 0.86, 0.72, 1)
+wn.links.new(cmx.outputs["Result"], tint.inputs["A"]); wn.links.new(tint.outputs["Result"], amb.inputs["Color"])
+wmix = wn.nodes.new("ShaderNodeMixShader"); wout = next(n for n in wn.nodes if n.type == "OUTPUT_WORLD")
+wn.links.new(lp.outputs["Is Camera Ray"], wmix.inputs[0]); wn.links.new(amb.outputs["Background"], wmix.inputs[1])
+wn.links.new(bg.outputs["Background"], wmix.inputs[2]); wn.links.new(wmix.outputs["Shader"], wout.inputs["Surface"])
 
 
 def light(kind, rot, energy, color):
@@ -316,10 +364,10 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=4.0, back=4.2, key=800, rim=1100, expo=0.15, view="AgX", look="AgX - Punchy", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=4.0, back=4.2, key=1500, rim=1100, expo=0.7, amb=0.6, view="AgX", look="AgX - Punchy", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else float(v)
-bg.inputs["Strength"].default_value = LOOK["sky"]
+bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
 light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце с юго-востока (камеры в основном с юга)
 light("SUN", (68, 0, -150), LOOK["back"], (0.58, 0.74, 1.0))   # холодный контровой с северо-запада — обводит силуэты
 LIGHT_KEY, LIGHT_RIM = LOOK["key"], LOOK["rim"]             # свет плана (Вт): ключевой у камеры, контровой за героем
@@ -409,8 +457,15 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
         # селфи (эталон solevix, arbuzprodota): широкий объектив вплотную, лицо — width ширины кадра, камера ниже лица
         # (below — доля отступа) смотрит вверх на небо и качается как в руке: вперёд-назад, вбок, с креном.
         # Камера ведёт голову со сглаживанием 0,35 с — голова гуляет по кадру, но не уходит из него.
+        # наезд (push: [начало, конец], с): крупность растёт от width0 до width — на смене эмоции, плавно
         hw = ACTORS[who]["info"].get("head_w", 0.95)        # ширина головы, м (Пудж ~0,95)
-        d = hw / o.get("width", 0.7) / (2 * math.tan(fov / 2) * 9 / 16)
+        dist = lambda wf: hw / wf / (2 * math.tan(fov / 2) * 9 / 16)
+        d = dist(o.get("width", 0.7)); push = o.get("push"); sw = o.get("sway", 1.0)
+        def d_at(tt):
+            if not push:
+                return d
+            k_ = min(1.0, max(0.0, (tt - push[0]) / max(0.05, push[1] - push[0]))); k_ = k_ * k_ * (3 - 2 * k_)
+            return dist(o.get("width0", 0.4) + (o.get("width", 0.7) - o.get("width0", 0.4)) * k_)
         hs = [head(who, f) for f in range(f0, f1)]
         up = Vector((0, 0, o.get("hup", 0.3)))             # центр лица выше кости головы (кость — у основания черепа)
         def softv(vs, tau=0.35):
@@ -421,16 +476,16 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
                     out[i_] = out[j_] + (out[i_] - out[j_]) * a_
             return out
         Hs = softv([h + up for h, _ in hs]); Fs = softv([fc for _, fc in hs], 0.6)
-        C0, hide = clear([Hs[0] + rotz(Fs[0], a_) * d for a_ in (o.get("ang", 12), -o.get("ang", 12), 30, -30)], [Hs[0]], who)
+        C0, hide = clear([Hs[0] + rotz(Fs[0], a_) * d_at(f0 / FPS) for a_ in (o.get("ang", 12), -o.get("ang", 12), 30, -30)], [Hs[0]], who)
         sgn = 1 if (C0 - Hs[0]).xy.angle_signed(Fs[0].xy, 0) <= 0 else -1
         track = {}
         for i_, f in enumerate(range(f0, f1)):
             tt = f / FPS
-            a_ = sgn * o.get("ang", 12) + 9 * math.sin(tt * 2.0) + 3 * math.sin(tt * 4.7 + 1)          # вбок
-            dd = d * (1 + 0.10 * math.sin(tt * 2.6 + 0.5) + 0.04 * math.sin(tt * 5.3))                  # к лицу и от него
+            a_ = sgn * o.get("ang", 12) + sw * (9 * math.sin(tt * 2.0) + 3 * math.sin(tt * 4.7 + 1))      # вбок
+            dd = d_at(tt) * (1 + sw * (0.10 * math.sin(tt * 2.6 + 0.5) + 0.04 * math.sin(tt * 5.3)))      # к лицу и от него
             C = Hs[i_] + rotz(Fs[i_].normalized(), a_) * dd
-            C.z = Hs[i_].z - o.get("below", 0.45) * dd + 0.05 * dd * math.sin(tt * 3.1)
-            roll = math.radians(4 * math.sin(tt * 1.7 + 2) + 1.5 * math.sin(tt * 4.1))
+            C.z = Hs[i_].z - o.get("below", 0.45) * dd + sw * 0.05 * dd * math.sin(tt * 3.1)
+            roll = math.radians(sw * (4 * math.sin(tt * 1.7 + 2) + 1.5 * math.sin(tt * 4.1)))
             track[f] = (C, Hs[i_] + Vector((0, 0, o.get("aim", 0.08) * dd)), roll)
         plans.append((f0, f1, C0, Hs[0], fov, who, Hs[0], o.get("fstop", 1.4), who, hide, track))
     else:                                              # over

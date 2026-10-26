@@ -2,7 +2,7 @@
 # насыщенность, контраст, движение в кадре (камера и герои), — плюс лист кадров (кадр каждую секунду, отмечены склейки).
 # py -3.11 tools/skit/study.py <папка или файлы mp4> [--out _game/study]
 # Итог: _game/study/<имя>_sheet.jpg и _game/study/metrics.json; печатает таблицу и средние — это «эталон» для своих проб.
-import glob, json, os, sys
+import glob, json, os, re, sys
 import numpy as np
 import imageio_ffmpeg
 from PIL import Image, ImageDraw
@@ -27,7 +27,7 @@ def frames(path, w=180):
 
 
 def study(path, out):
-    name = os.path.splitext(os.path.basename(path))[0].split("-", 1)[-1][:40]
+    name = re.sub(r"^[0-9a-f]{8}-", "", os.path.splitext(os.path.basename(path))[0])[:40]   # без приставки загрузки (8 знаков и дефис)
     prev_h = prev = None; cuts = [0.0]; motion = []; L = []; S = []; C = []; thumbs = []; fps = 30; n = 0
     for fps, f in frames(path):
         t = n / fps; n += 1

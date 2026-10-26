@@ -42,7 +42,7 @@ EMO = {
 }
 EMO.update({"оглушен": EMO["оглушён"], "удивлен": EMO["удивлён"], "злость": EMO["злой"], "радость": EMO["улыбка"]})
 MOOD = {"вверх": "up", "вниз": "down"}
-SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie"}
+SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie", "наезд": "push"}
 # настройки планов render_scene.py (раздел «камера») — как в «Крюке»
 P_EST = {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}   # общий через плечо, длинный объектив
 P_CLOSE = {"size": 0.85, "fov": 34}
@@ -50,6 +50,8 @@ P_OVER = {"fov": 30, "xf": 0.6, "xb": -0.3, "up": 0.25}
 P_ACT = {"fov": 30, "xf": 0.8, "up": 0.3}
 P_END = {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45}
 # селфи (эталон solevix, arbuzprodota): широкий объектив вплотную, лицо на 50–80 % ширины кадра, снизу на небо, камера качается
+# наезд: вполоборота на уровне глаз, объектив нормальный (без искажения селфи); на смене эмоции — от плеч к лицу
+P_PUSH = {"fov": 40, "width0": 0.38, "width": 0.78, "below": 0.05, "ang": 32, "sway": 0.35, "aim": -0.15, "fstop": 2.0}
 P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
 HOOK_V = 1600.0                                     # скорость крюка (scripts/npc/heroes/npc_dota_hero_pudge.txt)
@@ -89,7 +91,7 @@ def parse(path):
                     ev["emo"], ev["emo2"] = two                   # «ухмылка → крик»: вторая — с середины реплики
                 elif tg in MOOD: ev["mood"] = MOOD[tg]
                 elif tg in SHOT: ev["shot"] = SHOT[tg]
-                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи)")
+                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи, наезд)")
             sc["events"].append(ev)
         else:
             raise err("не понял строку")
@@ -158,6 +160,9 @@ def shots(sc, lines, hooks):
             plan = (t, "close", who, None, dict(P_CLOSE))
         elif e["shot"] == "selfie":
             plan = (t, "selfie", who, None, dict(P_SELFIE))
+        elif e["shot"] == "push":                         # камера та же, что селфи (render_scene), но наезд на смене эмоции
+            a = e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.15 if e["emo2"] else e["t0"]
+            plan = (t, "selfie", who, None, dict(P_PUSH, push=[round(a, 2), round(a + 0.45, 2)]))
         elif after_hook:                                  # после броска: через плечо цели на того, кто бросал
             plan = (max(t, after_hook["back"] + 0.07), "over", after_hook["to"], after_hook["who"], dict(P_END))
         elif i == 0:

@@ -64,6 +64,7 @@ class Grade:
         s = measure(src_frames)
         xs = np.array([0.0] + s["L"] + [100.0]); ys = np.array([0.0] + t["L"] + [100.0])
         ys = xs + (ys - xs) * strength
+        hi = xs > 70; ys[hi] = np.minimum(ys[hi], xs[hi])                # света не поднимать — блики не выбеливать
         xs, idx = np.unique(xs, return_index=True); ys = np.maximum.accumulate(ys[idx])   # монотонно
         self.lut = np.interp(np.arange(0, 100.25, 0.25), xs, ys)
         k = [min(2.2, max(0.8, 1 + (tc / max(sc, 1) - 1) * color)) for tc, sc in zip(t["C"], s["C"])]

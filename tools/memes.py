@@ -1,6 +1,8 @@
 # Каталог мемов: _game/memes/*.mp4 → _game/memes/catalog.json и лист _game/memes/memes.jpg.
 #   python tools/memes.py
 # По каждому клипу: длина, есть ли звук, лучший момент (пик движения и громкости — там «реакция»), метки из имени файла.
+# Автоматический момент иногда мимо сути (вспышка громче, чем взгляд): точное время руками — в _game/memes/peaks.json
+# ({"хэнк_понял": 6.2}), оно переживает пересборку каталога и помечается в нём "hand": true.
 # Имя файла = что на нём (хэнк_понял.mp4) — по нему мем вставляется в сцену: {"type": "meme", "name": "хэнк_понял", ...}.
 # Файлы мемов — чужие права: только локально, в репозиторий не коммитить.
 import json, os, re, subprocess, sys
@@ -70,6 +72,8 @@ def main():
     files = sorted(f for f in os.listdir(DIR) if f.lower().endswith(EXT)) if os.path.isdir(DIR) else []
     if not files:
         raise SystemExit(f"нет мемов в {DIR}")
+    hand_path = os.path.join(DIR, "peaks.json")
+    hand = json.load(open(hand_path, encoding="utf-8")) if os.path.exists(hand_path) else {}
     cat = {}
     for f in files:
         p = os.path.join(DIR, f); name = os.path.splitext(f)[0]
@@ -80,10 +84,16 @@ def main():
         score[:len(mv)] += mv / (mv.max() + 1e-6)
         score[:len(ld)] += 0.7 * ld / (ld.max() + 1e-6)
         k = np.convolve(score, np.ones(5) / 5, "same")                      # сглажено ±0,25 с
-        peak = round(float(np.argmax(k)) / 10, 2)
-        cat[name] = {"file": f, "dur": round(dur, 2), "audio": has_audio, "peak": min(peak, round(dur, 2)), "crop": bars(p),
+        peak = min(round(float(np.argmax(k)) / 10, 2), round(dur, 2))
+        by_hand = name in hand
+        if by_hand:
+            peak = min(float(hand[name]), round(dur, 2))
+        cat[name] = {"file": f, "dur": round(dur, 2), "audio": has_audio, "peak": peak, "crop": bars(p),
                      "tags": [t for t in name.split("_") if len(t) > 2]}
-        print(f"{name}: {dur:.1f} с, звук {'есть' if has_audio else 'нет'}, лучший момент {peak:.1f} с")
+        if by_hand:
+            cat[name]["hand"] = True
+        print(f"{name}: {dur:.1f} с, звук {'есть' if has_audio else 'нет'}, "
+              f"лучший момент {peak:.1f} с{' (руками)' if by_hand else ''}")
     json.dump(cat, open(os.path.join(DIR, "catalog.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     # лист: кадр лучшего момента и подпись
     W, H0 = 240, 180; cols = 4; rows = (len(cat) + cols - 1) // cols; fnt = font(15)

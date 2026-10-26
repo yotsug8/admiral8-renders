@@ -38,7 +38,7 @@
 | `model` | `hero` (ключ, напр. `juggernaut`), `anim` (имя анимации), `parts` (`all` или список), `yaw` (°), `zoom`, `tilt`, `fov`, `rim` (цвет контрового света), `key`/`ambient` (яркость), `speed`, `start`, `in_place` | 3D-герой из файлов игры с одеждой и оружием, анимация по времени сцены |
 | `lottie` | `src` (`file:assets/lottie/….json`), `start`, `speed`, `loop`, `fit` (`cover`) | готовая анимация Lottie (например, с lottiefiles.com, бесплатные — формат Lottie JSON) |
 
-**Мем, клип или стикер со звуком** — тот же `video`: `{"type": "video", "src": "file:_game/memes/хэнк_понял.mp4", "from": 1.2, "dur": 1.5, "audio": 1, "in": {"fx": "pop", "at": "понял"}}` — врезка на смысловое событие, 1–2 с. Файлы мемов лежат локально в `_game/memes/` (не коммитятся), поэтому такой ролик рендерится локально.
+**Мем** — `{"type": "meme", "name": "хэнк_понял", "x": 90, "y": 560, "w": 840, "h": 620, "in": {"fx": "pop", "at": "понял"}}`: кусок клипа вокруг лучшего момента (пик движения и громкости) со звуком, 1,6 с (`dur`, `lead` — сколько до пика, `from` — свой старт). Каталог — `python tools/memes.py` (`_game/memes/catalog.json` и лист `memes.jpg`). Любой клип — тем же `video` с `src`. Чёрные поля клипа срезаются сами. Файлы мемов лежат локально в `_game/memes/` (не коммитятся), поэтому такой ролик рендерится локально.
 
 `src`: `hero:juggernaut`, `item:blink`, `ability:kunkka_torrent`, `file:assets/…`, `game:panorama/images/minimap/dotamap.png` (картинки из файлов игры).
 

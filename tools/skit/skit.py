@@ -72,6 +72,8 @@ def parse(path):
         elif m := re.match(r"(\w+)\s*>\s*(\w+)\s+(\w+)$", line):
             if m[2] != "крюк":
                 raise err("действие пока одно — крюк")
+            if (sc["cast"].get(m[1]) or {}).get("hero") != "pudge":
+                raise err("крюк бросает только Пудж")
             sc["events"].append({"kind": "hook", "who": m[1], "to": m[3]})
         elif m := re.match(r"(\w+):\s*(.+)$", line):
             text, *tags = [x.strip() for x in re.split(r"\|(?![^{]*\})", m[2])]   # «|» внутри {1300|тысяча триста} — не метка
@@ -183,6 +185,14 @@ def faces(sc, dur, lines, hooks):
 
 
 # ---------- сцена
+def pick(info, kind):
+    """Анимация героя по смыслу (flail — тащат, stun — оглушён): самая короткая с этим словом в имени, иначе стойка."""
+    c = sorted((a for a in info.get("anims", []) if kind in a and "taunt" not in a), key=len)
+    if not c:
+        print(f"  нет анимации «{kind}» — стойка {info['idle']}")
+    return c[0] if c else info["idle"]
+
+
 def build(sc, V, folder):
     from stage import Stage
     dur, lines, hooks = timeline(sc, V)
@@ -228,8 +238,8 @@ def build(sc, V, folder):
     for h in hooks:
         anims[h["who"]] += [(h["t0"], "pudge_meathook_start"), (round(h["t0"] + 0.9, 2), "pudge_meathook_end"),
                             (round(h["t0"] + 1.5, 2), info[h["who"]]["idle"])]
-        hero = sc["cast"][h["to"]]["hero"]
-        anims[h["to"]] = [x for x in anims[h["to"]] if x[0] < h["hit"]] + [(h["hit"], f"{hero}_flail"), (h["back"], f"{hero}_stun")]
+        tgt = info[h["to"]]
+        anims[h["to"]] = [x for x in anims[h["to"]] if x[0] < h["hit"]] + [(h["hit"], pick(tgt, "flail")), (h["back"], pick(tgt, "stun"))]
     for k in anims:                                       # анимация, начатая позже следующей, — прочь; по порядку
         anims[k] = sorted(dict((round(t, 2), a) for t, a in anims[k]).items())
 
@@ -268,6 +278,8 @@ def build(sc, V, folder):
                  **({"map": f"maps/{sc['map']}.glb"} if sc["map"] else {}),
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  talk={k: v for k, v in talk.items() if v})
+    if dur > 35:
+        print(f"  ВНИМАНИЕ: длина {dur:.1f} с — длиннее 35 с (CLAUDE.md): сократить реплики")
     print(f"  длина {dur:.1f} с; реплики:", "; ".join(f"{e['t0']:.1f}–{e['t1']:.1f} {e['who']}" for e in lines))
     print("  планы:", "; ".join(f"{s[0]:.2f} {s[1]} {s[2]}" + (f"→{s[3]}" if s[3] else "") for s in SH))
     return st, talk, info, SH, dur

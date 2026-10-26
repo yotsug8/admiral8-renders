@@ -63,7 +63,7 @@
 | `notes` | патч: номер версии, строки-эмодзи, расшифровка | `version`, `emoji[]`, `emoji_note`, `icon`, `decoded` |
 | `grid` | число и сетка иконок | `number`, `icons`, `count`, `heroes[1]`, `label` |
 
-Новую раскладку добавлять в `video.html` (построение в `init`, анимация в `drawExtra`) и проверять локально.
+Образцы полей — `episodes/demo_layouts.json` (duo, block, grid, notes) и вышедшие выпуски. В `label` и `caption` работает `*акцент*`. Новую раскладку добавлять в `video.html` (построение в `init`, анимация в `drawExtra`), пример — в demo-выпуск, проверка — `tools/check.py`. Разовое оформление под один ролик — сценой (SCENES.md), а не новой раскладкой.
 
 ## Файлы
 

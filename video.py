@@ -847,11 +847,6 @@ def mix_audio(segs, total, wav_path):
                 add(s["start"] + t0 + 0.5, stamp, 0.42)
             prev = e.get("ver")
     for s in segs:
-        v = s.get("visual") or {}
-        for k, e in enumerate(v.get("entries", []) if s.get("layout") == "patchline" else []):
-            t0 = (v.get("at") or {}).get(f"e{k}")
-            if t0 is not None and e.get("sfx"):
-                add(s["start"] + t0, sfx(e["sfx"], 1.8), 0.3)
         if s.get("hook"):
             for t0, name in zip(s.get("at") or [], s.get("sfx") or []):
                 if t0 is not None and name:

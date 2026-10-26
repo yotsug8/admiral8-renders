@@ -501,6 +501,19 @@ except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"
 os.makedirs(OUT, exist_ok=True)
+if os.environ.get("A8_BLEND"):                            # сцена для ручной работы: голоса дорожками звука, файл .blend — без рендера
+    sc.frame_start, sc.frame_end = 0, N - 1; sc.frame_set(0)
+    sc.render.filepath = os.path.join(OUT, "f#####")
+    sc.sync_mode = "AUDIO_SYNC"
+    se = sc.sequence_editor_create()
+    strips = se.strips if hasattr(se, "strips") else se.sequences
+    for i, (nm, (who, off)) in enumerate((D.get("voices") or {}).items()):
+        wav = os.path.join(os.path.dirname(SCENE), nm + ".wav")
+        if os.path.exists(wav):
+            strips.new_sound(nm, wav, channel=1 + i % 3, frame_start=int(round(off * FPS)))
+    bpy.ops.wm.save_as_mainfile(filepath=os.environ["A8_BLEND"])
+    print("СЦЕНА", os.environ["A8_BLEND"])
+    raise SystemExit
 import time
 t_start = time.time()
 if PICK is None:                                          # весь ролик — анимацией: сцена не пересобирается на каждом кадре,

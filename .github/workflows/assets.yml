@@ -42,7 +42,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pillow "rembg[cpu]"
+      - run: pip install -q pillow
+      - if: ${{ inputs.heroes != '' }}
+        run: pip install -q "rembg[cpu]"                # вырезать фон — только если просили героев (ставится долго)
       - if: ${{ inputs.anims != '' }}
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg      # для анимированных рендеров
       - name: Скачать и вырезать
@@ -62,7 +64,8 @@ jobs:
           python - 2>> a/err.txt <<'PY'
           import os, urllib.request, io
           from PIL import Image
-          from rembg import remove
+          if os.environ["HEROES"].split():
+              from rembg import remove
           import sys, re, json
           sys.stdout = open("a/log.txt", "w")      # лог кладём в ветку: логи Actions мне недоступны
           CDN = "https://cdn.cloudflare.steamstatic.com/apps/dota2"

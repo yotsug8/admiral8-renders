@@ -380,6 +380,8 @@ def image_ref(ref, heroes, items):
             "ability": lambda: HERE / "assets" / "abilities" / f"{key}.png",
             "file": lambda: HERE / key,
             "game": lambda: Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "img" / key}[kind]()   # картинки из файлов игры
+    if not Path(path).exists():                    # пустое место в кадре вместо картинки — заметить до рендера
+        print(f"    ⚠ нет картинки: {ref} ({path})")
     return path.as_uri()
 
 

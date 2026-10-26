@@ -9,7 +9,7 @@ BAD = re.compile(r"⚠|НЕ НАЙДЕНО|Traceback|Error|ПРОВЕРКА|ВН
 
 
 def run(cmd, env):
-    r = subprocess.run(cmd, cwd=REPO, env=dict(os.environ, **env), capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run(cmd, cwd=REPO, env=dict(os.environ, PYTHONUTF8="1", **env), capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = r.stdout + r.stderr
     lines, after = [], False
     for l in out.splitlines():

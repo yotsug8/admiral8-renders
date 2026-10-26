@@ -351,6 +351,15 @@ def main():
         dota(sc, st, talk, info, folder, SH)
     if "--plan" in flags:
         return
+    if "--blend" in flags:                                # сцена в Blender для ручной правки (docs/ANIMATION.md, «Руками в Blender»)
+        blend = os.path.join(folder, sc["name"] + ".blend")
+        subprocess.run([BLENDER, "-b", "--factory-startup", "-P", os.path.join(REPO, "tools", "blender", "render_scene.py"), "--",
+                        os.path.join(folder, "scene.json"), os.path.join(folder, "frames"), "all"],
+                       env=dict(os.environ, A8_BLEND=blend), check=False)
+        print("сцена:", blend)
+        if os.path.exists(blend) and "--no-open" not in flags:
+            os.startfile(blend)
+        return
     import imageio_ffmpeg
     FF = imageio_ffmpeg.get_ffmpeg_exe()
     if "--all" not in flags:                              # пробы: середина каждого плана

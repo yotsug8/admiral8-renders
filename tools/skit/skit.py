@@ -78,7 +78,7 @@ def parse(path):
         elif m := re.match(r"голос\s+(\w+)\s+(.+)$", line):
             if m[1] not in sc["cast"]:
                 raise err("сначала «герой»")
-            sc["cast"][m[1]]["voice"].update(dict(re.findall(r"(fish|sapi|edge)=(\S+)", m[2])))
+            sc["cast"][m[1]]["voice"].update(dict(re.findall(r"(fish|sapi|edge|pitch)=(\S+)", m[2])))
         elif m := re.match(r"(\w+)\s*>\s*(\w+)\s+(\w+)\s*(?:\|\s*(цель))?$", line):   # «| цель» — план на жертву
             if m[2] != "крюк":
                 raise err("действие пока одно — крюк")

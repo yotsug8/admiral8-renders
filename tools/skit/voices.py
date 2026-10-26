@@ -31,13 +31,20 @@ def _fish(text, voice, out):
 
 
 def _sapi(text, voice, out):
-    """Робот Windows: голос по имени (часть имени, например «Pavel») или первый русский."""
+    """Робот Windows: голос по имени (часть имени, например «Pavel») или первый русский. Текст — через файл в UTF-8:
+    через stdin PowerShell читал его в кодировке консоли, и робот проговаривал по буквам кракозябры."""
+    txt = out + ".txt"
+    open(txt, "w", encoding="utf-8").write(text)
     ps = ("Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
           "$v = $s.GetInstalledVoices() | % { $_.VoiceInfo } | ? { $_.Culture.Name -eq 'ru-RU' }; "
           f"$p = $v | ? {{ $_.Name -like '*{voice or ''}*' }} | select -First 1; if (-not $p) {{ $p = $v | select -First 1 }}; "
           "if ($p) { $s.SelectVoice($p.Name) }; $s.Rate = 1; "
-          f"$s.SetOutputToWaveFile('{out}'); $s.Speak([Console]::In.ReadToEnd()); $s.Dispose()")
-    subprocess.run(["powershell", "-NoProfile", "-Command", ps], input=text.encode("utf-8"), check=True)
+          f"$t = [IO.File]::ReadAllText('{txt}', [Text.Encoding]::UTF8); "
+          f"$s.SetOutputToWaveFile('{out}'); $s.Speak($t); $s.Dispose()")
+    try:
+        subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=True)
+    finally:
+        os.remove(txt)
 
 
 def _edge(text, voice, out):
@@ -71,6 +78,25 @@ def engine():
     return "sapi" if os.name == "nt" else "edge"
 
 
+_ASR = []
+
+
+def heard(wav, say):
+    """Распознать реплику (faster-whisper, если есть) и сравнить с текстом: (распознано, совпадение 0…1) или None.
+    Звук на слух не проверить — так ловится озвучка не того текста (кракозябры, обрыв)."""
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        return None
+    import difflib, re
+    if not _ASR:
+        _ASR.append(WhisperModel("small", device="cpu", compute_type="int8"))
+    segs, _ = _ASR[0].transcribe(wav, language="ru")
+    txt = " ".join(s.text.strip() for s in segs)
+    norm = lambda x: re.sub(r"[^а-яё]", "", x.lower().replace("ё", "е"))
+    return txt, difflib.SequenceMatcher(None, norm(txt), norm(say)).ratio()
+
+
 def make(folder, lines):
     """lines — [{name, who, text, voice}]; voice — словарь {fish|sapi|edge: имя} или строка. Возвращает voices.json."""
     os.makedirs(folder, exist_ok=True)
@@ -79,6 +105,7 @@ def make(folder, lines):
     eng0 = engine()
     for ln in lines:
         v = ln.get("voice") or {}
+        pitch = float(v.get("pitch", 0)) if isinstance(v, dict) else 0.0   # сдвиг тона, полутоны (один голос Windows — разные герои)
         eng = eng0
         if isinstance(v, dict) and eng0 not in v and "edge" in v and eng0 != "fake":   # у героя свой голос (Edge) — им, а не общим
             eng = "edge"
@@ -89,13 +116,17 @@ def make(folder, lines):
             v = ln["game"]
         import video
         say = video.say_text(ln["text"])                       # {7.33|семь тридцать три} → как произносить
-        key = hashlib.md5(f"{eng}|{v}|{say}".encode()).hexdigest()[:12]
+        key = hashlib.md5(f"{eng}|{v}|{say}|{pitch if eng != 'game' else 0}".encode()).hexdigest()[:12]
         wav = os.path.join(folder, ln["name"] + ".wav")
         if db.get(ln["name"], {}).get("key") == key and os.path.exists(wav):
             continue
         raw = os.path.join(folder, ln["name"] + (".raw.wav" if eng in ("sapi", "fake") else ".raw.mp3"))
         print(f"  голос {ln['name']} ({ln['who']}, {eng}{' ' + v if v else ''}): {say}")
         {"fish": _fish, "sapi": _sapi, "edge": _edge, "fake": _fake, "game": _game}[eng](say, v, raw)
+        if pitch and eng != "game":
+            r = 2 ** (pitch / 12); shifted = raw + ".p.wav"
+            subprocess.run([_ff(), "-y", "-v", "error", "-i", raw, "-af", f"aresample={SR},asetrate={SR}*{r:.4f},aresample={SR},atempo={1 / r:.4f}", shifted], check=True)
+            os.replace(shifted, raw) if raw.endswith(".wav") else (os.remove(raw), os.rename(shifted, raw + ".wav")); raw = raw if raw.endswith(".wav") else raw + ".wav"
         a = _pcm(raw); os.remove(raw)
         # тишина по краям — прочь: время реплики в сценке = время звука
         on = np.where(np.abs(a) > SIL * max(1e-6, np.abs(a).max()))[0]
@@ -108,6 +139,9 @@ def make(folder, lines):
         hop = SR // 30; n = len(a) // hop + 1
         rms = np.array([np.sqrt(np.mean(a[i * hop:(i + 1) * hop] ** 2)) if len(a[i * hop:(i + 1) * hop]) else 0 for i in range(n)])
         env = np.clip(rms / max(1e-6, np.percentile(rms, 95)), 0, 1)
+        h = heard(wav, say)
+        if h:
+            print(f"    распознано: «{h[0]}» — совпадение {h[1]:.0%}" + ("  ⚠ ГОЛОС НЕ СОВПАЛ С ТЕКСТОМ" if h[1] < 0.6 else ""))
         db[ln["name"]] = {"text": video.show_text(ln["text"]), "say": say, "env": [round(float(x), 3) for x in env],
                           "dur": round(len(a) / SR, 3), "who": ln["who"], "voice": f"{eng}:{v}", "key": key}
     json.dump(db, open(db_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

@@ -6,7 +6,8 @@
 #                                              @a-b — снимать героя только в этих кадрах (где он движется)
 #   A8_FAST=1   быстрая проверка движения: без карты (ровная земля, загрузка ~30 с вместо 5 мин), 4 прохода света, четверть кадра —
 #               ~0,3 с на кадр вместо 2,2; картинка грубая, для показа и цвета — без него
-import bpy, sys, os, math, json, shutil
+#   A8_CLIP=1   без кадров: на каждом кадре — проходит ли оружие сквозь тело (пересечение сеток, кроме кистей)
+import bpy, sys, os, math, json, shutil, re
 from mathutils import Matrix, Vector
 
 FAST = bool(os.environ.get("A8_FAST"))
@@ -41,15 +42,74 @@ def HERO_OBJS_OF(who):
     return out
 
 
+def clip_check(who, fr):
+    """Оружие сквозь тело: на каждом кадре — пересечение сеток оружия (части с weapon/hook/… в имени) с телом героя,
+    кроме кистей (там оружие держится). Печатает кадры с пересечением и что во что."""
+    from mathutils.bvhtree import BVHTree
+    objs = [o for o in HERO_OBJS_OF(who) if o.type == "MESH"]
+    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver", re.I)
+    weap = [o for o in objs if WPN.search(o.name)]
+    body = [o for o in objs if not WPN.search(o.name) and ".vmdl_c" in o.name and "physics" not in o.name and o.visible_get()]
+    arm = ACTORS[who]["arm"]
+    hands = [b for b in arm.pose.bones if re.search(r"wrist|hand|finger|thumb", b.name, re.I)]
+    hit = {}
+    def tree(o, dg, skip=None):
+        e = o.evaluated_get(dg); m = e.to_mesh(); M = o.matrix_world
+        vs = [M @ v.co for v in m.vertices]
+        ps = [list(p.vertices) for p in m.polygons]
+        if skip:
+            ps = [p for p in ps if not skip(sum((vs[i] for i in p), Vector()) / len(p))]
+        e.to_mesh_clear()
+        return BVHTree.FromPolygons(vs, ps) if ps else None
+    for f in fr:
+        sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get()
+        hp = [arm.matrix_world @ b.head for b in hands]
+        near = lambda c: any((c - h).length < 0.35 for h in hp)
+        bt = [(b, tree(b, dg, near)) for b in body]
+        for w in weap:
+            wt = tree(w, dg)
+            for b, t in bt:
+                if t and wt:
+                    pairs = wt.overlap(t); n = len(pairs)
+                    if n and os.environ.get("A8_CLIP") == "2" and f == fr[0]:   # где: ближайшая кость к месту пересечения
+                        e = b.evaluated_get(dg); m = e.to_mesh(); M = b.matrix_world
+                        near_b = {}
+                        for _, pi in pairs[:400]:
+                            c = M @ m.polygons[pi].center if pi < len(m.polygons) else None
+                            if c:
+                                bn = min(arm.pose.bones, key=lambda x: ((arm.matrix_world @ x.head) - c).length).name
+                                near_b[bn] = near_b.get(bn, 0) + 1
+                        e.to_mesh_clear(); print(f"    {w.name.split(chr(92))[-1][:30]} × {b.name.split('.')[-1]}: у костей {near_b}")
+                    if n:
+                        hit.setdefault((w.name.split(".vmdl")[0].split("\\")[-1], b.name.split(".")[-1]), []).append((f, n))
+    if not hit:
+        print(f"  ПЕРЕСЕЧЕНИЙ НЕТ {who}: оружие не проходит сквозь тело ({len(fr)} кадров)")
+    for (w, b), fs in hit.items():
+        base = min(n for _, n in fs) if len(fs) == len(fr) else 0   # на всех кадрах — касание у кисти, как в игровой стойке:
+        fs = [(f, n) for f, n in fs if n > base + max(8, base * 0.3)]   # считать только сверх него
+        if not fs:
+            print(f"  касание {who}: {w} — {b} на всех кадрах ({base} граней, у кисти — как в игре)"); continue
+        rng = []
+        for f, n in fs:
+            if rng and f - rng[-1][1] <= 2:
+                rng[-1][1] = f; rng[-1][2] = max(rng[-1][2], n)
+            else:
+                rng.append([f, f, n])
+        print(f"  ⚠ ПЕРЕСЕЧЕНИЕ {who}: {w} в {b} — кадры " + ", ".join(f"{a}–{b_} (до {n} граней)" for a, b_, n in rng))
+
+
 vd = bpy.data.cameras.new("wview"); vc = bpy.data.objects.new("wview", vd); sc.collection.objects.link(vc)
 vd.angle = R(40); vd.clip_start = 0.05; sc.camera = vc
 multi = ";" in os.environ["A8_WVIEWS"]
+CLIP = bool(os.environ.get("A8_CLIP"))                    # только проверка пересечений, без кадров
 for spec in os.environ["A8_WVIEWS"].split(";"):
     who, angs = spec.split(":")
     fr = PICK
     if "@" in who:
         who, rng = who.split("@"); f0, f1 = map(int, rng.split("-")); fr = [f for f in PICK if f0 <= f <= f1]
     arm = ACTORS[who]["arm"]
+    if CLIP:
+        clip_check(who, fr); continue
     mine = HERO_OBJS_OF(who)
     for o in HERO_OBJS:                                   # другие герои не заслоняют (камера спереди — между героями)
         o.hide_render = o not in mine

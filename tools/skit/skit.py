@@ -45,7 +45,7 @@ MOOD = {"вверх": "up", "вниз": "down"}
 SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie", "наезд": "push", "средний": "medium"}
 # настройки планов render_scene.py (раздел «камера») — как в «Крюке»
 P_EST = {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}   # общий через плечо, длинный объектив
-P_CLOSE = {"size": 0.85, "fov": 34, "fstop": 2.8}
+P_CLOSE = {"size": 0.85, "fov": 34, "fstop": 2.0}
 P_OVER = {"fov": 30, "xf": 0.6, "xb": -0.3, "up": 0.25}
 P_ACT = {"fov": 30, "xf": 0.8, "up": 0.3}
 P_END = {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45}
@@ -53,9 +53,9 @@ P_END = {"fov": 40, "xf": 0.8, "xb": -0.2, "up": 0.45}
 # наезд: вполоборота на уровне глаз, объектив нормальный (без искажения селфи); на смене эмоции — от плеч к лицу
 P_PUSH = {"fov": 40, "width0": 0.38, "width": 0.78, "below": 0.05, "ang": 32, "sway": 0.35, "aim": -0.15, "fstop": 2.0}
 # средний: герой по колено с жестом, камера чуть снизу (небо за головой), фон размыт слабо, камера спокойная
-P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim": -0.1, "fstop": 2.4}   # фон мягко размыт, как в примерах (f/4 — резкий)
-P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 3.5}
-OWN_GESTURES = {"крюк", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
+P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim": -0.1, "fstop": 2.0}   # фон мягко размыт, как в примерах (f/4 — резкий)
+P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 2.4}
+OWN_GESTURES = {"крюк", "замах", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
 gest_t = lambda e: e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.2 if e["emo2"] else e["t0"]   # жест — на смене эмоции
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
 WADDLE = {"pudge": 1.0, "tidehunter": 0.7, "ogre_magi": 0.8}   # переваливание при ходьбе — тяжёлые герои (skit_talk.py)
@@ -95,6 +95,9 @@ def parse(path):
                     ev["walk"] = float(gs[1]); ev["glide"] = True
                 elif gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
                     ev["walk"] = float(gw[1])
+                elif gt := re.match(r"поворот\s+(-?\d+|к|от)(?:\s+([\d.]+))?$", tg):   # поворот на месте с начала реплики:
+                    ev["turn"] = (gt[1] if gt[1] in ("к", "от") else float(gt[1]), float(gt[2]) if gt[2] else None)   # N° влево (−N — вправо),
+                                                                     # к собеседнику, от него; [с] — длительность
                 elif gk := re.match(r"крупность\s+([\d.]+)$", tg):  # доля ширины кадра под голову (0,3 — средний, 0,15 — общий)
                     ev["width"] = float(gk[1])
                 elif tg == "камера стоит":                         # камера не ведёт героя — он сам входит/подходит в кадре
@@ -121,6 +124,16 @@ def parse(path):
     if len(sc["cast"]) < 2:
         raise SystemExit("нужно хотя бы два героя")
     return sc
+
+
+def turn_len(ang):
+    """Длина поворота на месте, с: 90° — 1 с, 180° — 1,55 с (шаги 0,4–0,5 с)."""
+    return 0.45 + 0.55 * abs(ang) / 90
+
+
+def smooth(x):
+    """Плавный ход 0…1 (smoothstep) — так же поворачивается тело в skit_talk.py."""
+    x = min(1.0, max(0.0, x)); return x * x * (3 - 2 * x)
 
 
 def walk_progress(k, e):
@@ -263,14 +276,31 @@ def build(sc, V, folder):
     def yaw_to(a, b):
         return math.degrees(math.atan2(pos[b][1] - pos[a][1], pos[b][0] - pos[a][0]))
 
+    # повороты на месте (skit_talk.py, turn): с начала реплики, угол — от того, куда смотрит сейчас; (начало, длина, угол)
+    turns = {}
+    for k in sc["cast"]:
+        y0 = cur = yaw_to(k, listener(sc, k)); turns[k] = []
+        for e in lines:
+            if e["who"] != k or not e.get("turn"):
+                continue
+            to, td = e["turn"]
+            ang = to if isinstance(to, float) else (y0 + (180 if to == "от" else 0) - cur + 180) % 360 - 180
+            if to == "от" and abs(ang) > 179:
+                ang = 180.0
+            if abs(ang) < 1:
+                continue
+            e["_turn"] = (max(0.0, round(e["t0"] - LEAD, 2)), round(td or turn_len(ang), 2), round(ang, 1))
+            turns[k].append(e["_turn"]); cur += ang
+
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
-        yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
+        yaw0 = yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
         ws = [(max(0.0, e["t0"] - LEAD), e["t1"], e["walk"]) for e in lines if e["who"] == who and e.get("walk")]
         fx, fy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
 
         def at(t, p):
             x, y = pos[who]
+            yaw = yaw0 + sum(g * smooth((t - a) / d) for a, d, g in turns[who])
             for a, b, dist in ws:                         # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
@@ -293,6 +323,8 @@ def build(sc, V, folder):
             a0 = 0.0
         nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
         d = round((min(e["t1"] + 0.6, nxt) if nxt else dur) - a0, 2)   # последняя реплика — до конца сцены (без стойки в хвосте)
+        if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
+            d = round(max(d, sum(e["_turn"][:2]) + 0.2 - a0), 2)
         base = info[k]["idle"]
         talk[k].append({"name": "a8_" + e["name"], "base": base, "line": e["name"], "off": round(e["t0"] - a0, 2), "dur": d,
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
@@ -301,6 +333,7 @@ def build(sc, V, folder):
                                      "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3),
                                      "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0)}} if e.get("walk") and not e.get("glide") else {}),
                         **({"freeze": True} if e.get("glide") else {}),
+                        **({"turn": {"at": round(e["_turn"][0] - a0, 2), "len": e["_turn"][1], "ang": e["_turn"][2]}} if e.get("_turn") else {}),
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": e["gesture"][0], "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра
                                       "len": e["gesture"][1] + (2 if e.get("glide") else 0)}]}

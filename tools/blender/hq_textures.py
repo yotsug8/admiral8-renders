@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 SRC = os.path.join(REPO, "_game", "models", "render"); DST = SRC + "_hq"
-UP, SHARP = 4, dict(radius=3, percent=70, threshold=2)
+UP, SHARP = 4, dict(radius=2, percent=25, threshold=3)   # сильнее — лесенка на пятнах и ореолы (участник: «слишком резкие»)
 
 
 def main():

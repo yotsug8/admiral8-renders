@@ -500,11 +500,30 @@ cr = wn.nodes.new("ShaderNodeValToRGB"); cr.color_ramp.elements[0].position = 0.
 cmx = wn.nodes.new("ShaderNodeMix"); cmx.data_type = "RGBA"; cmx.inputs["B"].default_value = (0.86, 0.89, 0.96, 1)
 wn.links.new(tcw.outputs["Generated"], cn.inputs["Vector"]); wn.links.new(cn.outputs["Fac"], cr.inputs["Fac"])
 wn.links.new(cr.outputs["Color"], cmx.inputs["Factor"]); wn.links.new(skyr.outputs["Color"], cmx.inputs["A"])
-wn.links.new(cmx.outputs["Result"], bg.inputs["Color"]); bg.inputs["Strength"].default_value = 0.9
+sky_out = cmx.outputs["Result"]
+SKY_IMG = os.path.join(REPO, "_game", "sky", "sky_dota_000_psd_ceb026ce_up.png")   # небо доты (Radiant, день): верхняя грань куба
+if float(os.environ.get("A8_SKYIMG", "1")) > 0 and os.path.exists(SKY_IMG):      # выбор участник 28.10; A8_SKYIMG=0 — облака шумом
+    # настоящие облака доты (как в примерах) — куполом: направление → (x, y)/(z + k); боковые грани в файлах отзеркалены,
+    # поэтому только верх; к горизонту — в градиент (там деревья и дымка)
+    dn = wn.nodes.new("ShaderNodeVectorMath"); dn.operation = "NORMALIZE"; wn.links.new(tcw.outputs["Generated"], dn.inputs[0])
+    ds = wn.nodes.new("ShaderNodeSeparateXYZ"); wn.links.new(dn.outputs[0], ds.inputs[0])
+    zk = wn.nodes.new("ShaderNodeMath"); zk.operation = "ADD"; wn.links.new(ds.outputs["Z"], zk.inputs[0]); zk.inputs[1].default_value = 0.35
+    uv = wn.nodes.new("ShaderNodeCombineXYZ")
+    for ax in ("X", "Y"):
+        dv = wn.nodes.new("ShaderNodeMath"); dv.operation = "DIVIDE"; wn.links.new(ds.outputs[ax], dv.inputs[0]); wn.links.new(zk.outputs[0], dv.inputs[1])
+        sh_ = wn.nodes.new("ShaderNodeMath"); sh_.operation = "MULTIPLY_ADD"; wn.links.new(dv.outputs[0], sh_.inputs[0])
+        sh_.inputs[1].default_value = 0.32; sh_.inputs[2].default_value = 0.5; wn.links.new(sh_.outputs[0], uv.inputs[ax])
+    ti = wn.nodes.new("ShaderNodeTexImage"); ti.image = bpy.data.images.load(SKY_IMG); ti.extension = "MIRROR"
+    wn.links.new(uv.outputs[0], ti.inputs["Vector"])
+    hz_ = wn.nodes.new("ShaderNodeMapRange"); wn.links.new(ds.outputs["Z"], hz_.inputs["Value"])
+    hz_.inputs["From Min"].default_value = 0.03; hz_.inputs["From Max"].default_value = 0.25
+    smx = wn.nodes.new("ShaderNodeMix"); smx.data_type = "RGBA"; wn.links.new(hz_.outputs["Result"], smx.inputs["Factor"])
+    wn.links.new(cmx.outputs["Result"], smx.inputs["A"]); wn.links.new(ti.outputs["Color"], smx.inputs["B"]); sky_out = smx.outputs["Result"]
+wn.links.new(sky_out, bg.inputs["Color"]); bg.inputs["Strength"].default_value = 0.9
 # небо в кадре — яркое, а на героев светит тёплее и слабее (голубой свет неба делал кожу серо-сиреневой, «выцветшей»)
 lp = wn.nodes.new("ShaderNodeLightPath"); amb = wn.nodes.new("ShaderNodeBackground"); tint = wn.nodes.new("ShaderNodeMix")
 tint.data_type = "RGBA"; tint.blend_type = "MULTIPLY"; tint.inputs["Factor"].default_value = 1.0; tint.inputs["B"].default_value = (1.0, 0.86, 0.72, 1)
-wn.links.new(cmx.outputs["Result"], tint.inputs["A"]); wn.links.new(tint.outputs["Result"], amb.inputs["Color"])
+wn.links.new(sky_out, tint.inputs["A"]); wn.links.new(tint.outputs["Result"], amb.inputs["Color"])
 wmix = wn.nodes.new("ShaderNodeMixShader"); wout = next(n for n in wn.nodes if n.type == "OUTPUT_WORLD")
 wn.links.new(lp.outputs["Is Camera Ray"], wmix.inputs[0]); wn.links.new(amb.outputs["Background"], wmix.inputs[1])
 wn.links.new(bg.outputs["Background"], wmix.inputs[2]); wn.links.new(wmix.outputs["Shader"], wout.inputs["Surface"])

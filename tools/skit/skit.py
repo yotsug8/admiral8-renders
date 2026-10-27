@@ -295,13 +295,15 @@ def build(sc, V, folder):
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
         yaw0 = yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
-        ws = [(max(0.0, e["t0"] - LEAD), e["t1"], e["walk"]) for e in lines if e["who"] == who and e.get("walk")]
-        fx, fy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+        face = lambda t: yaw0 + sum(g * smooth((t - a) / d) for a, d, g in turns[who])   # куда смотрит в момент t
+        # шаг — туда, куда смотрит на начале шага (после поворота «от» — прочь от собеседника)
+        ws = [(a, e["t1"], e["walk"], math.cos(math.radians(face(a))), math.sin(math.radians(face(a))))
+              for e in lines if e["who"] == who and e.get("walk") for a in [max(0.0, e["t0"] - LEAD)]]
 
         def at(t, p):
             x, y = pos[who]
-            yaw = yaw0 + sum(g * smooth((t - a) / d) for a, d, g in turns[who])
-            for a, b, dist in ws:                         # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
+            yaw = face(t)
+            for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
             for h in hs:

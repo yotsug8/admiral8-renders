@@ -1,7 +1,8 @@
 # Ролики Admiral 8
 
-Нажми на ссылку, чтобы скачать. Обновлено: 23.10.2026
+Нажми на ссылку, чтобы скачать. Обновлено: 28.10.2026
 
+- [probe7_turn.mp4](https://github.com/contributor/admiral8-renders/raw/renders/probe7_turn.mp4) — проба 7: поворот на месте и замах крюком (слева спереди, справа сбоку)
 - [kryuk_blender.mp4](https://github.com/contributor/admiral8-renders/raw/renders/kryuk_blender.mp4) — «Крюк» в новом виде: Blender на настоящей карте доты, крупные лица, свет плана
 - [kryuk.mp4](https://github.com/contributor/admiral8-renders/raw/renders/kryuk.mp4) — «Крюк»: Снайпер и Пудж, сценка в движке доты
 - [golosa_005.mp4](https://github.com/contributor/admiral8-renders/raw/renders/golosa_005.mp4)

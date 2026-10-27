@@ -400,7 +400,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=0.5, back=1.0, key=650, rim=30, expo=-0.15, amb=3.5, shadow=0.0, side=0.0, fill=0.0, bal=0.45, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=0.5, back=1.0, key=650, rim=30, expo=-0.3, amb=2.5, shadow=0.0, side=0.0, fill=0.0, bal=0.45, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.1, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]

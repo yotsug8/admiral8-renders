@@ -46,9 +46,10 @@ def measure(frames):
 
 
 def target():
-    """Цель — медиана по дневным цветным примерам (у каждого свой свет, медиана — «как они в среднем»)."""
+    """Цель — медиана по всем цветным примерам (у каждого свой свет, медиана — «как они в среднем»)."""
     ms = [measure(sample(p)) for p in sorted(glob.glob(os.path.join(REPO, "_game", "study", "examples", "*.mp4")))]
-    ms = [m for m in ms if m["L"][5] > 35 and m["C"][1] > 15]       # без ночных и почти чёрно-белых (funnyhunny, nwokkk)
+    ms = [m for m in ms if m["L"][5] > 35 and m["C"][1] > 15]       # дневные цветные (сцены дневные); молочность была не от них,
+                                                                     # а от низкого контраста и поднятых теней — теперь контраст свой
     t = {"L": np.median([m["L"] for m in ms], 0).tolist(), "C": np.median([m["C"] for m in ms], 0).tolist(),
          "b_mid": float(np.median([m["b_mid"] for m in ms])), "n": len(ms)}
     json.dump(t, open(TARGET, "w"), indent=1)
@@ -57,7 +58,7 @@ def target():
 
 class Grade:
     """Кривая яркости и усиление цвета под цель; strength — доля (1 — точно под примеры)."""
-    def __init__(self, src_frames, strength=0.4, color=1.0, warm_hue=-4.0):
+    def __init__(self, src_frames, strength=0.4, color=1.0, warm_hue=-4.0, contrast=0.8):
         # strength — яркость (0,85 — пересвет, участник: «засвечено сильно»); color — цвет отдельно (кожа героев в текстурах
         # доты блёклая, игровой шейдер её досыщает); warm_hue — тёплые оттенки к красному (кожа была бежевой: 44° против 40°)
         t = json.load(open(TARGET)) if os.path.exists(TARGET) else target()
@@ -65,14 +66,19 @@ class Grade:
         xs = np.array([0.0] + s["L"] + [100.0]); ys = np.array([0.0] + t["L"] + [100.0])
         ys = xs + (ys - xs) * strength
         hi = xs > 70; ys[hi] = np.minimum(ys[hi], xs[hi])                # света не поднимать — блики не выбеливать
+        ys[xs < 40] = np.minimum(ys[xs < 40], xs[xs < 40] * 1.05)       # тени не поднимать: тёмные места дают глубину (примеры 6 против 18)
         xs, idx = np.unique(xs, return_index=True); ys = np.maximum.accumulate(ys[idx])   # монотонно
         self.lut = np.interp(np.arange(0, 100.25, 0.25), xs, ys)
-        k = [min(2.2, max(0.8, 1 + (tc / max(sc, 1) - 1) * color)) for tc, sc in zip(t["C"], s["C"])]
+        # контраст под примеры (у них 24 против наших 16 — картинка молочная): растяжение вокруг середины кадра
+        sd_t = 23.6; sd_s = float(np.std(to_lab(src_frames.astype(np.float32))[..., 0])) or sd_t
+        kc_ = min(1.45, max(1.0, 1 + (sd_t / sd_s - 1) * contrast)); mid = float(np.interp(s["L"][5], xs, ys))
+        self.lut = np.clip(mid + (self.lut - mid) * kc_, 0, 100); self.kcon = kc_
+        k = [min(2.2, max(1.0, 1 + (tc / max(sc, 1) - 1) * color)) for tc, sc in zip(t["C"], s["C"])]   # цвет не убавлять — тускло
         self.hue = math.radians(warm_hue)
         self.kc = k                                                     # усиление цвета: тени, полутона, света
         self.db = (t["b_mid"] - s["b_mid"]) * color * 0.3            # теплота — вполовину (у примеров свет разный)
         self.info = f"тени/полутона/света: цвет ×{k[0]:.2f} ×{k[1]:.2f} ×{k[2]:.2f}, теплее на {self.db:.1f}; " \
-                    f"яркость {s['L'][3]:.0f}→{np.interp(s['L'][3], xs, ys):.0f} (25%), {s['L'][5]:.0f}→{np.interp(s['L'][5], xs, ys):.0f} (50%)"
+                    f"яркость {s['L'][3]:.0f}→{np.interp(s['L'][3], xs, ys):.0f} (25%), {s['L'][5]:.0f}→{np.interp(s['L'][5], xs, ys):.0f} (50%), контраст ×{self.kcon:.2f}"
 
     def __call__(self, rgb):
         lab = to_lab(rgb.astype(np.float32)); l = lab[..., 0]

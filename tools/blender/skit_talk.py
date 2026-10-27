@@ -97,7 +97,7 @@ def bake(name, dur, pose):
     return act
 
 
-def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="jaw0_0"):
+def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="jaw0_0", freeze=False):
     """Говорит: челюсть по громкости, кивок на нарастании громкости; grin — рот чуть приоткрыт после реплики.
     Без челюсти (jaw=None) — только голова: кивки на ударениях."""
     loud = smooth_series(voice(line, off), int(dur * FPS))
@@ -109,11 +109,13 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="
     calm = {b.name: b.rotation_quaternion.copy() for b in arm.pose.bones if b.name == head or "neck" in b.name}
 
     def pose(t, k):
-        base_pose(base, t)
+        base_pose(base, 0.0 if freeze else t)          # замер: стойка на одном кадре, тело не шевелится
         for nm, q in calm.items():
             b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65)
         bpy.context.view_layer.update()
         v = loud[k]
+        if freeze:                                      # замер: ни кивков, ни челюсти костью — только лицо (морфы)
+            return
         turn(head, X, R(nods[k]))
         if jaw:
             turn(jaw, X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
@@ -169,15 +171,16 @@ MOOD = {"down": (14, 22), "up": (-5, -9)}              # (шея, голова) 
 
 def speaker(s):
     pose = talker(s["base"], s["line"], s["off"], s["dur"], head=s["head"], jaw=s.get("jaw"),
-                  jaw_max=s.get("jaw_max", 22), nod=s.get("nod", 5 if s.get("jaw") else 7), grin=s.get("grin", 0.0))
+                  jaw_max=s.get("jaw_max", 22), nod=s.get("nod", 5 if s.get("jaw") else 7), grin=s.get("grin", 0.0),
+                  freeze=bool(s.get("freeze")))
     neck = next((b.name for b in arm.pose.bones if "neck" in b.name.lower()), None)
     mood = MOOD.get(s.get("mood"))
     loud = smooth_series(voice(s["line"], s["off"]), int(s["dur"] * FPS))
     # без челюсти голова ещё и покачивается в такт речи — слабо и плавно, как Снайпер в «Крюке»
-    sway = soft([(0 if s.get("jaw") else 1.6) * loud[k] * math.sin(k / FPS * 4) for k in range(len(loud))])
+    sway = soft([(0 if s.get("jaw") or s.get("freeze") else 1.6) * loud[k] * math.sin(k / FPS * 4) for k in range(len(loud))])
     # живое тело (эталон: голова и плечи всё время движутся, но плавно): медленные синусы разных частот — плечи
     # качаются и наклоняются, голова поворачивается и склоняется; lean — на громком подаётся корпусом вперёд (крик)
-    live = s.get("live", 1.0); ph = sum(map(ord, s["line"])) % 7
+    live = 0.0 if s.get("freeze") else s.get("live", 1.0); ph = sum(map(ord, s["line"])) % 7
     spine = next((b.name for nm in ("spine3", "spine_2", "spine2", "spine_1", "spine1") for b in arm.pose.bones if b.name.lower() == nm), None)
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))

@@ -90,7 +90,9 @@ def parse(path):
             ev = {"kind": "line", "who": m[1], "text": text, "emo": None, "emo2": None, "mood": None, "shot": None, "gesture": None}
             for tg in tags:
                 tg = tg.lower()
-                if gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
+                if gs := re.match(r"скользит\s+(\d+)$", tg):      # мем: тело замерло, едет по земле без шагов, живо только лицо
+                    ev["walk"] = float(gs[1]); ev["glide"] = True
+                elif gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
                     ev["walk"] = float(gw[1])
                 elif gk := re.match(r"крупность\s+([\d.]+)$", tg):  # доля ширины кадра под голову (0,3 — средний, 0,15 — общий)
                     ev["width"] = float(gk[1])
@@ -295,9 +297,11 @@ def build(sc, V, folder):
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
                         "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
                         **({"walk": {"at": round(max(0.0, e["t0"] - LEAD) - a0, 2), "len": round(e["t1"] - max(0.0, e["t0"] - LEAD), 2),
-                                     "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3)}} if e.get("walk") else {}),
+                                     "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3)}} if e.get("walk") and not e.get("glide") else {}),
+                        **({"freeze": True} if e.get("glide") else {}),
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
-                        **({"gest": [{"kind": e["gesture"][0], "at": round(gest_t(e) - a0, 2), "len": e["gesture"][1]}]}
+                        **({"gest": [{"kind": e["gesture"][0], "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра
+                                      "len": e["gesture"][1] + (2 if e.get("glide") else 0)}]}
                            if e["gesture"] and e["gesture"][0] in OWN_GESTURES else {})})
         anims[k] += [(a0, "a8_" + e["name"]), (round(a0 + d, 2), sc["cast"][k]["stance"] or base)]
         if e["gesture"] and e["gesture"][0] not in OWN_GESTURES:   # анимация игры — если к месту (рот — морфами), потом стойка

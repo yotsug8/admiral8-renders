@@ -2,6 +2,7 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 28.10.2026
 
+- [probe10_faces.mp4](https://github.com/contributor/admiral8-renders/raw/renders/probe10_faces.mp4) — проба 10: гримасы Пуджа (скепсис, хитрый, обида, крик, подмигнул), быстрая проверка без карты
 - [probe8_check.mp4](https://github.com/contributor/admiral8-renders/raw/renders/probe8_check.mp4) — проба 8 (быстрая проверка, без карты): замах медленнее, Пудж уходит спиной, поворот Снайпера; сверху Пудж, снизу Снайпер, слева спереди, справа сбоку
 - [probe7_turn.mp4](https://github.com/contributor/admiral8-renders/raw/renders/probe7_turn.mp4) — проба 7: поворот на месте и замах крюком (слева спереди, справа сбоку)
 - [kryuk_blender.mp4](https://github.com/contributor/admiral8-renders/raw/renders/kryuk_blender.mp4) — «Крюк» в новом виде: Blender на настоящей карте доты, крупные лица, свет плана

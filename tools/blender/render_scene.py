@@ -46,6 +46,11 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
+HERO = dict(sat=1.35, spec=1.5, val=1.28, hue=-0.012)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
+    k, v = kv.split("="); HERO[k] = float(v)
+
+
 def fix_hero_mats(objs):
     """Материалы героев из выгрузки S2V: прозрачность и металличность там взяты из маски доты (detailmask) — кожа
     просвечивала (дыра под шеей Пуджа) и блестела как металл. Непрозрачно, не металл, матовость кожи."""
@@ -61,9 +66,25 @@ def fix_hero_mats(objs):
                 for l in list(b.inputs[name].links):
                     m.node_tree.links.remove(l)
                 b.inputs[name].default_value = val
-            for l in list(b.inputs["Specular IOR Level"].links):           # блик из маски доты (specmask) — серый налёт на всём герое,
-                m.node_tree.links.remove(l)                                # «выцветшая» кожа (насыщенность 0,2 при текстуре 0,43)
-            b.inputs["Specular IOR Level"].default_value = 0.2; b.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
+            nt = m.node_tree
+            for l in list(b.inputs["Specular IOR Level"].links):           # блик из маски доты как дал S2V — серый налёт на всём герое
+                nt.links.remove(l)
+            b.inputs["Specular IOR Level"].default_value = 0.15; b.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
+            # блеск по маске (как в игре, примеры — глянец тесака и крови): красный канал specmask — где блестит; там
+            # сильнее блик и глаже поверхность, остальное — матовое (без налёта)
+            sm_ = next((n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and "specmask" in n.image.name.lower()), None)
+            if sm_ and HERO["spec"] > 0:
+                sep = nt.nodes.new("ShaderNodeSeparateColor"); nt.links.new(sm_.outputs["Color"], sep.inputs["Color"])
+                mul = nt.nodes.new("ShaderNodeMath"); mul.operation = "MULTIPLY"; mul.inputs[1].default_value = HERO["spec"]
+                nt.links.new(sep.outputs["Red"], mul.inputs[0]); nt.links.new(mul.outputs[0], b.inputs["Specular IOR Level"])
+                rr = nt.nodes.new("ShaderNodeMapRange"); rr.inputs["To Min"].default_value = 0.65; rr.inputs["To Max"].default_value = 0.28
+                nt.links.new(sep.outputs["Red"], rr.inputs["Value"]); nt.links.new(rr.outputs["Result"], b.inputs["Roughness"])
+            # цвет героя сочнее (кожа в текстурах доты блёклая — игровой шейдер её досыщает; Пудж в примере ярче)
+            if (HERO["sat"], HERO["val"], HERO["hue"]) != (1, 1, 0) and b.inputs["Base Color"].links:
+                hs = nt.nodes.new("ShaderNodeHueSaturation"); hs.inputs["Saturation"].default_value = HERO["sat"]
+                hs.inputs["Value"].default_value = HERO["val"]; hs.inputs["Hue"].default_value = 0.5 + HERO["hue"]   # hue<0 — к красному
+                src = b.inputs["Base Color"].links[0].from_socket
+                nt.links.new(src, hs.inputs["Color"]); nt.links.new(hs.outputs["Color"], b.inputs["Base Color"])
             m.surface_render_method = "DITHERED"; m["_a8"] = 1
 
 
@@ -371,7 +392,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=1.2, back=1.0, key=300, rim=200, expo=-0.15, amb=3.5, shadow=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=1.2, back=1.0, key=900, rim=200, expo=-0.15, amb=3.5, shadow=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]

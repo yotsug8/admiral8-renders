@@ -46,7 +46,7 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
-HERO = dict(sat=1.2, spec=1.5, val=0.85, hue=-0.01, head_val=-1)   # head_val −1 — по герою (HEAD_GAIN)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+HERO = dict(sat=1.2, spec=1.5, val=1.0, hue=-0.018, head_val=-1)   # head_val −1 — по герою (HEAD_GAIN)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
 for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
     k, v = kv.split("="); HERO[k] = float(v)
 
@@ -288,6 +288,94 @@ for name, a in D["actors"].items():
     for f, (x, y, z, pi, ya, ro) in enumerate(a["keys"]):
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
+
+# ---------- свет героев «как в доте» (участник: «совершенно другое освещение, не как в примерах»): физический свет ламп
+# и неба давал то тёмную половину, то засвет — сколько ни крути. Игра освещает героев своим шейдером; здесь он повторён
+# в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
+# одинаково с любого ракурса и в любой сцене), тёмная сторона не уходит в черноту (ambient), подсветка по краю силуэта,
+# блеск по маске доты (specmask). Выход — свечение: лампы сцены и тени на героя не влияют. DOTA="key=…;amb=…" — подбор.
+DOTA = dict(on=1.0, gain=1.4, amb=0.95, key=0.35, wrap=0.6, lx=-0.45, ly=0.55, lz=-0.7, rim=0.3, rim_pow=3.0,
+            spec=0.6, gloss=24.0, shadow_cool=0.06)
+for kv in filter(None, os.environ.get("A8_DOTA", "").split(";")):
+    k, v = kv.split("="); DOTA[k] = float(v)
+
+
+def dota_shade(objs):
+    done = 0
+    for m in {ms.material for o in objs if o.type == "MESH" for ms in o.material_slots if ms.material}:
+        nt = m.node_tree if m.use_nodes else None
+        if not nt or m.get("_dota"):
+            continue
+        b = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        out = next((n for n in nt.nodes if n.type == "OUTPUT_MATERIAL"), None)
+        if not b or not out:
+            continue
+        N = nt.nodes.new
+        def link(a, c):
+            nt.links.new(a, c)
+        # цвет — всё, что уже идёт в Base Color (текстура, насыщенность, рот, голова)
+        if b.inputs["Base Color"].links:
+            albedo = b.inputs["Base Color"].links[0].from_socket
+        else:
+            rgb = N("ShaderNodeRGB"); rgb.outputs[0].default_value = b.inputs["Base Color"].default_value; albedo = rgb.outputs[0]
+        # нормаль с картой нормалей (если есть) → в координаты камеры
+        nrm_src = b.inputs["Normal"].links[0].from_socket if b.inputs["Normal"].links else N("ShaderNodeNewGeometry").outputs["Normal"]
+        vt = N("ShaderNodeVectorTransform"); vt.vector_type = "NORMAL"; vt.convert_from = "WORLD"; vt.convert_to = "CAMERA"
+        link(nrm_src, vt.inputs["Vector"])
+        nrm = N("ShaderNodeVectorMath"); nrm.operation = "NORMALIZE"; link(vt.outputs["Vector"], nrm.inputs[0])
+        Ldir = Vector((DOTA["lx"], DOTA["ly"], DOTA["lz"])).normalized()
+        # half-lambert: (N·L·w + (1−w))² — свет обтекает форму, без резкой границы тени
+        dot = N("ShaderNodeVectorMath"); dot.operation = "DOT_PRODUCT"; link(nrm.outputs[0], dot.inputs[0])
+        dot.inputs[1].default_value = Ldir
+        hl = N("ShaderNodeMath"); hl.operation = "MULTIPLY_ADD"; link(dot.outputs["Value"], hl.inputs[0])
+        hl.inputs[1].default_value = DOTA["wrap"]; hl.inputs[2].default_value = 1 - DOTA["wrap"]
+        hl.use_clamp = True
+        sq = N("ShaderNodeMath"); sq.operation = "POWER"; link(hl.outputs[0], sq.inputs[0]); sq.inputs[1].default_value = 2.0
+        # свет = ambient + key·half-lambert; тёмная сторона чуть холоднее (как небо доты)
+        lit = N("ShaderNodeMath"); lit.operation = "MULTIPLY_ADD"; link(sq.outputs[0], lit.inputs[0])
+        lit.inputs[1].default_value = DOTA["key"]; lit.inputs[2].default_value = DOTA["amb"]
+        tint = N("ShaderNodeMix"); tint.data_type = "RGBA"; link(sq.outputs[0], tint.inputs["Factor"])
+        c = DOTA["shadow_cool"]; tint.inputs["A"].default_value = (1 - c, 1 - c * 0.5, 1 + c, 1); tint.inputs["B"].default_value = (1.0, 1.0, 1.0, 1)
+        shade = N("ShaderNodeMix"); shade.data_type = "RGBA"; shade.blend_type = "MULTIPLY"; shade.inputs["Factor"].default_value = 1.0
+        link(tint.outputs["Result"], shade.inputs["A"]); link(lit.outputs[0], shade.inputs["B"])
+        col = N("ShaderNodeMix"); col.data_type = "RGBA"; col.blend_type = "MULTIPLY"; col.inputs["Factor"].default_value = 1.0
+        link(albedo, col.inputs["A"]); link(shade.outputs["Result"], col.inputs["B"])
+        # подсветка по краю силуэта: (1 − N·V)^p, цвет — светлый тёплый, на цвет героя
+        nv = N("ShaderNodeSeparateXYZ"); link(nrm.outputs[0], nv.inputs[0])
+        # в пространстве камеры шейдера Blender ось Z смотрит от камеры в сцену: к камере обращены нормали с Z ≈ −1
+        one = N("ShaderNodeMath"); one.operation = "ADD"; one.inputs[0].default_value = 1.0; link(nv.outputs["Z"], one.inputs[1]); one.use_clamp = True
+        rp = N("ShaderNodeMath"); rp.operation = "POWER"; link(one.outputs[0], rp.inputs[0]); rp.inputs[1].default_value = DOTA["rim_pow"]
+        rk = N("ShaderNodeMath"); rk.operation = "MULTIPLY"; link(rp.outputs[0], rk.inputs[0]); rk.inputs[1].default_value = DOTA["rim"]
+        rimc = N("ShaderNodeMix"); rimc.data_type = "RGBA"; rimc.blend_type = "ADD"; link(rk.outputs[0], rimc.inputs["Factor"])
+        link(col.outputs["Result"], rimc.inputs["A"]); rimc.inputs["B"].default_value = (0.9, 0.85, 0.8, 1)
+        res = rimc.outputs["Result"]
+        # блеск по маске доты: (N·H)^gloss × specmask(R)
+        sm_ = next((n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and "specmask" in n.image.name.lower()), None)
+        if sm_ and DOTA["spec"] > 0:
+            H = (Ldir + Vector((0, 0, -1))).normalized()
+            dh = N("ShaderNodeVectorMath"); dh.operation = "DOT_PRODUCT"; link(nrm.outputs[0], dh.inputs[0]); dh.inputs[1].default_value = H
+            cl = N("ShaderNodeMath"); cl.operation = "MAXIMUM"; link(dh.outputs["Value"], cl.inputs[0]); cl.inputs[1].default_value = 0.0
+            pw = N("ShaderNodeMath"); pw.operation = "POWER"; link(cl.outputs[0], pw.inputs[0]); pw.inputs[1].default_value = DOTA["gloss"]
+            sep = N("ShaderNodeSeparateColor"); link(sm_.outputs["Color"], sep.inputs["Color"])
+            mk = N("ShaderNodeMath"); mk.operation = "MULTIPLY"; link(pw.outputs[0], mk.inputs[0]); link(sep.outputs["Red"], mk.inputs[1])
+            ms2 = N("ShaderNodeMath"); ms2.operation = "MULTIPLY"; link(mk.outputs[0], ms2.inputs[0]); ms2.inputs[1].default_value = DOTA["spec"]
+            add = N("ShaderNodeMix"); add.data_type = "RGBA"; add.blend_type = "ADD"; link(ms2.outputs[0], add.inputs["Factor"])
+            link(res, add.inputs["A"]); add.inputs["B"].default_value = (1, 1, 1, 1); res = add.outputs["Result"]
+        # свечением того же материала (отдельный узел свечения делал героя полупрозрачным — сквозь него виден фон):
+        # цвет и блик ламп — в ноль, непрозрачность прежняя
+        for l in list(b.inputs["Base Color"].links) + list(b.inputs["Emission Color"].links) + list(b.inputs["Emission Strength"].links):
+            nt.links.remove(l)
+        b.inputs["Base Color"].default_value = (0, 0, 0, 1); b.inputs["Specular IOR Level"].default_value = 0.0
+        for l in list(b.inputs["Specular IOR Level"].links):
+            nt.links.remove(l)
+        link(res, b.inputs["Emission Color"]); b.inputs["Emission Strength"].default_value = DOTA["gain"]
+        m["_dota"] = 1; done += 1
+    print(f"  свет «как в доте»: материалов {done}")
+
+
+if DOTA["on"] > 0:
+    dota_shade([o for o in HERO_OBJS if getattr(o, "type", "") == "MESH"])
+
 
 # ---------- цепь крюка: от правой руки Пуджа (weapon_rt_1) к острию (актёр tip)
 for t0, fxname, at, z, dur, *rest in D["fx"]:

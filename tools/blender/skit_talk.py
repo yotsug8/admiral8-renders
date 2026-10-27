@@ -209,6 +209,13 @@ def speaker(s):
         thl, ank = leg["L"][0], leg["L"][2]
         Lg = (world(thl).translation - world(ank).translation).length if thl and ank else 1.0
         stride = 0.7 * Lg; wa, wl = walk["at"], walk["len"]
+        # переваливание (тяжёлый герой): вес на опорную ногу — таз к ней, корпус над ней, голова ровнее корпуса,
+        # ноги шире; жир (живот, грудь, спина) колышется за тазом с запаздыванием; waddle — сила (1 — Пудж)
+        wd = walk.get("waddle", 0.0)
+        sL = 1.0 if not (leg["L"][2] and leg["R"][2]) or world(leg["L"][2]).translation.x > world(leg["R"][2]).translation.x else -1.0
+        fat = [(B[n], a, lag) for n, a, lag in (("stomach1_0", 7, 0.9), ("booby_lf", 9, 1.3), ("booby_rt", 9, 1.3),
+                                                ("backfat5_0", 5, 1.1), ("backfat7_0", 5, 1.1)) if n in B]
+        pelvis = B.get("spine1")
 
         def stride_walk(t):
             e_ = sm(wa, wa + 0.3, t) * (1 - sm(wa + wl - 0.3, wa + wl, t))
@@ -227,9 +234,22 @@ def speaker(s):
                     turn(an, X, R(-e_ * (a_th + a_kn) * 0.55))
             for nm, sg in (("bicep_l", 1), ("bicep_r", -1)):
                 if nm in B and not tpose:                   # в Т-позе руки при шаге не качаются
-                    turn(B[nm], X, R(e_ * 16 * sg * math.sin(phi)))
+                    turn(B[nm], X, R(e_ * 16 * (1 - 0.6 * wd) * sg * math.sin(phi)))   # тяжёлые качают руками меньше
             if spine:
                 turn(spine, Z, R(e_ * 5 * math.sin(phi)))
+            if wd:
+                wL = -math.cos(phi)                              # +1 — вес на левой (правая на выносе), −1 — на правой
+                for sd, sg in (("L", 1), ("R", -1)):             # ноги шире: бедро наружу
+                    if leg[sd][0]:
+                        turn(leg[sd][0], Y, R(e_ * wd * 5 * sg * sL))
+                if pelvis:                                       # корпус над опорной ногой
+                    turn(pelvis, Y, R(e_ * wd * 7 * sL * wL))
+                turn(s["head"], Y, R(-e_ * wd * 5 * sL * wL))   # голова держится ровнее
+                rb = arm.pose.bones[0]; M = world(rb.name)       # таз к опорной ноге
+                rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((e_ * wd * 0.06 * Lg * sL * wL, 0, 0))) @ M)
+                bpy.context.view_layer.update()
+                for b, a, lag in fat:                            # подскок таза — два раза за период; жир догоняет
+                    turn(b, X, R(e_ * wd * a * math.cos(2 * phi - lag)))
             bpy.context.view_layer.update()
 
     def full(t, k):

@@ -5,6 +5,7 @@
 #   half — пробные кадры в половинном размере
 import bpy, sys, os, json, math, re
 from mathutils import Matrix, Vector
+R = math.radians
 
 args = sys.argv[sys.argv.index("--") + 1:]
 SCENE, OUT = os.path.abspath(args[0]), os.path.abspath(args[1])   # Blender пишет относительные пути от корня диска
@@ -835,6 +836,33 @@ if PICK is None:                                          # весь ролик 
     sc.render.filepath = os.path.join(OUT, "f#####")
     bpy.ops.render.render(animation=True)
     print("ГОТОВО", OUT, N, "кадров", f"{time.time() - t_start:.0f} с")
+elif os.environ.get("A8_VIEWS"):                          # проверка тела: те же кадры с камер вокруг героя во весь рост
+    who_, angs = os.environ["A8_VIEWS"].split(":")        # «pudge:0,90,180,270» — градусы вокруг героя от его взгляда
+    A = ACTORS[who_]; arm_ = A["arm"]
+    vc_d = bpy.data.cameras.new("view"); vc = bpy.data.objects.new("view", vc_d); sc.collection.objects.link(vc)
+    vc_d.angle = R(40); vc_d.clip_start = 0.05; sc.camera = vc
+    for f in PICK:
+        sc.frame_set(f)
+        bones = [arm_.matrix_world @ b.head for b in arm_.pose.bones]
+        lo = min(p.z for p in bones); hi = max(p.z for p in bones); mid = sum(bones, Vector()) / len(bones)
+        H = (hi - lo) * 1.6 + 0.6; d = H / 2 / math.tan(R(20)) * 1.4
+        fwd = arm_.matrix_world.to_3x3() @ Vector((0, -1, 0)); fwd.z = 0; fwd.normalize()
+        for a in angs.split(","):
+            v = Matrix.Rotation(R(float(a)), 3, "Z") @ fwd
+            aimp = Vector((mid.x, mid.y, (lo + hi) / 2))
+            vc.location = aimp + v * d + Vector((0, 0, 0.3))
+            vc.rotation_euler = (aimp - vc.location).to_track_quat("-Z", "Y").to_euler()
+            mine = HERO_OBJS | {arm_} | set(arm_.children_recursive)
+            for o in [o for o in sc.objects if o.get("a8_view_hid")]:
+                o.hide_render = False; o.hide_viewport = False; del o["a8_view_hid"]
+            for _ in range(12):                           # что заслоняет героя на луче к нему (дерево, камень) — убрать на этот вид
+                dg = bpy.context.evaluated_depsgraph_get(); dg.update()
+                hit, _p, _n, _i, o, _m = sc.ray_cast(dg, vc.location, (aimp - vc.location).normalized(), distance=(aimp - vc.location).length)
+                if not hit or o.original in mine:
+                    break
+                o = o.original; o.hide_render = True; o.hide_viewport = True; o["a8_view_hid"] = 1
+            sc.render.filepath = os.path.join(OUT, f"v{f:05d}_{int(float(a)):03d}.png")
+            bpy.ops.render.render(write_still=True)
 else:
     for i, f in enumerate(PICK):
         sc.frame_set(f)

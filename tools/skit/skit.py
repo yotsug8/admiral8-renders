@@ -58,6 +58,7 @@ P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 OWN_GESTURES = {"крюк", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
 gest_t = lambda e: e["t0"] + 0.45 * (e["t1"] - e["t0"]) - 0.2 if e["emo2"] else e["t0"]   # жест — на смене эмоции
 GAP, GAP_SAME, LEAD, TAIL = 0.4, 0.25, 0.15, 1.0   # паузы между репликами, склейка раньше голоса, хвост сцены
+WADDLE = {"pudge": 1.0, "tidehunter": 0.7, "ogre_magi": 0.8}   # переваливание при ходьбе — тяжёлые герои (skit_talk.py)
 HOOK_V = 1600.0                                     # скорость крюка (scripts/npc/heroes/npc_dota_hero_pudge.txt)
 
 
@@ -297,7 +298,8 @@ def build(sc, V, folder):
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
                         "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
                         **({"walk": {"at": round(max(0.0, e["t0"] - LEAD) - a0, 2), "len": round(e["t1"] - max(0.0, e["t0"] - LEAD), 2),
-                                     "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3)}} if e.get("walk") and not e.get("glide") else {}),
+                                     "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3),
+                                     "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0)}} if e.get("walk") and not e.get("glide") else {}),
                         **({"freeze": True} if e.get("glide") else {}),
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": e["gesture"][0], "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра

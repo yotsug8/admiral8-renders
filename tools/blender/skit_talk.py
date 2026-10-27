@@ -21,6 +21,21 @@ def sm(a, b, t):
     t = min(1.0, max(0.0, (t - a) / (b - a))); return t * t * (3 - 2 * t)
 
 
+_BN = {b.name.lower(): b.name for b in arm.pose.bones}
+ALIAS = {"thigh": "hip", "hip": "thigh", "spine3": "spine_2", "spine_2": "spine3"}   # одна кость — разные имена у героев
+
+
+def bone(name):
+    """Кость героя по имени общего скелета доты (регистр и синонимы не важны: thigh_L у Пуджа = hip_L у Снайпера)."""
+    if name is None or name in arm.pose.bones:
+        return name
+    n = name.lower(); hit = _BN.get(n)
+    if not hit:
+        stem, _, side = n.rpartition("_")
+        hit = _BN.get(f"{ALIAS.get(stem, stem)}_{side}") if stem else _BN.get(ALIAS.get(n, n))
+    return hit
+
+
 def world(name):
     return MW @ arm.pose.bones[name].matrix
 
@@ -38,6 +53,18 @@ def aim(root, tip, dirv, k):
     M = world(root)
     arm.pose.bones[root].matrix = MW.inverted() @ (Matrix.Translation(p) @ q.to_matrix().to_4x4() @ Matrix.Translation(-p) @ M)
     bpy.context.view_layer.update()
+
+
+def leg_ik(th, kn, an, T):
+    """Нога на точку T (мир): колено сгибается на нужное расстояние бедро–стопа, бедро прицелом кладёт стопу на T."""
+    H = world(th).translation; K = world(kn).translation; A = world(an).translation
+    l1, l2 = (K - H).length, (A - K).length
+    D = min((T - H).length, 0.999 * (l1 + l2))
+    cur = (H - K).angle(A - K); want = math.acos(max(-1.0, min(1.0, (l1 * l1 + l2 * l2 - D * D) / (2 * l1 * l2))))
+    ax = (K - H).cross(A - K)
+    if ax.length > 1e-6:                                 # прямую ногу не согнуть — ось сгиба неизвестна
+        turn(kn, ax.normalized(), cur - want)
+    aim(th, an, T - world(th).translation, 1.0)
 
 
 def base_pose(action, t):
@@ -153,6 +180,30 @@ GESTURES = {
 SLOW = {"гордо", "плечи", "тпоза", "парит", "выгнуться", "скрутиться"}   # позы — входят плавно за 0,6 с (иначе голова дёргается)
 
 
+# жесты из нескольких поз подряд: (с от начала, вход за с, поза); последняя держится до конца жеста и уходит за 0,45 с
+SEQ = {
+    # «замах»: крюк заносится назад-вверх за плечо (корпус скручен вправо, голова держит собеседника), пауза — и бросок
+    # вперёд с перелётом (корпус раскручивается, подаётся вперёд); правая рука — крюк, левая с тесаком не трогается
+    "замах": [(0.0, 0.5, [("SPINE", Z, -24, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.55, 0.45, 0.75))), ("HEAD", Z, 14, 0)]),
+              (0.75, 0.16, [("SPINE", Z, 18, 0), ("SPINE", X, 9, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.2, -1, -0.45))), ("elbow_R", X, 25, 0),
+                            ("HEAD", Z, -8, 0)])],
+}
+
+
+def seq_env(t, a, b, phases, i):
+    """Вес i-й позы жеста SEQ в момент t: входит за свой вход (бросок — с перелётом), уходит, когда входит следующая."""
+    s0, sin_, _ = phases[i]; s0 += a
+    if t <= s0:
+        return 0.0
+    x = min(1.0, (t - s0) / sin_)
+    w = (1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2) if i and x < 1 else sm(0, 1, x)   # ease-out-back у броска
+    if i + 1 < len(phases):
+        n0 = a + phases[i + 1][0]; w *= 1 - sm(n0, n0 + phases[i + 1][1], t)
+    else:
+        w *= 1 - sm(b, b + 0.45, t)
+    return w
+
+
 def gesture_env(t, a, b, slow=False):
     if t <= a or t >= b + 0.45:
         return 0.0
@@ -252,6 +303,51 @@ def speaker(s):
                     turn(b, X, R(e_ * wd * a * math.cos(2 * phi - lag)))
             bpy.context.view_layer.update()
 
+    tn = s.get("turn")
+    if tn:
+        # поворот на месте (корень героя поворачивается в render_scene по ключам skit.py тем же плавным ходом):
+        # голова ведёт, корпус за ней, ноги переступают — стопа стоит на земле, пока не шагнёт (в скелете её держит
+        # обратный поворот), шаг — подъём и перенос на новый угол; первой шагает нога со стороны поворота.
+        # Больше 100° — в два круга шагов (иначе нога перекручивается)
+        legs_t = [tuple(bone(f"{p}_{sd}") for p in ("thigh", "knee", "ankle")) for sd in ("l", "r")]
+        legs_t = [l for l in legs_t if all(l)]
+        base_pose(s["base"], 0.0)
+        Lt = (world(legs_t[0][0]).translation - world(legs_t[0][2]).translation).length if legs_t else 1.0
+        ta, tl, tg = tn["at"], tn["len"], tn["ang"]
+        if legs_t:                                       # первой — нога со стороны поворота (влево — левая, она у +X)
+            legs_t.sort(key=lambda l: -world(l[2]).translation.x * (1 if tg > 0 else -1))
+        rounds = max(1, math.ceil(abs(tg) / 100))
+        neck_t = next((b.name for b in arm.pose.bones if "neck" in b.name.lower()), None)
+
+        def turn_body(t):
+            if t <= ta - 0.15 or t >= ta + tl + 0.05:
+                return
+            psi = tg * sm(ta, ta + tl, t)                 # корень уже повёрнут на столько
+            head_lead = tg * sm(ta - 0.15, ta + 0.55 * tl, t) - psi   # голова первой
+            spine_lead = tg * sm(ta - 0.08, ta + 0.8 * tl, t) - psi
+            for i, (th, kn, an) in enumerate(legs_t):
+                T = tl / rounds; phi = 0.0; lift = 0.0
+                for r in range(rounds):
+                    a0_ = ta + r * T + (0.02 if i == 0 else 0.52) * T; b0_ = a0_ + 0.46 * T   # ноги по очереди, без прыжка
+                    phi += tg / rounds * sm(a0_, b0_, t)
+                    if a0_ < t < b0_:
+                        lift = math.sin(math.pi * (t - a0_) / (b0_ - a0_))
+                d = R(phi - psi)
+                if abs(d) < 1e-4 and not lift:
+                    continue
+                Ma = world(an); p = Ma.translation.copy()
+                Rz = Matrix.Rotation(d, 4, Z)
+                T_ = Rz @ Vector((p.x, p.y, 0)) + Vector((0, 0, p.z + 0.09 * Lt * lift))
+                leg_ik(th, kn, an, T_)
+                q = Rz @ Matrix.Translation(-p) @ Ma            # стопа плоско, носком на свой угол
+                arm.pose.bones[an].matrix = MW.inverted() @ (Matrix.Translation(world(an).translation) @ q)
+                bpy.context.view_layer.update()
+            if spine:
+                turn(spine, Z, R(spine_lead))
+            if neck_t:
+                turn(neck_t, Z, R(0.4 * (head_lead - spine_lead)))
+            turn(s["head"], Z, R(0.6 * (head_lead - spine_lead)))
+
     def full(t, k):
         pose(t, k)
         if mood:
@@ -270,23 +366,31 @@ def speaker(s):
             turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
         for g in s.get("gest") or []:                   # свои жесты поверх разговора
-            ge = gesture_env(t, g["at"], g["at"] + g["len"], g["kind"] in SLOW)
-            if ge:
-                for bone, ax, ang, wob in GESTURES[g["kind"]]:
-                    bone = {"SPINE": spine, "HEAD": s["head"]}.get(bone, bone)   # спина и голова — какие есть у героя
-                    if bone is None:
+            if g["kind"] in SEQ:
+                ph = SEQ[g["kind"]]
+                poses = [(seq_env(t, g["at"], g["at"] + g["len"], ph, i), ph[i][2]) for i in range(len(ph))]
+            else:
+                poses = [(gesture_env(t, g["at"], g["at"] + g["len"], g["kind"] in SLOW), GESTURES[g["kind"]])]
+            for ge, gp in poses:
+                if not ge:
+                    continue
+                for bn, ax, ang, wob in gp:
+                    bn = {"SPINE": spine, "HEAD": s["head"]}.get(bn, bn)   # спина и голова — какие есть у героя
+                    if bn is None:
                         continue
-                    if bone == "LIFT":                          # корень скелета вверх: висит в воздухе, лёгкое покачивание
+                    if bn == "LIFT":                            # корень скелета вверх: висит в воздухе, лёгкое покачивание
                         rb = arm.pose.bones[0]; M = world(rb.name)
                         up = ge * ang + wob * math.sin(t * 2.2) * min(1.0, ge)
                         rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, up))) @ M); bpy.context.view_layer.update()
-                    elif bone == "aim":
-                        if ax in arm.pose.bones and ang in arm.pose.bones:
-                            aim(ax, ang, wob, min(1.0, ge))
-                    elif bone in arm.pose.bones:
-                        turn(bone, ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
+                    elif bn == "aim":
+                        if bone(ax) and bone(ang):
+                            aim(bone(ax), bone(ang), wob, min(1.0, ge))
+                    elif bone(bn):
+                        turn(bone(bn), ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
         if walk:                                        # шаг — после жестов (Т-поза сбрасывала и ноги — Пудж плыл, не шагая)
             stride_walk(t)
+        if tn:
+            turn_body(t)
         if feet_ground is not None:                     # стопы на земле: Т-поза выпрямляет полусогнутые ноги стойки
             plant()
     return full

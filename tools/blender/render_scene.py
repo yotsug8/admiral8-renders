@@ -166,7 +166,7 @@ def mouth_dark(head, gain=1.0):
     n_dark = 0
     for p in me.polygons:
         r = area(p, jo) / max(area(p, base), 1e-9)
-        x = min(1.0, max(0.0, (r - 1.6) / 1.4)); n_dark += x > 0.5
+        x = min(1.0, max(0.0, (r - 2.2) / 0.8)); n_dark += x > 0.5   # щёки тянутся в 1,5–2,5 раза — с порогом 1,6 темнели заплатками
         for li in p.loop_indices:
             attr.data[li].color = (x, x, x, 1)
     for ms in head.material_slots:
@@ -282,8 +282,8 @@ for name, a in D["actors"].items():
 # в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
 # одинаково с любого ракурса и в любой сцене), тёмная сторона не уходит в черноту (ambient), подсветка по краю силуэта,
 # блеск по маске доты (specmask). Выход — свечение: лампы сцены и тени на героя не влияют. DOTA="key=…;amb=…" — подбор.
-DOTA = dict(on=1.0, gain=1.4, amb=0.95, key=0.35, wrap=0.6, lx=-0.45, ly=0.55, lz=-0.7, rim=0.1, rim_pow=4.0,
-            spec=0.6, gloss=24.0, shadow_cool=0.06, env=1.0, blob=0.7)
+DOTA = dict(on=1.0, gain=1.4, amb=0.35, key=1.2, wrap=0.4, lx=-0.45, ly=0.55, lz=-0.7, rim=0.1, rim_pow=4.0,
+            spec=1.0, gloss=24.0, shadow_cool=0.06, env=1.0, blob=0.7, ao=0.6, ao_d=0.25)
 for kv in filter(None, os.environ.get("A8_DOTA", "").split(";")):
     k, v = kv.split("="); DOTA[k] = float(v)
 
@@ -335,6 +335,12 @@ def dota_shade(objs):
         env.inputs["B"].default_value = (1 - 0.04 * g_, 1, 1 + 0.08 * g_, 1)                             # небо
         shade2 = N("ShaderNodeMix"); shade2.data_type = "RGBA"; shade2.blend_type = "MULTIPLY"; shade2.inputs["Factor"].default_value = 1.0
         link(shade.outputs["Result"], shade2.inputs["A"]); link(env.outputs["Result"], shade2.inputs["B"])
+        if DOTA["ao"] > 0:                                # затенение углублений (складки, морщины, под подбородком): форма читается, как в примерах
+            ao = N("ShaderNodeAmbientOcclusion"); ao.inputs["Distance"].default_value = DOTA["ao_d"]
+            aok = N("ShaderNodeMapRange"); link(ao.outputs["AO"], aok.inputs["Value"])
+            aok.inputs["To Min"].default_value = 1 - DOTA["ao"]; aok.inputs["To Max"].default_value = 1.0
+            shade3 = N("ShaderNodeMix"); shade3.data_type = "RGBA"; shade3.blend_type = "MULTIPLY"; shade3.inputs["Factor"].default_value = 1.0
+            link(shade2.outputs["Result"], shade3.inputs["A"]); link(aok.outputs["Result"], shade3.inputs["B"]); shade2 = shade3
         col = N("ShaderNodeMix"); col.data_type = "RGBA"; col.blend_type = "MULTIPLY"; col.inputs["Factor"].default_value = 1.0
         link(albedo, col.inputs["A"]); link(shade2.outputs["Result"], col.inputs["B"])
         # подсветка по краю силуэта: (1 − N·V)^p, цвет — светлый тёплый, на цвет героя

@@ -54,10 +54,28 @@ def _speech(text, env, off, fps):
     return out, loud
 
 
+def split_sides(head, names):
+    """Половины морфа: «innerBrowRaiser_L» — тот же морф только на левой половине лица героя (_R — на правой),
+    шов посередине плавный. У моделей доты морфы симметричные, а гримасы примеров асимметричны: одна бровь вверх
+    (скепсис), ухмылка одним углом рта. Делается для любого героя по имени из эмоции."""
+    kb = head.data.shape_keys.key_blocks
+    xs = [v.co.x for v in head.data.vertices]; w = max(xs) - min(xs); mid = (max(xs) + min(xs)) / 2
+    for nm in names:
+        if nm in kb or nm[-2:] not in ("_L", "_R") or nm[:-2] not in kb:
+            continue
+        src = kb[nm[:-2]]; base = kb[0]; sg = 1 if nm.endswith("_L") else -1   # левая сторона героя — +X сетки
+        k = head.shape_key_add(name=nm, from_mix=False)
+        for i, (b, d) in enumerate(zip(base.data, src.data)):
+            x = sg * (xs[i] - mid) / (0.06 * w)            # шов — 6 % ширины головы
+            f = min(1.0, max(0.0, 0.5 + 0.5 * x)); f = f * f * (3 - 2 * f)
+            k.data[i].co = b.co + (d.co - b.co) * f
+
+
 def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1.0):
     kb = head.data.shape_keys.key_blocks if head.data.shape_keys else None
     if kb is None:
         return
+    split_sides(head, {k for t0, t1, who, shp in D.get("faces") or [] if who == actor for k in shp})
     keys = [k.name for k in kb[1:]]
     track = {k: [0.0] * n for k in keys}
 

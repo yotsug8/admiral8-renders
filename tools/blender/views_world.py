@@ -30,7 +30,8 @@ exec(compile(code, SRC, "exec"), g)
 R = math.radians
 sc, ACTORS, HERO_OBJS, PICK, OUT = g["sc"], g["ACTORS"], g["HERO_OBJS"], g["PICK"], g["OUT"]
 if FAST:
-    sc.render.resolution_percentage = 25
+    sc.render.resolution_percentage = int(os.environ.get("A8_PCT", 25))
+WHEAD = bool(os.environ.get("A8_WHEAD"))                  # крупно голова: камера ведёт голову (мимика), углы — от взгляда на 1-м кадре
 def HERO_OBJS_OF(who):
     """Всё, из чего собран герой: его скелет, части одежды и оружия (у них общий корень)."""
     root = ACTORS[who]["root"]; out = set()
@@ -180,6 +181,12 @@ for spec in os.environ["A8_WVIEWS"].split(";"):
             o = o.original; o.hide_render = True; o.hide_viewport = True; o["a8_view_hid"] = 1
         for f in fr:
             sc.frame_set(f)
+            if WHEAD:
+                hb = arm.pose.bones.get(ACTORS[who]["info"].get("head_bone", "head")) or arm.pose.bones[0]
+                hw = ACTORS[who]["info"].get("head_w", 0.9)
+                H = arm.matrix_world @ hb.head + Vector((0, 0, 0.25 * hw))
+                vc.location = H + (Matrix.Rotation(R(float(a)), 3, "Z") @ fwd) * (hw * 0.75 / math.tan(hfov / 2)) + Vector((0, 0, 0.1 * hw))
+                vc.rotation_euler = (H - vc.location).to_track_quat("-Z", "Y").to_euler()
             sc.render.filepath = os.path.join(OUT, f"w{f:05d}_{who + '_' if multi else ''}{int(float(a)):03d}.png")
             bpy.ops.render.render(write_still=True)
 print("ГОТОВО", OUT)

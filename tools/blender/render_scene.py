@@ -46,7 +46,7 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
-HERO = dict(sat=1.2, spec=1.5, val=1.2, hue=-0.01, head_val=1.4)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+HERO = dict(sat=1.2, spec=1.5, val=1.2, hue=-0.01, head_val=-1)   # head_val −1 — по герою (HEAD_GAIN)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
 for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
     k, v = kv.split("="); HERO[k] = float(v)
 
@@ -162,7 +162,7 @@ def close_neck(head, objs):
     print(f"  шея {head.name[:30]}: перемычка из {len(neck)} вершин, петель-кромок {len(loops)}: {sorted(len(L) for L in loops)}")
 
 
-def mouth_dark(head):
+def mouth_dark(head, gain=1.0):
     """Рот изнутри: у голов доты рот не прорезан — губы соединены гранями кожи, и на крике (jawOpen до предела) они
     растягиваются в большие серые полосы вместо темноты рта. Грани, которые морф jawOpen растягивает (площадь больше
     чем в 2 раза), получают атрибут a8_mouth = 1 по углам граней (вершины губ не трогаются); материал головы — своя
@@ -199,8 +199,8 @@ def mouth_dark(head):
         nt.links.new(ca.outputs["Color"], mx.inputs["Factor"]); nt.links.new(mx.outputs["Result"], bsdf.inputs["Base Color"])
         # лицо в текстуре доты темнее груди (без света: 32 против 45; в игре и в примерах — одного тона) — голова светлее
         # ровно на эту разницу, оттенок не трогать (при ровном свете спереди лицо было 48 при груди 70)
-        if HERO["head_val"] != 1 and mx.inputs["A"].links:
-            hs = nt.nodes.new("ShaderNodeHueSaturation"); hs.inputs["Value"].default_value = HERO["head_val"]
+        if gain != 1 and mx.inputs["A"].links:
+            hs = nt.nodes.new("ShaderNodeHueSaturation"); hs.inputs["Value"].default_value = gain
             nt.links.new(mx.inputs["A"].links[0].from_socket, hs.inputs["Color"]); nt.links.new(hs.outputs["Color"], mx.inputs["A"])
     print(f"  рот изнутри {head.name[:30]}: тёмных граней {n_dark} из {len(me.polygons)}")
 
@@ -210,7 +210,10 @@ def glb_of(model):
 
 
 # ---------- герои
-JAW_CAP = {"pudge": 0.55}                             # раскрытие рта морфом: дальше рот у модели не прорезан — кожа рвётся полосами
+JAW_CAP = {"pudge": 0.55}
+# голова светлее тела на столько: у Пуджа лицо в текстуре темнее груди (без света 32 против 45; в игре одного тона) —
+# замер на ровном свете; автоматический замер по текстуре ошибался (в «тело» попадали тёмные спина и руки)
+HEAD_GAIN = {"pudge": 1.4}                             # раскрытие рта морфом: дальше рот у модели не прорезан — кожа рвётся полосами
 ACTORS = {}
 HERO_OBJS = set()                                     # всё, из чего собраны герои: луч камеры сквозь них не проверяется
 for name, a in D["actors"].items():
@@ -221,7 +224,7 @@ for name, a in D["actors"].items():
     HERO_OBJS.update(objs); fix_hero_mats(objs)
     head = next((o for o in objs if o.type == "MESH" and o.data.shape_keys), None)   # голова с морфами лица
     if head:
-        mouth_dark(head)                                          # до шеи: перемычка — снаружи
+        mouth_dark(head, HEAD_GAIN.get(a["hero"], 1.0) if HERO["head_val"] < 0 else HERO["head_val"])   # до шеи: перемычка — снаружи
         close_neck(head, objs)
     arm = next(o for o in objs if o.type == "ARMATURE")
     ACTS = {re.sub(r"\.\d{3}$", "", x.name): x for x in acts}
@@ -618,7 +621,9 @@ if plans:
     fill = bpy.data.objects.new("fill", bpy.data.lights.new("fill", "AREA")); sc.collection.objects.link(fill)
     fill.data.shape = "DISK"; fill.data.size = 4.0; fill.data.color = (1.0, 0.95, 0.88); fill.data.use_shadow = key.data.use_shadow
     hidden = set().union(*[p[9] for p in plans])
+    PLAN_LIGHT = []
     for f0, f1, C, T, fov, fw, FP, fst, lw, hide, *trk in plans:
+        PLAN_LIGHT.append((f0, f1, lw))
         trk = trk[0] if trk else None
         for h in hidden:                               # убранные деревья — только на своём плане
             h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
@@ -738,6 +743,68 @@ except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"
 os.makedirs(OUT, exist_ok=True)
+# ---------- ровный свет сам (участник: «во всех видео без настройки ровное освещение»): на каждом плане быстрый маленький
+# пробный кадр героя на прозрачном фоне (карта скрыта), замер яркости левой и правой половины героя, лица и тела;
+# половины разные — свет между ключевыми перераспределяется (до 3 раз) и ключи плана переписываются
+def light_check(f, who):
+    from bpy_extras.object_utils import world_to_camera_view
+    r = sc.render; keep = (r.resolution_percentage, r.film_transparent, r.filepath, sc.eevee.taa_render_samples)
+    root_ = ACTORS[who]["root"]
+    def mine(o):
+        while o is not None:
+            if o is root_:
+                return True
+            o = o.parent
+        return False
+    hidden = [o for o in sc.objects if o.type == "MESH" and not mine(o) and not o.hide_render]   # только герой плана
+    for o in hidden:
+        o.hide_render = True
+    r.resolution_percentage = 20; r.film_transparent = True; sc.eevee.taa_render_samples = 4
+    sc.frame_set(f); tmp = os.path.join(OUT, "_light.png"); r.filepath = tmp
+    bpy.ops.render.render(write_still=True)
+    for o in hidden:
+        o.hide_render = False
+    r.resolution_percentage, r.film_transparent, r.filepath, sc.eevee.taa_render_samples = keep
+    im = bpy.data.images.load(tmp); w, h = im.size; px = list(im.pixels); bpy.data.images.remove(im); os.remove(tmp)
+    A = ACTORS[who]; hb = A["arm"].matrix_world @ A["arm"].pose.bones[A["info"].get("head_bone") or "head"].head
+    hx, hy, _ = world_to_camera_view(sc, cam, hb); hx, hy = int(hx * w), int(hy * h)
+    L, R_, face, body = [], [], [], []
+    rad = max(3, int(0.06 * h))
+    for y in range(h):
+        for x in range(w):
+            k = (y * w + x) * 4
+            if px[k + 3] < 0.5:
+                continue
+            v = 0.3 * px[k] + 0.59 * px[k + 1] + 0.11 * px[k + 2]
+            (L if x < hx else R_).append(v)
+            if abs(x - hx) < rad and 0 <= y - hy < 2 * rad:
+                face.append(v)
+            elif hy - 4 * rad < y < hy - rad and abs(x - hx) < 2 * rad:
+                body.append(v)
+    med = lambda a: sorted(a)[len(a) // 2] if a else 0.0
+    lights_x = {lo.name: world_to_camera_view(sc, cam, lo.matrix_world.translation).x for lo in (bpy.data.objects.get("key"), bpy.data.objects.get("key2")) if lo}
+    return med(L), med(R_), med(face), med(body), lights_x
+
+
+if plans and bpy.data.objects.get("key2") and LOOK["side"] == 0 and not os.environ.get("A8_NOLIGHTCHECK"):
+    K1, K2 = bpy.data.objects["key"], bpy.data.objects["key2"]
+    for f0, f1, *_r in PLAN_LIGHT:
+        who = _r[0]; fm = (f0 + f1) // 2
+        if who not in ACTORS:
+            continue
+        for it in range(4):
+            l, r_, fc, bd, lx = light_check(fm, who)
+            ratio = min(l, r_) / max(l, r_, 1e-4)
+            print(f"  СВЕТ {who} кадр {fm}: половины {l:.2f}/{r_:.2f} ({ratio:.0%})" + (" — выравниваю" if ratio < 0.78 and it < 3 else ""))
+            if ratio >= 0.78 or it == 3:
+                break
+            bright_left = l > r_
+            for lo in (K1, K2):                                 # свет со стороны светлой половины — слабее, с тёмной — сильнее
+                on_left = lx[lo.name] < 0.5
+                k = 0.8 if on_left == bright_left else 1.25
+                for f in range(f0, f1):
+                    sc.frame_set(f); lo.data.energy *= k; lo.data.keyframe_insert("energy", frame=f)
+
 if os.environ.get("A8_BLEND"):                            # сцена для ручной работы: голоса дорожками звука, файл .blend — без рендера
     sc.frame_start, sc.frame_end = 0, N - 1; sc.frame_set(0)
     sc.render.filepath = os.path.join(OUT, "f#####")

@@ -207,7 +207,6 @@ def speaker(s):
                for sd in ("L", "R")}
         base_pose(s["base"], 0.0)
         thl, ank = leg["L"][0], leg["L"][2]
-        ankles = [leg[sd][2] for sd in ("L", "R") if leg[sd][2]]
         Lg = (world(thl).translation - world(ank).translation).length if thl and ank else 1.0
         stride = 0.7 * Lg; wa, wl = walk["at"], walk["len"]
 
@@ -261,12 +260,6 @@ def speaker(s):
                         rb = arm.pose.bones[0]; M = world(rb.name)
                         up = ge * ang + wob * math.sin(t * 2.2) * min(1.0, ge)
                         rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, up))) @ M); bpy.context.view_layer.update()
-                    elif bone == "TPOSE":
-                        for pb in arm.pose.bones:
-                            pb.rotation_mode = "QUATERNION"
-                            pb.rotation_quaternion = pb.rotation_quaternion.slerp(Quaternion(), min(1.0, ge))
-                            pb.location = pb.location.lerp(Vector(), min(1.0, ge))
-                        bpy.context.view_layer.update()
                     elif bone == "aim":
                         if ax in arm.pose.bones and ang in arm.pose.bones:
                             aim(ax, ang, wob, min(1.0, ge))

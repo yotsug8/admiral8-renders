@@ -2,7 +2,7 @@
 #   python tools/check.py            все выпуски (быстрая проверка без голоса: ключевые кадры, раскладка, метки) + логика сценок
 #   python tools/check.py 005        только выбранные выпуски
 # Выпуски, которым нужны файлы игры (_game/…), без них пропускаются. Код выхода 1 — есть проблемы.
-import glob, json, os, re, subprocess, sys
+import glob, os, re, subprocess, sys
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 BAD = re.compile(r"⚠|НЕ НАЙДЕНО|Traceback|Error|ПРОВЕРКА|ВНИМАНИЕ|JS-ошибка")

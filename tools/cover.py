@@ -2,7 +2,7 @@
 #   python tools/cover.py covers/cover_NNN.html [ещё…]      → covers/cover_NNN.png рядом
 # Новая обложка — копия ближайшей по стилю covers/cover_*.html: вопрос самого сильного факта, крупный герой с белым
 # контуром, плашка с главной цифрой; всё важное в середине кадра (y 400–1500).
-import os, sys
+import sys
 from pathlib import Path
 
 

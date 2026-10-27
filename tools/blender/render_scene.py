@@ -46,7 +46,7 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
-HERO = dict(sat=1.2, spec=1.5, val=1.0, hue=-0.018, head_val=-1)   # head_val −1 — по герою (HEAD_GAIN)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+HERO = dict(sat=1.2, val=1.0, hue=-0.008, head_val=-1)   # head_val −1 — по герою (HEAD_GAIN)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
 for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
     k, v = kv.split("="); HERO[k] = float(v)
 
@@ -67,18 +67,6 @@ def fix_hero_mats(objs):
                     m.node_tree.links.remove(l)
                 b.inputs[name].default_value = val
             nt = m.node_tree
-            for l in list(b.inputs["Specular IOR Level"].links):           # блик из маски доты как дал S2V — серый налёт на всём герое
-                nt.links.remove(l)
-            b.inputs["Specular IOR Level"].default_value = 0.15; b.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
-            # блеск по маске (как в игре, примеры — глянец тесака и крови): красный канал specmask — где блестит; там
-            # сильнее блик и глаже поверхность, остальное — матовое (без налёта)
-            sm_ = next((n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and "specmask" in n.image.name.lower()), None)
-            if sm_ and HERO["spec"] > 0:
-                sep = nt.nodes.new("ShaderNodeSeparateColor"); nt.links.new(sm_.outputs["Color"], sep.inputs["Color"])
-                mul = nt.nodes.new("ShaderNodeMath"); mul.operation = "MULTIPLY"; mul.inputs[1].default_value = HERO["spec"]
-                nt.links.new(sep.outputs["Red"], mul.inputs[0]); nt.links.new(mul.outputs[0], b.inputs["Specular IOR Level"])
-                rr = nt.nodes.new("ShaderNodeMapRange"); rr.inputs["To Min"].default_value = 0.65; rr.inputs["To Max"].default_value = 0.28
-                nt.links.new(sep.outputs["Red"], rr.inputs["Value"]); nt.links.new(rr.outputs["Result"], b.inputs["Roughness"])
             # цвет героя сочнее (кожа в текстурах доты блёклая — игровой шейдер её досыщает; Пудж в примере ярче)
             if (HERO["sat"], HERO["val"], HERO["hue"]) != (1, 1, 0) and b.inputs["Base Color"].links:
                 hs = nt.nodes.new("ShaderNodeHueSaturation"); hs.inputs["Saturation"].default_value = HERO["sat"]
@@ -131,7 +119,6 @@ def close_neck(head, objs):
     ctr = sum((v.co for v in neck), Vector()) / len(neck)
     dl = bm.verts.layers.deform.verify(); uvl = bm.loops.layers.uv.active
     shapes = list(bm.verts.layers.shape.values())
-    gname = {g.index: g.name for g in head.vertex_groups}
     new = []
     hh = max(v.co.z for v in bm.verts) - min(v.co.z for v in bm.verts)   # высота головы
     for v in neck:
@@ -294,8 +281,8 @@ for name, a in D["actors"].items():
 # в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
 # одинаково с любого ракурса и в любой сцене), тёмная сторона не уходит в черноту (ambient), подсветка по краю силуэта,
 # блеск по маске доты (specmask). Выход — свечение: лампы сцены и тени на героя не влияют. DOTA="key=…;amb=…" — подбор.
-DOTA = dict(on=1.0, gain=1.4, amb=0.95, key=0.35, wrap=0.6, lx=-0.45, ly=0.55, lz=-0.7, rim=0.3, rim_pow=3.0,
-            spec=0.6, gloss=24.0, shadow_cool=0.06)
+DOTA = dict(on=1.0, gain=1.4, amb=0.95, key=0.35, wrap=0.6, lx=-0.45, ly=0.55, lz=-0.7, rim=0.1, rim_pow=4.0,
+            spec=0.6, gloss=24.0, shadow_cool=0.06, env=1.0, blob=0.7)
 for kv in filter(None, os.environ.get("A8_DOTA", "").split(";")):
     k, v = kv.split("="); DOTA[k] = float(v)
 
@@ -338,8 +325,17 @@ def dota_shade(objs):
         c = DOTA["shadow_cool"]; tint.inputs["A"].default_value = (1 - c, 1 - c * 0.5, 1 + c, 1); tint.inputs["B"].default_value = (1.0, 1.0, 1.0, 1)
         shade = N("ShaderNodeMix"); shade.data_type = "RGBA"; shade.blend_type = "MULTIPLY"; shade.inputs["Factor"].default_value = 1.0
         link(tint.outputs["Result"], shade.inputs["A"]); link(lit.outputs[0], shade.inputs["B"])
+        # окружение на герое (участник: «Пудж как будто вставлен в фотку»): снизу отсвет травы, сверху — неба (мировая нормаль)
+        wn_ = N("ShaderNodeVectorMath"); wn_.operation = "NORMALIZE"; link(nrm_src, wn_.inputs[0])
+        wz = N("ShaderNodeSeparateXYZ"); link(wn_.outputs[0], wz.inputs[0])
+        up_ = N("ShaderNodeMapRange"); up_.inputs["From Min"].default_value = -1; up_.inputs["From Max"].default_value = 1; link(wz.outputs["Z"], up_.inputs["Value"])
+        env = N("ShaderNodeMix"); env.data_type = "RGBA"; link(up_.outputs["Result"], env.inputs["Factor"])
+        g_ = DOTA["env"]; env.inputs["A"].default_value = (1 - 0.10 * g_, 1 + 0.06 * g_, 1 - 0.22 * g_, 1)   # трава
+        env.inputs["B"].default_value = (1 - 0.04 * g_, 1, 1 + 0.08 * g_, 1)                             # небо
+        shade2 = N("ShaderNodeMix"); shade2.data_type = "RGBA"; shade2.blend_type = "MULTIPLY"; shade2.inputs["Factor"].default_value = 1.0
+        link(shade.outputs["Result"], shade2.inputs["A"]); link(env.outputs["Result"], shade2.inputs["B"])
         col = N("ShaderNodeMix"); col.data_type = "RGBA"; col.blend_type = "MULTIPLY"; col.inputs["Factor"].default_value = 1.0
-        link(albedo, col.inputs["A"]); link(shade.outputs["Result"], col.inputs["B"])
+        link(albedo, col.inputs["A"]); link(shade2.outputs["Result"], col.inputs["B"])
         # подсветка по краю силуэта: (1 − N·V)^p, цвет — светлый тёплый, на цвет героя
         nv = N("ShaderNodeSeparateXYZ"); link(nrm.outputs[0], nv.inputs[0])
         # в пространстве камеры шейдера Blender ось Z смотрит от камеры в сцену: к камере обращены нормали с Z ≈ −1
@@ -347,7 +343,7 @@ def dota_shade(objs):
         rp = N("ShaderNodeMath"); rp.operation = "POWER"; link(one.outputs[0], rp.inputs[0]); rp.inputs[1].default_value = DOTA["rim_pow"]
         rk = N("ShaderNodeMath"); rk.operation = "MULTIPLY"; link(rp.outputs[0], rk.inputs[0]); rk.inputs[1].default_value = DOTA["rim"]
         rimc = N("ShaderNodeMix"); rimc.data_type = "RGBA"; rimc.blend_type = "ADD"; link(rk.outputs[0], rimc.inputs["Factor"])
-        link(col.outputs["Result"], rimc.inputs["A"]); rimc.inputs["B"].default_value = (0.9, 0.85, 0.8, 1)
+        link(col.outputs["Result"], rimc.inputs["A"]); rimc.inputs["B"].default_value = (0.55, 0.65, 0.8, 1)   # цвет неба, слабо: белая кайма делала героя вырезанным
         res = rimc.outputs["Result"]
         # блеск по маске доты: (N·H)^gloss × specmask(R)
         sm_ = next((n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and "specmask" in n.image.name.lower()), None)
@@ -375,6 +371,32 @@ def dota_shade(objs):
 
 if DOTA["on"] > 0:
     dota_shade([o for o in HERO_OBJS if getattr(o, "type", "") == "MESH"])
+
+
+def blob_shadow(name):
+    """Мягкое тёмное пятно на земле под героем: тени выключены, и герой висел над травой. Плоскость на корне героя
+    (корень — на земле), радиальный градиент к краю, только тёмное — на героя не ложится."""
+    A = ACTORS[name]; r = A["info"].get("radius", 60) * S * 1.9
+    bpy.ops.mesh.primitive_plane_add(size=2 * r, location=(0, 0, 0)); pl = bpy.context.object; pl.name = name + "_blob"
+    pl.parent = A["root"]; pl.location = (0, 0, 0.03)
+    m = bpy.data.materials.new(name + "_blob"); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
+    tc = nt.nodes.new("ShaderNodeTexCoord"); gr = nt.nodes.new("ShaderNodeTexGradient"); gr.gradient_type = "SPHERICAL"
+    mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (1 / r, 1 / r, 1 / r)   # край плоскости — радиус 1
+    nt.links.new(tc.outputs["Object"], mp.inputs["Vector"]); nt.links.new(mp.outputs["Vector"], gr.inputs["Vector"])
+    ramp = nt.nodes.new("ShaderNodeValToRGB"); nt.links.new(gr.outputs["Fac"], ramp.inputs["Fac"])
+    ramp.color_ramp.elements[0].position = 0.0; ramp.color_ramp.elements[0].color = (0, 0, 0, 1)
+    ramp.color_ramp.elements[1].position = 0.75; ramp.color_ramp.elements[1].color = (1, 1, 1, 1)
+    k = nt.nodes.new("ShaderNodeMath"); k.operation = "MULTIPLY"; k.inputs[1].default_value = DOTA["blob"]
+    nt.links.new(ramp.outputs["Color"], k.inputs[0])
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent"); dk = nt.nodes.new("ShaderNodeBsdfDiffuse"); dk.inputs["Color"].default_value = (0, 0, 0, 1)
+    mx = nt.nodes.new("ShaderNodeMixShader"); nt.links.new(k.outputs[0], mx.inputs[0])
+    nt.links.new(tr.outputs[0], mx.inputs[1]); nt.links.new(dk.outputs[0], mx.inputs[2])
+    out = nt.nodes.new("ShaderNodeOutputMaterial"); nt.links.new(mx.outputs[0], out.inputs[0])
+    m.surface_render_method = "BLENDED"; pl.data.materials.append(m); pl.visible_shadow = False
+    HERO_OBJS.add(pl)
+if DOTA["blob"] > 0:
+    for nm_ in ACTORS:
+        blob_shadow(nm_)
 
 
 # ---------- цепь крюка: от правой руки Пуджа (weapon_rt_1) к острию (актёр tip)
@@ -488,7 +510,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=0.5, back=1.0, key=330, rim=30, expo=-0.3, amb=2.5, shadow=0.0, side=0.0, fill=0.0, bal=0.45, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.1, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=0.5, back=1.0, expo=-0.3, amb=2.5, shadow=0.0, fog=0.5, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.1, bg_warm=0.04, bg_sat=1.35, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -540,7 +562,6 @@ if MAP:                                         # дымка: даль свет�
         m["_haze"] = 1
 SUN = light("SUN", (50, 0, 45), LOOK["sun"], (1.0, 0.84, 0.64))  # тёплое солнце; на планах — спереди-сбоку от камеры (ниже)
 light("SUN", (68, 0, -150), LOOK["back"], (0.58, 0.74, 1.0))   # холодный контровой с северо-запада — обводит силуэты
-LIGHT_KEY, LIGHT_RIM = LOOK["key"], LOOK["rim"]             # свет плана (Вт): ключевой у камеры, контровой за героем
 
 # ---------- камера
 # Если в сцене есть планы (shots: [начало, план, кто, на кого, настройки]) — камера и свет плана считаются здесь,
@@ -696,34 +717,16 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
         plans.append((f0, f1, C, C + v, fov, other, B, o.get("fstop", 2.0), other, hide))
 
 if plans:
-    key = bpy.data.objects.new("key", bpy.data.lights.new("key", "AREA")); sc.collection.objects.link(key)
-    key.data.shape = "DISK"; key.data.size = 3.0; key.data.color = (1.0, 0.9, 0.78)
-    rim = bpy.data.objects.new("rim", bpy.data.lights.new("rim", "AREA")); sc.collection.objects.link(rim)
-    rim.data.shape = "DISK"; rim.data.size = 2.0; rim.data.color = (0.62, 0.78, 1.0)
-    key.data.use_shadow = rim.data.use_shadow = LOOK["shadow"] > 0
-    # второй ключевой — зеркально (side 0): обе половины героя ровные, а лицо освещено сбоку, как раньше. Один ключевой
-    # от камеры давал ровные половины, но лицо (смотрит вниз на низкую камеру) становилось темнее груди: 44 против 60
-    key2 = bpy.data.objects.new("key2", bpy.data.lights.new("key2", "AREA")); sc.collection.objects.link(key2)
-    key2.data.shape = "DISK"; key2.data.size = 3.0; key2.data.color = key.data.color; key2.data.use_shadow = key.data.use_shadow
-    # заполняющий — прямо от камеры, большой и мягкий: перед героя (живот, фартук), который боковые ключевые освещают вскользь
-    fill = bpy.data.objects.new("fill", bpy.data.lights.new("fill", "AREA")); sc.collection.objects.link(fill)
-    fill.data.shape = "DISK"; fill.data.size = 4.0; fill.data.color = (1.0, 0.95, 0.88); fill.data.use_shadow = key.data.use_shadow
     hidden = set().union(*[p[9] for p in plans])
-    PLAN_LIGHT = []
     for f0, f1, C, T, fov, fw, FP, fst, lw, hide, *trk in plans:
-        PLAN_LIGHT.append((f0, f1, lw))
         trk = trk[0] if trk else None
         for h in hidden:                               # убранные деревья — только на своём плане
             h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
         L, _ = avg_head(lw, f0, f1)
         tocam = C - L; tocam.z = 0; tocam.normalize()
-        # солнце плана — спереди-сбоку от камеры, 45° над горизонтом: у лица ясная светлая сторона и форма (как в примерах)
-        sd = rotz(tocam, LOOK["side"] * 40); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
+        # солнце плана — от камеры, 45° над горизонтом (фон; герои освещены своим материалом)
+        sd = tocam.copy(); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
         SUN.keyframe_insert("rotation_euler", frame=f0)
-        # свет едет за героем плана покадрово (сглажено ±5 кадров): раньше стоял у средней точки головы за план, и герой,
-        # подходя к камере, проезжал мимо ключевых — к концу свет бил сбоку-сзади, «заехал в тень» (участник, проба №5)
-        Ls = [head(lw, f)[0] if lw in ACTORS else L for f in range(f0, f1)]
-        Ls = [sum(Ls[max(0, i - 5):i + 6], Vector()) / len(Ls[max(0, i - 5):i + 6]) for i in range(len(Ls))]
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
             k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)
@@ -739,19 +742,6 @@ if plans:
             cam_d.dof.focus_distance = (fp - cam.location).length; cam_d.dof.aperture_fstop = fst
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
             cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-            # ключевой — от камеры (side 0: свет ровный, как в доте, обе половины героя одинаковые; участник: «половина Пуджа темнее»)
-            L = Ls[f - f0]; tocam = cam.location - L; tocam.z = 0; tocam.normalize()
-            pair = LOOK["side"] == 0; ke = LIGHT_KEY * (0.6 if pair else 1.0)
-            lights = ((key, rotz(tocam, 50 if pair else LOOK["side"] * 50), 3.5, 2.2, ke), (key2, rotz(tocam, -50), 3.5, 2.2, ke * LOOK["bal"] if pair else 0),
-                      (fill, tocam, 4.0, 1.0, LOOK["fill"]), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
-            if trk:                                    # селфи: камера снизу, небо за головой — ключевой ниже и ближе к камере
-                lights = ((key, rotz(tocam, 35 if pair else LOOK["side"] * 35), 3.0, 0.5, ke * 1.3), (key2, rotz(tocam, -35), 3.0, 0.5, ke * 1.3 * LOOK["bal"] if pair else 0),
-                          (fill, tocam, 3.5, (cam.location - L).z + 0.3, LOOK["fill"]), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
-            for lo, dirv, dist, up, en in lights:
-                lo.location = L + dirv * dist + Vector((0, 0, up))
-                lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()
-                lo.data.energy = en
-                lo.keyframe_insert("location", frame=f); lo.keyframe_insert("rotation_euler", frame=f); lo.data.keyframe_insert("energy", frame=f)
     print("  планы:", [(p[0], p[1], p[5]) for p in plans])
 else:
     focus = sorted(D["focus"])
@@ -769,7 +759,7 @@ else:
             cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
         cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-for idb in [cam, cam_d, SUN, bpy.data.objects.get("key"), bpy.data.objects.get("key2"), bpy.data.objects.get("fill"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
+for idb in [cam, cam_d, SUN] + sorted(hidden if plans else [], key=lambda o: o.name):
     if idb is None:
         continue
     for owner in (idb, getattr(idb, "data", None)):
@@ -803,19 +793,6 @@ for t0_, kind_, who_, *_r in SHOTS:
         print(f"  ДВИЖЕНИЕ {who_} {kind_}: поворот головы за кадр медиана {rs[len(rs) // 2]:.2f}°, макс {rs[-1]:.2f}°, "
               f"скачок {jerk:.2f}°; голова {min(wid) * 100:.0f}–{max(wid) * 100:.0f} % ширины кадра")
 
-if os.environ.get("A8_IDS"):                               # отладка: каждый объект — свой цвет (найти объект по пикселю)
-    ids = {}
-    for i, o in enumerate([o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render], 1):
-        m = bpy.data.materials.new(f"id{i}"); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
-        e = nt.nodes.new("ShaderNodeEmission"); outn = nt.nodes.new("ShaderNodeOutputMaterial")
-        e.inputs["Color"].default_value = ((i % 64) * 4 / 255, (i // 64 % 64) * 4 / 255, (i // 4096 % 64) * 4 / 255, 1)
-        nt.links.new(e.outputs[0], outn.inputs[0])
-        o.data = o.data.copy(); o.data.materials.clear(); o.data.materials.append(m)
-        ids[i] = o.name
-    sc.world = bpy.data.worlds.new("black"); sc.view_settings.view_transform = "Standard"; sc.view_settings.look = "None"
-    sc.view_settings.exposure = 0; sc.render.filter_size = 0; cam_d.dof.use_dof = False
-    os.makedirs(OUT, exist_ok=True); json.dump(ids, open(os.path.join(OUT, "ids.json"), "w", encoding="utf-8"), ensure_ascii=False)
-
 # ---------- рендер
 for eng in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):
     try:
@@ -836,74 +813,6 @@ except TypeError:
     pass
 sc.render.image_settings.file_format = "PNG"
 os.makedirs(OUT, exist_ok=True)
-# ---------- ровный свет сам (участник: «во всех видео без настройки ровное освещение»): на каждом плане быстрый маленький
-# пробный кадр героя на прозрачном фоне (карта скрыта), замер яркости левой и правой половины героя, лица и тела;
-# половины разные — свет между ключевыми перераспределяется (до 3 раз) и ключи плана переписываются
-def light_check(f, who):
-    from bpy_extras.object_utils import world_to_camera_view
-    r = sc.render; keep = (r.resolution_percentage, r.film_transparent, r.filepath, sc.eevee.taa_render_samples)
-    root_ = ACTORS[who]["root"]
-    def mine(o):
-        while o is not None:
-            if o is root_:
-                return True
-            o = o.parent
-        return False
-    hidden = [o for o in sc.objects if o.type == "MESH" and not mine(o) and not o.hide_render]   # только герой плана
-    for o in hidden:
-        o.hide_render = True
-    r.resolution_percentage = 20; r.film_transparent = True; sc.eevee.taa_render_samples = 4
-    sc.frame_set(f); tmp = os.path.join(OUT, "_light.png"); r.filepath = tmp
-    bpy.ops.render.render(write_still=True)
-    for o in hidden:
-        o.hide_render = False
-    r.resolution_percentage, r.film_transparent, r.filepath, sc.eevee.taa_render_samples = keep
-    im = bpy.data.images.load(tmp); w, h = im.size; px = list(im.pixels); bpy.data.images.remove(im); os.remove(tmp)
-    A = ACTORS[who]; hb = A["arm"].matrix_world @ A["arm"].pose.bones[A["info"].get("head_bone") or "head"].head
-    hx, hy, _ = world_to_camera_view(sc, cam, hb); hx, hy = int(hx * w), int(hy * h)
-    L, R_, face, body = [], [], [], []
-    rad = max(3, int(0.06 * h))
-    for y in range(h):
-        for x in range(w):
-            k = (y * w + x) * 4
-            if px[k + 3] < 0.5:
-                continue
-            v = 0.3 * px[k] + 0.59 * px[k + 1] + 0.11 * px[k + 2]
-            (L if x < hx else R_).append(v)
-            if abs(x - hx) < rad and 0 <= y - hy < 2 * rad:
-                face.append(v)
-            elif hy - 4 * rad < y < hy - rad and abs(x - hx) < 2 * rad:
-                body.append(v)
-    med = lambda a: sorted(a)[len(a) // 2] if a else 0.0
-    lights_x = {lo.name: world_to_camera_view(sc, cam, lo.matrix_world.translation).x for lo in (bpy.data.objects.get("key"), bpy.data.objects.get("key2")) if lo}
-    return med(L), med(R_), med(face), med(body), lights_x
-
-
-if plans and bpy.data.objects.get("key2") and LOOK["side"] == 0 and not os.environ.get("A8_NOLIGHTCHECK"):
-    K1, K2 = bpy.data.objects["key"], bpy.data.objects["key2"]
-    for f0, f1, *_r in PLAN_LIGHT:
-        who = _r[0]; fm = (f0 + f1) // 2
-        if who not in ACTORS:
-            continue
-        for it in range(4):
-            l, r_, fc, bd, lx = light_check(fm, who)
-            ratio = min(l, r_) / max(l, r_, 1e-4)
-            print(f"  СВЕТ {who} кадр {fm}: половины {l:.2f}/{r_:.2f} ({ratio:.0%})" + (" — выравниваю" if ratio < 0.78 and it < 3 else ""))
-            if ratio >= 0.78 or it == 3:
-                break
-            bright_left = l > r_
-            for lo in (K1, K2):                                 # свет со стороны светлой половины — слабее, с тёмной — сильнее
-                on_left = lx[lo.name] < 0.5
-                k = 0.8 if on_left == bright_left else 1.25
-                for f in range(f0, f1):
-                    sc.frame_set(f); lo.data.energy *= k; lo.data.keyframe_insert("energy", frame=f)
-        # свет ровный и по времени: в начале и в конце плана герой не темнее середины (иначе — «заехал в тень»)
-        if f1 - f0 > 20:
-            bs = [light_check(fx, who)[2] for fx in (f0 + 3, fm, f1 - 3)]   # по лицу: вся фигура меняется от позы (наруч, крюк)
-            seen = [b for b in bs if b > 0.02]                       # 0 — героя нет в кадре (утащило крюком) — не считать
-            drop = min(seen) / max(max(seen), 1e-4) if len(seen) > 1 else 1.0
-            print(f"  СВЕТ {who} кадры {f0 + 3}/{fm}/{f1 - 3}: лицо {bs[0]:.2f}/{bs[1]:.2f}/{bs[2]:.2f}" + ("" if drop >= 0.85 else "  ⚠ ГЕРОЙ ТЕМНЕЕТ/СВЕТЛЕЕТ ЗА ПЛАН"))
-
 if os.environ.get("A8_BLEND"):                            # сцена для ручной работы: голоса дорожками звука, файл .blend — без рендера
     sc.frame_start, sc.frame_end = 0, N - 1; sc.frame_set(0)
     sc.render.filepath = os.path.join(OUT, "f#####")

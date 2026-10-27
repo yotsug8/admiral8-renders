@@ -46,7 +46,7 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
-HERO = dict(sat=1.35, spec=1.5, val=1.28, hue=-0.012)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+HERO = dict(sat=1.2, spec=1.5, val=1.2, hue=-0.01)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
 for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
     k, v = kv.split("="); HERO[k] = float(v)
 

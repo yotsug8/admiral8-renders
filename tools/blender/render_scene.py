@@ -533,6 +533,8 @@ for i, (t0, kind, who, other, o) in enumerate(SHOTS):
             dd = d_at(tt) * (1 + sw * (0.10 * math.sin(tt * 2.6 + 0.5) + 0.04 * math.sin(tt * 5.3)))      # к лицу и от него
             C = Hs[i_] + rotz(Fs[i_].normalized(), a_) * dd
             C.z = Hs[i_].z - o.get("below", 0.45) * dd + sw * 0.05 * dd * math.sin(tt * 3.1)
+            gz = W(*D["actors"][who]["keys"][f][:3]).z                  # земля под героем: камера не ниже 0,5 м над ней
+            C.z = max(C.z, gz + 0.5)                                     # (на общем плане уходила под карту — белая изнанка)
             roll = math.radians(sw * (4 * math.sin(tt * 1.7 + 2) + 1.5 * math.sin(tt * 4.1)))
             track[f] = (C, Hs[i_] + Vector((0, 0, o.get("aim", 0.08) * dd)), roll)
         plans.append((f0, f1, C0, Hs[0], fov, who, Hs[0], o.get("fstop", 1.4), who, hide, track))

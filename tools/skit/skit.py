@@ -92,6 +92,8 @@ def parse(path):
                 tg = tg.lower()
                 if gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
                     ev["walk"] = float(gw[1])
+                elif gk := re.match(r"крупность\s+([\d.]+)$", tg):  # доля ширины кадра под голову (0,3 — средний, 0,15 — общий)
+                    ev["width"] = float(gk[1])
                 elif tg == "камера стоит":                         # камера не ведёт героя — он сам входит/подходит в кадре
                     ev["still"] = True
                 elif gx := re.match(r"утрировать\s+([\d.]+)$", tg):   # мимика сильнее предела модели (морфы за 1) — мемное искажение
@@ -200,6 +202,10 @@ def shots(sc, lines, hooks):
         else:
             plan = (t, "close", who, None, dict(P_CLOSE))
         after_hook = None
+        if e.get("width") and plan[1] == "selfie":         # шире кадр — прицел выше (ближе к голове), иначе герой
+            plan[4]["width"] = e["width"]                  # уезжает вверх, а низ кадра — пустая земля
+            if e["width"] < plan[4].get("width0", 0.3):
+                plan[4]["aim"] = 0.02
         if last and plan[1:4] == last[1:4]:               # тот же план — без склейки
             continue
         out.append(plan); last = plan

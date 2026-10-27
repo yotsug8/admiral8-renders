@@ -130,7 +130,8 @@ GESTURES = {
     "крюк": [("SPINE", X, 6, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.45, -1, 0.05))), ("wrist_R", X, -15, 10),
              ("HEAD", X, -6, 0)],
     # «тпоза»: всё тело плавно встаёт в позу скелета по умолчанию (Т-поза) — мемная странность (участник: «прикольно»)
-    "тпоза": [("TPOSE", None, 0, 0), ("aim", "bicep_L", "wrist_L", Vector((1, 0, 0.05))), ("aim", "elbow_L", "wrist_L", Vector((1, 0, 0.05))),
+    # только руки прицелом: сброс всех костей в позу по умолчанию выворачивал ноги и отрывал оружие от кисти
+    "тпоза": [("aim", "bicep_L", "wrist_L", Vector((1, 0, 0.05))), ("aim", "elbow_L", "wrist_L", Vector((1, 0, 0.05))),
               ("aim", "bicep_R", "wrist_R", Vector((-1, 0, 0.05))), ("aim", "elbow_R", "wrist_R", Vector((-1, 0, 0.05)))],   # руки в стороны — буква «Т»
     # нелепые позы (участник: «летать без движения, в странных позах выгибаться»)
     "парит": [("LIFT", None, 1.4, 0.08)],                         # поднимается и висит (м, покачивание м), тело застыло
@@ -181,6 +182,7 @@ def speaker(s):
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
     walk = s.get("walk")
+    tpose = any(g["kind"] == "тпоза" for g in s.get("gest") or [])
     # земля — по стопам в обычной стойке; если поза их поднимает или опускает (шаг, Т-поза), таз сдвигается так,
     # чтобы нижняя стопа стояла на земле (иначе ступни висели в воздухе)
     feet_ground = None; feet = []
@@ -222,7 +224,7 @@ def speaker(s):
                 if an:
                     turn(an, X, R(-e_ * (a_th + a_kn) * 0.55))
             for nm, sg in (("bicep_l", 1), ("bicep_r", -1)):
-                if nm in B:
+                if nm in B and not tpose:                   # в Т-позе руки при шаге не качаются
                     turn(B[nm], X, R(e_ * 16 * sg * math.sin(phi)))
             if spine:
                 turn(spine, Z, R(e_ * 5 * math.sin(phi)))

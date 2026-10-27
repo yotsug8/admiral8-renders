@@ -13,6 +13,7 @@ PICK = None if len(args) < 3 or args[2] in ("all", "") else [int(x) for x in arg
 HALF = len(args) > 3 and args[3] == "half"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RND = os.path.join(REPO, "_game", "models", "render")
+RND = os.environ.get("A8_RND") or (RND + "_hq" if os.path.isdir(RND + "_hq") else RND)   # текстуры крупнее — tools/blender/hq_textures.py
 TROUPE = json.load(open(os.path.join(REPO, "_game", "data", "troupe.json"), encoding="utf-8"))
 D = json.load(open(SCENE, encoding="utf-8"))
 FPS = D["fps"]; N = D["frames"]

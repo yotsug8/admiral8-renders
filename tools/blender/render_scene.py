@@ -392,7 +392,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=1.2, back=1.0, key=900, rim=200, expo=-0.15, amb=3.5, shadow=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=0.5, back=1.0, key=900, rim=80, expo=-0.15, amb=3.5, shadow=0.0, side=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -613,7 +613,7 @@ if plans:
         L, _ = avg_head(lw, f0, f1)
         tocam = C - L; tocam.z = 0; tocam.normalize()
         # солнце плана — спереди-сбоку от камеры, 45° над горизонтом: у лица ясная светлая сторона и форма (как в примерах)
-        sd = rotz(tocam, 40); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
+        sd = rotz(tocam, LOOK["side"] * 40); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
         SUN.keyframe_insert("rotation_euler", frame=f0)
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
@@ -630,9 +630,10 @@ if plans:
             cam_d.dof.focus_distance = (fp - cam.location).length; cam_d.dof.aperture_fstop = fst
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
             cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-            lights = ((key, rotz(tocam, 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+            # ключевой — от камеры (side 0: свет ровный, как в доте, обе половины героя одинаковые; участник: «половина Пуджа темнее»)
+            lights = ((key, rotz(tocam, LOOK["side"] * 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             if trk:                                    # селфи: камера снизу, небо за головой — ключевой ниже и ближе к камере
-                lights = ((key, rotz(tocam, 35), 3.0, 0.5, LIGHT_KEY * 1.3), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+                lights = ((key, rotz(tocam, LOOK["side"] * 35), 3.0, 0.5, LIGHT_KEY * 1.3), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             for lo, dirv, dist, up, en in lights:
                 lo.location = L + dirv * dist + Vector((0, 0, up))
                 lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()

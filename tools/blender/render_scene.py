@@ -13,7 +13,7 @@ PICK = None if len(args) < 3 or args[2] in ("all", "") else [int(x) for x in arg
 HALF = len(args) > 3 and args[3] == "half"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RND = os.path.join(REPO, "_game", "models", "render")
-RND = os.environ.get("A8_RND") or (RND + "_hq" if os.path.isdir(RND + "_hq") else RND)   # текстуры крупнее — tools/blender/hq_textures.py
+RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (tools/blender/hq_textures.py; участник выбрал исходные)
 TROUPE = json.load(open(os.path.join(REPO, "_game", "data", "troupe.json"), encoding="utf-8"))
 D = json.load(open(SCENE, encoding="utf-8"))
 FPS = D["fps"]; N = D["frames"]
@@ -283,8 +283,8 @@ for name, a in D["actors"].items():
 # в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
 # одинаково с любого ракурса и в любой сцене), тёмная сторона не уходит в черноту (ambient), подсветка по краю силуэта,
 # блеск по маске доты (specmask). Выход — свечение: лампы сцены и тени на героя не влияют. DOTA="key=…;amb=…" — подбор.
-DOTA = dict(on=1.0, gain=1.4, amb=0.35, key=1.2, wrap=0.4, lx=-0.45, ly=0.55, lz=-0.7, rim=0.1, rim_pow=4.0,
-            spec=1.0, gloss=24.0, shadow_cool=0.06, env=1.0, blob=0.7, ao=0.6, ao_d=0.25)
+DOTA = dict(on=1.0, gain=1.4, amb=0.95, key=0.35, wrap=0.6, lx=-0.45, ly=0.55, lz=-0.7, rim=0.1, rim_pow=4.0,
+            spec=0.6, gloss=24.0, shadow_cool=0.06, env=1.0, blob=0.7, ao=0.0, ao_d=0.25)
 for kv in filter(None, os.environ.get("A8_DOTA", "").split(";")):
     k, v = kv.split("="); DOTA[k] = float(v)
 

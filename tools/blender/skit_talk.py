@@ -67,11 +67,15 @@ def leg_ik(th, kn, an, T):
     aim(th, an, T - world(th).translation, 1.0)
 
 
+PHASE = 0.0   # с какого места стойки начинается своя анимация (skit.py: где стойка идёт в сцене на её начале), с
+
+
 def base_pose(action, t):
     ad = arm.animation_data or arm.animation_data_create(); ad.action = ACTS[action]
     try: ad.action_slot = ACTS[action].slots[0]
     except Exception: pass
-    n = ACTS[action].frame_range[1]; f = (t * globals().get("IMPORT_FPS", 24.0)) % n   # анимации glb легли в кадры с частотой импорта
+    a0, a1 = ACTS[action].frame_range                    # как дорожка NLA: от начала действия, по кругу длиной a1 − a0
+    f = a0 + ((t + PHASE) * globals().get("IMPORT_FPS", 24.0)) % max(1.0, a1 - a0)   # анимации glb легли в кадры с частотой импорта
     sc.frame_set(int(f), subframe=f - int(f))
 
 
@@ -101,7 +105,9 @@ def soft(vals, tau=0.25):
     return out
 
 
-def bake(name, dur, pose):
+def bake(name, dur, pose, base=None):
+    """Ключи позы покадрово. Знак кватерниона — как у игровой стойки base в тот же миг: у поворота два кватерниона (q и −q),
+    при переходе стойка ↔ своя анимация (смешение NLA) с разными знаками середина выворачивала локоть на 180° — рывок."""
     n = int(dur * FPS); keyed = []
     for k in range(n + 1):
         for pb in arm.pose.bones:
@@ -111,13 +117,24 @@ def bake(name, dur, pose):
     act = bpy.data.actions.new(name); ad = arm.animation_data; ad.action = act
     try: ad.action_slot = act.slots.new(id_type="OBJECT", name=arm.name)
     except Exception: pass
+    prev = {}
     for k, P in enumerate(keyed):
+        ref = {}
+        if base:
+            base_pose(base, k / FPS); ref = {pb.name: pb.rotation_quaternion.copy() for pb in arm.pose.bones}
+            ad = arm.animation_data; ad.action = act
+            try: ad.action_slot = act.slots[0]
+            except Exception: pass
         sc.frame_set(k)
         for pb in arm.pose.bones:
             pb.matrix_basis = Matrix.Identity(4)
         for pb in sorted(arm.pose.bones, key=lambda b: len(b.parent_recursive)):
             pb.matrix = P[pb.name]; bpy.context.view_layer.update()
         for pb in arm.pose.bones:
+            q = pb.rotation_quaternion; r = ref.get(pb.name) or prev.get(pb.name)
+            if r is not None and q.dot(r) < 0:
+                pb.rotation_quaternion = -q
+            prev[pb.name] = pb.rotation_quaternion.copy()
             for path in ("location", "rotation_quaternion", "scale"):
                 pb.keyframe_insert(path, frame=k)
     act.frame_range = (0, n)
@@ -199,7 +216,7 @@ def seq_env(t, a, b, phases, i):
     if t <= s0:
         return 0.0
     x = min(1.0, (t - s0) / sin_)
-    w = (1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2) if i and x < 1 else sm(0, 1, x)   # ease-out-back у броска
+    w = sm(0, 1, x) * (1 + 0.12 * math.sin(math.pi * x)) if i else sm(0, 1, x)   # плавный вход, лёгкий перелёт (резкий старт — рывок)
     if i + 1 < len(phases):
         n0 = a + phases[i + 1][0]; w *= 1 - sm(n0, n0 + phases[i + 1][1], t)
     else:
@@ -224,6 +241,8 @@ MOOD = {"down": (14, 22), "up": (-5, -9)}              # (шея, голова) 
 
 
 def speaker(s):
+    global PHASE
+    PHASE = s.get("phase", 0.0)
     pose = talker(s["base"], s["line"], s["off"], s["dur"], head=s["head"], jaw=s.get("jaw"),
                   jaw_max=s.get("jaw_max", 22), nod=s.get("nod", 5 if s.get("jaw") else 7), grin=s.get("grin", 0.0),
                   freeze=bool(s.get("freeze")))
@@ -399,5 +418,5 @@ def speaker(s):
     return full
 
 
-CUSTOM = {s["name"]: bake(s["name"], s["dur"], speaker(s)) for s in TALK}
+CUSTOM = {s["name"]: bake(s["name"], s["dur"], speaker(s), s["base"]) for s in TALK}
 LOOPING = {k: False for k in CUSTOM}

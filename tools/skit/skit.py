@@ -126,6 +126,9 @@ def parse(path):
     return sc
 
 
+TURN_DELAY = 0.25   # поворот — после входа анимации реплики (смешение со стойкой 6 кадров), иначе толчок на стыке
+
+
 def turn_len(ang):
     """Длина поворота на месте, с: 90° — 1 с, 180° — 1,55 с (шаги 0,4–0,5 с)."""
     return 0.45 + 0.55 * abs(ang) / 90
@@ -289,7 +292,7 @@ def build(sc, V, folder):
                 ang = 180.0
             if abs(ang) < 1:
                 continue
-            e["_turn"] = (max(0.0, round(e["t0"] - LEAD, 2)), round(td or turn_len(ang), 2), round(ang, 1))
+            e["_turn"] = (round(max(0.0, e["t0"] - LEAD) + TURN_DELAY, 2), round(td or turn_len(ang), 2), round(ang, 1))
             turns[k].append(e["_turn"]); cur += ang
 
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
@@ -351,6 +354,14 @@ def build(sc, V, folder):
         anims[h["to"]] = [x for x in anims[h["to"]] if x[0] < h["hit"]] + [(h["hit"], pick(tgt, "flail")), (h["back"], pick(tgt, "stun"))]
     for k in anims:                                       # анимация, начатая позже следующей, — прочь; по порядку
         anims[k] = sorted(dict((round(t, 2), a) for t, a in anims[k]).items())
+        # своя анимация продолжает стойку с того места, где та идёт в сцене (phase, skit_talk.py): иначе на стыке
+        # (смешение 6 кадров) поза стойки с начала отличалась от идущей — винтовка Снайпера проезжала сантиметры
+        by = {x["name"]: x for x in talk[k]}; cur = (0.0, 0.0)          # (начало дорожки, фаза стойки на её начале)
+        for t, a in anims[k]:
+            if a in by:
+                by[a]["phase"] = round(cur[1] + t - cur[0], 2); cur = (t, by[a]["phase"])
+            else:
+                cur = (t, 0.0)
 
     # камера для движка доты (Blender ставит свою по планам): общий план сбоку от линии героев, с юга
     xs = [p[0] for p in pos.values()]; ys = [p[1] for p in pos.values()]

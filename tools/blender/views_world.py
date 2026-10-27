@@ -6,6 +6,7 @@
 #                                              @a-b — снимать героя только в этих кадрах (где он движется)
 #   A8_FAST=1   быстрая проверка движения: без карты (ровная земля, загрузка ~30 с вместо 5 мин), 4 прохода света, четверть кадра —
 #               ~0,3 с на кадр вместо 2,2; картинка грубая, для показа и цвета — без него
+#   A8_JERK=1   без кадров: рывки кистей, головы и оружия (скачок ускорения на кадре — стыки анимаций)
 #   A8_CLIP=1   без кадров: на каждом кадре — проходит ли оружие сквозь тело (пересечение сеток, кроме кистей)
 import bpy, sys, os, math, json, shutil, re
 from mathutils import Matrix, Vector
@@ -98,10 +99,46 @@ def clip_check(who, fr):
         print(f"  ⚠ ПЕРЕСЕЧЕНИЕ {who}: {w} в {b} — кадры " + ", ".join(f"{a}–{b_} (до {n} граней)" for a, b_, n in rng))
 
 
+def jerk_check(who, fr):
+    """Рывки: кисти, голова и оружие относительно корня героя — скачок ускорения (вторая разность) на кадре.
+    Печатает кадры, где ускорение в 4 раза выше обычного для этой точки и больше 2 см/кадр² (или 2°)."""
+    arm = ACTORS[who]["arm"]; root = ACTORS[who]["root"]
+    pts = [b.name for b in arm.pose.bones if re.fullmatch(r"(wrist|hand)_[lr]|head", b.name, re.I)]
+    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver", re.I)
+    weap = [o for o in HERO_OBJS_OF(who) if o.type == "MESH" and WPN.search(o.name)]
+    track = {n: [] for n in pts + [o.name for o in weap]}
+    for f in fr:
+        sc.frame_set(f); inv = root.matrix_world.inverted()
+        for n in pts:
+            track[n].append(inv @ arm.matrix_world @ arm.pose.bones[n].matrix)
+        for o in weap:                                    # оружие — по его сетке (кость части): середина и поворот
+            dg = bpy.context.evaluated_depsgraph_get(); e = o.evaluated_get(dg); m = e.to_mesh()
+            vs = [m.vertices[i].co.copy() for i in range(0, len(m.vertices), max(1, len(m.vertices) // 60))]; e.to_mesh_clear()
+            M = inv @ o.matrix_world; track[o.name].append([M @ v for v in vs])
+    for n, T in track.items():
+        if len(T) < 5:
+            continue
+        if isinstance(T[0], list):                        # точки сетки: средний сдвиг
+            acc = [max((T[i + 1][j] - 2 * T[i][j] + T[i - 1][j]).length for j in range(len(T[i]))) for i in range(1, len(T) - 1)]
+        else:
+            acc = [(T[i + 1].translation - 2 * T[i].translation + T[i - 1].translation).length +
+                   0.01 * math.degrees((T[i].to_quaternion().rotation_difference(T[i + 1].to_quaternion()).angle -
+                                        T[i - 1].to_quaternion().rotation_difference(T[i].to_quaternion()).angle).__abs__())
+                   for i in range(1, len(T) - 1)]
+        med = sorted(acc)[len(acc) // 2]
+        bad = [(fr[i + 1], a) for i, a in enumerate(acc) if a > max(4 * med, 0.02)]
+        nm = n.split("\\")[-1].split(".vmdl")[0]
+        if bad:
+            print(f"  ⚠ РЫВОК {who} {nm}: кадры " + ", ".join(f"{f} ({a * 100:.0f})" for f, a in bad[:12]) + f"; обычно {med * 100:.1f}")
+        else:
+            print(f"  рывков нет {who} {nm}")
+
+
 vd = bpy.data.cameras.new("wview"); vc = bpy.data.objects.new("wview", vd); sc.collection.objects.link(vc)
 vd.angle = R(40); vd.clip_start = 0.05; sc.camera = vc
 multi = ";" in os.environ["A8_WVIEWS"]
 CLIP = bool(os.environ.get("A8_CLIP"))                    # только проверка пересечений, без кадров
+JERK = bool(os.environ.get("A8_JERK"))                    # только проверка рывков, без кадров
 for spec in os.environ["A8_WVIEWS"].split(";"):
     who, angs = spec.split(":")
     fr = PICK
@@ -110,6 +147,8 @@ for spec in os.environ["A8_WVIEWS"].split(";"):
     arm = ACTORS[who]["arm"]
     if CLIP:
         clip_check(who, fr); continue
+    if JERK:
+        jerk_check(who, fr); continue
     mine = HERO_OBJS_OF(who)
     for o in HERO_OBJS:                                   # другие герои не заслоняют (камера спереди — между героями)
         o.hide_render = o not in mine

@@ -367,10 +367,11 @@ def light(kind, rot, energy, color):
     d = bpy.data.lights.new(kind + str(energy), kind); d.energy = energy; d.color = color
     if kind == "SUN":
         d.angle = math.radians(10)                        # мягкий край тени (участник: «тени зачастую портят кадры»)
+    d.use_shadow = LOOK["shadow"] > 0                     # shadow=0 — без теней, как свет в доте и в примерах
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=3.0, back=1.0, key=300, rim=200, expo=0.0, amb=1.5, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=1.2, back=1.0, key=300, rim=200, expo=-0.15, amb=3.5, shadow=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -575,6 +576,7 @@ if plans:
     key.data.shape = "DISK"; key.data.size = 3.0; key.data.color = (1.0, 0.9, 0.78)
     rim = bpy.data.objects.new("rim", bpy.data.lights.new("rim", "AREA")); sc.collection.objects.link(rim)
     rim.data.shape = "DISK"; rim.data.size = 2.0; rim.data.color = (0.62, 0.78, 1.0)
+    key.data.use_shadow = rim.data.use_shadow = LOOK["shadow"] > 0
     hidden = set().union(*[p[9] for p in plans])
     for f0, f1, C, T, fov, fw, FP, fst, lw, hide, *trk in plans:
         trk = trk[0] if trk else None

@@ -46,7 +46,7 @@ def imp(path):
     return new, [a for a in bpy.data.actions if a not in acts]
 
 
-HERO = dict(sat=1.2, spec=1.5, val=1.2, hue=-0.01)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
+HERO = dict(sat=1.2, spec=1.5, val=1.2, hue=-0.01, head_val=2.0)                       # героям: насыщенность цвета, блеск по маске; A8_HERO="sat=…;spec=…"
 for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
     k, v = kv.split("="); HERO[k] = float(v)
 
@@ -197,6 +197,11 @@ def mouth_dark(head):
         else:
             mx.inputs["A"].default_value = bsdf.inputs["Base Color"].default_value
         nt.links.new(ca.outputs["Color"], mx.inputs["Factor"]); nt.links.new(mx.outputs["Result"], bsdf.inputs["Base Color"])
+        # лицо в текстуре доты темнее груди (без света: 32 против 45; в игре и в примерах — одного тона) — голова светлее
+        # ровно на эту разницу, оттенок не трогать (при ровном свете спереди лицо было 48 при груди 70)
+        if HERO["head_val"] != 1 and mx.inputs["A"].links:
+            hs = nt.nodes.new("ShaderNodeHueSaturation"); hs.inputs["Value"].default_value = HERO["head_val"]
+            nt.links.new(mx.inputs["A"].links[0].from_socket, hs.inputs["Color"]); nt.links.new(hs.outputs["Color"], mx.inputs["A"])
     print(f"  рот изнутри {head.name[:30]}: тёмных граней {n_dark} из {len(me.polygons)}")
 
 
@@ -392,7 +397,7 @@ def light(kind, rot, energy, color):
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
-LOOK = dict(sun=0.5, back=1.0, key=900, rim=80, expo=-0.15, amb=3.5, shadow=0.0, side=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
+LOOK = dict(sun=0.5, back=1.0, key=600, rim=30, expo=-0.15, amb=3.5, shadow=0.0, side=0.0, fog=1.0, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.55, bg_warm=0.04, bg_sat=1.2, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -605,6 +610,10 @@ if plans:
     rim = bpy.data.objects.new("rim", bpy.data.lights.new("rim", "AREA")); sc.collection.objects.link(rim)
     rim.data.shape = "DISK"; rim.data.size = 2.0; rim.data.color = (0.62, 0.78, 1.0)
     key.data.use_shadow = rim.data.use_shadow = LOOK["shadow"] > 0
+    # второй ключевой — зеркально (side 0): обе половины героя ровные, а лицо освещено сбоку, как раньше. Один ключевой
+    # от камеры давал ровные половины, но лицо (смотрит вниз на низкую камеру) становилось темнее груди: 44 против 60
+    key2 = bpy.data.objects.new("key2", bpy.data.lights.new("key2", "AREA")); sc.collection.objects.link(key2)
+    key2.data.shape = "DISK"; key2.data.size = 3.0; key2.data.color = key.data.color; key2.data.use_shadow = key.data.use_shadow
     hidden = set().union(*[p[9] for p in plans])
     for f0, f1, C, T, fov, fw, FP, fst, lw, hide, *trk in plans:
         trk = trk[0] if trk else None
@@ -631,9 +640,12 @@ if plans:
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
             cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
             # ключевой — от камеры (side 0: свет ровный, как в доте, обе половины героя одинаковые; участник: «половина Пуджа темнее»)
-            lights = ((key, rotz(tocam, LOOK["side"] * 50), 3.5, 2.2, LIGHT_KEY), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+            pair = LOOK["side"] == 0; ke = LIGHT_KEY * (0.6 if pair else 1.0)
+            lights = ((key, rotz(tocam, 50 if pair else LOOK["side"] * 50), 3.5, 2.2, ke), (key2, rotz(tocam, -50), 3.5, 2.2, ke if pair else 0),
+                      (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             if trk:                                    # селфи: камера снизу, небо за головой — ключевой ниже и ближе к камере
-                lights = ((key, rotz(tocam, LOOK["side"] * 35), 3.0, 0.5, LIGHT_KEY * 1.3), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+                lights = ((key, rotz(tocam, 35 if pair else LOOK["side"] * 35), 3.0, 0.5, ke * 1.3), (key2, rotz(tocam, -35), 3.0, 0.5, ke * 1.3 if pair else 0),
+                          (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             for lo, dirv, dist, up, en in lights:
                 lo.location = L + dirv * dist + Vector((0, 0, up))
                 lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()
@@ -656,7 +668,7 @@ else:
             cam_d.dof.focus_distance = fd; cam_d.dof.aperture_fstop = 0.5 if fd < 6 else 1.0   # фон сильно размыт, как в примерах
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
         cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
-for idb in [cam, cam_d, SUN, bpy.data.objects.get("key"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
+for idb in [cam, cam_d, SUN, bpy.data.objects.get("key"), bpy.data.objects.get("key2"), bpy.data.objects.get("rim")] + sorted(hidden if plans else [], key=lambda o: o.name):
     if idb is None:
         continue
     for owner in (idb, getattr(idb, "data", None)):

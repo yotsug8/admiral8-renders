@@ -632,6 +632,10 @@ if plans:
         # солнце плана — спереди-сбоку от камеры, 45° над горизонтом: у лица ясная светлая сторона и форма (как в примерах)
         sd = rotz(tocam, LOOK["side"] * 40); sd.z = 1.0; SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
         SUN.keyframe_insert("rotation_euler", frame=f0)
+        # свет едет за героем плана покадрово (сглажено ±5 кадров): раньше стоял у средней точки головы за план, и герой,
+        # подходя к камере, проезжал мимо ключевых — к концу свет бил сбоку-сзади, «заехал в тень» (участник, проба №5)
+        Ls = [head(lw, f)[0] if lw in ACTORS else L for f in range(f0, f1)]
+        Ls = [sum(Ls[max(0, i - 5):i + 6], Vector()) / len(Ls[max(0, i - 5):i + 6]) for i in range(len(Ls))]
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
             k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)
@@ -648,12 +652,13 @@ if plans:
             cam_d.dof.keyframe_insert("focus_distance", frame=f); cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
             cam.keyframe_insert("location", frame=f); cam.keyframe_insert("rotation_euler", frame=f)
             # ключевой — от камеры (side 0: свет ровный, как в доте, обе половины героя одинаковые; участник: «половина Пуджа темнее»)
+            L = Ls[f - f0]; tocam = cam.location - L; tocam.z = 0; tocam.normalize()
             pair = LOOK["side"] == 0; ke = LIGHT_KEY * (0.6 if pair else 1.0)
             lights = ((key, rotz(tocam, 50 if pair else LOOK["side"] * 50), 3.5, 2.2, ke), (key2, rotz(tocam, -50), 3.5, 2.2, ke * LOOK["bal"] if pair else 0),
                       (fill, tocam, 4.0, 1.0, LOOK["fill"]), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             if trk:                                    # селфи: камера снизу, небо за головой — ключевой ниже и ближе к камере
                 lights = ((key, rotz(tocam, 35 if pair else LOOK["side"] * 35), 3.0, 0.5, ke * 1.3), (key2, rotz(tocam, -35), 3.0, 0.5, ke * 1.3 * LOOK["bal"] if pair else 0),
-                          (fill, tocam, 3.5, (C - L).z + 0.3, LOOK["fill"]), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
+                          (fill, tocam, 3.5, (cam.location - L).z + 0.3, LOOK["fill"]), (rim, rotz(-tocam, -35), 3.5, 2.6, LIGHT_RIM))
             for lo, dirv, dist, up, en in lights:
                 lo.location = L + dirv * dist + Vector((0, 0, up))
                 lo.rotation_euler = (L - lo.location).to_track_quat("-Z", "Y").to_euler()
@@ -804,6 +809,12 @@ if plans and bpy.data.objects.get("key2") and LOOK["side"] == 0 and not os.envir
                 k = 0.8 if on_left == bright_left else 1.25
                 for f in range(f0, f1):
                     sc.frame_set(f); lo.data.energy *= k; lo.data.keyframe_insert("energy", frame=f)
+        # свет ровный и по времени: в начале и в конце плана герой не темнее середины (иначе — «заехал в тень»)
+        if f1 - f0 > 20:
+            bs = [light_check(fx, who)[2] for fx in (f0 + 3, fm, f1 - 3)]   # по лицу: вся фигура меняется от позы (наруч, крюк)
+            seen = [b for b in bs if b > 0.02]                       # 0 — героя нет в кадре (утащило крюком) — не считать
+            drop = min(seen) / max(max(seen), 1e-4) if len(seen) > 1 else 1.0
+            print(f"  СВЕТ {who} кадры {f0 + 3}/{fm}/{f1 - 3}: лицо {bs[0]:.2f}/{bs[1]:.2f}/{bs[2]:.2f}" + ("" if drop >= 0.85 else "  ⚠ ГЕРОЙ ТЕМНЕЕТ/СВЕТЛЕЕТ ЗА ПЛАН"))
 
 if os.environ.get("A8_BLEND"):                            # сцена для ручной работы: голоса дорожками звука, файл .blend — без рендера
     sc.frame_start, sc.frame_end = 0, N - 1; sc.frame_set(0)

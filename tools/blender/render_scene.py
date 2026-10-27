@@ -396,6 +396,13 @@ LOOK = dict(sun=1.2, back=1.0, key=900, rim=200, expo=-0.15, amb=3.5, shadow=0.0
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
+if LOOK["shadow"] <= 0:                                            # без теней совсем: Blender 5 сам выделяет из яркого неба
+    world.use_sun_shadow = False                                   # «солнце» с тенями (оно и клало тени после amb 3,5)
+    for attr, val in (("use_shadows", False), ("use_raytracing", False), ("use_fast_gi", False), ("use_gtao", False)):
+        try:
+            setattr(sc.eevee, attr, val)                               # и затенение от окружения (под подбородком, между ног)
+        except (AttributeError, TypeError):
+            pass
 skyr.color_ramp.elements[0].color = LOOK["horizon"]                # горизонт — светлее и теплее (фон не плоский)
 if MAP:                                         # дымка: даль светлеет и голубеет — глубина, как в доте;
     haze = (0.62, 0.74, 0.92, 1)                                      # в материалах карты по расстоянию до камеры (объём гасил солнце)

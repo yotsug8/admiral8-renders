@@ -129,7 +129,8 @@ def make(folder, lines):
     eng0 = engine()
     for ln in lines:
         v = ln.get("voice") or {}
-        pitch = float(v.get("pitch", 0)) if isinstance(v, dict) else 0.0   # сдвиг тона, полутоны (один голос Windows — разные герои)
+        pitch = float(v.get("pitch", 0)) if isinstance(v, dict) else 0.0   # сдвиг тона, полутоны (один голос Windows — разные герои;
+                                                                            # голос героя по образцу — без сдвига: Снайпер звучал выше себя)
         eng = eng0
         if isinstance(v, dict) and eng0 not in v and "edge" in v and eng0 != "fake":   # у героя свой голос (Edge) — им, а не общим
             eng = "edge"
@@ -138,11 +139,17 @@ def make(folder, lines):
         if ln.get("game"):                                     # настоящая реплика героя из русской озвучки (tools/skit/game_vo.py)
             eng = "game"
         v = v.get("ref" if eng == "fishref" else eng, "") if isinstance(v, dict) else v
+        if eng in ("fishref", "fish"):
+            pitch = 0.0
         if eng == "game":
             v = ln["game"]
         import video
         say = video.say_text(ln["text"])                       # {7.33|семь тридцать три} → как произносить
-        key = hashlib.md5(f"{eng}|{v}|{say}|{pitch if eng != 'game' else 0}".encode()).hexdigest()[:12]
+        refv = ""
+        if eng == "fishref" and v in __import__("game_vo").REF_LINES:   # образец голоса сменился — озвучить заново
+            __import__("game_vo").reference(v)          # собрать образец до ключа (иначе ключ сменится на следующем запуске)
+            refv = open(os.path.join(REPO, "_game", "vo", f"ref_{v}.json"), encoding="utf-8").read()
+        key = hashlib.md5(f"{eng}|{v}|{say}|{pitch if eng != 'game' else 0}{'|' + refv if refv else ''}".encode()).hexdigest()[:12]
         wav = os.path.join(folder, ln["name"] + ".wav")
         if db.get(ln["name"], {}).get("key") == key and os.path.exists(wav):
             continue

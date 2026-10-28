@@ -208,6 +208,7 @@ JAW_CAP = {"pudge": 0.55}
 # замер на ровном свете; автоматический замер по текстуре ошибался (в «тело» попадали тёмные спина и руки)
 HEAD_GAIN = {"pudge": 1.4}                             # раскрытие рта морфом: дальше рот у модели не прорезан — кожа рвётся полосами
 ACTORS = {}
+PART_OBJS = {}                                        # герой → часть (righthook, weapon …) → её сетки
 HERO_OBJS = set()                                     # всё, из чего собраны герои: луч камеры сквозь них не проверяется
 for name, a in D["actors"].items():
     if not a["hero"]:
@@ -228,6 +229,7 @@ for name, a in D["actors"].items():
         if not os.path.exists(glb_of(p)):
             continue
         po, _ = imp(glb_of(p)); HERO_OBJS.update(po); fix_hero_mats(po)
+        PART_OBJS.setdefault(name, {})[os.path.basename(p).replace(".vmdl", "")] = [o for o in po if o.type == "MESH"]
         # как в игре (bone merge): скелет части остаётся, его кости с теми же именами повторяют кости тела,
         # свои кости части (шапка, борода, полы плаща) едут за ними — иначе такие куски отрываются и пропадают
         for pa in [o for o in po if o.type == "ARMATURE"]:
@@ -432,11 +434,25 @@ for t0, fxname, at, z, dur, *rest in D["fx"]:
     b.inputs["Base Color"].default_value = (0.35, 0.05, 0.04, 1); b.inputs["Metallic"].default_value = 0.8; b.inputs["Roughness"].default_value = 0.3
     head.data.materials.append(redm)
     tipk = D["actors"][to]["keys"]
+    # жертва — герой, ближе всех к острию в конце полёта; после него крюк сидит в ней (спина/грудь), а не возвращается
+    # в руку на склейке (участник: «при смене кадра у Пуджа хук возвращается»)
+    sc.frame_set(min(N - 1, f1)); tp1 = W(*tipk[min(N - 1, f1)][:3])
+    victim = min((k for k in ACTORS if k != at[0]), key=lambda k: (ACTORS[k]["arm"].matrix_world.translation - tp1).length, default=None)
+    vb = None
+    if victim:
+        va = ACTORS[victim]["arm"]
+        vb = next((va.pose.bones[n] for n in ("spine3", "Spine_2", "spine2", "spine_2", "spine1") if n in va.pose.bones), None)
+    for o in PART_OBJS.get(at[0], {}).get("righthook", []):     # крюк в руке — нет, пока он летит и сидит в жертве
+        for f, h in ((0, False), (f0, True)):
+            o.hide_render = h; o.keyframe_insert("hide_render", frame=f)
+    f1 = N - 1 if vb else f1
     for f in range(max(0, f0 - 1), min(N, f1 + 2)):
         on = f0 <= f <= f1
         sc.frame_set(f)
         hand = arm.matrix_world @ pb.head
         tp = W(*tipk[f][:3])
+        if vb and f > f0 + int(dur * FPS):                      # долетел: остриё — в спине жертвы
+            tp = va.matrix_world @ vb.head
         v = tp - hand; L = max(v.length, 0.01)
         link.location = hand; link.rotation_euler = v.to_track_quat("X", "Z").to_euler()
         arr.fit_length = L
@@ -445,7 +461,7 @@ for t0, fxname, at, z, dur, *rest in D["fx"]:
             o.hide_render = not on; o.keyframe_insert("hide_render", frame=f)
             o.keyframe_insert("location", frame=f); o.keyframe_insert("rotation_euler", frame=f)
         arr.keyframe_insert("fit_length", frame=f)
-    for f in (0, N - 1):
+    for f in (0,) if vb else (0, N - 1):
         for o in (link, head):
             o.hide_render = True; o.keyframe_insert("hide_render", frame=f)
 
@@ -756,10 +772,10 @@ if plans:
             h.hide_render = h in hide; h.keyframe_insert("hide_render", frame=f0)
         L, _ = avg_head(lw, f0, f1)
         tocam = C - L; tocam.z = 0; tocam.normalize()
-        # солнце плана — от камеры, 45° над горизонтом (фон; герои освещены своим материалом)
-        sd = Matrix.Rotation(math.radians(LOOK["sun_side"]), 3, "Z") @ tocam; sd.z = 1.0   # sun_side — сбоку: с тенями крона объёмная
-        SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
-        SUN.keyframe_insert("rotation_euler", frame=f0)
+        # солнце — от камеры первого плана, сбоку, 45° над горизонтом (фон; герои освещены своим материалом)
+        if f0 == plans[0][0]:                          # солнце — одно на всю сцену, по первому плану: с тенями на каждой склейке
+            sd = Matrix.Rotation(math.radians(LOOK["sun_side"]), 3, "Z") @ tocam; sd.z = 1.0   # тени прыгали (участник)
+            SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам
             k = (f - f0) / max(1, f1 - f0); k = k * k * (3 - 2 * k)

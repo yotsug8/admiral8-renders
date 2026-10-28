@@ -46,6 +46,25 @@ def catalog(hero):
     return db
 
 
+# образец для клона — реплики с верным текстом (распознавание каталога ошибается: «крайне амеро», «Яуна» — с неверным
+# текстом образца клон звучит плохо, участник: «у Снайпера голос плохой»); отсылки к другим играм (tf2) — не брать
+REF_LINES = {
+    "sniper": {
+        "snip_spawn_07": "Привет, я Снайпер! Добро пожаловать на стрельбище!",
+        "snip_rare_01": "Твоя смерть многим пойдёт на пользу. Почти всем.",
+        "snip_rare_04": "Почему я улыбаюсь? Потому что люблю свою работу!",
+        "snip_respawn_10": "Не могу удержаться от выстрела на удачу.",
+        "snip_rare_03": "Умирать легко. Сейчас продемонстрирую.",
+        "snip_kill_14": "Тяжко в перестрелке без огнестрела, а?",
+        "snip_kill_blade_03": "Кто-то пришёл на перестрелку с ножом!",
+        "snip_kill_07": "Твоя жизнь — всего лишь вспышка боли!",
+        "snip_death_09": "Уйду из жизни под звуки выстрелов!",
+        "snip_kill_arrow_07": "За огнестрелом будущее, мой друг.",
+        "snip_spawn_06": "Вокруг меня всегда свистят пули.",
+    },
+}
+
+
 def reference(hero, seconds=22):
     """Образец голоса героя для мгновенного клонирования Fish: ~22 с спокойной речи из его русской озвучки
     → (_game/vo/ref_<герой>.wav, текст образца). Строится один раз."""
@@ -57,8 +76,9 @@ def reference(hero, seconds=22):
         return wav, json.load(open(txt_path, encoding="utf-8"))["text"]
     db = catalog(hero)
     laugh = re.compile(r"(х[еа]-?){2,}|([аоуыэ])\2{2,}|[аоуэ]-[аоуэ]-")
-    good = sorted(((k, v) for k, v in db.items() if len(re.findall(r"[а-яё]+", v.lower())) >= 4 and not laugh.search(v.lower())
-                   and not any(x in k for x in ("pain", "death", "laugh", "attack", "fail", "shrapnel", "devour"))), key=lambda x: -len(x[1]))
+    good = list(REF_LINES[hero].items()) if hero in REF_LINES else \
+        sorted(((k, v) for k, v in db.items() if len(re.findall(r"[а-яё]+", v.lower())) >= 4 and not laugh.search(v.lower())
+                and not any(x in k for x in ("pain", "death", "laugh", "attack", "fail", "shrapnel", "devour"))), key=lambda x: -len(x[1]))
     files, texts, total = [], [], 0.0
     for k, v in good:
         p = path(k)

@@ -84,6 +84,20 @@ def clip_check(who, fr):
                         e.to_mesh_clear(); print(f"    {w.name.split(chr(92))[-1][:30]} × {b.name.split('.')[-1]}: у костей {near_b}")
                     if n:
                         hit.setdefault((w.name.split(".vmdl")[0].split("\\")[-1], b.name.split(".")[-1]), []).append((f, n))
+    if os.environ.get("A8_WALL"):                         # и в других героев: задевает ли руками, оружием, телом
+        mine = [o for o in objs if "physics" not in o.name and "blob" not in o.name and o.visible_get()]
+        others = [o for n_, A in ACTORS.items() if n_ != who for o in HERO_OBJS_OF(n_)
+                  if o.type == "MESH" and "physics" not in o.name and "blob" not in o.name and o.visible_get()]   # blob — тень
+        for f in fr:
+            sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get()
+            ot = [(o, tree(o, dg)) for o in others]
+            for m in mine:
+                mt = tree(m, dg)
+                for o, t in ot:
+                    if t and mt:
+                        n = len(mt.overlap(t))
+                        if n:
+                            hit.setdefault((m.name.split(".vmdl")[0].split("\\")[-1], "чужой " + o.name.split(".vmdl")[0].split("\\")[-1]), []).append((f, n))
     if not hit:
         print(f"  ПЕРЕСЕЧЕНИЙ НЕТ {who}: оружие не проходит сквозь тело ({len(fr)} кадров)")
     for (w, b), fs in hit.items():
@@ -122,10 +136,9 @@ def jerk_check(who, fr):
         if isinstance(T[0], list):                        # точки сетки: средний сдвиг
             acc = [max((T[i + 1][j] - 2 * T[i][j] + T[i - 1][j]).length for j in range(len(T[i]))) for i in range(1, len(T) - 1)]
         else:
+            rd = lambda a, b: (lambda x: min(x, 2 * math.pi - x))(a.to_quaternion().rotation_difference(b.to_quaternion()).angle)   # q и −q — один поворот
             acc = [(T[i + 1].translation - 2 * T[i].translation + T[i - 1].translation).length +
-                   0.01 * math.degrees((T[i].to_quaternion().rotation_difference(T[i + 1].to_quaternion()).angle -
-                                        T[i - 1].to_quaternion().rotation_difference(T[i].to_quaternion()).angle).__abs__())
-                   for i in range(1, len(T) - 1)]
+                   0.01 * math.degrees(abs(rd(T[i], T[i + 1]) - rd(T[i - 1], T[i]))) for i in range(1, len(T) - 1)]
         med = sorted(acc)[len(acc) // 2]
         bad = [(fr[i + 1], a) for i, a in enumerate(acc) if a > max(4 * med, 0.02)]
         nm = n.split("\\")[-1].split(".vmdl")[0]

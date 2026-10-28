@@ -55,15 +55,28 @@ def aim(root, tip, dirv, k):
     bpy.context.view_layer.update()
 
 
-def leg_ik(th, kn, an, T):
-    """Нога на точку T (мир): колено сгибается на нужное расстояние бедро–стопа, бедро прицелом кладёт стопу на T."""
+def bend_axis(th, kn, an):
+    """Ось сгиба сустава в текущей позе (колено, локоть) — для leg_ik: сгиб всегда в эту сторону."""
+    H = world(th).translation; K = world(kn).translation; A = world(an).translation
+    ax = (K - H).cross(A - K); return ax.normalized() if ax.length > 1e-6 else None
+
+
+def leg_ik(th, kn, an, T, ref=None):
+    """Нога (рука) на точку T (мир): колено сгибается на нужное расстояние бедро–стопа, бедро прицелом кладёт стопу на T.
+    ref — ось сгиба из стойки (bend_axis): сгиб считается со знаком вокруг неё — почти прямая рука не перескакивает
+    сгибом на другую сторону (локоть выворачивался на кадр — рывок)."""
     H = world(th).translation; K = world(kn).translation; A = world(an).translation
     l1, l2 = (K - H).length, (A - K).length
-    D = min((T - H).length, 0.999 * (l1 + l2))
-    cur = (H - K).angle(A - K); want = math.acos(max(-1.0, min(1.0, (l1 * l1 + l2 * l2 - D * D) / (2 * l1 * l2))))
-    ax = (K - H).cross(A - K)
-    if ax.length > 1e-6:                                 # прямую ногу не согнуть — ось сгиба неизвестна
-        turn(kn, ax.normalized(), cur - want)
+    D = min((T - H).length, 0.995 * (l1 + l2))
+    want = math.pi - math.acos(max(-1.0, min(1.0, (l1 * l1 + l2 * l2 - D * D) / (2 * l1 * l2))))   # нужный сгиб
+    u, v = (K - H).normalized(), (A - K).normalized()
+    if ref is not None:
+        cur = math.atan2(u.cross(v).dot(ref), u.dot(v))   # сгиб со знаком вокруг оси стойки
+        turn(kn, ref, want - cur)
+    else:
+        ax = u.cross(v)
+        if ax.length > 1e-6:                             # прямую ногу не согнуть — ось сгиба неизвестна
+            turn(kn, ax.normalized(), want - u.angle(v))
     aim(th, an, T - world(th).translation, 1.0)
 
 
@@ -202,14 +215,14 @@ GESTURES = {
 }
 
 
-SLOW = {"гордо", "плечи", "тпоза", "парит", "выгнуться", "скрутиться"}   # позы — входят плавно за 0,6 с (иначе голова дёргается)
+SLOW = {"указать", "себя", "себя_грудь", "гордо", "плечи", "тпоза", "парит", "выгнуться", "скрутиться"}   # позы — входят плавно за 0,6 с (иначе голова дёргается)
 
 
 # жесты из нескольких поз подряд: (с от начала, вход за с, поза); последняя держится до конца жеста и уходит за 0,45 с
 SEQ = {
     # «отмахнуться»: кисть перед собой — и отброшена в сторону наружу, голова отворачивается
-    "отмахнуться": [(0.0, 0.2, [("aim", "bicep_L", "wrist_L", Vector((0.25, -1, 0.1))), ("aim", "elbow_L", "wrist_L", Vector((-0.2, -1, 0.3)))]),
-                    (0.3, 0.22, [("aim", "bicep_L", "wrist_L", Vector((1, -0.35, -0.1))), ("aim", "elbow_L", "wrist_L", Vector((1, -0.2, 0.2))),
+    "отмахнуться": [(0.0, 0.4, [("aim", "bicep_L", "wrist_L", Vector((0.25, -1, 0.1))), ("aim", "elbow_L", "wrist_L", Vector((-0.2, -1, 0.3)))]),
+                    (0.5, 0.45, [("aim", "bicep_L", "wrist_L", Vector((1, -0.35, -0.1))), ("aim", "elbow_L", "wrist_L", Vector((1, -0.2, 0.2))),
                                  ("HEAD", Z, -12, 0)])],
     # «замах»: крюк заносится назад-вверх за плечо (корпус скручен вправо, голова держит собеседника), пауза — и бросок
     # вперёд с перелётом (корпус раскручивается, подаётся вперёд); правая рука — крюк, левая с тесаком не трогается
@@ -237,7 +250,7 @@ def seq_env(t, a, b, phases, i):
 
 
 def gesture_env(t, a, b, slow=False):
-    if t <= a or t >= b + 0.45:
+    if t <= a or t >= b + (0.6 if slow else 0.45):      # медленная поза уходит за 0,6 с — не обрывать раньше (рывок головы)
         return 0.0
     if slow:
         return sm(a, a + 0.6, t) * (1 - sm(b, b + 0.6, t))
@@ -385,33 +398,46 @@ def speaker(s):
     arm_l = tuple(bone(f"{p}_L") for p in ("bicep", "elbow", "wrist"))
     arm_r = tuple(bone(f"{p}_R") for p in ("bicep", "elbow", "wrist"))
 
+    WRIST_OUT = float(os.environ.get("A8_WRIST_OUT", 80))   # подобрано по проверке пересечений (A8_CLIP): 80° — тесак Пуджа мимо головы
+
     def contact(g, t):
-        """Касание собеседника (skit.py, CONTACT): кисть на точку target (оси скелета) — рука сама сгибается (leg_ik).
-        «хлопнуть»: левая рука на его плечо за 0,35 с, два хлопка (кисть вверх-вниз, CONTACT_PATS в skit.py), назад;
-        «толкнуть»: обе руки в грудь рывком за 0,15 с, корпус вперёд, держит 0,2 с, назад."""
+        """Касание собеседника (skit.py, CONTACT): рука прицелом (aim, плавный поворот — расчёт кисти на точку дёргал
+        локоть) на точку target на нём (оси скелета); не достаёт — наклон корпуса к нему (до 35°).
+        «хлопнуть»: левая рука на его плечо за 0,6 с, два мягких хлопка кистью (CONTACT_PATS в skit.py), назад;
+        «толкнуть»: обе руки к нему за 0,4 с, корпус вперёд, держит 0,25 с, назад за 0,5 с (резче — дёргало, участник)."""
         a = g["at"]; T = Vector(g["target"])
         if g["kind"] == "хлопнуть":
-            e_ = sm(a, a + 0.35, t) * (1 - sm(a + 0.9, a + 1.25, t))
-            pat = sum(max(0.0, math.sin(math.pi * (t - a - tp) / 0.14)) for tp in (0.4, 0.65) if 0 < t - a - tp < 0.14)
-            hands = [(arm_l, T + Vector((0, 0, 0.12 * pat)))]
-        else:
-            e_ = sm(a, a + 0.15, t) * (1 - sm(a + 0.35, a + 0.75, t))
+            e_ = sm(a, a + 0.6, t) * (1 - sm(a + 1.4, a + 1.9, t))
+            pat = sum(math.sin(math.pi * (t - a - tp) / 0.3) ** 2 for tp in (0.7, 1.05) if 0 < t - a - tp < 0.3)
+            hands = [(arm_l, T)]
+        else:                                            # толкнуть
+            e_ = sm(a, a + 0.4, t) * (1 - sm(a + 0.65, a + 1.15, t)); pat = 0.0
             hands = [(arm_l, T + Vector((0.18, 0, 0))), (arm_r, T + Vector((-0.18, 0, 0)))]
-            if spine:
-                turn(spine, X, R(10 * e_))
+        if g["kind"] == "толкнуть_корпусом":           # оружие в двух руках (винтовка Снайпера): руки не вытянуть — толкает
+            hands = []                                   # корпусом с оружием вперёд
         if e_ <= 0:
             return
+        lean = {"толкнуть": 10.0, "толкнуть_корпусом": 24.0}.get(g["kind"], 0.0)
+        if not hands:
+            if spine:
+                turn(spine, X, R(e_ * lean))
+            turn(s["head"], X, R(-e_ * 10))
+            return
         bi, el, wr = hands[0][0]
-        if spine and bi and el and wr:                   # не достаёт — наклон корпуса к собеседнику (до 35°)
+        if spine and bi and el and wr:                   # не достаёт — наклон корпуса к собеседнику
             L = (world(el).translation - world(bi).translation).length + (world(wr).translation - world(el).translation).length
             S = world(bi).translation; dz = max(0.3, S.z - world(spine).translation.z + 0.5)
-            lack = (hands[0][1] - S).length - 0.92 * L
-            if lack > 0:
-                turn(spine, X, R(e_ * min(35.0, math.degrees(lack / dz))))
+            lack = (hands[0][1] - S).length - 0.95 * L
+            lean = max(lean, min(35.0, math.degrees(lack / dz)) if lack > 0 else 0.0)
+        if spine and lean:
+            turn(spine, X, R(e_ * lean))
         for (bi, el, wr), P in hands:
             if bi and el and wr:
-                cur = world(wr).translation
-                leg_ik(bi, el, wr, cur + (P - cur) * e_)
+                d = P - world(bi).translation
+                aim(bi, wr, d, e_); aim(el, wr, d, 0.8 * e_)   # рука почти прямая к цели
+                turn(wr, Y, R(WRIST_OUT * e_ * (1 if wr == arm_l[2] else -1)))   # оружие в кисти — наружу, не в свою голову
+                if pat:                                         # хлопок — всей рукой вверх-вниз (кистью тесак бил в свою спину)
+                    turn(bi, X, R(-8 * pat))
 
     def full(t, k):
         pose(t, k)

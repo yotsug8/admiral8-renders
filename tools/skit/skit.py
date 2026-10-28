@@ -77,8 +77,8 @@ P_PUSH = {"fov": 40, "width0": 0.38, "width": 0.78, "below": 0.05, "ang": 32, "s
 P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim": -0.1, "fstop": 1.6}   # фон мягко размыт, как в примерах (f/4 — резкий)
 P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 OWN_GESTURES = {"указать", "себя", "отмахнуться", "хлопнуть", "толкнуть", "крюк", "замах", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
-CONTACT = {"хлопнуть", "толкнуть"}                 # касание собеседника: рука на нём, он вздрагивает / отшатывается
-CONTACT_PATS = (0.4, 0.65)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
+CONTACT = {"хлопнуть", "толкнуть", "толкнуть_корпусом"}                 # касание собеседника: рука на нём, он вздрагивает / отшатывается
+CONTACT_PATS = (0.7, 1.05)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
 # «жест сам»: жест по словам реплики — на это слово (только где стоит метка: участник — «не везде, только где нужно»)
 AUTO_GEST = [("отмахнуться", r"\b(ладно|забей|неважно|забудь|отстань|забирай)\b"), ("указать", r"\b(ты|тебя|тебе|твой|твоя|твоё|твои)\b"),
              ("себя", r"\b(я|мне|меня|мой|моя|моё|мои)\b"), ("плечи", r"\?")]
@@ -372,7 +372,7 @@ def build(sc, V, folder):
         # шаг — туда, куда смотрит на начале шага (после поворота «от» — прочь от собеседника)
         ws = [(a, e["t1"], e["walk"], math.cos(math.radians(face(a))), math.sin(math.radians(face(a))))
               for e in lines if e["who"] == who and e.get("walk") for a in [max(0.0, e["t0"] - LEAD)]]
-        # его касаются (skit_talk.py, CONTACT): хлопнули — вздрагивает на каждом хлопке, толкнули — отшатывается на 70
+        # его касаются (skit_talk.py, CONTACT): хлопнули — чуть приседает на хлопке, толкнули — плавно отшатывается на 60
         cs = [(gest_t(e), e["gesture"][0], e["who"]) for e in lines
               if e.get("gesture") and e["gesture"][0] in CONTACT and listener(sc, e["who"]) == who]
 
@@ -381,11 +381,11 @@ def build(sc, V, folder):
             yaw = face(t)
             for g, kind, by in cs:
                 if kind == "толкнуть":
-                    u = math.dist(pos[who], pos[by]) or 1.0; k = smooth((t - g - 0.15) / 0.35)
-                    x += (pos[who][0] - pos[by][0]) / u * 70 * k; y += (pos[who][1] - pos[by][1]) / u * 70 * k
+                    u = math.dist(pos[who], pos[by]) or 1.0; k = smooth((t - g - 0.3) / 0.7)   # отшатывается плавно, когда
+                    x += (pos[who][0] - pos[by][0]) / u * 60 * k; y += (pos[who][1] - pos[by][1]) / u * 60 * k   # руки дошли
                 else:
                     for tp in CONTACT_PATS:
-                        z -= 4 * max(0.0, math.sin(math.pi * (t - g - tp) / 0.14)) if 0 < t - g - tp < 0.14 else 0.0
+                        z -= 1.5 * math.sin(math.pi * (t - g - tp) / 0.3) ** 2 if 0 < t - g - tp < 0.3 else 0.0   # чуть приседает
             for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
@@ -399,7 +399,11 @@ def build(sc, V, folder):
 
     def armed_kind(k, g):
         """«себя» рукой с оружием (тесак Пуджа — часть leftweapon) — оружие уходит в голову: тогда без руки («себя_грудь»)."""
-        left = any(re.search(r"left.*(weapon|hook|axe|blade)|(weapon|hook|axe|blade).*left", p) for p in info[k].get("parts") or [])
+        parts = info[k].get("parts") or []
+        left = any(re.search(r"left.*(weapon|hook|axe|blade)|(weapon|hook|axe|blade).*left", p) for p in parts)
+        both = any(re.search(r"/weapon\.vmdl$", p) for p in parts)   # одно оружие без стороны — в двух руках (винтовка Снайпера)
+        if g == "толкнуть" and both:
+            return "толкнуть_корпусом"
         return "себя_грудь" if g == "себя" and left else g
 
     def contact_target(k, e):
@@ -409,7 +413,8 @@ def build(sc, V, folder):
         if d > reach:
             print(f"  ВНИМАНИЕ: {k} не дотянется до {o} ({d:.0f} при руке с наклоном ~{reach:.0f}) — поставь ближе")
         z = info[o].get("head_z", 130) * (0.82 if e["gesture"][0] == "хлопнуть" else 0.62)   # его плечо / грудь — но не выше
-        z = min(z, info[k].get("head_z", 130) * (1.0 if e["gesture"][0] == "хлопнуть" else 0.65))   # своей головы / груди
+        z = min(z, info[k].get("head_z", 130) * (1.0 if e["gesture"][0] == "хлопнуть" else 0.5))   # своей головы / живота
+                                                                                  # (толчок на груди — оружие в двух руках в голову)
         side = 0.18 * info[o].get("radius", 60) if e["gesture"][0] == "хлопнуть" else 0.0   # на его плечо со своей левой стороны
         return [round(side / 39.37, 3), round(-d / 39.37, 3), round(z / 39.37, 3)]
 
@@ -423,7 +428,8 @@ def build(sc, V, folder):
         if a0 < 1.0 and busy[k][0] >= a0 - 0.01:          # первая реплика в начале сцены — разговор с нулевого кадра (голова живая сразу)
             a0 = 0.0
         nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
-        d = round((min(e["t1"] + 0.6, nxt) if nxt else dur) - a0, 2)   # последняя реплика — до конца сцены (без стойки в хвосте)
+        d = round((nxt if nxt else dur) - a0, 2)        # до своей следующей реплики (последняя — до конца сцены): стойка между ними
+                                                          # шла бы с начала — поза скакала на стыке; здесь она продолжается (phase)
         if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
             d = round(max(d, sum(e["_turn"][:2]) + 0.2 - a0), 2)
         base = info[k]["idle"]

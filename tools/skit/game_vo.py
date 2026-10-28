@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(REPO, "tools"))
 from paths import DOTA_ROOT, S2V
 VO = os.path.join(REPO, "_game", "vo")
 PAK = os.path.join(DOTA_ROOT, "game", "dota_russian", "pak01_dir.vpk")
-PREFIX = {"pudge": "pud_", "sniper": "snip_"}
+PREFIX = {"pudge": "pud_", "sniper": "snip_", "tidehunter": "tide_"}
 
 
 def path(name):

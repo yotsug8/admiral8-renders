@@ -4,7 +4,7 @@
 карта: radiant_wide
 герой tidehunter -4250 -3220
 герой pudge      -3650 -3220
-голос tidehunter sapi=Pavel pitch=-4
+голос tidehunter ref=tidehunter sapi=Pavel
 
 tidehunter: Пудж, это мой лес. | злой | средний | крупность 0.15 | камера стоит | идёт 250
 tidehunter: Ладно, твой. | обида | средний | крупность 0.15 | камера стоит | поворот от

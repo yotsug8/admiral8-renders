@@ -434,25 +434,14 @@ for t0, fxname, at, z, dur, *rest in D["fx"]:
     b.inputs["Base Color"].default_value = (0.35, 0.05, 0.04, 1); b.inputs["Metallic"].default_value = 0.8; b.inputs["Roughness"].default_value = 0.3
     head.data.materials.append(redm)
     tipk = D["actors"][to]["keys"]
-    # жертва — герой, ближе всех к острию в конце полёта; после него крюк сидит в ней (спина/грудь), а не возвращается
-    # в руку на склейке (участник: «при смене кадра у Пуджа хук возвращается»)
-    sc.frame_set(min(N - 1, f1)); tp1 = W(*tipk[min(N - 1, f1)][:3])
-    victim = min((k for k in ACTORS if k != at[0]), key=lambda k: (ACTORS[k]["arm"].matrix_world.translation - tp1).length, default=None)
-    vb = None
-    if victim:
-        va = ACTORS[victim]["arm"]
-        vb = next((va.pose.bones[n] for n in ("spine3", "Spine_2", "spine2", "spine_2", "spine1") if n in va.pose.bones), None)
-    for o in PART_OBJS.get(at[0], {}).get("righthook", []):     # крюк в руке — нет, пока он летит и сидит в жертве
-        for f, h in ((0, False), (f0, True)):
+    for o in PART_OBJS.get(at[0], {}).get("righthook", []):     # крюк в руке — нет, пока он летит (как в игре): на склейке
+        for f, h in ((0, False), (f0, True), (f1 + 1, False)):   # после полёта он уже в руке, а не появляется из ниоткуда
             o.hide_render = h; o.keyframe_insert("hide_render", frame=f)
-    f1 = N - 1 if vb else f1
     for f in range(max(0, f0 - 1), min(N, f1 + 2)):
         on = f0 <= f <= f1
         sc.frame_set(f)
         hand = arm.matrix_world @ pb.head
         tp = W(*tipk[f][:3])
-        if vb and f > f0 + int(dur * FPS):                      # долетел: остриё — в спине жертвы
-            tp = va.matrix_world @ vb.head
         v = tp - hand; L = max(v.length, 0.01)
         link.location = hand; link.rotation_euler = v.to_track_quat("X", "Z").to_euler()
         arr.fit_length = L
@@ -461,7 +450,7 @@ for t0, fxname, at, z, dur, *rest in D["fx"]:
             o.hide_render = not on; o.keyframe_insert("hide_render", frame=f)
             o.keyframe_insert("location", frame=f); o.keyframe_insert("rotation_euler", frame=f)
         arr.keyframe_insert("fit_length", frame=f)
-    for f in (0,) if vb else (0, N - 1):
+    for f in (0, N - 1):
         for o in (link, head):
             o.hide_render = True; o.keyframe_insert("hide_render", frame=f)
 

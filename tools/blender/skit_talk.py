@@ -172,6 +172,14 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="
 # руку — прицелом: ("aim", плечо, кисть, направление) — кисть ложится на направление при любой стойке.
 # Вход 0,25 с с перелётом (рука «выстреливает»), удержание с дрожью кисти, выход 0,45 с.
 GESTURES = {
+    # «указать»: прямая рука на собеседника (вперёд, чуть к своей стороне), корпус подаётся следом — на «ты»
+    "указать": [("SPINE", X, 5, 0), ("aim", "bicep_L", "wrist_L", Vector((0.3, -1, 0.12))),
+                ("aim", "elbow_L", "wrist_L", Vector((0.3, -1, 0.12))), ("HEAD", X, -3, 0)],
+    # «себя»: рука к груди (плечо вниз-вперёд, предплечье поперёк к середине груди), подбородок вверх — на «я»
+    "себя": [("aim", "bicep_L", "elbow_L", Vector((0.35, -0.55, -0.75))), ("aim", "elbow_L", "wrist_L", Vector((-0.9, -0.35, 0.3))),
+             ("SPINE", X, -4, 0), ("HEAD", X, -6, 0)],
+    "себя_грудь": [("SPINE", X, -10, 0), ("HEAD", X, -12, 0), ("clavicle_L", X, 8, 0), ("clavicle_R", X, 8, 0)],   # с оружием в руке:
+                                                                                  # грудь колесом, плечи назад, подбородок вверх
     # «крюк»: рука с крюком выброшена к камере (вперёд, на своей стороне — лицо открыто) и трясёт им, корпус вперёд
     "крюк": [("SPINE", X, 6, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.45, -1, 0.05))), ("wrist_R", X, -15, 10),
              ("HEAD", X, -6, 0)],
@@ -199,6 +207,10 @@ SLOW = {"гордо", "плечи", "тпоза", "парит", "выгнуть�
 
 # жесты из нескольких поз подряд: (с от начала, вход за с, поза); последняя держится до конца жеста и уходит за 0,45 с
 SEQ = {
+    # «отмахнуться»: кисть перед собой — и отброшена в сторону наружу, голова отворачивается
+    "отмахнуться": [(0.0, 0.2, [("aim", "bicep_L", "wrist_L", Vector((0.25, -1, 0.1))), ("aim", "elbow_L", "wrist_L", Vector((-0.2, -1, 0.3)))]),
+                    (0.3, 0.22, [("aim", "bicep_L", "wrist_L", Vector((1, -0.35, -0.1))), ("aim", "elbow_L", "wrist_L", Vector((1, -0.2, 0.2))),
+                                 ("HEAD", Z, -12, 0)])],
     # «замах»: крюк заносится назад-вверх за плечо (корпус скручен вправо, голова держит собеседника), пауза — и бросок
     # вперёд с перелётом (корпус раскручивается, подаётся вперёд); правая рука — крюк, левая с тесаком не трогается
     "замах": [(0.0, 0.5, [("SPINE", Z, -24, 0), ("aim", "bicep_R", "wrist_R", Vector((-0.55, 0.45, 0.75))), ("HEAD", Z, 14, 0)]),
@@ -370,6 +382,37 @@ def speaker(s):
                 turn(neck_t, Z, R(0.4 * (head_lead - spine_lead)))
             turn(s["head"], Z, R(0.6 * (head_lead - spine_lead)))
 
+    arm_l = tuple(bone(f"{p}_L") for p in ("bicep", "elbow", "wrist"))
+    arm_r = tuple(bone(f"{p}_R") for p in ("bicep", "elbow", "wrist"))
+
+    def contact(g, t):
+        """Касание собеседника (skit.py, CONTACT): кисть на точку target (оси скелета) — рука сама сгибается (leg_ik).
+        «хлопнуть»: левая рука на его плечо за 0,35 с, два хлопка (кисть вверх-вниз, CONTACT_PATS в skit.py), назад;
+        «толкнуть»: обе руки в грудь рывком за 0,15 с, корпус вперёд, держит 0,2 с, назад."""
+        a = g["at"]; T = Vector(g["target"])
+        if g["kind"] == "хлопнуть":
+            e_ = sm(a, a + 0.35, t) * (1 - sm(a + 0.9, a + 1.25, t))
+            pat = sum(max(0.0, math.sin(math.pi * (t - a - tp) / 0.14)) for tp in (0.4, 0.65) if 0 < t - a - tp < 0.14)
+            hands = [(arm_l, T + Vector((0, 0, 0.12 * pat)))]
+        else:
+            e_ = sm(a, a + 0.15, t) * (1 - sm(a + 0.35, a + 0.75, t))
+            hands = [(arm_l, T + Vector((0.18, 0, 0))), (arm_r, T + Vector((-0.18, 0, 0)))]
+            if spine:
+                turn(spine, X, R(10 * e_))
+        if e_ <= 0:
+            return
+        bi, el, wr = hands[0][0]
+        if spine and bi and el and wr:                   # не достаёт — наклон корпуса к собеседнику (до 35°)
+            L = (world(el).translation - world(bi).translation).length + (world(wr).translation - world(el).translation).length
+            S = world(bi).translation; dz = max(0.3, S.z - world(spine).translation.z + 0.5)
+            lack = (hands[0][1] - S).length - 0.92 * L
+            if lack > 0:
+                turn(spine, X, R(e_ * min(35.0, math.degrees(lack / dz))))
+        for (bi, el, wr), P in hands:
+            if bi and el and wr:
+                cur = world(wr).translation
+                leg_ik(bi, el, wr, cur + (P - cur) * e_)
+
     def full(t, k):
         pose(t, k)
         if mood:
@@ -388,6 +431,8 @@ def speaker(s):
             turn(s["head"], Y, R(e * live * w(t, (0.36, 4.0))))
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
         for g in s.get("gest") or []:                   # свои жесты поверх разговора
+            if g.get("target"):
+                contact(g, t); continue
             if g["kind"] in SEQ:
                 ph = SEQ[g["kind"]]
                 poses = [(seq_env(t, g["at"], g["at"] + g["len"], ph, i), ph[i][2]) for i in range(len(ph))]

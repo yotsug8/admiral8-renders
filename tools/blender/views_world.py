@@ -49,7 +49,7 @@ def clip_check(who, fr):
     кроме кистей (там оружие держится). Печатает кадры с пересечением и что во что."""
     from mathutils.bvhtree import BVHTree
     objs = [o for o in HERO_OBJS_OF(who) if o.type == "MESH"]
-    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver", re.I)
+    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver|anchor|hammer|mace|spear|club|dagger|katana", re.I)
     weap = [o for o in objs if WPN.search(o.name)]
     body = [o for o in objs if not WPN.search(o.name) and ".vmdl_c" in o.name and "physics" not in o.name and o.visible_get()]
     arm = ACTORS[who]["arm"]
@@ -105,7 +105,7 @@ def jerk_check(who, fr):
     Печатает кадры, где ускорение в 4 раза выше обычного для этой точки и больше 2 см/кадр² (или 2°)."""
     arm = ACTORS[who]["arm"]; root = ACTORS[who]["root"]
     pts = [b.name for b in arm.pose.bones if re.fullmatch(r"(wrist|hand)_[lr]|head", b.name, re.I)]
-    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver", re.I)
+    WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver|anchor|hammer|mace|spear|club|dagger|katana", re.I)
     weap = [o for o in HERO_OBJS_OF(who) if o.type == "MESH" and WPN.search(o.name)]
     track = {n: [] for n in pts + [o.name for o in weap]}
     for f in fr:
@@ -151,15 +151,19 @@ for spec in os.environ["A8_WVIEWS"].split(";"):
     if JERK:
         jerk_check(who, fr); continue
     mine = HERO_OBJS_OF(who)
-    for o in HERO_OBJS:                                   # другие герои не заслоняют (камера спереди — между героями)
-        o.hide_render = o not in mine
+    for o in HERO_OBJS:                                   # другие герои не заслоняют (камера спереди — между героями);
+        o.hide_render = o not in mine and not os.environ.get("A8_WALL")   # A8_WALL=1 — видны все (касания)
     sc.frame_set(fr[0])
     bones = [arm.matrix_world @ b.head for b in arm.pose.bones]
-    lo = min(p.z for p in bones); hi = max(p.z for p in bones); mid = sum(bones, Vector()) / len(bones)
+    lo = min(p.z for p in bones); mid = sum(bones, Vector()) / len(bones)
+    hb = arm.pose.bones.get(ACTORS[who]["info"].get("head_bone", "head"))   # рост — до макушки, не по всем костям
+    hi = (arm.matrix_world @ hb.head).z + 0.25 * ((arm.matrix_world @ hb.head).z - lo) if hb else max(p.z for p in bones)
     fwd = arm.matrix_world.to_3x3() @ Vector((0, -1, 0)); fwd.z = 0; fwd.normalize()   # взгляд на первом кадре
     path = []                                             # весь путь героя в этих кадрах — в кадре целиком
     for f in fr[::5] + [fr[-1]]:
         sc.frame_set(f); path.append(arm.matrix_world.translation.copy())
+        if os.environ.get("A8_WALL"):                     # касания: в кадре и собеседники
+            path += [A["arm"].matrix_world.translation.copy() for n_, A in ACTORS.items() if n_ != who]
     c = Vector([(min(p[i] for p in path) + max(p[i] for p in path)) / 2 for i in range(3)])   # середина пути, не среднее
     span = max((p - q).length for p in path for q in path)
     mid = Vector((c.x, c.y, mid.z))

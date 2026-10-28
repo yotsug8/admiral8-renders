@@ -83,6 +83,35 @@ for name, off in OFFS.items():
     raw = subprocess.run([FF, "-v", "error", "-i", os.path.join(VO, f"{name}.wav"), "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True).stdout
     a = np.frombuffer(raw, np.int16).astype(np.float32) / 32768; i = int(off * SR)
     mix[i:i + len(a)] += a[:len(mix) - i]
+
+# ---- звуки действий (из игры, _game/sfx; только под смысловое событие): крюк — бросок, попадание, лязг цепи на возврате, стоп.
+# Время — из сцены: бросок — начало эффекта, попадание — остриё дальше всего от Пуджа, возврат — остриё снова у него
+SFX = os.path.join(REPO, "_game", "sfx")
+
+
+def sfx(name, t, gain, length=None):
+    """Звук name в момент t; length — обрезать по длине действия (затухание 0,08 с), чтобы не налезал на реплику."""
+    p = os.path.join(SFX, name)
+    if not os.path.exists(p):
+        print("  звука нет:", name); return
+    raw = subprocess.run([FF, "-v", "error", "-i", p, "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True).stdout
+    a = np.frombuffer(raw, np.int16).astype(np.float32) / 32768 * gain; i = max(0, int(t * SR))
+    if length:
+        a = a[:int(length * SR)].copy(); k = min(len(a), int(0.08 * SR)); a[len(a) - k:] *= np.linspace(1, 0, k)
+    mix[i:i + len(a)] += a[:max(0, len(mix) - i)]
+
+
+FPS_ = float(_D.get("fps", 30))
+for t0, fxname, at, _z, dur, *rest in _D.get("fx", []):
+    if "meathook" not in fxname or not rest or rest[0] not in _D["actors"] or at[0] not in _D["actors"]:
+        continue
+    tip, who = _D["actors"][rest[0]]["keys"], _D["actors"][at[0]]["keys"]
+    f0, f1 = int(t0 * FPS_), min(len(tip), int((t0 + dur) * FPS_) + 1)
+    dist = [np.hypot(tip[f][0] - who[f][0], tip[f][1] - who[f][1]) for f in range(f0, f1)]
+    hit = f0 + int(np.argmax(dist)); back = next((f for f in range(hit, f1) if dist[f - f0] < dist[0] + 40), f1 - 1)
+    sfx("hook_throw", t0, 0.5, hit / FPS_ - t0 + 0.05); sfx("hook_impact", hit / FPS_, 0.9)
+    sfx("hook_throw", hit / FPS_ + 0.05, 0.35, (back - hit) / FPS_); sfx("hook_retract_stop", back / FPS_, 0.6)   # возврат — лязг, как в игре
+    print(f"  звук крюка: бросок {t0:.2f} с, попадание {hit / FPS_:.2f} с, возврат {back / FPS_:.2f} с")
 mix = mix[:int(DUR * SR)]
 wav = os.path.join(VO, "mix.wav")
 raw_wav = os.path.join(VO, "mix_raw.wav")             # громкость к −14 LUFS в два прохода (video.loudnorm): без «качания»

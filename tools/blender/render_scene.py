@@ -165,9 +165,13 @@ def mouth_dark(head, gain=1.0):
         return sum(((v[j] - v[0]).cross(v[j + 1] - v[0])).length / 2 for j in range(1, len(v) - 1))
     attr = me.color_attributes.get("a8_mouth") or me.color_attributes.new("a8_mouth", "FLOAT_COLOR", "CORNER")
     n_dark = 0
+    a0 = sorted(area(p, base) for p in me.polygons); a_med = a0[len(a0) // 2]
     for p in me.polygons:
         r = area(p, jo) / max(area(p, base), 1e-9)
-        x = min(1.0, max(0.0, (r - 2.2) / 0.8)); n_dark += x > 0.5   # щёки тянутся в 1,5–2,5 раза — с порогом 1,6 темнели заплатками
+        x = min(1.0, max(0.0, (r - 2.2) / 0.8))      # щёки тянутся в 1,5–2,5 раза — с порогом 1,6 темнели заплатками
+        if area(p, base) > 0.5 * a_med:              # щель рта при закрытом рте узкая (губы сомкнуты); грань обычного
+            x = 0.0                                  # размера — щека (под глазом Пуджа темнел треугольник всегда)
+        n_dark += x > 0.5
         for li in p.loop_indices:
             attr.data[li].color = (x, x, x, 1)
     for ms in head.material_slots:

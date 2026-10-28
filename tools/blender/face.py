@@ -71,6 +71,71 @@ def split_sides(head, names):
             k.data[i].co = b.co + (d.co - b.co) * f
 
 
+def unfold(head, track, n, fps, actor, lim=100.0):
+    """Без изломов: сильная гримаса (утрировать, несколько морфов на одном месте щеки) выворачивала треугольники
+    лица наизнанку — тёмный треугольник под глазом. На каждом кадре — поворот нормали каждого треугольника от
+    исходного; где больше lim° и сильнее, чем его поворачивает любой морф отдельно, ослабляются только морфы,
+    двигающие этот треугольник, — плавно, пока излом не уйдёт."""
+    import numpy as np
+    kb = head.data.shape_keys.key_blocks; me = head.data
+    me.calc_loop_triangles()
+    tri = np.array([t.vertices[:] for t in me.loop_triangles])
+    base = np.array([v.co[:] for v in kb[0].data])
+    names = [k for k, v in track.items() if max(v) >= 0.02]
+    if not names or not len(tri):
+        return
+    dl = np.stack([np.array([v.co[:] for v in kb[k].data]) - base for k in names])   # (морфы, вершины, 3)
+    W = np.array([track[k] for k in names]).T                                         # (кадры, морфы)
+    def normals(P):
+        a, b, c = P[tri[:, 0]], P[tri[:, 1]], P[tri[:, 2]]
+        nn = np.cross(b - a, c - a); return nn / np.maximum(np.linalg.norm(nn, axis=1, keepdims=True), 1e-12)
+    N0 = normals(base)
+    ang = lambda P: np.degrees(np.arccos(np.clip(np.sum(normals(P) * N0, axis=1), -1, 1)))
+    # свой поворот у губ и век большой и сам по себе (рот, моргание) — излом только сверх того, что делает
+    # любой морф по отдельности в полную силу
+    legit = np.max(np.stack([ang(base + dl[i]) for i in range(len(names))]), axis=0)
+    area = lambda P: np.linalg.norm(np.cross(P[tri[:, 1]] - P[tri[:, 0]], P[tri[:, 2]] - P[tri[:, 0]]), axis=1)
+    skin = legit < 90                                    # веки и губы, что переворачиваются сами, — не излом
+    if "jawOpen" in kb:                                  # внутренность рта (jawOpen растягивает больше чем вдвое) — не видна
+        skin &= area(np.array([v.co[:] for v in kb["jawOpen"].data])) < 2.0 * np.maximum(area(base), 1e-12)
+    def badm(w):
+        a_ = ang(base + np.tensordot(w, dl, 1))
+        return skin & (a_ > lim) & (a_ > legit + 45)
+    S = np.ones((n, len(names))); fixed = 0; hit = []
+    for f in range(n):
+        if W[f].max() < 0.5:
+            continue
+        m = badm(W[f])
+        if not m.any():
+            continue
+        vs = np.unique(tri[m])                           # виноваты морфы, что двигают эти вершины (≥ 20 % от главного)
+        c = np.array([np.linalg.norm(W[f][i] * dl[i][vs], axis=1).mean() for i in range(len(names))])
+        for share in (0.2, 0.05, 0.0):                   # без главных излом остался — шире круг виноватых
+            who = c >= share * c.max(); w = W[f].copy(); w[who] = 0
+            if not badm(w).any():
+                break
+        lo, hi = 0.0, 1.0                                # наибольшая их доля без излома
+        for _ in range(7):
+            mid = (lo + hi) / 2; w = W[f].copy(); w[who] *= mid
+            lo, hi = (mid, hi) if not badm(w).any() else (lo, mid)
+        S[f, who] = lo; fixed += 1; hit.append(f)
+    if not fixed:
+        return
+    r = int(0.15 * fps)                                  # плавно: ослабление и на соседних кадрах, без скачка
+    for i, k in enumerate(names):
+        col = np.array([S[max(0, f - r):f + r + 1, i].min() for f in range(n)])
+        col = np.convolve(np.pad(col, r, mode="edge"), np.ones(2 * r + 1) / (2 * r + 1), mode="valid")
+        S[:, i] = col; track[k] = [v * s_ for v, s_ in zip(track[k], col)]
+    weak = sorted({f"{names[i]} {S[:, i].min():.2f}" for i in range(len(names)) if S[:, i].min() < 0.95})
+    rng = []
+    for f in hit:
+        if rng and f - rng[-1][1] <= 3:
+            rng[-1][1] = f
+        else:
+            rng.append([f, f])
+    print(f"  мимика {actor}: изломы лица на {fixed} кадрах ({', '.join(f'{a}–{b}' for a, b in rng[:12])}) — там ослаблены {', '.join(weak)}")
+
+
 def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1.0):
     kb = head.data.shape_keys.key_blocks if head.data.shape_keys else None
     if kb is None:
@@ -132,6 +197,8 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1
                 if kk in track:
                     track[kk][f] += val
         cur = nxt; t = f1 / fps
+
+    unfold(head, track, n, fps, actor)
 
     # ключи (только морфы, которые двигаются)
     for k, vals in track.items():

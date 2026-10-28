@@ -41,19 +41,20 @@ EMO = {
              "lipStretcher": 0.6, "jawOpen": 0.45, "nostrilDilator": 0.8},
 }
 # гримасы как в примерах — утрированные и асимметричные: _L / _R — морф только на левой / правой половине лица героя
-# (face.split_sides делает половины у любого героя)
+# (face.split_sides делает половины у любого героя); брови сильнее 1 — лоб Пуджа двигается слабо, щёки и рот — до 1
+# (вместе сильнее — изломы кожи; face.unfold ослабляет гримасу там, где треугольник выворачивается)
 EMO.update({
-    "скепсис": {"outerBrowRaiser_L": 1.0, "innerBrowRaiser_L": 0.6, "browLowerer_R": 0.9, "squint_R": 0.7, "lipPressor": 0.5,
+    "скепсис": {"outerBrowRaiser_L": 1.4, "innerBrowRaiser_L": 0.8, "browLowerer_R": 1.3, "squint_R": 0.7, "lipPressor": 0.5,
                 "lipCornerPuller_L": 0.25, "chinRaiser": 0.3},          # одна бровь вверх, другая вниз и прищур
-    "хитрый": {"lipCornerPuller_L": 1.0, "cheekRaiser_L": 0.7, "sharpLipPuller_L": 0.5, "squint": 0.6, "browLowerer": 0.5,
-               "outerBrowRaiser_R": 0.4},                               # ухмылка одним углом рта, глаза щёлочками
-    "обида": {"innerBrowRaiser": 1.0, "lipCornerDepressor": 1.0, "chinRaiser": 0.9, "lipPuckerer": 0.35, "eyeDown": 0.3,
+    "хитрый": {"lipCornerPuller_L": 1.0, "cheekRaiser_L": 0.7, "sharpLipPuller_L": 0.5, "squint": 0.6, "browLowerer": 0.8,
+               "outerBrowRaiser_R": 0.6},                               # ухмылка одним углом рта, глаза щёлочками
+    "обида": {"innerBrowRaiser": 1.5, "lipCornerDepressor": 1.0, "chinRaiser": 0.9, "lipPuckerer": 0.35, "eyeDown": 0.3,
               "lowerLipDepressor": 0.2},                                # брови домиком, губа надута
     "отвращение": {"noseWrinkler": 1.0, "upperLipRaiser_L": 1.0, "browLowerer": 0.6, "squint_L": 0.7, "lipCornerDepressor": 0.5,
                    "chinRaiser": 0.3},                                  # нос сморщен, губа вверх с одной стороны
-    "ярость": {"browLowerer": 1.0, "noseWrinkler": 1.0, "upperLipRaiser": 0.9, "lipStretcher": 0.8, "jawClencher": 1.0,
+    "ярость": {"browLowerer": 1.4, "noseWrinkler": 1.0, "upperLipRaiser": 0.9, "lipStretcher": 0.8, "jawClencher": 1.0,
                "squint": 0.5, "nostrilDilator": 1.0, "chinRaiser": 0.4},   # зубы оскалены, рот сжат
-    "шок": {"upperLidRaiser": 1.0, "innerBrowRaiser": 1.0, "outerBrowRaiser": 1.0, "jawOpen": 0.5, "lipStretcher": 0.35},
+    "шок": {"upperLidRaiser": 1.0, "innerBrowRaiser": 1.4, "outerBrowRaiser": 1.4, "jawOpen": 0.5, "lipStretcher": 0.35},
     "подмигнул": {"eyeClosed_L": 1.0, "cheekRaiser_L": 0.7, "lipCornerPuller_L": 0.7, "squint_L": 0.4, "outerBrowRaiser_R": 0.5},
 })
 EMO.update({"оглушен": EMO["оглушён"], "удивлен": EMO["удивлён"], "злость": EMO["злой"], "радость": EMO["улыбка"]})

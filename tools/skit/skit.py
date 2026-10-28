@@ -499,8 +499,10 @@ def build(sc, V, folder):
     yaw = math.degrees(math.atan2(-n_[0], n_[1]))
     cam = lambda t: (mid[0], mid[1], 100, 0.9 * span + 400, 8, yaw)
 
-    touch = [(e["who"], listener(sc, e["who"])) for e in lines if e.get("gesture") and e["gesture"][0] in CONTACT]
-    gap = min([185] + [0.8 * (info[a].get("radius", 60) + info[b].get("radius", 60)) for a, b in touch])   # касание — вплотную можно
+    touch = [(e["who"], listener(sc, e["who"]), lunge(e) if e["gesture"][0] == "толкнуть" else 0.0)
+             for e in lines if e.get("gesture") and e["gesture"][0] in CONTACT]
+    gap = min([185] + [0.8 * (info[a].get("radius", 60) + info[b].get("radius", 60)) - L for a, b, L in touch])   # касание и выпад
+                                                                                                             # толчка — вплотную можно
     st = Stage(cam, dur, kf=30, ground=ground, trees=(mid[0], mid[1], span + 1500, 0), min_gap=gap)
     for k, c in sc["cast"].items():
         st.actor(k, None, motion(k), [list(x) for x in anims[k]], hero=c["hero"], model=info[k]["model"],

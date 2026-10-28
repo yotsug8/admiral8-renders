@@ -62,6 +62,10 @@ MOOD = {"вверх": "up", "вниз": "down"}
 SHOT = {"крупно": "close", "через плечо": "over", "селфи": "selfie", "наезд": "push", "средний": "medium"}
 # настройки планов render_scene.py (раздел «камера») — как в «Крюке»
 P_EST = {"fov": 26, "xf": 0.42, "xb": -0.38, "side": 2.6, "up": 0.1, "down": 0.25}   # общий через плечо, длинный объектив
+# реакция: лицо слушателя крупно по центру (камера ведёт лицо, не кость головы — у Пуджа она на затылке и лицо уходило
+# к краю кадра), неподвижно, почти на уровне глаз
+P_REACT = {"fov": 34, "width": 0.55, "below": 0.08, "ang": 20, "sway": 0.0, "aim": 0.0, "static": True, "fstop": 2.0}
+P_POV = {"fov": 56, "ang": 0, "fstop": 4.0}           # глазами героя: нормальный широкий объектив, фон резче (взгляд, а не портрет)
 P_CLOSE = {"size": 0.85, "fov": 34}
 P_OVER = {"fov": 30, "xf": 0.6, "xb": -0.3, "up": 0.25}
 P_ACT = {"fov": 30, "xf": 0.8, "up": 0.3}
@@ -115,6 +119,12 @@ def parse(path):
                 elif gt := re.match(r"поворот\s+(-?\d+|к|от)(?:\s+([\d.]+))?$", tg):   # поворот на месте с начала реплики:
                     ev["turn"] = (gt[1] if gt[1] in ("к", "от") else float(gt[1]), float(gt[2]) if gt[2] else None)   # N° влево (−N — вправо),
                                                                      # к собеседнику, от него; [с] — длительность
+                elif gr := re.match(r"реакция\s+(\w+)\s+(.+)$", tg):   # с середины реплики — склейка на лицо слушателя
+                    if gr[2].strip() not in EMO:                       # с его гримасой, голос идёт дальше
+                        raise err(f"реакция: нет эмоции «{gr[2]}»")
+                    ev["react"] = (gr[1], gr[2].strip())
+                elif gp := re.match(r"глазами\s+(\w+)$", tg):       # вид от первого лица: камера на месте глаз героя
+                    ev["pov"] = gp[1]
                 elif gk := re.match(r"крупность\s+([\d.]+)$", tg):  # доля ширины кадра под голову (0,3 — средний, 0,15 — общий)
                     ev["width"] = float(gk[1])
                 elif tg == "камера стоит":                         # камера не ведёт героя — он сам входит/подходит в кадре
@@ -130,7 +140,7 @@ def parse(path):
                     ev["emo"], ev["emo2"] = two                   # «ухмылка → крик»: вторая — с середины реплики
                 elif tg in MOOD: ev["mood"] = MOOD[tg]
                 elif tg in SHOT: ev["shot"] = SHOT[tg]
-                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи, наезд, средний; жест <анимация> [с])")
+                else: raise err(f"неизвестная метка «{tg}» (эмоции: {', '.join(EMO)}, «эмоция → эмоция»; вверх, вниз; крупно, через плечо, селфи, наезд, средний; жест <анимация> [с]; реакция <герой> <эмоция>; глазами <герой>)")
             sc["events"].append(ev)
         else:
             raise err("не понял строку")
@@ -138,6 +148,9 @@ def parse(path):
         for k in ("who", "to"):
             if k in ev and ev[k] not in sc["cast"]:
                 raise SystemExit(f"в сценарии нет героя «{ev[k]}» (строка «герой {ev[k]} x y»)")
+        for who in [ev.get("pov"), (ev.get("react") or [None])[0]]:
+            if who and who not in sc["cast"]:
+                raise SystemExit(f"в сценарии нет героя «{who}» (строка «герой {who} x y»)")
     if len(sc["cast"]) < 2:
         raise SystemExit("нужно хотя бы два героя")
     return sc
@@ -220,7 +233,15 @@ def shots(sc, lines, hooks):
             after_hook = e; last = None
             continue
         who, other = e["who"], listener(sc, e["who"])
-        if e["shot"] == "over":                           # через плечо слушателя на говорящего
+        if e.get("pov"):                                  # глазами героя: «крупно» на говорящего из точки перед лицом смотрящего —
+            v = e["pov"]; hz = lambda k: troupe(sc["cast"][k]["hero"])["head_z"]   # камера на расстоянии между ними
+            front = 0.6 * troupe(sc["cast"][v]["hero"]).get("radius", 60)   # перед лицом смотрящего, не в голове (лицо Пуджа
+            dd = max(60.0, math.dist(sc["cast"][v]["at"], sc["cast"][who]["at"]) - front)   # выступает на ~50 от центра)
+            hw = 0.75 * hz(who) * 0.2                    # ширина головы ~ 0,15 роста до глаз (Пудж 0,95 м при 134)
+            fov = min(P_POV["fov"], max(6.0, math.degrees(2 * math.atan(hw / 0.18 * 16 / 9 / 2 / dd))))   # голова ≥ 18 % ширины
+            plan = (t, "close", who, None, dict(P_POV, fov=round(fov, 1), size=round(2 * dd * math.tan(math.radians(fov / 2)) / hz(who), 3),
+                                                cz=round((hz(v) - hz(who)) / dd, 3)))
+        elif e["shot"] == "over":                           # через плечо слушателя на говорящего
             plan = (t, "over", other, who, dict(P_OVER))
         elif e["shot"] == "close":
             plan = (t, "close", who, None, dict(P_CLOSE))
@@ -242,9 +263,14 @@ def shots(sc, lines, hooks):
             plan[4]["width"] = e["width"]                  # уезжает вверх, а низ кадра — пустая земля
             if e["width"] < plan[4].get("width0", 0.3):
                 plan[4]["aim"] = 0.02
-        if last and plan[1:4] == last[1:4]:               # тот же план — без склейки
-            continue
-        out.append(plan); last = plan
+        if last and plan[1:4] == last[1:4] and plan[4] == last[4]:   # тот же план — без склейки
+            pass
+        else:
+            out.append(plan); last = plan
+        if e.get("react"):                                # реакция: с середины реплики (не раньше 1,2 с от начала) — лицо слушателя
+            tr = round(max(e["t0"] + 1.2, e["t0"] + 0.5 * (e["t1"] - e["t0"])), 2)
+            if tr < e["t1"] - 0.5:
+                last = (tr, "selfie", e["react"][0], None, dict(P_REACT)); out.append(last)
     return out
 
 
@@ -258,6 +284,9 @@ def faces(sc, dur, lines, hooks):
             marks[e["who"]] += [(max(0.0, e["t0"] - LEAD), mid, X(EMO[e["emo"]])), (mid - 0.1, e["t1"] + 0.3, X(EMO[e["emo2"]]))]
         elif e["emo"]:
             marks[e["who"]].append((max(0.0, e["t0"] - LEAD), e["t1"] + 0.3, X(EMO[e["emo"]])))
+        if e.get("react"):                                 # реакция слушателя — к своей склейке, держится и после реплики
+            tr = max(e["t0"] + 1.2, e["t0"] + 0.5 * (e["t1"] - e["t0"])) - 0.25
+            marks[e["react"][0]].append((tr, e["t1"] + 0.8, EMO[e["react"][1]]))
     for h in hooks:
         marks[h["who"]].append((h["t0"], h["t0"] + 1.5, EMO["усилие"]))
         marks[h["to"]].append((h["rel"], h["hit"] + 0.1, EMO["испуг"]))

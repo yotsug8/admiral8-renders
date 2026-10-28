@@ -79,6 +79,7 @@ P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 OWN_GESTURES = {"указать", "себя", "отмахнуться", "хлопнуть", "толкнуть", "крюк", "замах", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
 CONTACT = {"хлопнуть", "толкнуть", "толкнуть_корпусом"}                 # касание собеседника: рука на нём, он вздрагивает / отшатывается
 PUSH_HIT, PUSH_BACK, PUSH_DIST = 0.4, 0.6, 60       # толчок: выпад и удар за 0,4 с, отшатывание 0,6 с на 60 — шагами назад
+step_t = lambda L: round(0.4 + L / 60, 2)            # подойти к собеседнику перед хлопком: ~1,4 м/с, спокойный шаг (быстрее — рывок)
 CONTACT_PATS = (0.7, 1.05)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
 # «жест сам»: жест по словам реплики — на это слово (только где стоит метка: участник — «не везде, только где нужно»)
 AUTO_GEST = [("отмахнуться", r"\b(ладно|забей|неважно|забудь|отстань|забирай)\b"), ("указать", r"\b(ты|тебя|тебе|твой|твоя|твоё|твои)\b"),
@@ -366,6 +367,60 @@ def build(sc, V, folder):
     # повороты на месте: (начало, длина, угол) — считает timeline
     turns = {k: [e["_turn"] for e in lines if e["who"] == k and e.get("_turn")] for k in sc["cast"]}   # timeline
 
+    def armed_kind(k, g):
+        """«себя» рукой с оружием (тесак Пуджа — часть leftweapon) — оружие уходит в голову: тогда без руки («себя_грудь»);
+        «толкнуть» с оружием в двух руках (винтовка Снайпера) — корпусом («толкнуть_корпусом»)."""
+        parts = info[k].get("parts") or []
+        left = any(re.search(r"left.*(weapon|hook|axe|blade)|(weapon|hook|axe|blade).*left", p) for p in parts)
+        both = any(re.search(r"/weapon\.vmdl$", p) for p in parts)
+        if g == "толкнуть" and both:
+            return "толкнуть_корпусом"
+        return "себя_грудь" if g == "себя" and left else g
+
+    def arm_reach(k):
+        """Досяг руки от центра героя (единицы): плечо + рука (troupe: arm, shoulder_fwd — hero_render.py меряет)."""
+        return info[k].get("shoulder_fwd", 0) + 0.9 * info[k].get("arm", 0.45 * info[k].get("head_z", 130))
+
+    # касания (skit_talk.py contact) — по времени, от того места, где герои стоят к этому моменту:
+    #   «толкнуть»: выпад, пока руки / оружие не упрутся (зазор до его поверхности минус досяг), он отшатывается шагами;
+    #   «хлопнуть»: лицом к лицу рука Пуджа до плеча не достаёт (живот дальше руки, винтовка Снайпера вперёд) — подходит
+    #   сбоку: поворот к точке рядом с ним, шаги туда, доворот плечом к плечу (он — со стороны левой руки), рука на плечо.
+    #   e["_c"]: steps — [(кто, начало, длина, сдвиг (dx, dy), отшатнулся)], turns — [(кто, начало, длина, угол)], delay, target
+    cur = dict(pos); yaw_now = {k: yaw_to(k, listener(sc, k)) + sum(a[2] for a in turns[k]) for k in sc["cast"]}
+    unit = lambda v: (v[0] / (math.hypot(*v) or 1), v[1] / (math.hypot(*v) or 1))
+    for e in sorted((x for x in lines if x.get("gesture") and x["gesture"][0] in CONTACT), key=gest_t):
+        k, o = e["who"], listener(sc, e["who"]); g = gest_t(e); A, B = cur[k], cur[o]
+        rk, ro = info[k].get("radius", 60), info[o].get("radius", 60); c = {"steps": [], "turns": [], "delay": 0.0}
+        if e["gesture"][0] == "толкнуть":
+            u = unit((B[0] - A[0], B[1] - A[1])); gap = math.dist(A, B) - 0.45 * ro - 0.3 * rk
+            reach = info[k].get("head_z", 130) * (0.5 if armed_kind(k, "толкнуть") == "толкнуть_корпусом" else 0.55)   # упирается, не входит
+            L = min(120.0, max(0.0, gap - reach))
+            c["steps"] = [(k, g, PUSH_HIT, (u[0] * L, u[1] * L), False), (o, g + PUSH_HIT, PUSH_BACK, (u[0] * PUSH_DIST, u[1] * PUSH_DIST), True)]
+            cur[k] = (A[0] + u[0] * L, A[1] + u[1] * L); cur[o] = (B[0] + u[0] * PUSH_DIST, B[1] + u[1] * PUSH_DIST)
+            d = math.dist(cur[k], B) - 0.45 * ro; side = 0.0
+            z = min(info[o].get("head_z", 130) * 0.62, info[k].get("head_z", 130) * 0.5)
+        else:
+            fo = math.radians(yaw_now[o]); f = (math.cos(fo), math.sin(fo))      # смотрят, куда смотрит он
+            left = (-f[1], f[0]); D = 0.55 * rk + 0.45 * ro                      # он слева от хлопающего, плечом к плечу
+            S = (B[0] - left[0] * D, B[1] - left[1] * D); L = math.dist(A, S)
+            y_go = math.degrees(math.atan2(S[1] - A[1], S[0] - A[0]))
+            a1 = (y_go - yaw_now[k] + 180) % 360 - 180; a2 = (yaw_now[o] - y_go + 180) % 360 - 180
+            T1 = turn_len(a1) if abs(a1) > 5 else 0.0; Tw = step_t(L); T2 = turn_len(a2) if abs(a2) > 5 else 0.0
+            if T1:
+                c["turns"].append((k, g, T1, a1))
+            c["steps"].append((k, g + T1, Tw, (S[0] - A[0], S[1] - A[1]), False))
+            if T2:
+                c["turns"].append((k, g + T1 + Tw, T2, a2))
+            c["delay"] = round(T1 + Tw + T2, 2); cur[k] = S; yaw_now[k] = yaw_now[o]
+            d = 0.0; side = D - 0.3 * ro                                         # его ближнее плечо — у моего левого бока
+            z = min(info[o].get("head_z", 130) * 0.82, info[k].get("head_z", 130))
+        if max(d, side) > arm_reach(k) / 0.9 + 0.3 * info[k].get("head_z", 130):
+            print(f"  ВНИМАНИЕ: {k} не дотянется до {o} ({max(d, side):.0f}) — поставь ближе")
+        c["target"] = [round(side / 39.37, 3), round(-d / 39.37, 3), round(z / 39.37, 3)]   # оси скелета: +X влево, −Y вперёд
+        c["gap"] = min(math.dist(cur[k], cur[o]), math.dist(A, B)) - 10; e["_c"] = c   # запас — на обходе ближе
+        for who_, t0, T, ang in c["turns"]:
+            turns[who_].append((round(t0, 2), round(T, 2), round(ang, 1)))
+
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
         yaw0 = yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
@@ -373,25 +428,18 @@ def build(sc, V, folder):
         # шаг — туда, куда смотрит на начале шага (после поворота «от» — прочь от собеседника)
         ws = [(a, e["t1"], e["walk"], math.cos(math.radians(face(a))), math.sin(math.radians(face(a))))
               for e in lines if e["who"] == who and e.get("walk") for a in [max(0.0, e["t0"] - LEAD)]]
-        # его касаются (skit_talk.py, CONTACT): хлопнули — чуть приседает на хлопке, толкнули — плавно отшатывается на 60
-        cs = [(gest_t(e), e["gesture"][0], e["who"]) for e in lines
-              if e.get("gesture") and e["gesture"][0] in CONTACT and listener(sc, e["who"]) == who]
-        own = [(gest_t(e), lunge(e), listener(sc, who)) for e in lines   # сам толкает: выпад к нему, пока не упрётся
-               if e["who"] == who and e.get("gesture") and e["gesture"][0] == "толкнуть"]
+        # касания: свои шаги к нему и отшатывания (e["_c"]), хлопки по нему — чуть приседает
+        cs = [st for e in lines if e.get("_c") for st in e["_c"]["steps"] if st[0] == who]
+        pats = [gest_t(e) + e["_c"]["delay"] for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть" and listener(sc, e["who"]) == who]
 
         def at(t, p):
             x, y = pos[who]; z = 0.0
             yaw = face(t)
-            for g, kind, by in cs:
-                if kind == "толкнуть":                   # отшатывается двумя шагами назад, когда толкающий упёрся
-                    u = math.dist(pos[who], pos[by]) or 1.0; k = smooth((t - g - PUSH_HIT) / PUSH_BACK)
-                    x += (pos[who][0] - pos[by][0]) / u * PUSH_DIST * k; y += (pos[who][1] - pos[by][1]) / u * PUSH_DIST * k
-                else:
-                    for tp in CONTACT_PATS:
-                        z -= 1.5 * math.sin(math.pi * (t - g - tp) / 0.3) ** 2 if 0 < t - g - tp < 0.3 else 0.0   # чуть приседает
-            for g, L, to in own:
-                u = math.dist(pos[who], pos[to]) or 1.0; k = smooth((t - g) / PUSH_HIT)
-                x += (pos[to][0] - pos[who][0]) / u * L * k; y += (pos[to][1] - pos[who][1]) / u * L * k
+            for _, t0, T, (dx, dy), _r in cs:
+                k = smooth((t - t0) / T); x += dx * k; y += dy * k
+            for g in pats:
+                for tp in CONTACT_PATS:
+                    z -= 1.5 * math.sin(math.pi * (t - g - tp) / 0.3) ** 2 if 0 < t - g - tp < 0.3 else 0.0   # чуть приседает
             for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
@@ -402,34 +450,6 @@ def build(sc, V, folder):
                     return (x, y, 45 * math.sin(math.pi * k), 0, yaw, 0)
             return (x, y, z, 0, yaw, 0)
         return at
-
-    def armed_kind(k, g):
-        """«себя» рукой с оружием (тесак Пуджа — часть leftweapon) — оружие уходит в голову: тогда без руки («себя_грудь»)."""
-        parts = info[k].get("parts") or []
-        left = any(re.search(r"left.*(weapon|hook|axe|blade)|(weapon|hook|axe|blade).*left", p) for p in parts)
-        both = any(re.search(r"/weapon\.vmdl$", p) for p in parts)   # одно оружие без стороны — в двух руках (винтовка Снайпера)
-        if g == "толкнуть" and both:
-            return "толкнуть_корпусом"
-        return "себя_грудь" if g == "себя" and left else g
-
-    def lunge(e):
-        """Выпад толкающего (единицы), чтобы руки / оружие упёрлись в собеседника: зазор до его поверхности минус досяг."""
-        k = e["who"]; o = listener(sc, k)
-        gap = math.dist(pos[k], pos[o]) - 0.45 * info[o].get("radius", 60) - 0.3 * info[k].get("radius", 60)
-        reach = info[k].get("head_z", 130) * (0.5 if armed_kind(k, "толкнуть") == "толкнуть_корпусом" else 0.55)   # упирается, не входит
-        return round(min(120.0, max(0.0, gap - reach)), 1)
-
-    def contact_target(k, e):
-        """Куда тянется рука при касании — в осях скелета героя (вперёд −Y, вверх Z, метры): плечо или грудь собеседника."""
-        o = listener(sc, k); d = math.dist(pos[k], pos[o]) - 0.45 * info[o].get("radius", 60)   # до поверхности, не до центра
-        reach = 1.2 * info[k].get("head_z", 130)            # рука ~0,75 роста до головы + наклон корпуса (skit_talk contact)
-        if d > reach:
-            print(f"  ВНИМАНИЕ: {k} не дотянется до {o} ({d:.0f} при руке с наклоном ~{reach:.0f}) — поставь ближе")
-        z = info[o].get("head_z", 130) * (0.82 if e["gesture"][0] == "хлопнуть" else 0.62)   # его плечо / грудь — но не выше
-        z = min(z, info[k].get("head_z", 130) * (1.0 if e["gesture"][0] == "хлопнуть" else 0.5))   # своей головы / живота
-                                                                                  # (толчок на груди — оружие в двух руках в голову)
-        side = 0.18 * info[o].get("radius", 60) if e["gesture"][0] == "хлопнуть" else 0.0   # на его плечо со своей левой стороны
-        return [round(side / 39.37, 3), round(-d / 39.37, 3), round(z / 39.37, 3)]
 
     # анимации: стойка, разговор поверх стойки (a8_<реплика>), действия
     anims = {k: [(0, sc["cast"][k]["stance"] or info[k]["idle"])] for k in sc["cast"]}
@@ -443,6 +463,8 @@ def build(sc, V, folder):
         nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
         d = round((nxt if nxt else dur) - a0, 2)        # до своей следующей реплики (последняя — до конца сцены): стойка между ними
                                                           # шла бы с начала — поза скакала на стыке; здесь она продолжается (phase)
+        if e.get("_c"):                                   # касание доигрывается в своей анимации: подход, хлопок (~1,9 с), отшатывание
+            d = round(max(d, gest_t(e) + e["_c"]["delay"] + 2.0 - a0), 2)
         if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
             d = round(max(d, sum(e["_turn"][:2]) + 0.2 - a0), 2)
         base = info[k]["idle"]
@@ -457,7 +479,7 @@ def build(sc, V, folder):
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": armed_kind(k, e["gesture"][0]), "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра
                                       "len": e["gesture"][1] + (2 if e.get("glide") else 0),
-                                      **({"target": contact_target(k, e)} if e["gesture"][0] in CONTACT else {})}]}
+                                      **({"target": e["_c"]["target"], "delay": e["_c"]["delay"]} if e.get("_c") else {})}]}
                            if e["gesture"] and e["gesture"][0] in OWN_GESTURES else {})})
         anims[k] += [(a0, "a8_" + e["name"]), (round(a0 + d, 2), sc["cast"][k]["stance"] or base)]
         if e["gesture"] and e["gesture"][0] not in OWN_GESTURES:   # анимация игры — если к месту (рот — морфами), потом стойка
@@ -478,19 +500,24 @@ def build(sc, V, folder):
                 by[a]["phase"] = round(cur[1] + t - cur[0], 2); cur = (t, by[a]["phase"])
             else:
                 cur = (t, 0.0)
-    # толчок — шагами, не скольжением: выпад толкающего — шаг вперёд, отшатывание — шаги назад (свой шаг skit_talk.py)
+    # касания — шагами, не скольжением (свой шаг skit_talk.py), и повороты к нему — в анимацию реплики, где они идут
+    def talk_at(k, t0):
+        starts = dict((nm, t) for t, nm in anims[k])
+        tk = next((x for x in talk[k] if starts.get(x["name"], 1e9) <= t0 < starts.get(x["name"], 0) + x["dur"]), None)
+        return tk, starts.get(tk["name"]) if tk else None
     for e in lines:
-        if not (e.get("gesture") and e["gesture"][0] == "толкнуть"):
-            continue
-        g = gest_t(e); o = listener(sc, e["who"])
-        for k, t0, dur_, v in ((e["who"], g, PUSH_HIT, lunge(e)), (o, g + PUSH_HIT, PUSH_BACK, -PUSH_DIST)):
-            starts = dict((nm, t) for t, nm in anims[k])
-            tk = next((x for x in talk[k] if starts.get(x["name"], 1e9) <= t0 < starts.get(x["name"], 0) + x["dur"]), None)
-            if tk and v and not tk.get("walk"):
-                tk["walk"] = {"at": round(t0 - starts[tk["name"]], 2), "len": round(dur_ + 0.1, 2), "v": round(v / 39.37 / dur_, 3),
-                              "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0)}
-                if v < 0:
-                    tk["recoil"] = True
+        for k, t0, T, (dx, dy), rec in (e.get("_c") or {}).get("steps", []):
+            tk, a0_ = talk_at(k, t0)
+            if not tk:
+                continue
+            fy = math.radians(yaw_to(k, listener(sc, k)) + sum(a[2] * smooth((t0 + 0.01 - a[0]) / a[1]) for a in turns[k]))
+            fwd = dx * math.cos(fy) + dy * math.sin(fy)  # вперёд по взгляду (+), назад (−)
+            tk.setdefault("steps", []).append({"at": round(t0 - a0_, 2), "len": round(T + 0.1, 2), "v": round(fwd / 39.37 / T, 3),
+                                               "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0), **({"recoil": True} if rec else {})})
+        for k, t0, T, ang in (e.get("_c") or {}).get("turns", []):
+            tk, a0_ = talk_at(k, t0)
+            if tk:
+                tk.setdefault("turns", []).append({"at": round(t0 - a0_, 2), "len": round(T, 2), "ang": round(ang, 1)})
 
     # камера для движка доты (Blender ставит свою по планам): общий план сбоку от линии героев, с юга
     xs = [p[0] for p in pos.values()]; ys = [p[1] for p in pos.values()]
@@ -499,10 +526,7 @@ def build(sc, V, folder):
     yaw = math.degrees(math.atan2(-n_[0], n_[1]))
     cam = lambda t: (mid[0], mid[1], 100, 0.9 * span + 400, 8, yaw)
 
-    touch = [(e["who"], listener(sc, e["who"]), lunge(e) if e["gesture"][0] == "толкнуть" else 0.0)
-             for e in lines if e.get("gesture") and e["gesture"][0] in CONTACT]
-    gap = min([185] + [0.8 * (info[a].get("radius", 60) + info[b].get("radius", 60)) - L for a, b, L in touch])   # касание и выпад
-                                                                                                             # толчка — вплотную можно
+    gap = min([185] + [e["_c"]["gap"] for e in lines if e.get("_c")])   # касание — вплотную можно
     st = Stage(cam, dur, kf=30, ground=ground, trees=(mid[0], mid[1], span + 1500, 0), min_gap=gap)
     for k, c in sc["cast"].items():
         st.actor(k, None, motion(k), [list(x) for x in anims[k]], hero=c["hero"], model=info[k]["model"],

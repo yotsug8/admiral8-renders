@@ -282,7 +282,8 @@ def speaker(s):
     spine = next((b.name for nm in ("spine3", "spine_2", "spine2", "spine_1", "spine1") for b in arm.pose.bones if b.name.lower() == nm), None)
     push = soft([s.get("lean", 0.0) * v for v in loud], 0.3)
     w = lambda t, *fa: sum(a * math.sin(2 * math.pi * f * t + ph + i * 1.7) for i, (f, a) in enumerate(fa))
-    walk = s.get("walk")
+    walks = ([s["walk"]] if s.get("walk") else []) + list(s.get("steps") or [])   # шаги реплики: свой «идёт N», шаги касаний
+    walk = walks[0] if walks else None
     tpose = any(g["kind"] == "тпоза" for g in s.get("gest") or [])
     # земля — по стопам в обычной стойке; если поза их поднимает или опускает (шаг, Т-поза), таз сдвигается так,
     # чтобы нижняя стопа стояла на земле (иначе ступни висели в воздухе)
@@ -306,7 +307,7 @@ def speaker(s):
         base_pose(s["base"], 0.0)
         thl, ank = leg["L"][0], leg["L"][2]
         Lg = (world(thl).translation - world(ank).translation).length if thl and ank else 1.0
-        stride = 0.7 * Lg; wa, wl = walk["at"], walk["len"]
+        stride = 0.7 * Lg
         # переваливание (тяжёлый герой): вес на опорную ногу — таз к ней, корпус над ней, голова ровнее корпуса,
         # ноги шире; жир (живот, грудь, спина) колышется за тазом с запаздыванием; waddle — сила (1 — Пудж)
         wd = walk.get("waddle", 0.0)
@@ -316,10 +317,14 @@ def speaker(s):
         pelvis = B.get("spine1")
 
         def stride_walk(t):
-            e_ = sm(wa, wa + 0.3, t) * (1 - sm(wa + wl - 0.3, wa + wl, t))
+            w_ = next((x for x in walks if x["at"] <= t <= x["at"] + x["len"]), None)   # какой шаг сейчас
+            if not w_:
+                return
+            wa, wl = w_["at"], w_["len"]; ramp = min(0.3, wl / 3)
+            e_ = sm(wa, wa + ramp, t) * (1 - sm(wa + wl - ramp, wa + wl, t))
             if e_ <= 0:
                 return
-            phi = math.pi * walk["v"] / stride * (t - wa)          # один период — два шага
+            phi = math.pi * w_["v"] / stride * (t - wa)          # один период — два шага
             for sd, sg in (("L", 1), ("R", -1)):
                 th, kn, an = leg[sd]
                 if not th:
@@ -350,7 +355,8 @@ def speaker(s):
                     turn(b, X, R(e_ * wd * a * math.cos(2 * phi - lag)))
             bpy.context.view_layer.update()
 
-    tn = s.get("turn")
+    tns = ([s["turn"]] if s.get("turn") else []) + list(s.get("turns") or [])   # повороты реплики: свой и касаний (skit.py)
+    tn = tns[0] if tns else None
     if tn:
         # поворот на месте (корень героя поворачивается в render_scene по ключам skit.py тем же плавным ходом):
         # голова ведёт, корпус за ней, ноги переступают — стопа стоит на земле, пока не шагнёт (в скелете её держит
@@ -360,19 +366,20 @@ def speaker(s):
         legs_t = [l for l in legs_t if all(l)]
         base_pose(s["base"], 0.0)
         Lt = (world(legs_t[0][0]).translation - world(legs_t[0][2]).translation).length if legs_t else 1.0
-        ta, tl, tg = tn["at"], tn["len"], tn["ang"]
-        if legs_t:                                       # первой — нога со стороны поворота (влево — левая, она у +X)
-            legs_t.sort(key=lambda l: -world(l[2]).translation.x * (1 if tg > 0 else -1))
-        rounds = max(1, math.ceil(abs(tg) / 100))
+        leg_x = {l: world(l[2]).translation.x for l in legs_t}   # левая — у +X
         neck_t = next((b.name for b in arm.pose.bones if "neck" in b.name.lower()), None)
 
         def turn_body(t):
-            if t <= ta - 0.15 or t >= ta + tl + 0.05:
+            tn_ = next((x for x in tns if x["at"] - 0.15 < t < x["at"] + x["len"] + 0.05), None)
+            if not tn_:
                 return
+            ta, tl, tg = tn_["at"], tn_["len"], tn_["ang"]
+            legs = sorted(legs_t, key=lambda l: -leg_x[l] * (1 if tg > 0 else -1))   # первой — нога со стороны поворота
+            rounds = max(1, math.ceil(abs(tg) / 100))
             psi = tg * sm(ta, ta + tl, t)                 # корень уже повёрнут на столько
             head_lead = tg * sm(ta - 0.15, ta + 0.55 * tl, t) - psi   # голова первой
             spine_lead = tg * sm(ta - 0.08, ta + 0.8 * tl, t) - psi
-            for i, (th, kn, an) in enumerate(legs_t):
+            for i, (th, kn, an) in enumerate(legs):
                 T = tl / rounds; phi = 0.0; lift = 0.0
                 for r in range(rounds):
                     a0_ = ta + r * T + (0.02 if i == 0 else 0.52) * T; b0_ = a0_ + 0.46 * T   # ноги по очереди, без прыжка
@@ -405,7 +412,7 @@ def speaker(s):
         локоть) на точку target на нём (оси скелета); не достаёт — наклон корпуса к нему (до 35°).
         «хлопнуть»: левая рука на его плечо за 0,6 с, два мягких хлопка кистью (CONTACT_PATS в skit.py), назад;
         «толкнуть»: обе руки к нему за 0,4 с, корпус вперёд, держит 0,25 с, назад за 0,5 с (резче — дёргало, участник)."""
-        a = g["at"]; T = Vector(g["target"])
+        a = g["at"] + g.get("delay", 0.0); T = Vector(g["target"])   # delay — сначала шаг к нему
         if g["kind"] == "хлопнуть":
             e_ = sm(a, a + 0.6, t) * (1 - sm(a + 1.4, a + 1.9, t))
             pat = sum(math.sin(math.pi * (t - a - tp) / 0.3) ** 2 for tp in (0.7, 1.05) if 0 < t - a - tp < 0.3)
@@ -482,9 +489,10 @@ def speaker(s):
                         turn(bone(bn), ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
         if walk:                                        # шаг — после жестов (Т-поза сбрасывала и ноги — Пудж плыл, не шагая)
             stride_walk(t)
-            if s.get("recoil") and spine:               # отшатнулся от толчка: корпус и голова назад, руки чуть в стороны
-                r_ = sm(walk["at"], walk["at"] + 0.25, t) * (1 - sm(walk["at"] + walk["len"], walk["at"] + walk["len"] + 0.6, t))
-                turn(spine, X, R(-14 * r_)); turn(s["head"], X, R(-8 * r_))
+            for w_ in walks:                            # отшатнулся от толчка: корпус и голова назад
+                if w_.get("recoil") and spine:
+                    r_ = sm(w_["at"], w_["at"] + 0.25, t) * (1 - sm(w_["at"] + w_["len"], w_["at"] + w_["len"] + 0.6, t))
+                    turn(spine, X, R(-14 * r_)); turn(s["head"], X, R(-8 * r_))
         if tn:
             turn_body(t)
         if feet_ground is not None:                     # стопы на земле: Т-поза выпрямляет полусогнутые ноги стойки

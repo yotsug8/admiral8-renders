@@ -78,6 +78,7 @@ P_MEDIUM = {"fov": 35, "width": 0.3, "below": 0.2, "ang": 15, "sway": 0.2, "aim"
 P_SELFIE = {"fov": 64, "width": 0.7, "below": 0.2, "aim": -0.3, "fstop": 1.4}
 OWN_GESTURES = {"указать", "себя", "отмахнуться", "хлопнуть", "толкнуть", "крюк", "замах", "кулак", "плечи", "гордо", "тпоза", "парит", "выгнуться", "скрутиться", "дрожь"}           # свои жесты — tools/blender/skit_talk.py, GESTURES
 CONTACT = {"хлопнуть", "толкнуть", "толкнуть_корпусом"}                 # касание собеседника: рука на нём, он вздрагивает / отшатывается
+PUSH_HIT, PUSH_BACK, PUSH_DIST = 0.4, 0.6, 60       # толчок: выпад и удар за 0,4 с, отшатывание 0,6 с на 60 — шагами назад
 CONTACT_PATS = (0.7, 1.05)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
 # «жест сам»: жест по словам реплики — на это слово (только где стоит метка: участник — «не везде, только где нужно»)
 AUTO_GEST = [("отмахнуться", r"\b(ладно|забей|неважно|забудь|отстань|забирай)\b"), ("указать", r"\b(ты|тебя|тебе|твой|твоя|твоё|твои)\b"),
@@ -375,17 +376,22 @@ def build(sc, V, folder):
         # его касаются (skit_talk.py, CONTACT): хлопнули — чуть приседает на хлопке, толкнули — плавно отшатывается на 60
         cs = [(gest_t(e), e["gesture"][0], e["who"]) for e in lines
               if e.get("gesture") and e["gesture"][0] in CONTACT and listener(sc, e["who"]) == who]
+        own = [(gest_t(e), lunge(e), listener(sc, who)) for e in lines   # сам толкает: выпад к нему, пока не упрётся
+               if e["who"] == who and e.get("gesture") and e["gesture"][0] == "толкнуть"]
 
         def at(t, p):
             x, y = pos[who]; z = 0.0
             yaw = face(t)
             for g, kind, by in cs:
-                if kind == "толкнуть":
-                    u = math.dist(pos[who], pos[by]) or 1.0; k = smooth((t - g - 0.3) / 0.7)   # отшатывается плавно, когда
-                    x += (pos[who][0] - pos[by][0]) / u * 60 * k; y += (pos[who][1] - pos[by][1]) / u * 60 * k   # руки дошли
+                if kind == "толкнуть":                   # отшатывается двумя шагами назад, когда толкающий упёрся
+                    u = math.dist(pos[who], pos[by]) or 1.0; k = smooth((t - g - PUSH_HIT) / PUSH_BACK)
+                    x += (pos[who][0] - pos[by][0]) / u * PUSH_DIST * k; y += (pos[who][1] - pos[by][1]) / u * PUSH_DIST * k
                 else:
                     for tp in CONTACT_PATS:
                         z -= 1.5 * math.sin(math.pi * (t - g - tp) / 0.3) ** 2 if 0 < t - g - tp < 0.3 else 0.0   # чуть приседает
+            for g, L, to in own:
+                u = math.dist(pos[who], pos[to]) or 1.0; k = smooth((t - g) / PUSH_HIT)
+                x += (pos[to][0] - pos[who][0]) / u * L * k; y += (pos[to][1] - pos[who][1]) / u * L * k
             for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
@@ -405,6 +411,13 @@ def build(sc, V, folder):
         if g == "толкнуть" and both:
             return "толкнуть_корпусом"
         return "себя_грудь" if g == "себя" and left else g
+
+    def lunge(e):
+        """Выпад толкающего (единицы), чтобы руки / оружие упёрлись в собеседника: зазор до его поверхности минус досяг."""
+        k = e["who"]; o = listener(sc, k)
+        gap = math.dist(pos[k], pos[o]) - 0.45 * info[o].get("radius", 60) - 0.3 * info[k].get("radius", 60)
+        reach = info[k].get("head_z", 130) * (0.5 if armed_kind(k, "толкнуть") == "толкнуть_корпусом" else 0.55)   # упирается, не входит
+        return round(min(120.0, max(0.0, gap - reach)), 1)
 
     def contact_target(k, e):
         """Куда тянется рука при касании — в осях скелета героя (вперёд −Y, вверх Z, метры): плечо или грудь собеседника."""
@@ -465,6 +478,19 @@ def build(sc, V, folder):
                 by[a]["phase"] = round(cur[1] + t - cur[0], 2); cur = (t, by[a]["phase"])
             else:
                 cur = (t, 0.0)
+    # толчок — шагами, не скольжением: выпад толкающего — шаг вперёд, отшатывание — шаги назад (свой шаг skit_talk.py)
+    for e in lines:
+        if not (e.get("gesture") and e["gesture"][0] == "толкнуть"):
+            continue
+        g = gest_t(e); o = listener(sc, e["who"])
+        for k, t0, dur_, v in ((e["who"], g, PUSH_HIT, lunge(e)), (o, g + PUSH_HIT, PUSH_BACK, -PUSH_DIST)):
+            starts = dict((nm, t) for t, nm in anims[k])
+            tk = next((x for x in talk[k] if starts.get(x["name"], 1e9) <= t0 < starts.get(x["name"], 0) + x["dur"]), None)
+            if tk and v and not tk.get("walk"):
+                tk["walk"] = {"at": round(t0 - starts[tk["name"]], 2), "len": round(dur_ + 0.1, 2), "v": round(v / 39.37 / dur_, 3),
+                              "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0)}
+                if v < 0:
+                    tk["recoil"] = True
 
     # камера для движка доты (Blender ставит свою по планам): общий план сбоку от линии героев, с юга
     xs = [p[0] for p in pos.values()]; ys = [p[1] for p in pos.values()]

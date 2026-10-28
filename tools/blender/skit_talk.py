@@ -417,7 +417,7 @@ def speaker(s):
             hands = []                                   # корпусом с оружием вперёд
         if e_ <= 0:
             return
-        lean = {"толкнуть": 10.0, "толкнуть_корпусом": 24.0}.get(g["kind"], 0.0)
+        lean = {"толкнуть": 10.0, "толкнуть_корпусом": 12.0}.get(g["kind"], 0.0)   # сильнее — оружие уходит в своё тело
         if not hands:
             if spine:
                 turn(spine, X, R(e_ * lean))
@@ -482,6 +482,9 @@ def speaker(s):
                         turn(bone(bn), ax, R(ge * ang + (wob * math.sin(t * 15) * min(1.0, ge) if wob else 0)))
         if walk:                                        # шаг — после жестов (Т-поза сбрасывала и ноги — Пудж плыл, не шагая)
             stride_walk(t)
+            if s.get("recoil") and spine:               # отшатнулся от толчка: корпус и голова назад, руки чуть в стороны
+                r_ = sm(walk["at"], walk["at"] + 0.25, t) * (1 - sm(walk["at"] + walk["len"], walk["at"] + walk["len"] + 0.6, t))
+                turn(spine, X, R(-14 * r_)); turn(s["head"], X, R(-8 * r_))
         if tn:
             turn_body(t)
         if feet_ground is not None:                     # стопы на земле: Т-поза выпрямляет полусогнутые ноги стойки

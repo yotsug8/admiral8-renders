@@ -37,7 +37,7 @@
 $env:FV_SILENT='1'
 $env:FV_QA_ONLY='1'
 $env:FV_QA_DIR='qa'
-py -3.11 video.py episodes/005.json qa/t.mp4
+py -3.11 video.py episodes/demo_layouts.json qa/t.mp4
 Remove-Item Env:FV_SILENT,Env:FV_QA_ONLY,Env:FV_QA_DIR
 ```
 

@@ -1,7 +1,6 @@
 # Вертикальные ролики про Dota 2
 
 Вертикальные ролики про Dota 2 для TikTok и YouTube Shorts — любого формата: графика и интерфейс, 3D-герои, кадры из самой игры, мемы.
-Вышли: 002 «Сколько Танго весит Пудж», 004 «С чем пустят в самолёт», 005 «Кунка за 7 лет».
 
 Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Единые правила Codex — [AGENTS.md](AGENTS.md), текущее состояние — [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md). Сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
 
@@ -29,20 +28,12 @@
 
 ```json
 {
-  "voice_id": "05f3550e4db34a0488e8adda76ae3b9f",
-  "hook": { "style": "list", "headline": "Дота|*в жизни*", "voice": "…", "voice_file": "voice/004/hook.mp3",
-            "images": ["item:rapier", "hero:earthshaker", "file:assets/ui/daynight.png"],
-            "labels": ["Отберут в аэропорту?", "Худший сосед?", "Сколько суток в катке?"],
-            "cues": ["предметы", "сосед", "суток"] },
+  "hook": { "headline": "Заголовок", "voice": "Начальная реплика." },
   "parts": [
-    { "layout": "mosaic", "headline": "Сколько Танго|весит *Пудж*?",
-      "voice": "[curious] Сколько Танго весит Пудж? …", "voice_file": "voice/002/f1.mp3",
-      "visual": { "heroes": ["pudge"], "icons": "tango", "count": 9200, "number": "9200 Танго",
-                  "caption": "≈ 276 000 золота", "note": "Оценка: …",
-                  "cues": { "fill": "огромный", "fill_end": "двести:end", "note": "пятьсот" } } }
+    { "layout": "block", "headline": "Герой", "voice": "Основная реплика.",
+      "visual": { "heroes": ["axe"], "number": "1", "label": "Пример" } }
   ],
-  "outro": { "question": "*Подпишись*", "style": "follow", "voice": "Подпишись и поставь лайк.", "voice_file": "voice/005/end.mp3" },
-  "take_texts": [["f2a", "текст варианта", 3]]
+  "outro": { "question": "*Подпишись*", "style": "follow", "voice": "Подпишись и поставь лайк." }
 }
 ```
 
@@ -64,7 +55,7 @@
 | `notes` | патч: номер версии, строки-эмодзи, расшифровка | `version`, `emoji[]`, `emoji_note`, `icon`, `decoded` |
 | `grid` | число и сетка иконок | `number`, `icons`, `count`, `heroes[1]`, `label` |
 
-Образцы полей — `episodes/demo_layouts.json` (duo, block, grid, notes) и вышедшие выпуски. В `label` и `caption` работает `*акцент*`. Новую раскладку добавлять в `video.html` (построение в `init`, анимация в `drawExtra`), пример — в demo-выпуск, проверка — `tools/check.py`. Разовое оформление под один ролик — сценой (SCENES.md), а не новой раскладкой.
+Образцы полей — `episodes/demo_layouts.json` (duo, block, grid, notes) и `episodes/demo_scene.json`. В `label` и `caption` работает `*акцент*`. Новую раскладку добавлять в `video.html` (построение в `init`, анимация в `drawExtra`), пример — в demo-выпуск, проверка — `tools/check.py`. Разовое оформление под один ролик — сценой (SCENES.md), а не новой раскладкой.
 
 ## Файлы
 

@@ -5,8 +5,8 @@
 Python готовит данные: озвучку (Fish Audio, запасной — edge-tts), героев и иконки, звук.
 
 Запуск:
-    python video.py episodes/002.json out/002.mp4    # рендер выпуска
-    python video.py --takes episodes/002.json out           # дубли озвучки на выбор
+    python video.py episodes/demo_layouts.json out/demo.mp4    # рендер выпуска
+    python video.py --takes episodes/demo_layouts.json out           # дубли озвучки на выбор
 Локальная проверка вёрстки без сети: FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=папка
 Черновик за минуту (половина размера, 15 кадров/с): FV_DRAFT=1
 """

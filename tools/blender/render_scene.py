@@ -13,7 +13,7 @@ PICK = None if len(args) < 3 or args[2] in ("all", "") else [int(x) for x in arg
 HALF = len(args) > 3 and args[3] == "half"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RND = os.path.join(REPO, "_game", "models", "render")
-RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (tools/blender/hq_textures.py; участник выбрал исходные)
+RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (tools/blender/hq_textures.py; исходные текстуры — по умолчанию)
 TROUPE = json.load(open(os.path.join(REPO, "_game", "data", "troupe.json"), encoding="utf-8"))
 D = json.load(open(SCENE, encoding="utf-8"))
 FPS = D["fps"]; N = D["frames"]
@@ -284,7 +284,7 @@ for name, a in D["actors"].items():
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
 
-# ---------- свет героев «как в доте» (участник: «совершенно другое освещение, не как в примерах»): физический свет ламп
+# ---------- свет героев «как в доте» — физический свет ламп
 # и неба давал то тёмную половину, то засвет — сколько ни крути. Игра освещает героев своим шейдером; здесь он повторён
 # в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
 # одинаково с любого ракурса и в любой сцене), тёмная сторона не уходит в черноту (ambient), подсветка по краю силуэта,
@@ -333,7 +333,7 @@ def dota_shade(objs):
         c = DOTA["shadow_cool"]; tint.inputs["A"].default_value = (1 - c, 1 - c * 0.5, 1 + c, 1); tint.inputs["B"].default_value = (1.0, 1.0, 1.0, 1)
         shade = N("ShaderNodeMix"); shade.data_type = "RGBA"; shade.blend_type = "MULTIPLY"; shade.inputs["Factor"].default_value = 1.0
         link(tint.outputs["Result"], shade.inputs["A"]); link(lit.outputs[0], shade.inputs["B"])
-        # окружение на герое (участник: «Пудж как будто вставлен в фотку»): снизу отсвет травы, сверху — неба (мировая нормаль)
+        # окружение на герое для согласования с фоном: снизу отсвет травы, сверху — неба (мировая нормаль)
         wn_ = N("ShaderNodeVectorMath"); wn_.operation = "NORMALIZE"; link(nrm_src, wn_.inputs[0])
         wz = N("ShaderNodeSeparateXYZ"); link(wn_.outputs[0], wz.inputs[0])
         up_ = N("ShaderNodeMapRange"); up_.inputs["From Min"].default_value = -1; up_.inputs["From Max"].default_value = 1; link(wz.outputs["Z"], up_.inputs["Value"])
@@ -511,7 +511,7 @@ wn.links.new(tcw.outputs["Generated"], cn.inputs["Vector"]); wn.links.new(cn.out
 wn.links.new(cr.outputs["Color"], cmx.inputs["Factor"]); wn.links.new(skyr.outputs["Color"], cmx.inputs["A"])
 sky_out = cmx.outputs["Result"]
 SKY_IMG = os.path.join(REPO, "_game", "sky", "sky_dota_000_psd_ceb026ce_up.png")   # небо доты (Radiant, день): верхняя грань куба
-if float(os.environ.get("A8_SKYIMG", "1")) > 0 and os.path.exists(SKY_IMG):      # выбор участник 28.10; A8_SKYIMG=0 — облака шумом
+if float(os.environ.get("A8_SKYIMG", "1")) > 0 and os.path.exists(SKY_IMG):      # базовый профиль; A8_SKYIMG=0 — облака шумом
     # настоящие облака доты (как в примерах) — куполом: направление → (x, y)/(z + k); боковые грани в файлах отзеркалены,
     # поэтому только верх; к горизонту — в градиент (там деревья и дымка)
     dn = wn.nodes.new("ShaderNodeVectorMath"); dn.operation = "NORMALIZE"; wn.links.new(tcw.outputs["Generated"], dn.inputs[0])
@@ -541,13 +541,13 @@ wn.links.new(bg.outputs["Background"], wmix.inputs[2]); wn.links.new(wmix.output
 def light(kind, rot, energy, color):
     d = bpy.data.lights.new(kind + str(energy), kind); d.energy = energy; d.color = color
     if kind == "SUN":
-        d.angle = math.radians(10)                        # мягкий край тени (участник: «тени зачастую портят кадры»)
+        d.angle = math.radians(10)                        # мягкий край тени
     d.use_shadow = LOOK["shadow"] > 0                     # shadow=0 — без теней, как свет в доте и в примерах
     o = bpy.data.objects.new(d.name, d); sc.collection.objects.link(o); o.rotation_euler = [math.radians(a) for a in rot]
     return o
 # свет и тон: солнце, контровое солнце, ключевой и контровой плана (Вт), экспозиция, обработка; A8_LOOK — подбор на пробах
 LOOK = dict(sun=2.5, back=1.0, expo=-0.3, amb=2.9, shadow=1.0, fog=0.25, horizon=(0.66, 0.76, 0.90, 1), bg_gain=1.1, bg_warm=0.04, bg_sat=1.35, sun_side=60.0, view="Khronos PBR Neutral", look="None", sky=0.9)   # по гистограмме как в доте: без выбитых белых, насыщенность ~0,45;
-# фон — солнце сбоку с тенями (крона объёмная, тень на траве; выбор участник 28.10), неба больше — листва не темнее, чем без теней
+# фон — солнце сбоку с тенями (крона объёмная, тень на траве), неба больше — листва не темнее, чем без теней
 for kv in filter(None, os.environ.get("A8_LOOK", "").split(";")):
     k, v = kv.split("="); LOOK[k] = v if k in ("view", "look") else tuple(map(float, v.split(","))) + (1,) if k == "horizon" else float(v)
 bg.inputs["Strength"].default_value = LOOK["sky"]; amb.inputs["Strength"].default_value = LOOK["amb"]
@@ -573,7 +573,7 @@ if MAP:                                         # дымка: даль свет�
         mr.inputs["From Min"].default_value = 40; mr.inputs["From Max"].default_value = 280
         mr.inputs["To Max"].default_value = min(0.7, 0.35 * LOOK["fog"])          # fog=0 — без дымки
         nt.links.new(cd.outputs["View Distance"], mr.inputs["Value"])
-        # фон под героев (участник: «подкорректируй фон по освещению, контрасту, цвету»): листва и земля карты темнее и холоднее
+        # фон под героев: листва и земля карты темнее и холоднее
         # героев — светлее (bg_gain), зелень к жёлтому (bg_warm, доля круга оттенков), сочнее (bg_sat)
         hs = nt.nodes.new("ShaderNodeHueSaturation")
         hs.inputs["Hue"].default_value = 0.5 - LOOK["bg_warm"]; hs.inputs["Saturation"].default_value = LOOK["bg_sat"]
@@ -763,7 +763,7 @@ if plans:
         tocam = C - L; tocam.z = 0; tocam.normalize()
         # солнце — от камеры первого плана, сбоку, 45° над горизонтом (фон; герои освещены своим материалом)
         if f0 == plans[0][0]:                          # солнце — одно на всю сцену, по первому плану: с тенями на каждой склейке
-            sd = Matrix.Rotation(math.radians(LOOK["sun_side"]), 3, "Z") @ tocam; sd.z = 1.0   # тени прыгали (участник)
+            sd = Matrix.Rotation(math.radians(LOOK["sun_side"]), 3, "Z") @ tocam; sd.z = 1.0   # тени прыгали
             SUN.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
         for f in range(f0, f1):
             fp = head(fw, f)[0] if fw in ACTORS else FP   # до установки камеры: frame_set сбрасывает её к ключам

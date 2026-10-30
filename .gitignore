@@ -14,3 +14,9 @@ assets/snd/
 .ruff_cache/
 *.pyc
 *.blend1
+
+# Секреты и локальные журналы не публиковать
+.env
+.env.*
+!.env.example
+*.log

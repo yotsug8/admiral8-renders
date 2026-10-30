@@ -215,7 +215,7 @@ def load(glb, tex_dir, ground_z=None):
             continue
         if re.search(r"glow_\d", o.name):              # плоские карточки «свечения» — в игре мягкие, здесь квадраты
             o.hide_render = True; o.hide_viewport = True; floating += 1; continue
-        # служебное и эффекты, которых в игре так не видно (участник: «артефакты — объекты»): пни срубленных деревьев (stump),
+        # служебное и эффекты, которых в игре так не видно: пни срубленных деревьев (stump),
         # бирюзовые преломляющие кристаллы, карточки лучей света и пара (в Blender — светлые квадраты), птицы и рыбы
         # в воздухе. Не трогать *_inspector: это и есть видимые деревья (без них листва висит клочками)
         if re.search(r"stump|crystal\d*_refract|lightrays|vapors_|wildlife_", o.name, re.I):

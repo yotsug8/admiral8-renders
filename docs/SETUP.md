@@ -9,9 +9,9 @@
 ## Новый компьютер
 
 1. Установить Git, Python 3.11, Node.js. Для анимационных сценок — Dota 2 с Workshop Tools, Blender 5.2 и Source2Viewer-CLI.
-2. Клонировать проект:
+2. Клонировать проект, подставив URL репозитория вместо `<repository-url>`:
    ```powershell
-   git clone https://github.com/contributor/admiral8-renders.git
+   git clone "<repository-url>" admiral8-renders
    cd admiral8-renders
    ```
 3. Перенести `_game` со старого ПК: `models`, `maps`, `world`, `data`, `vo`, `sfx`, `sky`, `study`, `memes`, `water_dist.png`. Сохранить и уникальные видео/озвучку из `skits`, если они нужны; промежуточные кадры переносить необязательно. `_game` отсутствует в git.

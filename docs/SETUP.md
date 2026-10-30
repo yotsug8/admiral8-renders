@@ -1,5 +1,26 @@
 # Поднять проект на новом компьютере
 
+## Продолжить в Codex
+
+Открыть папку проекта в Codex. Он читает `AGENTS.md`; затем должен прочитать `docs/PROJECT_STATE.md` (перенесённые решения и незавершённые задачи) и нужные подробные документы. Историю Claude перечитывать не требуется.
+
+Проектный `.codex/config.toml` подключает Context7 и Blender MCP; последний требует открытого Blender с запущенным аддоном. Для фонового рендера аддон не нужен. Настройки доверия и ключи остаются локальными, в git их не хранить.
+
+На Windows команды из примеров Bash адаптировать к PowerShell:
+
+```powershell
+$env:FV_SILENT='1'
+$env:FV_QA_ONLY='1'
+$env:FV_QA_DIR='qa'
+py -3.11 video.py episodes/005.json qa/t.mp4
+Remove-Item Env:FV_SILENT,Env:FV_QA_ONLY,Env:FV_QA_DIR
+py -3.11 tools/check.py
+```
+
+Если Playwright сообщает об отсутствующем браузере — `py -3.11 -m playwright install chromium`. Если PowerShell блокирует npm.ps1 — использовать `npm.cmd install`. RTK необязателен для рендера; настраивается отдельно командой `rtk init --codex --global` (после этого перезапустить Codex и проверить доверие к хуку).
+
+## Подготовка компьютера
+
 Два вида роликов — разные требования:
 - **выпуски на `video.py`** (Танго, Кунка, факты): нужен только репозиторий и Python. Рендер может идти в GitHub Actions — тогда и Python не обязателен;
 - **анимационные сценки в Blender** (Пудж, Снайпер, пробы): ещё нужны папка `_game` (модели, карта, озвучка; ~1,7 ГБ, в git её нет — файлы игры), Blender, Source2Viewer и дота.
@@ -16,16 +37,16 @@
    ```
    git clone https://github.com/contributor/admiral8-renders.git
    ```
-4. **Открыть Claude Code в папке проекта** и вставить промпт ниже — он сам поставит библиотеки, пропишет пути и проверит.
+4. **Открыть Codex или Claude Code в папке проекта** и вставить промпт ниже — он поставит библиотеки, пропишет пути и проверит.
 5. Ключ озвучки Fish Audio — свой, с fish.audio (раздел API): `setx FISH_API_KEY <ключ>` в командной строке.
 
-## Промпт для нейросети (Claude Code или другой агент с доступом к командной строке)
+## Промпт для нейросети (Codex, Claude Code или другой агент с доступом к командной строке)
 
 ```
 Ты на Windows-компьютере в папке проекта admiral8-renders (github.com/contributor/admiral8-renders) — ролики TikTok @admiral8dota
 про Dota 2. Подними проект так, чтобы работало всё: выпуски на video.py и анимационные сценки в Blender.
 
-1. Прочитай целиком CLAUDE.md, README.md и docs/SETUP.md — там правила и состав проекта. Отвечай по-русски, коротко.
+1. Прочитай целиком AGENTS.md (Codex) или CLAUDE.md (Claude), docs/PROJECT_STATE.md, README.md и docs/SETUP.md — там правила и состав проекта. Отвечай по-русски, коротко.
 2. Проверь, что есть: Git, Python 3.11 (`py -3.11`), Node.js, Blender 5.2, Source2Viewer-CLI, Dota 2 с Workshop Tools
    (папка «dota 2 beta» с game\dota\pak01_dir.vpk и game\bin\win64\resourcecompiler.exe), папка _game в корне проекта
    (models, maps, world, data, vo, sfx). Чего нет — скажи, что и откуда поставить, и жди.

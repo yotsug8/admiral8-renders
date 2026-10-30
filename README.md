@@ -3,7 +3,7 @@
 Вертикальные ролики про Dota 2 для TikTok и YouTube Shorts — любого формата: графика и интерфейс, 3D-герои, кадры из самой игры, мемы.
 Вышли: 002 «Сколько Танго весит Пудж», 004 «С чем пустят в самолёт», 005 «Кунка за 7 лет».
 
-Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Правила работы — [CLAUDE.md](CLAUDE.md); сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
+Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Правила для Codex — [AGENTS.md](AGENTS.md), сохранённые решения — [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md); для Claude — [CLAUDE.md](CLAUDE.md). Сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
 
 ## Ролик
 

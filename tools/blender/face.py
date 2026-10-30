@@ -140,7 +140,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1
     kb = head.data.shape_keys.key_blocks if head.data.shape_keys else None
     if kb is None:
         return
-    split_sides(head, {k for t0, t1, who, shp in D.get("faces") or [] if who == actor for k in shp})
+    split_sides(head, {k for entry in D.get("faces") or [] if entry[2] == actor for k in entry[3]})
     keys = [k.name for k in kb[1:]]
     track = {k: [0.0] * n for k in keys}
 
@@ -163,13 +163,17 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1
                         g = val * (jaw * L * mg ** loud(t) if k == "jawOpen" else 1.0)
                         track[k][f] += gain * g * x / max(ws, 1.0)
 
-    # эмоции из сценария: вход и выход 0,25 с
-    for t0, t1, who, shapes in D.get("faces") or []:
+    # эмоции из сценария: по умолчанию вход и выход 0,25 с, у реакции вход задаётся отдельно
+    for entry in D.get("faces") or []:
+        t0, t1, who, shapes, *options = entry
         if who != actor:
             continue
+        attack = options[0].get("attack", 0.25) if options else 0.25
+        if not math.isfinite(attack) or attack <= 0:
+            raise ValueError("face attack must be positive and finite")
         for f in range(n):
             t = f / fps
-            k_ = min(1.0, max(0.0, (t - t0) / 0.25)) * min(1.0, max(0.0, (t1 - t) / 0.25))
+            k_ = min(1.0, max(0.0, (t - t0) / attack)) * min(1.0, max(0.0, (t1 - t) / 0.25))
             if k_ <= 0:
                 continue
             k_ = k_ * k_ * (3 - 2 * k_)

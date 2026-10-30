@@ -284,6 +284,12 @@ for name, a in D["actors"].items():
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
 
+# Реакция на хлопок сгибает ноги, не опускает стопы вместе с объектом героя.
+if D.get("contact_reactions"):
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from contact_reaction import apply_contact_reactions
+    apply_contact_reactions(D, ACTORS, sc, FPS)
+
 # ---------- свет героев «как в доте» — физический свет ламп
 # и неба давал то тёмную половину, то засвет — сколько ни крути. Игра освещает героев своим шейдером; здесь он повторён
 # в материале: цвет текстуры × мягкий свет с обтеканием формы (half-lambert от направления, привязанного к камере —
@@ -819,7 +825,9 @@ for t0_, kind_, who_, *_r in SHOTS:
         sc.frame_set(f)
         M = A["arm"].matrix_world @ pb.matrix; q = M.to_quaternion()
         if prev is not None:
-            rot.append(math.degrees(prev.rotation_difference(q).angle))
+            # q и -q задают одну ориентацию: измеряем кратчайшую дугу, без скачка у 360°.
+            angle = math.degrees(prev.rotation_difference(q).angle)
+            rot.append(abs((angle + 180.0) % 360.0 - 180.0))
         prev = q
         Hc = M.translation; z_ = -(cam.matrix_world.inverted() @ Hc).z   # глубина головы по оси взгляда
         wid.append(hw / (2 * z_ * math.tan(cam_d.angle_y / 2) * 9 / 16))

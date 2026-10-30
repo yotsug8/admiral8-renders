@@ -81,7 +81,8 @@ CONTACT = {"хлопнуть", "толкнуть", "толкнуть_корпу�
 PUSH_HIT, PUSH_BACK, PUSH_DIST = 0.4, 0.6, 60       # толчок: выпад и удар за 0,4 с, отшатывание 0,6 с на 60 — шагами назад
 step_t = lambda L: round(0.4 + L / 60, 2)            # подойти к собеседнику перед хлопком: ~1,4 м/с, спокойный шаг (быстрее — рывок)
 CONTACT_TAIL = 2.0                                 # касание и возврат руки после подхода
-CONTACT_PATS = (0.7, 1.05)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
+CONTACT_PAT_DUR = 0.6
+CONTACT_PATS = (0.15, 0.8)                          # хлопки по плечу — с начала жеста, с (skit_talk.py, «хлопнуть»)
 # «жест сам»: жест по словам реплики — на это слово (только где стоит метка)
 AUTO_GEST = [("отмахнуться", r"\b(ладно|забей|неважно|забудь|отстань|забирай)\b"), ("указать", r"\b(ты|тебя|тебе|твой|твоя|твоё|твои)\b"),
              ("себя", r"\b(я|мне|меня|мой|моя|моё|мои)\b"), ("плечи", r"\?")]
@@ -308,10 +309,16 @@ def shots(sc, lines, hooks):
         else:
             out.append(plan); last = plan
         if e.get("react"):                                # реакция: с середины реплики (не раньше 1,2 с от начала) — лицо слушателя
-            tr = round(max(e["t0"] + 1.2, e["t0"] + 0.5 * (e["t1"] - e["t0"])), 2)
-            if tr < e["t1"] - 0.5:
+            tr = reaction_cut(e)
+            if tr is not None:
                 last = (tr, "selfie", e["react"][0], None, dict(P_REACT)); out.append(last)
     return out
+
+
+def reaction_cut(e):
+    """Общая граница плана и мимики слушателя; короткие реплики без реакции."""
+    tr = round(max(e["t0"] + 1.2, e["t0"] + 0.5 * (e["t1"] - e["t0"])), 2)
+    return tr if tr < e["t1"] - 0.5 else None
 
 
 def faces(sc, dur, lines, hooks):
@@ -325,8 +332,10 @@ def faces(sc, dur, lines, hooks):
         elif e["emo"]:
             marks[e["who"]].append((max(0.0, e["t0"] - LEAD), e["t1"] + 0.3, X(EMO[e["emo"]])))
         if e.get("react"):                                 # реакция слушателя — к своей склейке, держится и после реплики
-            tr = max(e["t0"] + 1.2, e["t0"] + 0.5 * (e["t1"] - e["t0"])) - 0.25
-            marks[e["react"][0]].append((tr, e["t1"] + 0.8, EMO[e["react"][1]]))
+            tr = reaction_cut(e)
+            if tr is not None:
+                marks[e["react"][0]].append((round(tr * 30) / 30 + 0.25, e["t1"] + 0.8,
+                                            EMO[e["react"][1]], {"attack": 0.4}))
     for h in hooks:
         marks[h["who"]].append((h["t0"], h["t0"] + 1.5, EMO["усилие"]))
         marks[h["to"]].append((h["rel"], h["hit"] + 0.1, EMO["испуг"]))
@@ -334,9 +343,10 @@ def faces(sc, dur, lines, hooks):
     out = []
     for who, m in marks.items():
         m.sort(key=lambda x: x[0])
-        for i, (a, b, shp) in enumerate(m):
+        for i, mark in enumerate(m):
+            a, b, shp, *options = mark
             nxt = m[i + 1][0] if i + 1 < len(m) else dur
-            out.append((round(a, 2), round(min(b, nxt) + 0.25, 2), who, shp))          # +0,25 — перекрыть вход следующей
+            out.append((round(a, 4), round(min(b, nxt) + 0.25, 2), who, shp, *options))  # +0,25 — перекрыть вход следующей
             if nxt > b + 0.5:
                 out.append((round(b, 2), round(nxt + 0.25, 2), who, {k: round(v * 0.5, 2) for k, v in shp.items()}))
     return sorted(out, key=lambda x: x[0])
@@ -398,33 +408,59 @@ def build(sc, V, folder):
             L = min(120.0, max(0.0, gap - reach))
             c["steps"] = [(k, g, PUSH_HIT, (u[0] * L, u[1] * L), False), (o, g + PUSH_HIT, PUSH_BACK, (u[0] * PUSH_DIST, u[1] * PUSH_DIST), True)]
             cur[k] = (A[0] + u[0] * L, A[1] + u[1] * L); cur[o] = (B[0] + u[0] * PUSH_DIST, B[1] + u[1] * PUSH_DIST)
+            c["gap"] = min(math.dist(cur[k], B), math.dist(A, B)) - 10
             d = math.dist(cur[k], B) - 0.45 * ro; side = 0.0
             z = min(info[o].get("head_z", 130) * 0.62, info[k].get("head_z", 130) * 0.5)
         else:
             fo = math.radians(yaw_now[o]); f = (math.cos(fo), math.sin(fo))      # смотрят, куда смотрит он
-            left = (-f[1], f[0]); D = 0.55 * rk + 0.45 * ro                      # он слева от хлопающего, плечом к плечу
-            S = (B[0] - left[0] * D, B[1] - left[1] * D); L = math.dist(A, S)
-            y_go = math.degrees(math.atan2(S[1] - A[1], S[0] - A[0]))
-            a1 = (y_go - yaw_now[k] + 180) % 360 - 180; a2 = (yaw_now[o] - y_go + 180) % 360 - 180
-            T1 = turn_len(a1) if abs(a1) > 5 else 0.0; Tw = step_t(L); T2 = turn_len(a2) if abs(a2) > 5 else 0.0
-            if T1:
-                c["turns"].append((k, g, T1, a1))
-            c["steps"].append((k, g + T1, Tw, (S[0] - A[0], S[1] - A[1]), False))
-            if T2:
-                c["turns"].append((k, g + T1 + Tw, T2, a2))
-            c["delay"] = round(T1 + Tw + T2, 2); cur[k] = S; yaw_now[k] = yaw_now[o]
-            d = 0.0; side = D - 0.3 * ro                                         # его ближнее плечо — у моего левого бока
-            z = min(info[o].get("head_z", 130) * 0.82, info[k].get("head_z", 130))
-        if max(d, side) > arm_reach(k) / 0.9 + 0.3 * info[k].get("head_z", 130):
+            left = (-f[1], f[0]); D = rk + 0.65 * ro
+            safe = max(D + 70, rk + ro + 50)
+            S = (B[0] - left[0] * safe, B[1] - left[1] * safe)
+            along = (A[0] - B[0]) * f[0] + (A[1] - B[1]) * f[1]
+            Q = (S[0] + f[0] * along, S[1] + f[1] * along)
+            P, yaw, elapsed = A, yaw_now[k], 0.0
+            # Обход снаружи: доворот с оружием заканчивается до сближения.
+            for goal in (Q, S):
+                L = math.dist(P, goal)
+                if L < 1:
+                    continue
+                y_go = math.degrees(math.atan2(goal[1] - P[1], goal[0] - P[0]))
+                angle = (y_go - yaw + 180) % 360 - 180
+                T = turn_len(angle) if abs(angle) > 5 else 0.0
+                if T:
+                    c["turns"].append((k, g + elapsed, T, angle)); elapsed += T
+                Tw = step_t(L)
+                c["steps"].append((k, g + elapsed, Tw, (goal[0] - P[0], goal[1] - P[1]), False))
+                elapsed += Tw; P, yaw = goal, y_go
+            angle = (yaw_now[o] - yaw + 180) % 360 - 180
+            T = turn_len(angle) if abs(angle) > 5 else 0.0
+            if T:
+                c["turns"].append((k, g + elapsed, T, angle)); elapsed += T
+            closing, Ts = safe - D, 1.2
+            for part in range(2):
+                c["steps"].append((k, g + elapsed + 2.4 + part * Ts / 2, Ts / 2,
+                                   (left[0] * closing / 2, left[1] * closing / 2), False))
+            c["delay"] = round(elapsed + 2.4 + Ts, 2)
+            for part in range(2):
+                c["steps"].append((k, g + c["delay"] + 1.4 + part * Ts / 2, Ts / 2,
+                                   (-left[0] * closing / 2, -left[1] * closing / 2), False))
+            c["tail"] = 3.5
+            cur[k] = S; yaw_now[k] = yaw_now[o]
+            d = -0.13 * info[o].get("head_z", 130); side = D - 0.78 * ro
+            z = min(info[o].get("head_z", 130) * 0.87, info[k].get("head_z", 130))
+            c["gap"] = min(D, math.dist(A, B)) - 10
+        reach = arm_reach(k) / 0.9 + 0.3 * info[k].get("head_z", 130)
+        side_reach = 0.55 * rk + info[k].get("arm", 60) + 0.1 * info[k].get("head_z", 130)
+        if d > reach or side > side_reach:
             print(f"  ВНИМАНИЕ: {k} не дотянется до {o} ({max(d, side):.0f}) — поставь ближе")
         c["target"] = [round(side / 39.37, 3), round(-d / 39.37, 3), round(z / 39.37, 3)]   # оси скелета: +X влево, −Y вперёд
-        c["gap"] = min(math.dist(cur[k], cur[o]), math.dist(A, B)) - 10; e["_c"] = c   # запас — на обходе ближе
+        c.setdefault("gap", min(math.dist(cur[k], cur[o]), math.dist(A, B)) - 10); e["_c"] = c   # запас — на обходе ближе
         for who_, t0, T, ang in c["turns"]:
             turns[who_].append((round(t0, 2), round(T, 2), round(ang, 1)))
 
     # Подход рассчитывается после реплик. Длина сцены включает всё касание и возврат
     # руки: иначе NLA содержит жест, но ролик обрывается до его завершения.
-    contact_end = max((gest_t(e) + e["_c"]["delay"] + CONTACT_TAIL for e in lines if e.get("_c")), default=0.0)
+    contact_end = max((gest_t(e) + e["_c"]["delay"] + e["_c"].get("tail", CONTACT_TAIL) for e in lines if e.get("_c")), default=0.0)
     dur = round(max(dur, contact_end + TAIL), 2)
 
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
@@ -434,18 +470,14 @@ def build(sc, V, folder):
         # шаг — туда, куда смотрит на начале шага (после поворота «от» — прочь от собеседника)
         ws = [(a, e["t1"], e["walk"], math.cos(math.radians(face(a))), math.sin(math.radians(face(a))))
               for e in lines if e["who"] == who and e.get("walk") for a in [max(0.0, e["t0"] - LEAD)]]
-        # касания: свои шаги к нему и отшатывания (e["_c"]), хлопки по нему — чуть приседает
+        # касания: свои шаги к нему и отшатывания (e["_c"]); реакция ног — в скелете, не сдвигом корня
         cs = [st for e in lines if e.get("_c") for st in e["_c"]["steps"] if st[0] == who]
-        pats = [gest_t(e) + e["_c"]["delay"] for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть" and listener(sc, e["who"]) == who]
 
         def at(t, p):
             x, y = pos[who]; z = 0.0
             yaw = face(t)
             for _, t0, T, (dx, dy), _r in cs:
                 k = smooth((t - t0) / T); x += dx * k; y += dy * k
-            for g in pats:
-                for tp in CONTACT_PATS:
-                    z -= 1.5 * math.sin(math.pi * (t - g - tp) / 0.3) ** 2 if 0 < t - g - tp < 0.3 else 0.0   # чуть приседает
             for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
@@ -470,7 +502,7 @@ def build(sc, V, folder):
         d = round((nxt if nxt else dur) - a0, 2)        # до своей следующей реплики (последняя — до конца сцены): стойка между ними
                                                           # шла бы с начала — поза скакала на стыке; здесь она продолжается (phase)
         if e.get("_c"):                                   # касание доигрывается в своей анимации: подход, хлопок (~1,9 с), отшатывание
-            d = round(max(d, gest_t(e) + e["_c"]["delay"] + CONTACT_TAIL - a0), 2)
+            d = round(max(d, gest_t(e) + e["_c"]["delay"] + e["_c"].get("tail", CONTACT_TAIL) - a0), 2)
         if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
             d = round(max(d, sum(e["_turn"][:2]) + 0.2 - a0), 2)
         base = info[k]["idle"]
@@ -485,7 +517,8 @@ def build(sc, V, folder):
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": armed_kind(k, e["gesture"][0]), "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра
                                       "len": e["gesture"][1] + (2 if e.get("glide") else 0),
-                                      **({"target": e["_c"]["target"], "delay": e["_c"]["delay"]} if e.get("_c") else {})}]}
+                                      **({"target": e["_c"]["target"], "delay": e["_c"]["delay"],
+                                          "pats": list(CONTACT_PATS), "pat_dur": CONTACT_PAT_DUR} if e.get("_c") else {})}]}
                            if e["gesture"] and e["gesture"][0] in OWN_GESTURES else {})})
         anims[k] += [(a0, "a8_" + e["name"]), (round(a0 + d, 2), sc["cast"][k]["stance"] or base)]
         if e["gesture"] and e["gesture"][0] not in OWN_GESTURES:   # анимация игры — если к месту (рот — морфами), потом стойка
@@ -518,7 +551,10 @@ def build(sc, V, folder):
                 continue
             fy = math.radians(yaw_to(k, listener(sc, k)) + sum(a[2] * smooth((t0 + 0.01 - a[0]) / a[1]) for a in turns[k]))
             fwd = dx * math.cos(fy) + dy * math.sin(fy)  # вперёд по взгляду (+), назад (−)
-            tk.setdefault("steps", []).append({"at": round(t0 - a0_, 2), "len": round(T + 0.1, 2), "v": round(fwd / 39.37 / T, 3),
+            lateral = -dx * math.sin(fy) + dy * math.cos(fy)
+            side_step = abs(lateral) > abs(fwd) + 1
+            tk.setdefault("steps", []).append({"at": round(t0 - a0_, 2), "len": round(T if side_step else T + 0.1, 2),
+                                               **({"side": round(lateral / 39.37, 3)} if side_step else {}), "v": round(fwd / 39.37 / T, 3),
                                                "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0), **({"recoil": True} if rec else {})})
         for k, t0, T, ang in (e.get("_c") or {}).get("turns", []):
             tk, a0_ = talk_at(k, t0)
@@ -561,7 +597,10 @@ def build(sc, V, folder):
                  **({"map": f"maps/{sc['map']}.glb"} if sc["map"] else {}),
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
-                 talk={k: v for k, v in talk.items() if v})
+                 talk={k: v for k, v in talk.items() if v},
+                 contact_reactions=[{"who": listener(sc, e["who"]), "at": round(gest_t(e) + e["_c"]["delay"], 2),
+                                     "pats": list(CONTACT_PATS), "pat_dur": CONTACT_PAT_DUR, "depth": 1.5 / 39.37}
+                                    for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть"])
     print(f"  длина {dur:.1f} с; реплики:", "; ".join(f"{e['t0']:.1f}–{e['t1']:.1f} {e['who']}" for e in lines))
     print("  планы:", "; ".join(f"{s[0]:.2f} {s[1]} {s[2]}" + (f"→{s[3]}" if s[3] else "") for s in SH))
     return st, talk, info, SH, dur

@@ -315,12 +315,31 @@ def speaker(s):
         fat = [(B[n], a, lag) for n, a, lag in (("stomach1_0", 7, 0.9), ("booby_lf", 9, 1.3), ("booby_rt", 9, 1.3),
                                                 ("backfat5_0", 5, 1.1), ("backfat7_0", 5, 1.1)) if n in B]
         pelvis = B.get("spine1")
+        side_rest = {sd: (world(an).copy(), bend_axis(th, kn, an)) for sd, (th, kn, an) in leg.items() if th and kn and an}
 
         def stride_walk(t):
             w_ = next((x for x in walks if x["at"] <= t <= x["at"] + x["len"]), None)   # какой шаг сейчас
             if not w_:
                 return
             wa, wl = w_["at"], w_["len"]; ramp = min(0.3, wl / 3)
+            if w_.get("side"):
+                u = max(0.0, min(1.0, (t - wa) / wl)); distance = w_["side"]
+                if not side_rest:
+                    return
+                rb = arm.pose.bones[0]; root_pose = world(rb.name)
+                crouch = 0.08 * sm(wa, wa + 0.1, t) * (1 - sm(wa + wl - 0.1, wa + wl, t))
+                rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, -crouch))) @ root_pose)
+                bpy.context.view_layer.update()
+                leading = max(side_rest, key=lambda sd: side_rest[sd][0].translation.x * distance)
+                for sd, (Ma, ref) in side_rest.items():
+                    a, b = (0.0, 0.48) if sd == leading else (0.52, 1.0)
+                    q = sm(a, b, u); lift = math.sin(math.pi * max(0.0, min(1.0, (u - a) / (b - a))))
+                    target = Ma.translation + Vector((distance * (q - sm(0, 1, u)), 0, 0.12 * lift))
+                    th, kn, an = leg[sd]; leg_ik(th, kn, an, target, ref)
+                    foot = Ma.copy(); foot.translation = world(an).translation
+                    arm.pose.bones[an].matrix = MW.inverted() @ foot
+                    bpy.context.view_layer.update()
+                return
             e_ = sm(wa, wa + ramp, t) * (1 - sm(wa + wl - ramp, wa + wl, t))
             if e_ <= 0:
                 return
@@ -405,6 +424,24 @@ def speaker(s):
     arm_l = tuple(bone(f"{p}_L") for p in ("bicep", "elbow", "wrist"))
     arm_r = tuple(bone(f"{p}_R") for p in ("bicep", "elbow", "wrist"))
 
+    base_pose(s["base"], 0.0)
+    contact_rest = {bn: arm.pose.bones[bn].rotation_quaternion.copy() for bn in arm_l if bn}
+
+    contact_bend = bend_axis(*arm_l) if all(arm_l) else None
+    contact_rotation = {}
+    if all(arm_l):
+        saved = {bn: arm.pose.bones[bn].matrix_basis.copy() for bn in arm_l}
+        for gesture in s.get("gest") or []:
+            if gesture["kind"] != "хлопнуть" or not gesture.get("target"):
+                continue
+            P = Vector(gesture["target"])
+            leg_ik(*arm_l, P, contact_bend)
+            turn(arm_l[2], Y, R(30))
+            contact_rotation[tuple(P)] = world(arm_l[2]).to_quaternion()
+            for bn in arm_l:
+                arm.pose.bones[bn].matrix_basis = saved[bn]
+            bpy.context.view_layer.update()
+
     WRIST_OUT = float(os.environ.get("A8_WRIST_OUT", 80))   # подобрано по проверке пересечений (A8_CLIP): 80° — тесак Пуджа мимо головы
 
     def contact(g, t):
@@ -414,8 +451,10 @@ def speaker(s):
         «толкнуть»: обе руки к нему за 0,4 с, корпус вперёд, держит 0,25 с, назад за 0,5 с (резче — появлялись рывки)."""
         a = g["at"] + g.get("delay", 0.0); T = Vector(g["target"])   # delay — сначала шаг к нему
         if g["kind"] == "хлопнуть":
-            e_ = sm(a, a + 0.6, t) * (1 - sm(a + 1.4, a + 1.9, t))
-            pat = sum(math.sin(math.pi * (t - a - tp) / 0.3) ** 2 for tp in (0.7, 1.05) if 0 < t - a - tp < 0.3)
+            e_ = sm(a - 2.4, a - 1.8, t) * (1 - sm(a + 2.7, a + 3.3, t))
+            pulse_len = g.get("pat_dur", 0.6)
+            pat = sum(math.sin(math.pi * (t - a - tp) / pulse_len) ** 2 for tp in g.get("pats", (0.15, 0.8))
+                      if 0 < t - a - tp < pulse_len)
             hands = [(arm_l, T)]
         else:                                            # толкнуть
             e_ = sm(a, a + 0.4, t) * (1 - sm(a + 0.65, a + 1.15, t)); pat = 0.0
@@ -431,7 +470,7 @@ def speaker(s):
             turn(s["head"], X, R(-e_ * 10))
             return
         bi, el, wr = hands[0][0]
-        if spine and bi and el and wr:                   # не достаёт — наклон корпуса к собеседнику
+        if g["kind"] != "хлопнуть" and spine and bi and el and wr:   # не достаёт — наклон корпуса к собеседнику
             L = (world(el).translation - world(bi).translation).length + (world(wr).translation - world(el).translation).length
             S = world(bi).translation; dz = max(0.3, S.z - world(spine).translation.z + 0.5)
             lack = (hands[0][1] - S).length - 0.95 * L
@@ -441,10 +480,26 @@ def speaker(s):
         for (bi, el, wr), P in hands:
             if bi and el and wr:
                 d = P - world(bi).translation
-                aim(bi, wr, d, e_); aim(el, wr, d, 0.8 * e_)   # рука почти прямая к цели
-                turn(wr, Y, R(WRIST_OUT * e_ * (1 if wr == arm_l[2] else -1)))   # оружие в кисти — наружу, не в свою голову
-                if pat:                                         # хлопок — всей рукой вверх-вниз (кистью тесак бил в свою спину)
-                    turn(bi, X, R(-8 * pat))
+                if g["kind"] == "хлопнуть":
+                    for bn in (bi, el, wr):
+                        pb = arm.pose.bones[bn]
+                        pb.rotation_quaternion = pb.rotation_quaternion.slerp(contact_rest[bn], e_)
+                    bpy.context.view_layer.update()
+                    S = world(bi).translation
+                    L = (world(el).translation - S).length + (world(wr).translation - world(el).translation).length
+                    raised = Vector((S.x + 0.5 * L, S.y - 0.35, S.z - 0.05 * L))
+                    touch = sm(a - 1.8, a - 0.4, t) * (1 - sm(a + 1.5, a + 2.9, t))
+                    tap = P + Vector((-0.11 - 0.22 * (1 - pat), 0, 0.07 * (1 - pat) - 0.038 * pat))
+                    goal = world(wr).translation.lerp(raised, e_).lerp(tap, touch)
+                    leg_ik(bi, el, wr, goal, contact_bend)
+                    turn(wr, Y, R(30 * e_))
+                    M = world(wr)
+                    rotation = M.to_quaternion().slerp(contact_rotation[tuple(P)], touch)
+                    arm.pose.bones[wr].matrix = MW.inverted() @ Matrix.LocRotScale(M.translation, rotation, M.to_scale())
+                    bpy.context.view_layer.update()
+                else:
+                    aim(bi, wr, d, e_); aim(el, wr, d, 0.8 * e_)
+                    turn(wr, Y, R(WRIST_OUT * e_ * (1 if wr == arm_l[2] else -1)))
 
     def full(t, k):
         pose(t, k)
@@ -465,7 +520,9 @@ def speaker(s):
             turn(s["head"], X, R(e * live * (w(t, (0.5, 1.8)) - 6 * push[k])))
         for g in s.get("gest") or []:                   # свои жесты поверх разговора
             if g.get("target"):
-                contact(g, t); continue
+                if g["kind"] != "хлопнуть":
+                    contact(g, t)
+                continue
             if g["kind"] in SEQ:
                 ph = SEQ[g["kind"]]
                 poses = [(seq_env(t, g["at"], g["at"] + g["len"], ph, i), ph[i][2]) for i in range(len(ph))]
@@ -495,6 +552,10 @@ def speaker(s):
                     turn(spine, X, R(-14 * r_)); turn(s["head"], X, R(-8 * r_))
         if tn:
             turn_body(t)
+        # Кисть удерживает точку и при приседании на боковом шаге.
+        for g in s.get("gest") or []:
+            if g.get("target") and g["kind"] == "хлопнуть":
+                contact(g, t)
         if feet_ground is not None:                     # стопы на земле: Т-поза выпрямляет полусогнутые ноги стойки
             plant()
     return full

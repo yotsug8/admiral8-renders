@@ -1,6 +1,7 @@
 @echo off
 rem Мир карты доты → _game/world/world.gltf (для tools/map_crop.mjs). Пути — как в tools/paths.py: DOTA_ROOT, S2V.
 if not defined DOTA_ROOT set DOTA_ROOT=D:\SteamLibrary\steamapps\common\dota 2 beta
+if not defined S2V if defined S2V_CLI set "S2V=%S2V_CLI%"
 if not defined S2V set "S2V=%~dp0..\..\..\s2v\Source2Viewer-CLI.exe"
 set DOTA=%DOTA_ROOT%\game\dota
 set OUT=%~dp0..\..\_game

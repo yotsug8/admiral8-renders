@@ -38,14 +38,14 @@
 | `model` | `hero` (ключ, напр. `juggernaut`), `anim` (имя анимации), `parts` (`all` или список), `yaw` (°), `zoom`, `tilt`, `fov`, `rim` (цвет контрового света), `key`/`ambient` (яркость), `speed`, `start`, `in_place` | 3D-герой из файлов игры с одеждой и оружием, анимация по времени сцены |
 | `lottie` | `src` (`file:assets/lottie/….json`), `start`, `speed`, `loop`, `fit` (`cover`) | готовая анимация Lottie (например, с lottiefiles.com, бесплатные — формат Lottie JSON) |
 
-**Мем** — `{"type": "meme", "name": "хэнк_понял", "x": 90, "y": 560, "w": 840, "h": 620, "in": {"fx": "pop", "at": "понял"}}`: кусок клипа вокруг лучшего момента (пик движения и громкости) со звуком, 1,6 с, виден только пока идёт (`dur`, `lead` — сколько до пика, `from` — свой старт, `hold: true` — оставить последний кадр). Каталог — `python tools/memes.py` (`_game/memes/catalog.json` и лист `memes.jpg`); если автоматический момент мимо сути, точное время — в `_game/memes/peaks.json` (`{"хэнк_понял": 6.2}`), пересборку каталога оно переживает. Любой клип — тем же `video` с `src`. Чёрные поля клипа срезаются сами. Файлы мемов лежат локально в `_game/memes/` (не коммитятся), поэтому такой ролик рендерится локально.
+**Мем** — `{"type": "meme", "name": "хэнк_понял", "x": 90, "y": 560, "w": 840, "h": 620, "in": {"fx": "pop", "at": "понял"}}`: кусок клипа вокруг лучшего момента (пик движения и громкости) со звуком, 1,6 с, виден только пока идёт (`dur`, `lead` — сколько до пика, `from` — свой старт, `hold: true` — оставить последний кадр). Каталог — `py -3.11 tools/memes.py` (`_game/memes/catalog.json` и лист `memes.jpg`); если автоматический момент мимо сути, точное время — в `_game/memes/peaks.json` (`{"хэнк_понял": 6.2}`), пересборку каталога оно переживает. Любой клип — тем же `video` с `src`. Чёрные поля клипа срезаются сами. Файлы мемов лежат локально в `_game/memes/` (не коммитятся), поэтому такой ролик рендерится локально.
 
 `src`: `hero:juggernaut`, `item:blink`, `ability:kunkka_torrent`, `file:assets/…`, `game:panorama/images/minimap/dotamap.png` (картинки из файлов игры).
 
 ## Ресурсы из файлов игры (3D, миникарта, иконки)
 Файлы игры не кладутся в публичный репозиторий: они лежат в `_game/` (в .gitignore), и ролики с ними рендерятся локально, а голос берётся готовым дублем из CI.
-1. На компьютере с дотой: `python tools/vpk_tool.py list <regex>` / `get <regex> <папка>` — достаёт сырые файлы из pak01_dir.vpk (без сторонних программ).
-2. Здесь: `python3 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `python3 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (путь — `tools/paths.py`, переменная `S2V`).
+1. На компьютере с дотой: `py -3.11 tools/vpk_tool.py list <regex>` / `get <regex> <папка>` — достаёт сырые файлы из pak01_dir.vpk (без сторонних программ).
+2. Здесь: `py -3.11 tools/dota_export.py images <сырые>` → PNG в `_game/img/`, `py -3.11 tools/dota_export.py model <сырые> <герой> "idle,run_run,…"` → GLB с текстурами внутри в `_game/models/<герой>/`. Нужен Source 2 Viewer CLI (путь — `tools/paths.py`, переменная `S2V`).
 3. Имена анимаций героя — список печатает экспорт без фильтра (у Джаггернаута их 148).
 4. Кусок карты: файл карты `game/dota/maps/dota.vpk` + зависимости (`vpk_tool.py deps <список> <папка>` — список печатает экспорт как «Failed to load …»). Экспорт мира: `Source2Viewer-CLI -i dota.vpk --vpk_filepath maps/dota/world.vwrld_c -o world.glb -d --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt --game <сырые>/gameinfo.gi`, вырезка: `node tools/map_crop.mjs world.glb _game/maps/<имя>.glb <x> <z> <радиус>` (нужны `@gltf-transform/core` и `functions`), слои террейна — PNG в `_game/maps/<имя>_tex/`.
 
@@ -98,4 +98,4 @@
 - Безопасная зона: x 60–940, y 150–1560; субтитры около y 1468.
 - Лесенка не дольше 0,5 с; перед кульминацией пауза 0,3–0,75 с.
 - Эффект — только под смысловое событие.
-- Проверка: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python3 video.py episodes/NNN.json qa/t.mp4`.
+- Проверка: `$env:FV_SILENT='1'; $env:FV_QA_ONLY='1'; $env:FV_QA_DIR='qa'; py -3.11 video.py episodes/NNN.json qa/t.mp4; Remove-Item Env:FV_SILENT,Env:FV_QA_ONLY,Env:FV_QA_DIR`.

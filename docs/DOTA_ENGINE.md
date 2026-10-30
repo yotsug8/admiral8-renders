@@ -10,7 +10,7 @@
 ## Запуск и консоль
 - `dota2.exe -tools -novid -condebug -console -netconport 29001 -windowed -noborder -w 1080 -h 1920 -nojoy +engine_no_focus_sleep 0 +sv_cheats 1 +dota_launch_custom_game admiral8 dota`.
 - Команды: `py -3.11 tools/dota_engine/dota_console.py "команда"` (сетевая консоль есть только с `-tools`). Лог — `game/dota/console.log`.
-- Окно рисует кадры только на переднем плане: `focus.ps1` выводит его вперёд и печатает `fg=True`. Запускать из Bash-инструмента (bash, запущенный из PowerShell, уводит фокус). Без переднего плана снимки чёрные, запись — «0 frames».
+- Перед съёмкой проверить `fg=True` в выводе `focus.ps1`; при проблемах с фокусом вернуть окно игры на передний план. Скрипты снимков и записи запускать через явно выбранный Git Bash — [пример проверки пути в SETUP.md](SETUP.md#git-bash-для-скриптов-движка).
 - Команды мода: `a8_t <сек>` — кадр сцены, `a8_play` — проиграть, `a8_reload` — перечитать сцену, `a8_cam x y z дальность наклон поворот`, `a8_time 0..1`, `a8_where` (руны, фонтаны, здания), `a8_pos` — где актёры, `a8_anims <модель> <имена>` — длительности, `a8_fx <частица> [x y z]`, `a8_map` — высоты и проходимость. `screenshot`/`startmovie` — только из консоли.
 - **После работы вернуть настройки доты владельца** (`userdata/<id>/570/local/cfg`): перед сессией скопировать файлы, после выхода сравнить. Запуск с `-w 1080 -h 1920` портит video.txt (разрешение, полный экран), `engine_no_focus_sleep`, `fps_max`, `dota_camera_edgemove`, `dota_camera_disable_zoom`.
 
@@ -28,12 +28,12 @@
 ## Свои анимации героя
 1. `py -3.11 tools/dota_engine/troupe.py <герои>` — разбор модели в `content/…/models/a8/<герой>/`, рост, высота головы, ширина, челюсть, стойка-образец → `_game/data/troupe.json`.
 2. Анимации пишет скрипт Blender (задаёт `CUSTOM {имя: действие}` и `LOOPING`; пример — `tools/blender/skit_talk.py`): поза от игровой стойки, повороты суставов в мире, запекание.
-3. DMX: `blender -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка модели в content> <glb героя> <префикс> <скрипт> [стойка]`, затем `troupe.add_anims(герой, {имя: зацикленность})` — AnimFile в vmdl и сборка `resourcecompiler`.
+3. DMX: получить `$blenderExe` из `tools/paths.py` — [пример в SETUP.md](SETUP.md#ручной-запуск-blender-из-powershell), затем `& $blenderExe -b --factory-startup -P tools/dota_engine/anim_to_dmx.py -- <папка модели в content> <glb героя> <префикс> <скрипт> [стойка]`. После экспорта `troupe.add_anims(герой, {имя: зацикленность})` — AnimFile в vmdl и сборка `resourcecompiler`.
 - Длительность клипа в DMX — только типом `datamodel.Time`. Разовая анимация, кончившись, возвращает модель в стойку — делать её длиннее нужного. Наклон к камере не читается — ставить героя боком. Скорость анимации — третьим числом `(t, анимация, скорость)`.
 
 ## Кадры и запись
-- Кадры до записи: `tools/dota_engine/shots.sh <имя> <сек…>`; глазами — `a8_t <сек>` + `screenshot`.
-- Запись: `bash tools/dota_engine/record.sh <имя>` (~20 с окно впереди, мышь не трогать). startmovie и a8_play — одной строкой, `host_framerate 30` + `fps_max 20` привязывают кадры к тикам; кадров ровно длина × 30. Небо в чёрную пустоту подставляет `sky_comp.py`.
+- Кадры до записи: `& $gitBash tools/dota_engine/shots.sh <имя> <сек…>` после выбора `$gitBash` по SETUP.md; глазами — `a8_t <сек>` + `screenshot`.
+- Запись: `& $gitBash tools/dota_engine/record.sh <имя>` (~20 с окно впереди, мышь не трогать). startmovie и a8_play — одной строкой, `host_framerate 30` + `fps_max 20` привязывают кадры к тикам; кадров ровно длина × 30. Небо в чёрную пустоту подставляет `sky_comp.py`.
 
 ## Карта
 - Оси: игра x = −Blender_y·39.37, y = Blender_x·39.37. Камера: поворот 0 — смотрим на север; модель с yaw 270 смотрит в камеру.

@@ -5,4 +5,4 @@ wood=dark_wooden_planks, oldwood=old_planks_02, doors=medieval_wood, planks=brow
 rust=rusty_metal_02, stone=castle_wall_slates, blocks=medieval_blocks_02, rock=dark_rock, cliff=cliff_side, cobble=cobblestone_floor_01,
 leather=brown_leather, burlap=hessian_230, concrete=rough_concrete, plaster=worn_plaster_wall, forest=forest_floor.
 
-paper, parchment — собственная генерация: `python3 tools/make_textures.py`.
+paper, parchment — собственная генерация: `py -3.11 tools/make_textures.py`.

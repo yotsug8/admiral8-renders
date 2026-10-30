@@ -28,7 +28,7 @@
 - Экран заполнен: пустая колонка или пустая панель — брак.
 
 ## Проверка перед сдачей
-- Локально: `FV_SILENT=1 FV_QA_ONLY=1 FV_QA_DIR=qa python3 video.py episodes/NNN.json qa/t.mp4`, чтобы аудит раскладки был чистым.
+- Локально: `$env:FV_SILENT='1'; $env:FV_QA_ONLY='1'; $env:FV_QA_DIR='qa'; py -3.11 video.py episodes/NNN.json qa/t.mp4; Remove-Item Env:FV_SILENT,Env:FV_QA_ONLY,Env:FV_QA_DIR`, чтобы аудит раскладки был чистым.
 - После рендера смотрю кадр каждую секунду: пустоты, наложения, нечитаемые места, совпадение картинки со словами.
 - Факты — по последним патчноутам (официальный datafeed Valve + второй источник).
 

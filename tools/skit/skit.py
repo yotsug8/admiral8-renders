@@ -139,6 +139,12 @@ def parse(path):
                 tg = tg.lower()
                 if gs := re.match(r"скользит\s+(\d+)$", tg):      # мем: тело замерло, едет по земле без шагов, живо только лицо
                     ev["walk"] = float(gs[1]); ev["glide"] = True
+                elif gc := re.fullmatch(r"присесть\s+([\d.]+)(?:\s+([\d.]+)\s+([\d.]+)\s+([\d.]+))?", tg):
+                    depth = float(gc[1]) / 100
+                    down, hold, up = (map(float, gc.groups()[1:]) if gc[2] is not None else (0.8, 0.4, 0.9))
+                    if not all(math.isfinite(v) for v in (depth, down, hold, up)) or not (depth > 0 and down > 0 and hold >= 0 and up > 0):
+                        raise err("присесть: глубина в см > 0, опускание/подъём > 0, удержание >= 0")
+                    ev["crouch"] = dict(depth=depth, down=down, hold=hold, up=up)
                 elif gw := re.match(r"идёт\s+(\d+)$", tg):            # идёт к собеседнику N единиц, пока говорит (свой шаг)
                     ev["walk"] = float(gw[1])
                 elif gt := re.match(r"поворот\s+(-?\d+|к|от)(?:\s+([\d.]+))?$", tg):   # поворот на месте с начала реплики:
@@ -174,6 +180,8 @@ def parse(path):
         else:
             raise err("не понял строку")
     for ev in sc["events"]:
+        if ev.get("crouch") and any(ev.get(k) for k in ("walk", "turn", "gesture")):
+            raise SystemExit("присесть: ходьбу, поворот и жест проверять отдельной репликой")
         for k in ("who", "to"):
             if k in ev and ev[k] not in sc["cast"]:
                 raise SystemExit(f"в сценарии нет героя «{ev[k]}» (строка «герой {ev[k]} x y»)")
@@ -364,6 +372,11 @@ def pick(info, kind):
 def build(sc, V, folder):
     from stage import Stage
     dur, lines, hooks = timeline(sc, V)
+    for e in lines:
+        if e.get("crouch"):
+            end = e["t0"] + sum(e["crouch"][x] for x in ("down", "hold", "up")) + 0.3
+            if any(other["who"] == e["who"] and e["t0"] < other["t0"] < end for other in lines):
+                raise SystemExit("присесть: следующая реплика этого героя должна начаться после подъёма и хвоста 0,3 с")
     info = {k: troupe(c["hero"]) for k, c in sc["cast"].items()}
     try:
         from ground_map import Ground
@@ -461,7 +474,8 @@ def build(sc, V, folder):
     # Подход рассчитывается после реплик. Длина сцены включает всё касание и возврат
     # руки: иначе NLA содержит жест, но ролик обрывается до его завершения.
     contact_end = max((gest_t(e) + e["_c"]["delay"] + e["_c"].get("tail", CONTACT_TAIL) for e in lines if e.get("_c")), default=0.0)
-    dur = round(max(dur, contact_end + TAIL), 2)
+    crouch_end = max((e["t0"] + sum(e["crouch"][k] for k in ("down", "hold", "up")) for e in lines if e.get("crouch")), default=0.0)
+    dur = round(max(dur, contact_end + TAIL, crouch_end + TAIL), 2)
 
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
@@ -499,17 +513,21 @@ def build(sc, V, folder):
         k, a0 = e["who"], max(0.0, round(e["t0"] - LEAD, 2))
         if a0 < 1.0 and busy[k][0] >= a0 - 0.01:          # первая реплика в начале сцены — разговор с нулевого кадра (голова живая сразу)
             a0 = 0.0
+        if e.get("crouch") and busy[k][0] >= a0 - 0.01:
+            a0 = 0.0                                    # первая подготовленная поза: без скачка из подвижной стойки перед приседом
         nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
         limit = (nxt if nxt else dur) - a0
         protected = contact_scene or bool(hooks) or e.get("glide") or (e.get("gesture") and e["gesture"][0] not in OWN_GESTURES)
         d = round(limit if protected else min(limit, e["t1"] + 0.9 - a0), 2)
+        if e.get("crouch"):
+            d = round(min(limit, max(d, e["t0"] + sum(e["crouch"][x] for x in ("down", "hold", "up")) + 0.3 - a0)), 2)
         if e.get("gesture") and e["gesture"][0] in OWN_GESTURES:
             d = round(min(limit, max(d, gest_t(e) + e["gesture"][1] + 0.65 - a0)), 2)
         if e.get("_c"):                                   # касание доигрывается в своей анимации: подход, хлопок (~1,9 с), отшатывание
             d = round(max(d, gest_t(e) + e["_c"]["delay"] + e["_c"].get("tail", CONTACT_TAIL) - a0), 2)
         if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
             d = round(max(d, sum(e["_turn"][:2]) + 0.2 - a0), 2)
-        base = info[k]["idle"]
+        base = sc["cast"][k]["stance"] or info[k]["idle"]
         talk[k].append({"name": "a8_" + e["name"], "base": base, "line": e["name"], "off": round(e["t0"] - a0, 2), "dur": d,
                         "jaw": info[k].get("jaw"), "head": info[k].get("head_bone", "head"), "mood": e["mood"],
                         "grin": 7 if e["emo"] in ("улыбка", "ухмылка") and info[k].get("jaw") else 0,
@@ -517,6 +535,7 @@ def build(sc, V, folder):
                                      "v": round(e["walk"] / 39.37 / (e["t1"] - max(0.0, e["t0"] - LEAD)), 3),
                                      "waddle": WADDLE.get(sc["cast"][k]["hero"], 0.0)}} if e.get("walk") and not e.get("glide") else {}),
                         **({"freeze": True} if e.get("glide") else {}),
+                        **({"freeze": True, "live": 0.0, "nod": 0.0} if e.get("crouch") else {}),
                         **({"turn": {"at": round(e["_turn"][0] - a0, 2), "len": e["_turn"][1], "ang": e["_turn"][2]}} if e.get("_turn") else {}),
                         **({"jaw_max": 32, "lean": 1.0} if "крик" in (e["emo"], e["emo2"]) else {}),
                         **({"gest": [{"kind": armed_kind(k, e["gesture"][0]), "at": -1.0 if e.get("glide") else round(gest_t(e) - a0, 2),   # скользит — поза с 1-го кадра
@@ -612,6 +631,7 @@ def build(sc, V, folder):
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
                  talk={k: v for k, v in talk.items() if v}, idle_phases=idle_phases,
+                 crouches=[dict(who=e["who"], at=e["t0"], **e["crouch"]) for e in lines if e.get("crouch")],
                  contact_reactions=[{"who": listener(sc, e["who"]), "at": round(gest_t(e) + e["_c"]["delay"], 2),
                                      "pats": list(CONTACT_PATS), "pat_dur": CONTACT_PAT_DUR, "depth": 1.5 / 39.37}
                                     for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть"])

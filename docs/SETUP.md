@@ -15,7 +15,7 @@
    git clone "<repository-url>" admiral8-renders
    cd admiral8-renders
    ```
-3. Перенести `_game` со старого ПК: `models`, `maps`, `world`, `data`, `vo`, `sfx`, `sky`, `study`, `memes`, `water_dist.png`. Сохранить и уникальные видео/озвучку из `skits`, если они нужны; промежуточные кадры переносить необязательно. `_game` отсутствует в git.
+3. Перенести локальные ресурсы по [полному списку файлов и папок](LOCAL_FILES.md). Помимо `_game`, учитывать `assets/snd/`; для движка — обе папки аддона в установке игры. `_game` отсутствует в git.
 4. Установить зависимости:
    ```powershell
    py -3.11 -m pip install pillow numpy playwright imageio-ffmpeg faster-whisper ormsgpack edge-tts

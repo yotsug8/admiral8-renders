@@ -4,7 +4,8 @@ Call apply_contact_reactions(D, ACTORS, sc, FPS) after all actor animation and
 root-object keys have been built. Times are absolute seconds, frames start at
 zero, depth is in metres. No rendering, operators, saves or scene extension.
 
-Each pat is depth*sin(pi*u)**2, 0<u<1. Overlapping pats add. A two-bone
+Each pat is depth*sin(pi*u)**2, 0<u<1. Crouches use smoothstep down,
+constant hold and smoothstep up. All overlapping profiles add. A two-bone
 position solve preserves each original animated ankle's full world matrix;
 it does NOT plant a walking foot at one constant location for the whole clip.
 Only the shared hip ancestor and thigh/knee/ankle channels are baked. Other
@@ -95,7 +96,8 @@ def _rig(arm):
 
 def _windows(pulses, fps, last):
     windows = []
-    for start, duration, depth in sorted(pulses):
+    for pulse in sorted(pulses, key=lambda p: p[0]):
+        start, duration, depth = pulse[:3]
         left = max(0, math.floor(start * fps) - _PADDING)
         right = min(last, math.ceil((start + duration) * fps) + _PADDING)
         if windows and left <= windows[-1][1] + 1:
@@ -105,9 +107,43 @@ def _windows(pulses, fps, last):
     return windows
 
 
+def _smoothstep(value):
+    value = min(1.0, max(0.0, value))
+    return value * value * (3.0 - 2.0 * value)
+
+
 def _drop(pulses, time):
-    return sum(depth * math.sin(math.pi * (time - start) / duration) ** 2
-               for start, duration, depth in pulses if 0 < time - start < duration)
+    result = 0.0
+    for pulse in pulses:
+        start, duration, depth = pulse[:3]
+        elapsed = time - start
+        if not 0 < elapsed < duration:
+            continue
+        if len(pulse) == 3:
+            weight = math.sin(math.pi * elapsed / duration) ** 2
+        else:
+            _, _, _, down, hold, up = pulse
+            if elapsed < down:
+                weight = _smoothstep(elapsed / down)
+            elif elapsed <= down + hold:
+                weight = 1.0
+            else:
+                weight = _smoothstep((duration - elapsed) / up)
+        result += depth * weight
+    return _finite(result, 'summed depth', 0)
+
+
+def _add_pulse(grouped, who, pulse, fps, last):
+    """Validate shared scene bounds before either event kind reaches the baker."""
+    start, duration, depth = pulse[:3]
+    end = _finite(start + duration, 'reaction end')
+    first_frame = _finite(start * fps, 'reaction start frame')
+    last_frame = _finite(end * fps, 'reaction end frame')
+    if start < 0 or last_frame > last + 1e-6:
+        raise ValueError(f'{who}: reaction crosses scene bounds; duration is not extended')
+    if first_frame < _PADDING or last_frame > last - _PADDING:
+        raise ValueError(f'{who}: reaction needs 3 baseline padding frames within scene')
+    grouped.setdefault(who, []).append(pulse)
 
 
 def _uniform_world(matrix, label):
@@ -306,11 +342,14 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
     """Return per-actor diagnostics; on failure roll back only this call's data.
 
     D['contact_reactions']: [{who, at, pats, pat_dur, depth}], where pat offsets
-    are relative to at. D['frames'] bounds the bake, not scene.frame_end (which
-    may still be Blender's default when this helper is called).
+    are relative to at. D['crouches']: [{who, at, depth, down, hold, up}], with
+    positive depth/down/up and nonnegative hold. Both lists share one additive
+    bake per actor. D['frames'] bounds the bake, not scene.frame_end (which may
+    still be Blender's default when this helper is called).
     """
     events = D.get('contact_reactions') or []
-    if not events:
+    crouches = D.get('crouches') or []
+    if not events and not crouches:
         return []
     fps = _finite(FPS, 'FPS', 1e-9)
     last = int(D['frames']) - 1
@@ -326,15 +365,23 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
         duration = _finite(event.get('pat_dur', .6), 'pat_dur', 1e-9)
         depth = _finite(event['depth'], 'depth', 0)
         for pat in event.get('pats', (.15, .8)):
-            start = at + _finite(pat, 'pat offset')
+            start = _finite(at + _finite(pat, 'pat offset'), 'pat start')
             if depth == 0:
                 continue
-            if start < 0 or (start + duration) * fps > last + 1e-6:
-                raise ValueError(f'{who}: reaction crosses scene bounds; duration is not extended')
-            # Need baseline padding outside the pulses even at the scene edges.
-            if start * fps < _PADDING or (start + duration) * fps > last - _PADDING:
-                raise ValueError(f'{who}: reaction needs 3 baseline padding frames within scene')
-            grouped.setdefault(who, []).append((start, duration, depth))
+            _add_pulse(grouped, who, (start, duration, depth), fps, last)
+    for event in crouches:
+        who = event['who']
+        if who not in ACTORS:
+            raise ValueError(f'contact reaction: unknown actor {who!r}')
+        start = _finite(event['at'], 'crouch at')
+        depth = _finite(event['depth'], 'crouch depth', 0)
+        down = _finite(event['down'], 'crouch down', 0)
+        hold = _finite(event['hold'], 'crouch hold', 0)
+        up = _finite(event['up'], 'crouch up', 0)
+        if depth <= 0 or down <= 0 or up <= 0:
+            raise ValueError('crouch depth, down and up must be positive')
+        duration = _finite(down + hold + up, 'crouch duration')
+        _add_pulse(grouped, who, (start, duration, depth, down, hold, up), fps, last)
     original_frame, original_subframe = sc.frame_current, sc.frame_subframe
     created_tracks, created_actions = [], []
     results = []

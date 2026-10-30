@@ -308,7 +308,7 @@ for name, a in D["actors"].items():
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
 
 # Реакция на хлопок сгибает ноги, не опускает стопы вместе с объектом героя.
-if D.get("contact_reactions"):
+if D.get("contact_reactions") or D.get("crouches"):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from contact_reaction import apply_contact_reactions
     apply_contact_reactions(D, ACTORS, sc, FPS)

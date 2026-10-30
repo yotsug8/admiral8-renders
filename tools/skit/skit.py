@@ -492,6 +492,7 @@ def build(sc, V, folder):
     # анимации: стойка, разговор поверх стойки (a8_<реплика>), действия
     anims = {k: [(0, sc["cast"][k]["stance"] or info[k]["idle"])] for k in sc["cast"]}
     talk = {k: [] for k in sc["cast"]}
+    contact_scene = any(e.get("gesture") and e["gesture"][0] in CONTACT for e in lines)
     busy = {k: sorted([h["t0"] for h in hooks if h["who"] == k] + [h["hit"] for h in hooks if h["to"] == k] +
                       [e["t0"] - LEAD for e in lines if e["who"] == k]) for k in sc["cast"]}
     for e in lines:
@@ -499,8 +500,11 @@ def build(sc, V, folder):
         if a0 < 1.0 and busy[k][0] >= a0 - 0.01:          # первая реплика в начале сцены — разговор с нулевого кадра (голова живая сразу)
             a0 = 0.0
         nxt = next((b for b in busy[k] if b > e["t0"] - LEAD + 0.01), None)
-        d = round((nxt if nxt else dur) - a0, 2)        # до своей следующей реплики (последняя — до конца сцены): стойка между ними
-                                                          # шла бы с начала — поза скакала на стыке; здесь она продолжается (phase)
+        limit = (nxt if nxt else dur) - a0
+        protected = contact_scene or bool(hooks) or e.get("glide") or (e.get("gesture") and e["gesture"][0] not in OWN_GESTURES)
+        d = round(limit if protected else min(limit, e["t1"] + 0.9 - a0), 2)
+        if e.get("gesture") and e["gesture"][0] in OWN_GESTURES:
+            d = round(min(limit, max(d, gest_t(e) + e["gesture"][1] + 0.65 - a0)), 2)
         if e.get("_c"):                                   # касание доигрывается в своей анимации: подход, хлопок (~1,9 с), отшатывание
             d = round(max(d, gest_t(e) + e["_c"]["delay"] + e["_c"].get("tail", CONTACT_TAIL) - a0), 2)
         if e.get("_turn"):                                # поворот доигрывается в своей анимации (иначе ноги прыгают в стойку)
@@ -529,16 +533,26 @@ def build(sc, V, folder):
                             (round(h["t0"] + 1.5, 2), info[h["who"]]["idle"])]
         tgt = info[h["to"]]
         anims[h["to"]] = [x for x in anims[h["to"]] if x[0] < h["hit"]] + [(h["hit"], pick(tgt, "flail")), (h["back"], pick(tgt, "stun"))]
+    idle_phases = {}
     for k in anims:                                       # анимация, начатая позже следующей, — прочь; по порядку
         anims[k] = sorted(dict((round(t, 2), a) for t, a in anims[k]).items())
         # своя анимация продолжает стойку с того места, где та идёт в сцене (phase, skit_talk.py): иначе на стыке
         # (смешение 6 кадров) поза стойки с начала отличалась от идущей — винтовка Снайпера проезжала сантиметры
         by = {x["name"]: x for x in talk[k]}; cur = (0.0, 0.0)          # (начало дорожки, фаза стойки на её начале)
+        previous_custom = None
         for t, a in anims[k]:
             if a in by:
-                by[a]["phase"] = round(cur[1] + t - cur[0], 2); cur = (t, by[a]["phase"])
+                phase = previous_custom["phase"] if previous_custom and previous_custom.get("freeze") else cur[1] + t - cur[0]
+                by[a]["phase"] = round(phase, 2); cur = (t, by[a]["phase"])
+                previous_custom = by[a]
             else:
-                cur = (t, 0.0)
+                if previous_custom is not None and a == previous_custom["base"]:
+                    phase = round(previous_custom["phase"] if previous_custom.get("freeze") else cur[1] + t - cur[0], 2)
+                    idle_phases.setdefault(k, []).append([t, phase])
+                    cur = (t, phase)
+                else:
+                    cur = (t, 0.0)
+                previous_custom = None
     # касания — шагами, не скольжением (свой шаг skit_talk.py), и повороты к нему — в анимацию реплики, где они идут
     def talk_at(k, t0):
         starts = dict((nm, t) for t, nm in anims[k])
@@ -597,7 +611,7 @@ def build(sc, V, folder):
                  **({"map": f"maps/{sc['map']}.glb"} if sc["map"] else {}),
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
-                 talk={k: v for k, v in talk.items() if v},
+                 talk={k: v for k, v in talk.items() if v}, idle_phases=idle_phases,
                  contact_reactions=[{"who": listener(sc, e["who"]), "at": round(gest_t(e) + e["_c"]["delay"], 2),
                                      "pats": list(CONTACT_PATS), "pat_dur": CONTACT_PAT_DUR, "depth": 1.5 / 39.37}
                                     for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть"])

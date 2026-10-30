@@ -167,15 +167,16 @@ def talker(base, line, off, dur, jaw_max=22, nod=5, grin=0.0, head="head", jaw="
 
     def pose(t, k):
         base_pose(base, 0.0 if freeze else t)          # замер: стойка на одном кадре, тело не шевелится
+        finish = 1 - sm(max(0.0, dur - 0.6), dur, t)
         for nm, q in calm.items():
-            b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65)
+            b = arm.pose.bones[nm]; b.rotation_quaternion = b.rotation_quaternion.slerp(q, 0.65 * finish)
         bpy.context.view_layer.update()
         v = loud[k]
         if freeze:                                      # замер: ни кивков, ни челюсти костью — только лицо (морфы)
             return
-        turn(head, X, R(nods[k]))
+        turn(head, X, R(nods[k] * finish))
         if jaw:
-            turn(jaw, X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t))))
+            turn(jaw, X, R(JAW_K * (jaw_max * v + grin * sm(end, end + 0.4, t)) * finish))
     return pose
 
 
@@ -503,13 +504,14 @@ def speaker(s):
 
     def full(t, k):
         pose(t, k)
+        finish = 1 - sm(max(0.0, s["dur"] - 0.6), s["dur"], t)
         if mood:
-            d = sm(0.1, 1.1, t)                         # входит в настроение за секунду
+            d = sm(0.1, 1.1, t) * finish                # входит за секунду, к концу возвращается в стойку
             if neck:
                 turn(neck, X, R(mood[0] * d))
             turn(s["head"], X, R(mood[1] * d))
         if sway[k]:
-            turn(s["head"], X, R(sway[k])); turn(s["head"], Z, R(sway[k] * 0.8))
+            turn(s["head"], X, R(sway[k] * finish)); turn(s["head"], Z, R(sway[k] * 0.8 * finish))
         if live:
             e = sm(0.0, 0.4, t) * sm(s["dur"], s["dur"] - 0.4, t)   # к краям анимации — к стойке, стык без рывка
             if spine:

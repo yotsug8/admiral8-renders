@@ -272,13 +272,36 @@ for name, a in D["actors"].items():
         st.scale = 1.0 / rate
         length = (act.frame_range[1] - act.frame_range[0]) * st.scale
         seg = (t1 - t0) * FPS
+        continuous_return = False
         loop = any(k in nm for k in ("idle", "run", "flail", "portrait", "stun", "walk"))
         if loop and length > 0:
             st.repeat = max(1.0, seg / length)
+            phase = next((p for t, p in (D.get("idle_phases") or {}).get(name, [])
+                          if abs(float(t) - t0) < 0.001), None)
+            if phase is not None:
+                # Продолжить базовую стойку после своей анимации вместо сброса к первому кадру.
+                st.use_animated_time = True
+                st.use_animated_time_cyclic = True
+                start = act.frame_range[0] + float(phase) * FPS
+                for frame in (st.frame_start, st.frame_end):
+                    st.strip_time = start + (frame - st.frame_start) * rate
+                    st.keyframe_insert("strip_time", frame=frame)
+                for curve in st.fcurves:
+                    if curve.data_path == "strip_time":
+                        for key in curve.keyframe_points:
+                            key.interpolation = "LINEAR"
+                previous = next((s for s in (D.get("talk") or {}).get(name, [])
+                                 if i and s["name"] == str(an[i - 1][1]) and s["base"] == nm), None)
+                continuous_return = bool(previous and not any(previous.get(k) for k in
+                                         ("walk", "steps", "turn", "turns", "freeze"))
+                                         and not any(g.get("target") or g["kind"] in ("тпоза", "выгнуться")
+                                                     for g in previous.get("gest") or []))
         st.extrapolation = "HOLD_FORWARD"
         st.blend_type = "REPLACE"
         if i:                                         # стык анимаций — плавно за 6 кадров (иначе голова скачет на 7° за кадр)
-            st.use_auto_blend = False; st.blend_in = min(6.0, (st.frame_end - st.frame_start) / 2)
+            st.use_auto_blend = False
+            # Для совпадающей стойки повторное смешивание с застывшим последним кадром даёт торможение и разгон.
+            st.blend_in = 0.0 if continuous_return else min(6.0, (st.frame_end - st.frame_start) / 2)
     # положение и поворот покадрово (модель смотрит в −Y, поворот доты 0 — на восток)
     for f, (x, y, z, pi, ya, ro) in enumerate(a["keys"]):
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))

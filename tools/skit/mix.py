@@ -18,6 +18,8 @@ FF = imageio_ffmpeg.get_ffmpeg_exe()
 V = json.load(open(os.path.join(VO, "voices.json"), encoding="utf-8"))
 _D = json.load(open(SCENE, encoding="utf-8"))
 OFFS = {k: float(v[1]) for k, v in _D["voices"].items()}; DUR = float(_D["dur"])
+from footsteps import plan_footsteps
+FOOTSTEPS = plan_footsteps(_D, os.path.join(REPO, "_game", "sfx"))
 
 # ---- субтитры только по запросу; иначе не вычислять слова и не запускать Chromium
 chunks = []
@@ -115,6 +117,8 @@ for t0, fxname, at, _z, dur, *rest in _D.get("fx", []):
     sfx("hook_throw", t0, 0.5, hit / FPS_ - t0 + 0.05); sfx("hook_impact", hit / FPS_, 0.9)
     sfx("hook_throw", hit / FPS_ + 0.05, 0.35, (back - hit) / FPS_); sfx("hook_retract_stop", back / FPS_, 0.6)   # возврат — лязг, как в игре
     print(f"  звук крюка: бросок {t0:.2f} с, попадание {hit / FPS_:.2f} с, возврат {back / FPS_:.2f} с")
+for name, at, gain in FOOTSTEPS:
+    sfx(name, at, gain)
 mix = mix[:int(DUR * SR)]
 wav = os.path.join(VO, "mix.wav")
 raw_wav = os.path.join(VO, "mix_raw.wav")             # громкость к −14 LUFS в два прохода (video.loudnorm): без «качания»

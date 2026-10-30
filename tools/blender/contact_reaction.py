@@ -52,7 +52,7 @@ def _bone(arm, stems, side):
     return hits[0]
 
 
-def _rig(arm):
+def _rig(arm, arm_sides=()):
     legs = [tuple(_bone(arm, stems, side) for stems in
                   (('thigh', 'hip'), ('knee',), ('ankle',))) for side in ('l', 'r')]
     for thigh, knee, ankle in legs:
@@ -72,6 +72,11 @@ def _rig(arm):
     if pelvis is None:
         raise ValueError(f'{arm.name}: no common pelvis/root ancestor of the thighs')
     corrected = [pelvis] + [b for leg in legs for b in leg]
+    shoulders = {side: _bone(arm, ('bicep', 'upperarm'), side.lower()).name for side in arm_sides}
+    for name in shoulders.values():
+        if any(not b.bone.use_inherit_rotation for b in arm.pose.bones[name].children_recursive):
+            raise ValueError(f'{arm.name}/{name}: clearance needs inherited child rotations')
+    corrected += [arm.pose.bones[name] for name in shoulders.values()]
     # Correction is expressed through unconstrained local transform channels.
     for bone in corrected:
         if bone.rotation_mode == 'AXIS_ANGLE':
@@ -91,7 +96,7 @@ def _rig(arm):
             raise ValueError(f'{arm.name}: drivers on corrected bones unsupported')
         if any(t.name.startswith(_PREFIX) for t in ad.nla_tracks):
             raise ValueError(f'{arm.name}: contact reactions already applied')
-    return pelvis.name, [tuple(b.name for b in leg) for leg in legs], corrected
+    return pelvis.name, [tuple(b.name for b in leg) for leg in legs], corrected, shoulders
 
 
 def _windows(pulses, fps, last):
@@ -215,7 +220,8 @@ def _basis(bone, matrix, parent_matrix):
     return bone.bone.convert_local_to_pose(matrix, bone.bone.matrix_local, **kw)
 
 
-def _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, metres_per_unit):
+def _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, metres_per_unit,
+            clearances=(), shoulders=None, root=None):
     """Read evaluated source poses before attaching ANY correction action."""
     samples = []
     poles = [None, None]
@@ -239,6 +245,18 @@ def _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, metres_per_u
                 forward = mw.to_3x3() @ Vector((0, -1, 0))
                 for i, leg in enumerate(legs):
                     poles[i] = _solve_leg(base, desired, leg, delta, poles[i], forward)
+            for side, shoulder in (shoulders or {}).items():
+                angle = sum(math.radians(angles.get(side, 0)) * _drop([pulse], frame / fps) / pulse[2]
+                            for pulse, angles in clearances)
+                if angle <= 1e-12:
+                    continue
+                axis = root.matrix_world.to_3x3() @ Vector((0, -1, 0))
+                pivot = desired[shoulder].translation
+                rotation = (Matrix.Translation(pivot) @ Matrix.Rotation(angle if side == 'L' else -angle, 4, axis)
+                            @ Matrix.Translation(-pivot))
+                descendants = [arm.pose.bones[shoulder], *arm.pose.bones[shoulder].children_recursive]
+                for bone in descendants:
+                    desired[bone.name] = rotation @ desired[bone.name]
             local = {}
             for bone in corrected:
                 parent = inverse @ desired[bone.parent.name] if bone.parent else None
@@ -357,6 +375,7 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
         raise ValueError('contact reaction: scene needs at least two frames')
     unit = _finite(sc.unit_settings.scale_length, 'metres per unit', 1e-12)
     grouped = {}
+    clearances = {}
     for event in events:
         who = event['who']
         if who not in ACTORS:
@@ -381,7 +400,19 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
         if depth <= 0 or down <= 0 or up <= 0:
             raise ValueError('crouch depth, down and up must be positive')
         duration = _finite(down + hold + up, 'crouch duration')
-        _add_pulse(grouped, who, (start, duration, depth, down, hold, up), fps, last)
+        pulse = (start, duration, depth, down, hold, up)
+        _add_pulse(grouped, who, pulse, fps, last)
+        angles = {}
+        for side, value in (event.get('arm_clearance') or {}).items():
+            if side not in ('L', 'R'):
+                raise ValueError('arm clearance side must be L or R')
+            angle = _finite(value, 'arm clearance angle', 0)
+            if angle > 60:
+                raise ValueError('arm clearance exceeds 60 degrees')
+            if angle:
+                angles[side] = angle
+        if angles:
+            clearances.setdefault(who, []).append((pulse, angles))
     original_frame, original_subframe = sc.frame_current, sc.frame_subframe
     created_tracks, created_actions = [], []
     results = []
@@ -394,9 +425,14 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
             if arm.type != 'ARMATURE' or arm in seen:
                 raise ValueError(f'{who}: expected a distinct armature per actor')
             seen.add(arm)
-            pelvis, legs, corrected = _rig(arm)
+            arm_clearances = clearances.get(who, [])
+            if arm_clearances and ACTORS[who].get('root') is None:
+                raise ValueError(f'{who}: arm clearance needs an actor root')
+            sides = sorted({side for _, angles in arm_clearances for side in angles})
+            pelvis, legs, corrected, shoulders = _rig(arm, sides)
             windows = _windows(pulses, fps, last)
-            samples = _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, unit)
+            samples = _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, unit,
+                              arm_clearances, shoulders, ACTORS[who].get('root'))
             staged.append((who, arm, pelvis, corrected, samples))
         for who, arm, pelvis, corrected, samples in staged:
             ad = arm.animation_data_create()

@@ -7,6 +7,7 @@
 #   жизнь  — моргание раз в 2–4,5 с и мелкие движения глаз.
 # Используется из render_scene.py: face.animate(head_obj, actor, D, voices_json, FPS, N)
 import math, random
+from gaze import EYE_CHANNELS, prepare_gazes, blend_gaze
 
 # формы рта для букв (вес морфа); прочие согласные — «полуоткрыт»
 VIS = {
@@ -137,11 +138,16 @@ def unfold(head, track, n, fps, actor, lim=100.0):
 
 
 def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1.0):
+    gazes = prepare_gazes(D.get("gazes"), actor, D.get("actors"))
     kb = head.data.shape_keys.key_blocks if head.data.shape_keys else None
     if kb is None:
+        if gazes:
+            raise ValueError(f'{actor}: controlled gaze needs eye FACS on the head mesh')
         return
     split_sides(head, {k for entry in D.get("faces") or [] if entry[2] == actor for k in entry[3]})
     keys = [k.name for k in kb[1:]]
+    if gazes and any(k not in keys for k in EYE_CHANNELS):
+        raise ValueError(f'{actor}: controlled gaze needs eyeRight/eyeLeft/eyeUp/eyeDown')
     track = {k: [0.0] * n for k in keys}
 
     # речь: формы рта — гауссовым слиянием соседних букв (σ 45 мс), раскрытие — на громкость
@@ -190,6 +196,7 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1
             if f0 + i < n and "eyeClosed" in track:
                 track["eyeClosed"][f0 + i] = max(track["eyeClosed"][f0 + i], v)
         t += rnd.uniform(2.2, 4.5)
+    random_eyes = {k: [0.0] * n for k in EYE_CHANNELS} if gazes else None
     t = 0.0; cur = (0.0, 0.0)
     while t < n / fps:
         nxt = (rnd.uniform(-0.25, 0.25), rnd.uniform(-0.1, 0.15))
@@ -198,11 +205,27 @@ def animate(head, actor, D, voices, fps, n, gain=1.0, jaw=1.0, seed=1, jaw_cap=1
             k_ = min(1.0, (f - f0) / 3.0)                 # взгляд перескакивает за 3 кадра
             x = cur[0] + (nxt[0] - cur[0]) * k_; y = cur[1] + (nxt[1] - cur[1]) * k_
             for kk, val in (("eyeRight", max(0, x)), ("eyeLeft", max(0, -x)), ("eyeUp", max(0, y)), ("eyeDown", max(0, -y))):
+                if random_eyes is not None:
+                    random_eyes[kk][f] += val
                 if kk in track:
                     track[kk][f] += val
         cur = nxt; t = f1 / fps
 
+    # Проверка изломов получает прежние данные: управляемый взгляд не должен
+    # менять ослабление моргания, рта или эмоций на других каналах.
+    eye_before = {k: track[k][:] for k in EYE_CHANNELS if k in track} if gazes else {}
     unfold(head, track, n, fps, actor)
+    if gazes:
+        for f in range(n):
+            old = {k: values[f] for k, values in random_eyes.items()}
+            new = blend_gaze(old, f / fps, gazes)
+            if new is old:
+                continue  # вне окон не меняется ни один бит старых значений
+            for k, before in eye_before.items():
+                # Сохраняем уже применённый safety-множитель и вклад эмоций:
+                # заменяется только случайная составляющая направления глаз.
+                scale = track[k][f] / before[f] if before[f] > 0 else 1.0
+                track[k][f] += (new[k] - old[k]) * scale
 
     # ключи (только морфы, которые двигаются)
     for k, vals in track.items():

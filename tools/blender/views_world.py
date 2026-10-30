@@ -46,38 +46,66 @@ def HERO_OBJS_OF(who):
 
 def clip_check(who, fr):
     """Оружие сквозь тело: на каждом кадре — пересечение сеток оружия (части с weapon/hook/… в имени) с телом героя,
-    кроме кистей (там оружие держится). Печатает кадры с пересечением и что во что."""
+    кроме треугольников, у каждой вершины которых ≥80 % веса приходится на кисть/пальцы.
+    Без весов исключений нет: близость к запястью не доказывает хват. Печатает кадры и пары сеток."""
     from mathutils.bvhtree import BVHTree
     objs = [o for o in HERO_OBJS_OF(who) if o.type == "MESH"]
     WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver|anchor|hammer|mace|spear|club|dagger|katana", re.I)
     weap = [o for o in objs if WPN.search(o.name)]
     body = [o for o in objs if not WPN.search(o.name) and ".vmdl_c" in o.name and "physics" not in o.name and o.visible_get()]
     arm = ACTORS[who]["arm"]
-    hands = [b for b in arm.pose.bones if re.search(r"wrist|hand|finger|thumb", b.name, re.I)]
     hit = {}
-    def tree(o, dg, skip=None):
-        e = o.evaluated_get(dg); m = e.to_mesh(); M = o.matrix_world
-        vs = [M @ v.co for v in m.vertices]
-        ps = [list(p.vertices) for p in m.polygons]
-        if skip:
-            ps = [p for p in ps if not skip(sum((vs[i] for i in p), Vector()) / len(p))]
-        e.to_mesh_clear()
-        return BVHTree.FromPolygons(vs, ps) if ps else None
+    face_maps = {}
+    missing_weights = set()
+    def tree(o, dg, skip_grip=False):
+        e = o.evaluated_get(dg)
+        m = e.to_mesh(preserve_all_data_layers=True, depsgraph=dg)
+        try:
+            m.calc_loop_triangles()
+            vs = [e.matrix_world @ v.co for v in m.vertices]
+            grip = set()
+            if skip_grip:
+                # Учитываем только группы настоящих костей модификатора скина.
+                bones = {b.name for mod in o.modifiers if mod.type == "ARMATURE" and mod.object
+                         for b in mod.object.data.bones}
+                groups = {g.index for g in o.vertex_groups if g.name in bones
+                          and re.search(r"wrist|hand|finger|thumb|"
+                                        r"(?:^|[_.:])(?:index|mid|middle|ring|pinky|little)_\d+_[lr]$",
+                                        g.name, re.I)}
+                if not o.vertex_groups or not any(v.groups for v in m.vertices):
+                    if o.name not in missing_weights:
+                        print(f"  хват {o.name}: нет skinweights — проверяются все треугольники")
+                        missing_weights.add(o.name)
+                for v in m.vertices:
+                    total = sum(g.weight for g in v.groups)
+                    hand = sum(g.weight for g in v.groups if g.group in groups)
+                    if total > 0 and hand / total >= 0.8:
+                        grip.add(v.index)
+            ps, mapping = [], []
+            for tri in m.loop_triangles:
+                # Граничная грань кисть/предплечье сохраняется, если хотя бы
+                # одна вершина не принадлежит преимущественно кисти.
+                if skip_grip and all(i in grip for i in tri.vertices):
+                    continue
+                ps.append(tuple(tri.vertices)); mapping.append(tri.polygon_index)
+            face_maps[o.name] = mapping
+            return BVHTree.FromPolygons(vs, ps, all_triangles=True) if ps else None
+        finally:
+            e.to_mesh_clear()
     for f in fr:
         sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get()
-        hp = [arm.matrix_world @ b.head for b in hands]
-        near = lambda c: any((c - h).length < 0.35 for h in hp)
-        bt = [(b, tree(b, dg, near)) for b in body]
+        bt = [(b, tree(b, dg, skip_grip=True)) for b in body]
         for w in weap:
             wt = tree(w, dg)
             for b, t in bt:
                 if t and wt:
                     pairs = wt.overlap(t); n = len(pairs)
                     if n and os.environ.get("A8_CLIP") == "2" and f == fr[0]:   # где: ближайшая кость к месту пересечения
-                        e = b.evaluated_get(dg); m = e.to_mesh(); M = b.matrix_world
+                        e = b.evaluated_get(dg); m = e.to_mesh(); M = e.matrix_world
                         near_b = {}
                         for _, pi in pairs[:400]:
-                            c = M @ m.polygons[pi].center if pi < len(m.polygons) else None
+                            source_pi = face_maps[b.name][pi]
+                            c = M @ m.polygons[source_pi].center
                             if c:
                                 bn = min(arm.pose.bones, key=lambda x: ((arm.matrix_world @ x.head) - c).length).name
                                 near_b[bn] = near_b.get(bn, 0) + 1
@@ -101,10 +129,8 @@ def clip_check(who, fr):
     if not hit:
         print(f"  ПЕРЕСЕЧЕНИЙ НЕТ {who}: оружие не проходит сквозь тело ({len(fr)} кадров)")
     for (w, b), fs in hit.items():
-        base = min(n for _, n in fs) if len(fs) == len(fr) else 0   # на всех кадрах — касание у кисти, как в игровой стойке:
-        fs = [(f, n) for f, n in fs if n > base + max(8, base * 0.3)]   # считать только сверх него
-        if not fs:
-            print(f"  касание {who}: {w} — {b} на всех кадрах ({base} граней, у кисти — как в игре)"); continue
+        # Хват уже исключён по весам. Постоянное пересечение оставшихся
+        # поверхностей и даже одна пара треугольников не считаются нормой.
         rng = []
         for f, n in fs:
             if rng and f - rng[-1][1] <= 2:

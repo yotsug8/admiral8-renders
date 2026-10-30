@@ -631,7 +631,10 @@ def build(sc, V, folder):
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
                  talk={k: v for k, v in talk.items() if v}, idle_phases=idle_phases,
-                 crouches=[dict(who=e["who"], at=e["t0"], **e["crouch"]) for e in lines if e.get("crouch")],
+                 crouches=[dict(who=e["who"], at=e["t0"], **e["crouch"],
+                                arm_clearance={"L": 18} if any(re.search(r"left.*weapon|weapon.*left", p, re.I)
+                                                              for p in info[e["who"]].get("parts") or []) else {})
+                           for e in lines if e.get("crouch")],
                  contact_reactions=[{"who": listener(sc, e["who"]), "at": round(gest_t(e) + e["_c"]["delay"], 2),
                                      "pats": list(CONTACT_PATS), "pat_dur": CONTACT_PAT_DUR, "depth": 1.5 / 39.37}
                                     for e in lines if e.get("_c") and e["gesture"][0] == "хлопнуть"])

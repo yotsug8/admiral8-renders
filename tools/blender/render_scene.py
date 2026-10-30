@@ -16,6 +16,10 @@ RND = os.path.join(REPO, "_game", "models", "render")
 RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (tools/blender/hq_textures.py; исходные текстуры — по умолчанию)
 TROUPE = json.load(open(os.path.join(REPO, "_game", "data", "troupe.json"), encoding="utf-8"))
 D = json.load(open(SCENE, encoding="utf-8"))
+if D.get("jumps"):
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from jump_motion import plan_jumps
+    D = plan_jumps(D)
 FPS = D["fps"]; N = D["frames"]
 S = 1 / 39.37                                         # единица игры → метр (так выгружены модели)
 BASE = min(k[0][2] for k in (a["keys"] for a in D["actors"].values()))   # уровень земли под героями
@@ -307,9 +311,16 @@ for name, a in D["actors"].items():
         root.location = W(x, y, z); root.rotation_euler = (0, 0, math.radians(ya + YAW0))
         root.keyframe_insert("location", frame=f); root.keyframe_insert("rotation_euler", frame=f)
 
+if D.get("jumps"):
+    from jump_motion import refine_jump_roots
+    refine_jump_roots(D, ACTORS, sc, FPS)
+
 # Реакция на хлопок сгибает ноги, не опускает стопы вместе с объектом героя.
 if D.get("contact_reactions") or D.get("crouches"):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    if D.get("crouches"):
+        from joint_skin import stabilize_crouch_skins
+        stabilize_crouch_skins(D, ACTORS, sc, FPS)
     from contact_reaction import apply_contact_reactions
     apply_contact_reactions(D, ACTORS, sc, FPS)
 

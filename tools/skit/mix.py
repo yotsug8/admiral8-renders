@@ -19,56 +19,57 @@ V = json.load(open(os.path.join(VO, "voices.json"), encoding="utf-8"))
 _D = json.load(open(SCENE, encoding="utf-8"))
 OFFS = {k: float(v[1]) for k, v in _D["voices"].items()}; DUR = float(_D["dur"])
 
-# ---- слова и их время
-chunks = []                                     # (начало, конец, [слова], [время каждого слова])
-for name, off in OFFS.items():
-    env = np.array(V[name]["env"]); on = np.where(env > 0.08)[0]
-    a, b = off + on[0] / 30, off + (on[-1] + 1) / 30
-    words = V[name]["text"].replace("—", "").split()
-    w = np.array([len(re.sub(r"\W", "", x)) + 2 for x in words], float)
-    starts = a + (b - a) * np.concatenate([[0], np.cumsum(w)[:-1]]) / w.sum()
-    line, group, gt = [], [], []
-    for i, word in enumerate(words):
-        group.append(word); gt.append(float(starts[i]))
-        if len(group) == 3 or re.search(r"[.?!…]$", word) or i == len(words) - 1:
-            line.append([gt[0], None, group, gt]); group, gt = [], []
-    for j, c in enumerate(line):                 # кусок держится до следующего куска реплики, последний — до конца речи
-        c[1] = line[j + 1][0] if j + 1 < len(line) else b + 0.35
-    chunks += [tuple(c) for c in line]
-chunks.sort(key=lambda c: c[0])                  # хвост реплики (+0,35 с) не налезает на следующую
-chunks = [(a, min(b, chunks[i + 1][0]) if i + 1 < len(chunks) else b, w, wt) for i, (a, b, w, wt) in enumerate(chunks)]
-if not os.environ.get("SUBS"):                   # в сценках субтитров нет — говорят сами герои (участник 28.10); SUBS=1 — включить
-    chunks = []
-print("субтитры:", " | ".join(f"{c[0]:.2f}–{c[1]:.2f} {' '.join(c[2])}" for c in chunks))
-
-# ---- картинки субтитров: каждое состояние (кусок, звучащее слово) — один раз через Chromium
-from playwright.sync_api import sync_playwright
-from pathlib import Path
-FONTS = Path(REPO, "fonts").as_uri()                # file:///C:/… и file:///home/… — одинаково
-CSS = f"""
-@font-face {{ font-family: Manrope; font-weight: 800; src: url({FONTS}/manrope-cyrillic-800-normal.woff2) format("woff2"); }}
-@font-face {{ font-family: Manrope; font-weight: 800; src: url({FONTS}/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }}
-html, body {{ margin: 0; background: transparent; }}
-#subs {{ position: absolute; left: 60px; width: 880px; top: 1468px; display: flex; justify-content: center; text-align: center;
-         font: 800 56px/1.2 Manrope; white-space: nowrap; color: #fff; }}
-#subs span {{ display: inline-block; margin: 0 4px; padding: 2px 12px; border-radius: 12px; text-shadow: 0 5px 0 #15171c; border: 4px solid transparent; }}
-#subs span.on {{ background: #ffd23f; color: #15171c; text-shadow: none; box-shadow: 6px 6px 0 #0b0c10; border-color: #15171c; }}
-"""
+# ---- субтитры только по запросу; иначе не вычислять слова и не запускать Chromium
+chunks = []
 cache = {}
-with sync_playwright() as pw:
-    br = pw.chromium.launch(); pg = br.new_page(viewport={"width": 1080, "height": 1920})
-    for ci, (_, _, words, _) in enumerate(chunks):
-        for wi in range(len(words)):
-            html = "<style>" + CSS + "</style><div id=subs>" + "".join(
-                f'<span class="{"on" if i == wi else ""}">{w}</span>' for i, w in enumerate(words)) + "</div>"
-            page = os.path.join(VO, "sub.html")             # страница из файла: со страницы в памяти шрифты file:// не грузятся
-            open(page, "w", encoding="utf-8").write("<meta charset=utf-8>" + html)
-            pg.goto(Path(page).as_uri()); pg.evaluate("document.fonts.ready")
-            assert pg.evaluate("document.fonts.check('800 56px Manrope', 'Ж')"), "Manrope не загрузился" 
-            path = os.path.join(VO, f"sub_{ci}_{wi}.png")
-            pg.screenshot(path=path, omit_background=True, clip={"x": 0, "y": 1400, "width": 1080, "height": 200})
-            cache[(ci, wi)] = Image.open(path).convert("RGBA")
-    br.close()
+if os.environ.get("SUBS") == "1":
+    for name, off in OFFS.items():
+        env = np.array(V[name]["env"]); on = np.where(env > 0.08)[0]
+        if not len(on):
+            continue
+        a, b = off + on[0] / 30, off + (on[-1] + 1) / 30
+        words = V[name]["text"].replace("—", "").split()
+        w = np.array([len(re.sub(r"\W", "", x)) + 2 for x in words], float)
+        starts = a + (b - a) * np.concatenate([[0], np.cumsum(w)[:-1]]) / w.sum()
+        line, group, gt = [], [], []
+        for i, word in enumerate(words):
+            group.append(word); gt.append(float(starts[i]))
+            if len(group) == 3 or re.search(r"[.?!…]$", word) or i == len(words) - 1:
+                line.append([gt[0], None, group, gt]); group, gt = [], []
+        for j, c in enumerate(line):                 # кусок держится до следующего куска реплики, последний — до конца речи
+            c[1] = line[j + 1][0] if j + 1 < len(line) else b + 0.35
+        chunks += [tuple(c) for c in line]
+    chunks.sort(key=lambda c: c[0])                  # хвост реплики (+0,35 с) не налезает на следующую
+    chunks = [(a, min(b, chunks[i + 1][0]) if i + 1 < len(chunks) else b, w, wt) for i, (a, b, w, wt) in enumerate(chunks)]
+    print("субтитры:", " | ".join(f"{c[0]:.2f}–{c[1]:.2f} {' '.join(c[2])}" for c in chunks))
+
+    # ---- картинки субтитров: каждое состояние (кусок, звучащее слово) — один раз через Chromium
+    from playwright.sync_api import sync_playwright
+    from pathlib import Path
+    FONTS = Path(REPO, "fonts").as_uri()                # file:///C:/… и file:///home/… — одинаково
+    CSS = f"""
+    @font-face {{ font-family: Manrope; font-weight: 800; src: url({FONTS}/manrope-cyrillic-800-normal.woff2) format("woff2"); }}
+    @font-face {{ font-family: Manrope; font-weight: 800; src: url({FONTS}/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }}
+    html, body {{ margin: 0; background: transparent; }}
+    #subs {{ position: absolute; left: 60px; width: 880px; top: 1468px; display: flex; justify-content: center; text-align: center;
+             font: 800 56px/1.2 Manrope; white-space: nowrap; color: #fff; }}
+    #subs span {{ display: inline-block; margin: 0 4px; padding: 2px 12px; border-radius: 12px; text-shadow: 0 5px 0 #15171c; border: 4px solid transparent; }}
+    #subs span.on {{ background: #ffd23f; color: #15171c; text-shadow: none; box-shadow: 6px 6px 0 #0b0c10; border-color: #15171c; }}
+    """
+    with sync_playwright() as pw:
+        br = pw.chromium.launch(); pg = br.new_page(viewport={"width": 1080, "height": 1920})
+        for ci, (_, _, words, _) in enumerate(chunks):
+            for wi in range(len(words)):
+                html = "<style>" + CSS + "</style><div id=subs>" + "".join(
+                    f'<span class="{"on" if i == wi else ""}">{w}</span>' for i, w in enumerate(words)) + "</div>"
+                page = os.path.join(VO, "sub.html")             # страница из файла: со страницы в памяти шрифты file:// не грузятся
+                open(page, "w", encoding="utf-8").write("<meta charset=utf-8>" + html)
+                pg.goto(Path(page).as_uri()); pg.evaluate("document.fonts.ready")
+                assert pg.evaluate("document.fonts.check('800 56px Manrope', 'Ж')"), "Manrope не загрузился"
+                path = os.path.join(VO, f"sub_{ci}_{wi}.png")
+                pg.screenshot(path=path, omit_background=True, clip={"x": 0, "y": 1400, "width": 1080, "height": 200})
+                cache[(ci, wi)] = Image.open(path).convert("RGBA")
+        br.close()
 
 
 def overlay(t):

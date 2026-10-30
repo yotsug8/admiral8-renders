@@ -1,12 +1,36 @@
-# Поднять проект на новом компьютере
+# Настройка проекта в Codex
 
-## Продолжить в Codex
+## Уже настроенный компьютер
 
-Открыть папку проекта в Codex. Он читает `AGENTS.md`; затем должен прочитать `docs/PROJECT_STATE.md` (перенесённые решения и незавершённые задачи) и нужные подробные документы. Историю Claude перечитывать не требуется.
+Открыть папку проекта в Codex. Основные инструкции — AGENTS.md, статус — docs/PROJECT_STATE.md. Дополнительный стартовый промпт не нужен.
 
-Проектный `.codex/config.toml` подключает Context7 и Blender MCP; последний требует открытого Blender с запущенным аддоном. Для фонового рендера аддон не нужен. Настройки доверия и ключи остаются локальными, в git их не хранить.
+`.codex/config.toml` подключает Context7 и Blender MCP. Для MCP нужен открытый Blender с запущенным аддоном; фоновый рендер через командную строку работает независимо. RTK необязателен: `rtk init --codex --global`, затем перезапуск Codex и проверка доверия к хуку. Ключи и локальные настройки доверия не коммитить.
 
-На Windows команды из примеров Bash адаптировать к PowerShell:
+## Новый компьютер
+
+1. Установить Git, Python 3.11, Node.js. Для анимационных сценок — Dota 2 с Workshop Tools, Blender 5.2 и Source2Viewer-CLI.
+2. Клонировать проект:
+   ```powershell
+   git clone https://github.com/contributor/admiral8-renders.git
+   cd admiral8-renders
+   ```
+3. Перенести `_game` со старого ПК: `models`, `maps`, `world`, `data`, `vo`, `sfx`, `sky`, `study`, `memes`, `water_dist.png`. Сохранить и уникальные видео/озвучку из `skits`, если они нужны; промежуточные кадры переносить необязательно. `_game` отсутствует в git.
+4. Установить зависимости:
+   ```powershell
+   py -3.11 -m pip install pillow numpy playwright imageio-ffmpeg faster-whisper ormsgpack edge-tts
+   py -3.11 -m playwright install chromium
+   npm.cmd ci
+   ```
+5. Проверить пути в `tools/paths.py`. Другие пути к программам задавать пользовательскими переменными `BLENDER`, `S2V`, `DOTA_ROOT`. Ключ `FISH_API_KEY` добавить локально в переменные окружения; значение не записывать в git и сообщения.
+6. Открыть проект в Codex и выполнить проверку:
+   ```powershell
+   py -3.11 tools/check.py
+   ```
+   Ожидается «всё в порядке». Затем по задаче сделать пробы из docs/ANIMATION.md.
+
+## PowerShell
+
+Переменные в примерах Bash (`FV_DRAFT=1 python …`) задавать через `$env:`. Например, проверка выпуска без озвучки:
 
 ```powershell
 $env:FV_SILENT='1'
@@ -14,56 +38,8 @@ $env:FV_QA_ONLY='1'
 $env:FV_QA_DIR='qa'
 py -3.11 video.py episodes/005.json qa/t.mp4
 Remove-Item Env:FV_SILENT,Env:FV_QA_ONLY,Env:FV_QA_DIR
-py -3.11 tools/check.py
 ```
 
-Если Playwright сообщает об отсутствующем браузере — `py -3.11 -m playwright install chromium`. Если PowerShell блокирует npm.ps1 — использовать `npm.cmd install`. RTK необязателен для рендера; настраивается отдельно командой `rtk init --codex --global` (после этого перезапустить Codex и проверить доверие к хуку).
+Если PowerShell блокирует npm.ps1 — использовать `npm.cmd`/`npx.cmd`. Если Playwright не находит браузер — повторить установку Chromium из шага 4.
 
-## Подготовка компьютера
-
-Два вида роликов — разные требования:
-- **выпуски на `video.py`** (Танго, Кунка, факты): нужен только репозиторий и Python. Рендер может идти в GitHub Actions — тогда и Python не обязателен;
-- **анимационные сценки в Blender** (Пудж, Снайпер, пробы): ещё нужны папка `_game` (модели, карта, озвучка; ~1,7 ГБ, в git её нет — файлы игры), Blender, Source2Viewer и дота.
-
-## По шагам
-
-1. **Перенести `_game`** со старого ПК (флешкой или облаком). Папка `_game/skits` не нужна: это 5,5 ГБ готовых проб. Нужны `models`, `maps`, `world`, `data`, `vo`, `sfx`, `sky`, `study`, `memes`.
-2. **Поставить программы:**
-   - Git, Python 3.11 (при установке — галочка «Add to PATH»), Node.js;
-   - Steam → Dota 2 → в свойствах игры, в DLC — **Dota 2 Workshop Tools**;
-   - Blender 5.2 (blender.org);
-   - Source2Viewer-CLI (github.com/ValveResourceFormat/ValveResourceFormat → Releases, файл CLI для Windows), распаковать в любую папку.
-3. **Скачать проект** и положить `_game` внутрь папки `admiral8-renders`:
-   ```
-   git clone https://github.com/contributor/admiral8-renders.git
-   ```
-4. **Открыть Codex или Claude Code в папке проекта** и вставить промпт ниже — он поставит библиотеки, пропишет пути и проверит.
-5. Ключ озвучки Fish Audio — свой, с fish.audio (раздел API): `setx FISH_API_KEY <ключ>` в командной строке.
-
-## Промпт для нейросети (Codex, Claude Code или другой агент с доступом к командной строке)
-
-```
-Ты на Windows-компьютере в папке проекта admiral8-renders (github.com/contributor/admiral8-renders) — ролики TikTok @admiral8dota
-про Dota 2. Подними проект так, чтобы работало всё: выпуски на video.py и анимационные сценки в Blender.
-
-1. Прочитай целиком AGENTS.md (Codex) или CLAUDE.md (Claude), docs/PROJECT_STATE.md, README.md и docs/SETUP.md — там правила и состав проекта. Отвечай по-русски, коротко.
-2. Проверь, что есть: Git, Python 3.11 (`py -3.11`), Node.js, Blender 5.2, Source2Viewer-CLI, Dota 2 с Workshop Tools
-   (папка «dota 2 beta» с game\dota\pak01_dir.vpk и game\bin\win64\resourcecompiler.exe), папка _game в корне проекта
-   (models, maps, world, data, vo, sfx). Чего нет — скажи, что и откуда поставить, и жди.
-3. Поставь библиотеки Python: `py -3.11 -m pip install pillow numpy playwright imageio-ffmpeg faster-whisper`, затем
-   `py -3.11 -m playwright install chromium`; библиотеки node: `npm install` в корне проекта.
-4. Найди на диске blender.exe, Source2Viewer-CLI.exe и папку «dota 2 beta». Если пути отличаются от записанных в
-   tools/paths.py — пропиши переменные окружения пользователя (setx): BLENDER, S2V, DOTA_ROOT. Код не правь.
-5. Ключ Fish Audio: проверь переменную FISH_API_KEY; если нет — попроси у меня ключ и пропиши `setx FISH_API_KEY …`.
-6. Проверь: `py -3.11 tools/check.py` — должно быть «всё в порядке». Затем пробную сценку без рендера:
-   `py -3.11 tools/skit/skit.py skits/probe6.txt --plan`, и пробные кадры (Blender, ~5 мин на загрузку карты):
-   `py -3.11 tools/skit/skit.py skits/probe6.txt` — лист проб _game/skits/probe6/probe.jpg покажи мне.
-7. Выпуск на video.py — проверка раскладки без звука:
-   `set FV_SILENT=1& set FV_QA_ONLY=1& set FV_QA_DIR=qa& py -3.11 video.py episodes/005.json qa/t.mp4` — «всё в безопасной зоне».
-8. Если что-то упало — найди причину и исправь установку (не код проекта); правки кода — только если без них никак,
-   и скажи мне какие. В конце — коротко: что поставлено, какие пути прописаны, что работает, что нет.
-```
-
-## Если нет ПК с дотой (облачная сессия)
-
-Работают выпуски на `video.py`, логика сценок (`SKIT_FAKE=1`, `--plan`) и проверки. Рендера сценок нет: нужны модели героев и карта из `_game`.
+Без доты и Blender доступны выпуски `video.py` (в том числе через GitHub Actions) и проверки логики сценок с `SKIT_FAKE=1`; для рендера героев нужна локальная `_game`.

@@ -101,7 +101,6 @@ def stone():
 
 def metal():
     brush = fbm(160, 3, sx=0.008)                                   # шлифовка: длинные горизонтальные штрихи
-    sheen = up(np.linspace(0, 1, 8)[:, None] * np.ones((1, 8)))
     y = np.mgrid[0:N, 0:N][0] / N
     band = 0.55 + 0.45 * np.cos((y - 0.32) * np.pi * 1.6)           # блик по вертикали
     scratch = (fbm(40, 2, sx=0.02) > 0.78).astype(np.float32)

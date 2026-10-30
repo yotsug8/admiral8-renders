@@ -3,7 +3,7 @@
 #   префикс — как у файлов разобранной модели (kunkka → kunkka_idle.dmx); скрипт задаёт CUSTOM {имя: действие} и LOOPING
 # Образец — настоящая стойка <префикс>_idle.dmx: по ней находится переход «Blender → движок» (масштаб и оси одним преобразованием M
 # и поправка C_b для каждой кости), потом каждая поза своей анимации переводится и записывается каналами, как у Valve.
-import bpy, sys, os, math
+import bpy, sys, os
 from mathutils import Matrix, Vector, Quaternion
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import datamodel
@@ -99,7 +99,7 @@ def write(name, action, nframes, loop_src_idle=True):
     dm2 = datamodel.load(SRC_IDLE)
     clip2 = dm2.root["animationList"]["animations"][0]; clip2.name = name
     tf = clip2["timeFrame"]; tf["duration"] = datamodel.Time(nframes / FPS)   # тип «время», иначе движок считает длительность нулевой
-    W = {}; L = {}
+    L = {}
     for k in frames:
         Wk = {}
         for n in order:

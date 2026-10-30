@@ -1,7 +1,7 @@
 # Модель героя и его стандартные части (носимые предметы) — из items_game.txt игры.
 # Стандартный предмет: "prefab" "default_item", "used_by_heroes" { "npc_dota_hero_<герой>" "1" }, "model_player".
 # py -3.11 hero_parts.py kunkka      → models/heroes/kunkka/kunkka.vmdl + части
-# items_game.txt выгружается Source2Viewer-CLI в _game/data (см. CLAUDE.md), если его там нет:
+# items_game.txt выгружается Source2Viewer-CLI в _game/data (см. AGENTS.md), если его там нет:
 #   Source2Viewer-CLI -i ".../game/dota/pak01_dir.vpk" --vpk_filepath scripts/items/items_game.txt -o _game/data
 import os, re, sys, json
 HERE = os.path.dirname(os.path.abspath(__file__))

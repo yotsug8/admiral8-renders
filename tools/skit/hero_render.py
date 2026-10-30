@@ -1,5 +1,5 @@
 # Модели героя для рендера сценок: тело и части (оружие, одежда) из файлов доты — GLB с материалами,
-# текстуры рядом PNG (_game/models/render), затем текстуры крупнее (render_hq, tools/blender/hq_textures.py).
+# текстуры рядом PNG (_game/models/render).
 # Нужна дота на этом ПК и S2V (tools/paths.py). Сведения о герое (стойка, кости, части) — troupe.py, если их нет.
 #   py -3.11 tools/skit/hero_render.py tidehunter axe
 import os, subprocess, sys
@@ -30,8 +30,6 @@ def main():
         info = troupe(hero)
         for m in [hero_model(hero)[0]] + (info.get("parts") or []):
             print(f"  {hero}: {m} — {export(m)[1]}")
-    subprocess.run([sys.executable, os.path.join(REPO, "tools", "blender", "hq_textures.py")], check=True,
-                   env=dict(os.environ, PYTHONIOENCODING="utf-8"))
 
 
 if __name__ == "__main__":

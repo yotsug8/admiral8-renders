@@ -1,6 +1,6 @@
 // Материалы карты Dota 2 для three.js: террейн multiblend (4 слоя с масками смешивания и оттенками, как в шейдере
 // игры — по исходникам Source 2 Viewer), вода water_dota (своя: цвет и рябь под дотовскую), листва — с отсечением по альфе.
-// Использование: prepareDotaMap(THREE, gltfScene, texUrl, sunDir) после загрузки куска карты (tools/dota_export.py map).
+// Использование: prepareDotaMap(THREE, gltfScene, texUrl, sunDir) после загрузки куска карты (tools/map_crop.mjs).
 export function prepareDotaMap(THREE, root, texUrl, opts = {}) {
   const TL = new THREE.TextureLoader(), cache = {}, wait = [];
   const tex = (vtexPath, srgb) => {

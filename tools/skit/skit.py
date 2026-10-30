@@ -1,7 +1,7 @@
 # Сценка одной командой: короткий сценарий текстом → голоса → тайминг, планы, мимика → рендер в Blender → сведение.
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt            голоса, scene.json и пробы: по кадру на план (половинный размер)
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt --plan     только голоса и scene.json (без Blender)
-#   py -3.11 tools/skit/skit.py skits/kryuk.txt --all      весь ролик: кадры → mp4 → голоса и субтитры (mix.py, GRADE)
+#   py -3.11 tools/skit/skit.py skits/kryuk.txt --all      весь ролик: кадры → mp4 → голоса и звуки действий (mix.py, GRADE)
 #   ... --dota                                             ещё и сцена для движка доты (scripts/a8_scene.txt) с анимациями разговора
 # Всё складывается в _game/skits/<название>/. Сначала пробы — полный рендер только после «ок» (~2,5 с на кадр).
 #
@@ -423,7 +423,7 @@ def build(sc, V, folder):
 
     # движение: стоит лицом к собеседнику; цель крюка — тянет со скоростью крюка, лёгкая дуга
     def motion(who):
-        yaw0 = yaw = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
+        yaw0 = yaw_to(who, listener(sc, who)); hs = [h for h in hooks if h["to"] == who]
         face = lambda t: yaw0 + sum(g * smooth((t - a) / d) for a, d, g in turns[who])   # куда смотрит в момент t
         # шаг — туда, куда смотрит на начале шага (после поворота «от» — прочь от собеседника)
         ws = [(a, e["t1"], e["walk"], math.cos(math.radians(face(a))), math.sin(math.radians(face(a))))
@@ -556,8 +556,6 @@ def build(sc, V, folder):
                  shots=SH, voices={e["name"]: [e["who"], e["t0"]] for e in lines}, faces=faces(sc, dur, lines, hooks),
                  mouth={e["name"]: 1.7 for e in lines if "крик" in (e["emo"], e["emo2"])},   # рот на крике — до предела (face.py)
                  talk={k: v for k, v in talk.items() if v})
-    if dur > 35:
-        print(f"  ВНИМАНИЕ: длина {dur:.1f} с — длиннее 35 с (CLAUDE.md): сократить реплики")
     print(f"  длина {dur:.1f} с; реплики:", "; ".join(f"{e['t0']:.1f}–{e['t1']:.1f} {e['who']}" for e in lines))
     print("  планы:", "; ".join(f"{s[0]:.2f} {s[1]} {s[2]}" + (f"→{s[3]}" if s[3] else "") for s in SH))
     return st, talk, info, SH, dur

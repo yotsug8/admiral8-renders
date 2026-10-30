@@ -273,7 +273,7 @@ const SCN = (() => {
     const lvl = (it.water && it.water.level) ?? 0;
     let map = null;
     if (it.map) {
-      // Кусок настоящей карты (tools/dota_export.py map): рельеф, деревья, камни, вода — с материалами как в игре
+      // Кусок настоящей карты (tools/map_crop.mjs): рельеф, деревья, камни, вода — с материалами как в игре
       const gm = await new window.T3.GLTFLoader().loadAsync(D.http + `_game/maps/${it.map}.glb`);
       sc.add(gm.scene);
       map = window.T3.prepareDotaMap(THREE, gm.scene, D.http + `_game/maps/${it.map}_tex/`, { water: it.water || {}, sun: it.sun_dir });

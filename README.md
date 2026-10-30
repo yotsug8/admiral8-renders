@@ -1,6 +1,6 @@
-# Вертикальные ролики про Dota 2
+# Видеопроекты
 
-Вертикальные ролики про Dota 2 для TikTok и YouTube Shorts — любого формата: графика и интерфейс, 3D-герои, кадры из самой игры, мемы.
+Инструменты и материалы для создания видео по Dota 2.
 
 Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Единые правила Codex — [AGENTS.md](AGENTS.md), текущее состояние — [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md). Сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
 

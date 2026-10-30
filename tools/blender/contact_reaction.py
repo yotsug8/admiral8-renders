@@ -16,9 +16,13 @@ constraints/drivers on corrected bones, ordinary quaternion/Euler rotations,
 uniform positive armature world scale, reachable feet. Straight knees use a
 continuous pole fallback. Toe bones inherit the preserved ankle transform;
 separately constrained/animated toe contacts are not a ground solver.
-Validation is at integer frames, not arbitrary render subframes. Corrections
-are linear between samples, with three baseline padding frames and 3-frame
-NLA edge blends. No active action above NLA or solo/tweak NLA is supported.
+Samples include fractional events and 4 points/frame (16 for impact profiles).
+Independent midpoint witnesses check interpolation between baked samples;
+this finite check does not prove continuous ground contact. Corrections
+are linear between samples, with three baseline padding frames. Strips replace
+at full influence: padding already matches the underlying pose, and a second
+NLA blend can cancel antipodal source/baked quaternion channels.
+No active action above NLA or solo/tweak NLA is supported.
 Raises on unsupported rigs/unreachable goals instead of stretching the legs.
 """
 
@@ -127,13 +131,18 @@ def _drop(pulses, time):
         if len(pulse) == 3:
             weight = math.sin(math.pi * elapsed / duration) ** 2
         else:
-            _, _, _, down, hold, up = pulse
+            down, hold, up = pulse[3:6]
             if elapsed < down:
-                weight = _smoothstep(elapsed / down)
+                x = elapsed / down
+                speed = pulse[6] if len(pulse) > 6 else 0.0
+                weight = (_smoothstep(x) + speed * down / depth * (x*x*x - 2*x*x + x))
             elif elapsed <= down + hold:
                 weight = 1.0
             else:
                 weight = _smoothstep((duration - elapsed) / up)
+                x = (elapsed - down - hold) / up
+                speed = pulse[7] if len(pulse) > 7 else 0.0
+                weight += speed * up / depth * (x*x - x*x*x)
         result += depth * weight
     return _finite(result, 'summed depth', 0)
 
@@ -169,11 +178,11 @@ def _redirect(matrix, old_direction, new_direction, position):
     return result
 
 
-def _solve_leg(base, desired, leg, drop, previous_pole, forward):
+def _solve_leg(base, desired, leg, drop, previous_pole, forward, target_matrix=None):
     thigh, knee, ankle = leg
     h0, k0, a0 = (base[n].translation for n in leg)
     hip = h0 + drop
-    target = a0.copy()
+    target = a0.copy() if target_matrix is None else target_matrix.translation.copy()
     upper, lower = (k0 - h0).length, (a0 - k0).length
     axis = target - hip
     distance = axis.length
@@ -208,7 +217,7 @@ def _solve_leg(base, desired, leg, drop, previous_pole, forward):
     # Transport the knee's twist with the thigh before aiming its lower segment.
     carried = q_upper.to_matrix().to_4x4() @ base[knee]
     desired[knee] = _redirect(carried, q_upper @ (a0 - k0), target - joint, joint)
-    desired[ankle] = base[ankle].copy()  # full position, orientation AND scale
+    desired[ankle] = (base[ankle] if target_matrix is None else target_matrix).copy()
     return pole
 
 
@@ -229,8 +238,18 @@ def _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, metres_per_u
                if b.name == pelvis or pelvis in {p.name for p in b.parent_recursive}}
     for left, right in windows:
         frames = []
-        for frame in range(left, right + 1):
-            sc.frame_set(frame)
+        impact = any(len(p) > 6 and (p[6] > 0 or (len(p) > 7 and p[7] > 0)) for p in pulses)
+        density = 16 if impact else 4
+        event_frames = {left + k / density for k in range((right - left) * density + 1)}
+        for pulse in pulses:
+            start, duration = pulse[:2]
+            times = [start, start + duration / 2, start + duration]
+            if len(pulse) >= 6:
+                times += [start + pulse[3], start + pulse[3] + pulse[4]]
+            event_frames.update(t * fps for t in times if left <= t * fps <= right)
+        for frame in sorted(event_frames):
+            whole = math.floor(frame)
+            sc.frame_set(whole, subframe=frame - whole)
             evaluated = arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
             mw = evaluated.matrix_world.copy()
             _uniform_world(mw, arm.name)
@@ -263,6 +282,15 @@ def _sample(arm, sc, fps, pulses, windows, pelvis, legs, corrected, metres_per_u
                 local[bone.name] = _basis(bone, inverse @ desired[bone.name], parent)
             frames.append(dict(frame=frame, basis=local,
                                feet={leg[2]: base[leg[2]].copy() for leg in legs}))
+        # Independent midpoint witnesses are not inserted as keys. They test
+        # interpolation between the baked poses rather than just their endpoints.
+        for sample, following in zip(frames, frames[1:]):
+            f = (sample['frame'] + following['frame']) / 2
+            whole = math.floor(f)
+            sc.frame_set(whole, subframe=f - whole)
+            evaluated = arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
+            sample['between'] = dict(frame=f, feet={leg[2]: evaluated.matrix_world @ evaluated.pose.bones[leg[2]].matrix
+                                                  for leg in legs})
         samples.append((left, right, frames))
     return samples
 
@@ -339,8 +367,10 @@ def _action(arm, corrected, frames, name, sc):
 def _validate(arm, sc, samples, metres_per_unit):
     max_position = max_angle = 0.0
     for left, right, frames in samples:
-        for sample in frames:
-            sc.frame_set(sample['frame'])
+        checks = [check for sample in frames for check in ([sample, sample['between']] if 'between' in sample else [sample])]
+        for sample in checks:
+            whole = math.floor(sample['frame'])
+            sc.frame_set(whole, subframe=sample['frame'] - whole)
             evaluated = arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
             for name, expected in sample['feet'].items():
                 actual = evaluated.matrix_world @ evaluated.pose.bones[name].matrix
@@ -400,7 +430,13 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
         if depth <= 0 or down <= 0 or up <= 0:
             raise ValueError('crouch depth, down and up must be positive')
         duration = _finite(down + hold + up, 'crouch duration')
-        pulse = (start, duration, depth, down, hold, up)
+        speed = _finite(event.get('down_speed', 0), 'crouch down speed', 0)
+        up_speed = _finite(event.get('up_speed', 0), 'crouch final up speed', 0)
+        if speed * down > 3 * depth + 1e-12:
+            raise ValueError('crouch down speed would overshoot requested depth')
+        if up_speed * up > 3 * depth + 1e-12:
+            raise ValueError('crouch up speed would overshoot requested depth')
+        pulse = (start, duration, depth, down, hold, up, speed, up_speed)
         _add_pulse(grouped, who, pulse, fps, last)
         angles = {}
         for side, value in (event.get('arm_clearance') or {}).items():
@@ -453,7 +489,11 @@ def apply_contact_reactions(D, ACTORS, sc, FPS):
                 strip.blend_type = 'REPLACE'
                 strip.extrapolation = 'NOTHING'
                 strip.use_auto_blend = False
-                strip.blend_in = strip.blend_out = _PADDING
+                # The sampled padding already returns to the source pose.
+                # NLA blends quaternion components, so mixing source -q with
+                # the equivalent decomposed +q can collapse to a zero rotation
+                # quaternion halfway through a redundant edge blend.
+                strip.blend_in = strip.blend_out = 0.0
                 strip.influence = 1.0
                 strip.use_animated_influence = False
             position, angle = _validate(arm, sc, samples, unit)

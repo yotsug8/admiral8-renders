@@ -5,12 +5,21 @@ and the last usable time is (frames - 1) / fps. ``at`` means takeoff,
 not preparation start. Height/depth are metres, gravity is m/s**2; keys
 remain in native game units (39.37 units per metre).
 
-Preparation starts at at-down-hold-launch, reaches depth after down,
-holds, then recovers during launch, ending exactly at takeoff. Flight
+``launch`` is a maximum recovery duration, not an exact duration:
+launch_actual=min(launch, 2.5*depth/impact_speed). Preparation starts at
+at-down-hold-launch_actual, reaches depth after down, holds, then recovers
+during launch_actual, ending exactly at takeoff with up_speed=impact_speed.
+The Hermite recovery starts with zero speed and ends with the ballistic
+launch speed; its normalized final slope is at most 2.5. Flight
 lasts T=sqrt(8*height/gravity), with offset g*t*(T-t)/2. Landing starts
 at at+T; ``landing`` is the total compression-and-recovery time, with
-compression min(0.15, landing/3) and no hold. Both crouches use the
-contact_reaction schema and reserve three scene-boundary padding frames.
+compression min(0.15, landing/3, 2.5*depth/impact_speed) and no hold,
+where impact_speed=gravity*T/2. Landing requests down_speed in metres per
+second for Hermite compression: initial downward speed matches impact,
+final speed is zero. Its normalized initial slope is at most 2.5 (<3,
+the monotonicity limit). The consumer must support up_speed/down_speed;
+smoothstep alone does not preserve launch/impact velocity. Both
+crouches reserve three scene-boundary padding frames.
 
 Continuous event times are never rounded; native keys sample the parabola
 at f/fps. A subframe apex/landing need not coincide with a native key.
@@ -104,7 +113,10 @@ def plan_jumps(D):
         ratio = height / gravity
         flight = (math.sqrt(8 * ratio) if math.isfinite(8 * ratio)
                   else math.sqrt(ratio) * math.sqrt(8))
-        start = at - down - hold - launch
+        impact_speed = _number(gravity * (flight / 2), 'impact speed', True)
+        speed_limit = 2.5 * (depth / impact_speed)
+        launch_actual = _number(min(launch, speed_limit), 'launch duration', True)
+        start = at - down - hold - launch_actual
         land, end = at + flight, at + flight + landing
         _finite_tree([flight, start, land, end, height * 39.37])
         if start * fps < 3 or end * fps > frames - 4:
@@ -139,14 +151,18 @@ def plan_jumps(D):
                 _finite_tree(key)
                 target[f] = key
         result['actors'][who]['keys'] = target
-        compress = min(.15, landing / 3)
+        compress = _number(min(.15, landing / 3, speed_limit),
+                           'landing compression duration', True)
         crouches.extend([
-            dict(who=who, at=start, depth=depth, down=down, hold=hold, up=launch),
-            dict(who=who, at=land, depth=depth, down=compress, hold=0., up=landing-compress),
+            dict(who=who, at=start, depth=depth, down=down, hold=hold,
+                 up=launch_actual, up_speed=impact_speed),
+            dict(who=who, at=land, depth=depth, down=compress, hold=0.,
+                 up=landing-compress, down_speed=impact_speed),
         ])
         reports.append(dict(who=who, prep_start=start, takeoff=at, apex=at+flight/2,
                             land=land, recover=end, flight=flight, height=height,
-                            gravity=gravity, baseline_z=baseline,
+                            gravity=gravity, baseline_z=baseline, impact_speed=impact_speed,
+                            launch_requested=launch, launch_actual=launch_actual,
                             contact_states=[dict(at=start, state='grounded'),
                                             dict(at=at, state='airborne'),
                                             dict(at=land, state='grounded')]))

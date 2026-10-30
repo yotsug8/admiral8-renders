@@ -20,6 +20,10 @@ if D.get("jumps"):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from jump_motion import plan_jumps
     D = plan_jumps(D)
+if D.get("looks"):
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from look_motion import plan_looks
+    D = plan_looks(D)
 FPS = D["fps"]; N = D["frames"]
 S = 1 / 39.37                                         # единица игры → метр (так выгружены модели)
 BASE = min(k[0][2] for k in (a["keys"] for a in D["actors"].values()))   # уровень земли под героями
@@ -321,8 +325,15 @@ if D.get("contact_reactions") or D.get("crouches"):
     if D.get("crouches"):
         from joint_skin import stabilize_crouch_skins
         stabilize_crouch_skins(D, ACTORS, sc, FPS)
+    if D.get("jump_plan"):
+        from airborne_pose import apply_airborne_poses
+        apply_airborne_poses(D, ACTORS, sc, FPS)
     from contact_reaction import apply_contact_reactions
     apply_contact_reactions(D, ACTORS, sc, FPS)
+
+if D.get("looks"):
+    from look_motion import apply_looks
+    apply_looks(D, ACTORS, sc, FPS)
 
 # ---------- свет героев «как в доте» — физический свет ламп
 # и неба давал то тёмную половину, то засвет — сколько ни крути. Игра освещает героев своим шейдером; здесь он повторён
@@ -521,6 +532,10 @@ else:
     bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.25
     nt.links.new(img.outputs["Color"], bump.inputs["Height"]); nt.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     bsdf.inputs["Roughness"].default_value = 0.95; ground.data.materials.append(gm)
+
+if D.get("jump_plan"):
+    from jump_shadows import attach_jump_shadows
+    attach_jump_shadows(D, ACTORS, sc)
 
 trees = [] if MAP_HAS_TREES else json.load(open(os.path.join(os.path.dirname(SCENE), "trees.json"), encoding="utf-8"))
 tcol = {}

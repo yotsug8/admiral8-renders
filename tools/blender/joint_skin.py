@@ -49,8 +49,12 @@ def _plan(obj, arm, unit):
     if not risky:
         return None
     modifiers = [m for m in obj.modifiers if m.show_viewport]
-    if len(modifiers) != 1 or modifiers[0].type != 'ARMATURE' or modifiers[0].use_deform_preserve_volume:
-        raise ValueError(f'{obj.name}: weight repair requires one linear Armature modifier')
+    render_modifiers = [m for m in obj.modifiers if m.show_render]
+    if ([m.as_pointer() for m in modifiers] != [m.as_pointer() for m in render_modifiers] or
+            len(modifiers) != 1 or modifiers[0].type != 'ARMATURE' or
+            modifiers[0].object != arm or modifiers[0].use_deform_preserve_volume):
+        raise ValueError(f'{obj.name}: weight repair requires matching viewport/render stacks '
+                         'with one linear Armature bound to the expected rig')
     if any(groups[g] not in arm.pose.bones for w in weights for g in w):
         raise ValueError(f'{obj.name}: non-bone weights cannot be inverted safely')
     smoothed = [dict(w) for w in weights]
@@ -99,6 +103,8 @@ def stabilize_crouch_skins(D, actors, scene, fps):
         first = {}
         for event in D.get('crouches') or []:
             first[event['who']] = min(first.get(event['who'], float('inf')), event['at'])
+        for event in D.get('weight_shifts') or []:
+            first[event['who']] = min(first.get(event['who'], float('inf')), event['start'])
         for who, at in first.items():
             scene.frame_set(round(at * fps))
             arm, root = actors[who]['arm'], actors[who]['root']

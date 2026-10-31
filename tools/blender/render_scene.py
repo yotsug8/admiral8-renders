@@ -320,16 +320,20 @@ if D.get("jumps"):
     refine_jump_roots(D, ACTORS, sc, FPS)
 
 # Реакция на хлопок сгибает ноги, не опускает стопы вместе с объектом героя.
-if D.get("contact_reactions") or D.get("crouches"):
+if D.get("contact_reactions") or D.get("crouches") or D.get("weight_shifts"):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     if D.get("crouches"):
         from joint_skin import stabilize_crouch_skins
-        stabilize_crouch_skins(D, ACTORS, sc, FPS)
+        stabilize_crouch_skins({"crouches": D["crouches"]}, ACTORS, sc, FPS)
     if D.get("jump_plan"):
         from airborne_pose import apply_airborne_poses
         apply_airborne_poses(D, ACTORS, sc, FPS)
-    from contact_reaction import apply_contact_reactions
-    apply_contact_reactions(D, ACTORS, sc, FPS)
+    if D.get("weight_shifts"):
+        from weight_shift import apply_weight_shifts
+        apply_weight_shifts(D, ACTORS, sc, FPS)
+    if D.get("contact_reactions") or D.get("crouches"):
+        from contact_reaction import apply_contact_reactions
+        apply_contact_reactions(D, ACTORS, sc, FPS)
 
 if D.get("looks"):
     from look_motion import apply_looks

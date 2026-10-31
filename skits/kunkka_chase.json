@@ -1,0 +1,54 @@
+{
+  "title": "Тихий капитан",
+  "format": "vertical_animation_draft",
+  "fps": 15,
+  "duration": 8.0,
+  "resolution": [
+    540,
+    960
+  ],
+  "cast": [
+    "kunkka",
+    "hoodwink"
+  ],
+  "map": "radiant_wide",
+  "subtitles": false,
+  "shots": [
+    {
+      "start": 0,
+      "end": 2.4,
+      "kind": "search",
+      "action": "Кунка осматривает лес в поисках саппорта"
+    },
+    {
+      "start": 2.4,
+      "end": 3.8,
+      "kind": "found",
+      "action": "Худвинк замечает, что её нашли"
+    },
+    {
+      "start": 3.8,
+      "end": 4.8,
+      "kind": "reveal",
+      "action": "Кунка неподвижно стоит в Т-позе"
+    },
+    {
+      "start": 4.8,
+      "end": 6.2,
+      "kind": "side_chase",
+      "action": "Худвинк бежит, Кунка скользит следом без движения тела"
+    },
+    {
+      "start": 6.2,
+      "end": 7.3,
+      "kind": "front_chase",
+      "action": "Белка убегает к камере, неподвижный капитан приближается за ней"
+    },
+    {
+      "start": 7.3,
+      "end": 8.0,
+      "kind": "escape",
+      "action": "Белка выскакивает из кадра, капитан продолжает приближаться; резкий конец"
+    }
+  ]
+}

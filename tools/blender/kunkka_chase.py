@@ -12,7 +12,11 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--out',type=Path,default=ROOT/'_game/skits/chase')
 parser.add_argument('--full',action='store_true')
 parser.add_argument('--preview',action='store_true')
+parser.add_argument('--grounded-run',type=Path,help='Optional experimental Hoodwink action library; keeps the original build as default')
 args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
+if args.grounded_run:
+ args.grounded_run=args.grounded_run.resolve()
+ if not args.grounded_run.is_file():raise ValueError('Grounded action library is missing')
 P=args.out.resolve();P.mkdir(parents=True,exist_ok=True)
 sys.path.insert(0,str(ROOT/'tools/blender'))
 spec=json.loads((ROOT/'skits/kunkka_chase.json').read_text(encoding='utf-8'))
@@ -94,7 +98,7 @@ bpy.ops.wm.save_as_mainfile(filepath=str(P/'actors_cache.blend'))
 X=-83.;Y=78.5;SPEED=5.0
 def root_at(who,t):
  progress=min(FRONT_END-PANIC_END,max(0,t-PANIC_END))*SPEED
- return Vector((X,Y+(3.5 if who=='hoodwink' else 0)+progress,3.25119+(.00885 if who=='kunkka' else .0185)))
+ return Vector((X,Y+(3.5 if who=='hoodwink' else 0)+progress,3.25119+(.00885 if who=='kunkka' else 0 if args.grounded_run else .0185)))
 for who,A in ACTORS.items():
  root=A['root']
  for f in range(END+1):
@@ -109,11 +113,23 @@ for who,A in ACTORS.items():
      for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' else 'LINEAR'
 A=ACTORS['hoodwink'];run=A['acts'].get('mouse_run_squirrel') or A['acts']['mouse_run_squirrel_anim']
 from chase_performance import make_seamless_run,apply_panic
-run,run_report=make_seamless_run(A['arm'],run,scene=sc)
-strip(A['arm'],run,'run',PANIC_END*FPS,FRONT_END*FPS,SPEED/(345.13084739699036/39.37),blend=0)
+if args.grounded_run:
+ with bpy.data.libraries.load(str(args.grounded_run)) as (available,loaded):
+  name='hoodwink_grounded_run_candidate'
+  if name not in available.actions:raise ValueError('Expected grounded Hoodwink action is missing')
+  loaded.actions=[name]
+ run=loaded.actions[0]
+ if tuple(run.frame_range)!=(0.,24.):raise ValueError('Unexpected grounded action cycle')
+ run_rate=SPEED/10.31508565
+ run_report=dict(action=run.name,library=args.grounded_run.name,experimental=True,source_speed_mps=10.31508565)
+else:
+ run,run_report=make_seamless_run(A['arm'],run,scene=sc)
+ run_rate=SPEED/(345.13084739699036/39.37)
+strip(A['arm'],run,'run',PANIC_END*FPS,FRONT_END*FPS,run_rate,blend=0)
 panic_report=apply_panic(ACTORS,scene=sc,FPS=FPS,start=REVEAL_END,end=PANIC_END,native_flail=A['acts'].get('mouse_flail') or A['acts'].get('mouse_flail_anim'))
 from chase_ground import clear_paws
-ground_report=clear_paws(A,sc,PANIC_END*FPS,FRONT_END*FPS,3.251190185546875)
+ground_report=(dict(method='Baked individual paw contacts',experimental=True,floor_z=3.251190185546875)
+ if args.grounded_run else clear_paws(A,sc,PANIC_END*FPS,FRONT_END*FPS,3.251190185546875))
 (P/'ground.json').write_text(json.dumps(ground_report,indent=2))
 (P/'performance.json').write_text(json.dumps(dict(run=run_report,panic=panic_report),indent=2))
 # Scan with the head before the discovery cut.

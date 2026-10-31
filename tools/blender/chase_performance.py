@@ -192,7 +192,12 @@ def apply_panic(ACTORS,*,scene=None,FPS=None,who='hoodwink',start=4.2,end=4.8,na
     torso=arm.pose.bones.get('spine_0')
     if torso is None or torso.parent is None or 'pelvis' not in torso.parent.name.lower():
         raise ValueError('panic requires spine_0 below pelvis, isolated from leg chains')
-    bones=[torso,*torso.children_recursive];_validate_rig(arm,bones)
+    arm_names=set()
+    for bone in arm.pose.bones:
+        if bone.name.lower().startswith('arm_upper_'):
+            arm_names.update([bone.name,*[b.name for b in bone.children_recursive]])
+    bones=[b for b in [torso,*torso.children_recursive] if b.name not in arm_names]
+    _validate_rig(arm,bones)
     if any(b.name.lower().startswith(('leg_upper','leg_lower','ankle','ball_')) for b in bones):
         raise ValueError('panic subtree contains leg bones')
     native_flail=native_flail or actor.get('acts',{}).get('mouse_flail') or bpy.data.actions.get('mouse_flail')

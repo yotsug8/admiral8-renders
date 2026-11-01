@@ -118,7 +118,7 @@ for who,A in ACTORS.items():
     for fc in bag.fcurves:
      for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' or round(k.co.x)+1==round(SIDE_END*FPS) else 'LINEAR'
 A=ACTORS['hoodwink'];run=A['acts'].get('mouse_run_squirrel') or A['acts']['mouse_run_squirrel_anim']
-from chase_performance import make_seamless_run,apply_panic
+from chase_performance import make_seamless_run
 if args.grounded_run:
  with bpy.data.libraries.load(str(args.grounded_run)) as (available,loaded):
   name='hoodwink_grounded_run_candidate'
@@ -132,7 +132,8 @@ else:
  run,run_report=make_seamless_run(A['arm'],run,scene=sc)
  run_rate=SPEED/(345.13084739699036/39.37)
 strip(A['arm'],run,'run',PANIC_END*FPS,FRONT_END*FPS,run_rate,blend=0)
-panic_report=apply_panic(ACTORS,scene=sc,FPS=FPS,start=REVEAL_END,end=PANIC_END,native_flail=A['acts'].get('mouse_flail') or A['acts'].get('mouse_flail_anim'))
+from chase_reaction import apply_calm_startle
+panic_report=apply_calm_startle(ACTORS,scene=sc,FPS=FPS,start=REVEAL_END,end=PANIC_END)
 from chase_ground import clear_paws
 ground_report=(dict(method='Baked individual paw contacts',experimental=True,floor_z=3.251190185546875)
  if args.grounded_run else clear_paws(A,sc,PANIC_END*FPS,FRONT_END*FPS,3.251190185546875))

@@ -15,6 +15,9 @@
 | Постановка погони, дальний лес, актёрские добавки | `tools/blender/kunkka_chase.py`, `chase_depth.py`, `chase_acting.py` |
 | Сведение и единая постобработка | `tools/skit/chase_audio.py`, `tools/skit/chase_look.py` |
 | Проверка проекта | `tools/check.py` |
+| Защита запуска и исправления рабочего процесса | `tools/skit/run_verified.py`, [WORKFLOW_AUDIT](studies/WORKFLOW_AUDIT.md) |
+| Подбор готовых решений, включая независимых авторов | [READY_MADE_TOOLS](studies/READY_MADE_TOOLS.md), [RETARGET_CANDIDATES](studies/RETARGET_CANDIDATES.md) |
+| Перекат стопы (изолированная кинематика, не походка героя) | `tools/blender/study_foot_roll.py`, [FOOT_ROLL](studies/FOOT_ROLL.md) |
 | Установка и полный список внешних файлов | [SETUP.md](SETUP.md), [LOCAL_FILES.md](LOCAL_FILES.md) |
 
 Готовые просмотровые файлы находятся в ветке `renders`. Основная ветка хранит методы и исходники, а не игровые модели и чужие референсы.

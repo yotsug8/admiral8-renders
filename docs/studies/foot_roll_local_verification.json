@@ -1,0 +1,157 @@
+{
+  "samples": 1905,
+  "left_support_error": 0.0,
+  "full_sole_error": 1.4901161193847656e-08,
+  "heel_support_error": 1.0102768192730514e-06,
+  "toe_area_error": 0.0,
+  "toe_tip_error": 4.2153459161934834e-07,
+  "min_floor": -1.862645149230957e-07,
+  "length_error": 3.9165023019149814e-07,
+  "joint_error": 1.9231881071251138e-06,
+  "hinge_error": 1.0444640462920103e-06,
+  "foot_shape_error": 6.189171020132278e-08,
+  "min_arm_body_clearance": 0.04499996256568864,
+  "min_swing_gap": 0.0026996834203600883,
+  "min_departure_gap": 0.000385969877243042,
+  "witnesses": {
+    "swing": {
+      "heel": [
+        0.14000001549720764,
+        0.15877215564250946
+      ],
+      "forefoot": [
+        0.15877214074134827,
+        0.1869303584098816
+      ],
+      "toe": [
+        0.1869303584098816,
+        0.20257380604743958
+      ]
+    },
+    "heel": {
+      "heel": [
+        0.0,
+        0.03708203136920929
+      ],
+      "forefoot": [
+        0.03708203136920929,
+        0.09270508587360382
+      ],
+      "toe": [
+        0.09270506352186203,
+        0.12360675632953644
+      ]
+    },
+    "flat": {
+      "heel": [
+        0.0,
+        0.0
+      ],
+      "forefoot": [
+        0.0,
+        0.0
+      ],
+      "toe": [
+        0.0,
+        0.0
+      ]
+    },
+    "toe_area": {
+      "heel": [
+        0.09457752108573914,
+        0.15263590216636658
+      ],
+      "forefoot": [
+        0.0074899401515722275,
+        0.09457752853631973
+      ],
+      "toe": [
+        0.0,
+        0.0
+      ]
+    },
+    "toe_tip": {
+      "heel": [
+        0.16580700874328613,
+        0.24968238174915314
+      ],
+      "forefoot": [
+        0.039993949234485626,
+        0.16580702364444733
+      ],
+      "toe": [
+        3.725290298461914e-09,
+        0.024773892015218735
+      ]
+    },
+    "toe_off": {
+      "heel": [
+        0.19333939254283905,
+        0.2343817949295044
+      ],
+      "forefoot": [
+        0.13177579641342163,
+        0.19333940744400024
+      ],
+      "toe": [
+        0.12000000476837158,
+        0.12836778163909912
+      ]
+    }
+  },
+  "min_margin": {
+    "profile": 0.07547536492347717,
+    "three_quarter": 0.06874002516269684
+  },
+  "max_point_step": 0.0022147828038242613,
+  "max_acceleration": 11.849037307926528,
+  "event_velocity_jump": {
+    "0.3": 0.009041428157008882,
+    "1.1": 0.011642403754033097,
+    "1.45": 0.0005205666438940648,
+    "2.0": 0.0010728836059570312,
+    "2.6": 0.0008212680870670695,
+    "3.0": 0.00039958413286581294,
+    "3.5": 0.0001722563921755642
+  },
+  "phases": {
+    "swing": true,
+    "heel": true,
+    "flat": true,
+    "toe_area": true,
+    "toe_tip": true,
+    "toe_off": true
+  },
+  "blender_version": "5.2.3 LTS",
+  "engine": "CYCLES",
+  "negative_tests": [
+    "sliding_support",
+    "heel_contact_gap",
+    "toe_penetration",
+    "toe_hinge_break",
+    "stretched_shin",
+    "foot_curve_pop"
+  ],
+  "elapsed_seconds": 14.809364599990658,
+  "movies": {
+    "profile": {
+      "sha256": "02f7a13a28c5238becf06027767285caeeac5e09dbbbd247854f988df95e64ca",
+      "decoded_frames": 120,
+      "source": "profile.mp4"
+    },
+    "three_quarter": {
+      "sha256": "2f2e5d800bef5c20f08e7dbf44328592838980645ed73e21b648d8b9aebb0599",
+      "decoded_frames": 120,
+      "source": "three_quarter.mp4"
+    }
+  },
+  "visual_review": {
+    "frames": 240,
+    "views": [
+      "profile",
+      "three_quarter"
+    ],
+    "method": "Eight sequential 30-frame sheets at 320x180 per frame; all decoded frames inspected",
+    "limitation": "Isolated rigid foot articulation; not natural whole-body walking, skin or dynamic balance"
+  }
+}

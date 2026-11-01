@@ -666,9 +666,10 @@ def dota(sc, st, talk, info, folder, SH):
 def render(folder, frames=None, half=False):
     out = os.path.join(folder, "probe" if frames else "frames")
     os.makedirs(out, exist_ok=True)
-    cmd = [BLENDER, "-b", "--factory-startup", "-P", os.path.join(REPO, "tools", "blender", "render_scene.py"), "--",
+    cmd = [BLENDER, "-b", "--factory-startup", "--python-exit-code", "1", "-P", os.path.join(REPO, "tools", "blender", "render_scene.py"), "--",
            os.path.join(folder, "scene.json"), out, ",".join(map(str, frames)) if frames else "all"] + (["half"] if half else [])
-    subprocess.run(cmd, check=True)
+    # skit пересчитывает кадры; resume остаётся у прямого запуска render_scene.py.
+    subprocess.run(cmd, env=dict(os.environ, A8_REDO="1"), check=True)
     return out
 
 
@@ -729,8 +730,16 @@ def main():
         print("пробы:", sheet or out, "— если «ок», то: --all")
         return
     out = render(folder)
+    with open(os.path.join(folder, "scene.json"), encoding="utf-8") as f:
+        scene = json.load(f)
+    for frame in range(scene["frames"]):
+        path = os.path.join(out, f"f{frame:05d}.png")
+        if not os.path.isfile(path) or os.path.getsize(path) == 0:
+            raise RuntimeError(f"Кадр отсутствует или пуст: {path}")
     raw = os.path.join(folder, sc["name"] + "_raw.mp4"); fin = os.path.join(folder, sc["name"] + ".mp4")
-    subprocess.run([FF, "-y", "-v", "error", "-framerate", "30", "-i", os.path.join(out, "f%05d.png"), "-c:v", "libx264", "-crf", "12",
+    # Как в renderer: N = scene["frames"], кадры 0…N−1; старый хвост не собираем.
+    subprocess.run([FF, "-y", "-v", "error", "-framerate", str(scene["fps"]), "-start_number", "0", "-i", os.path.join(out, "f%05d.png"),
+                    "-frames:v", str(scene["frames"]), "-c:v", "libx264", "-crf", "12",
                     "-pix_fmt", "yuv420p", raw], check=True)
     subprocess.run([sys.executable, os.path.join(HERE, "mix.py"), raw, fin, os.path.join(folder, "scene.json")],
                    env=dict(os.environ, GRADE="match"), check=True)

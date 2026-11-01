@@ -1,0 +1,42 @@
+{
+  "source_sha256": "29ed59d99f9275f39a04df4ed8760d833695eec4128182f8dff1e6b1941e24bb",
+  "blend_sha256": "c8fe6ac2bc86338b9f65ffa8a0ec61ecab863c2b3370a55537553d2e6d1686af",
+  "reconstructed_pose_max_error": 0.0,
+  "mesh_errors": {
+    "models\\heroes\\lina\\lina.vmdl_c.lina_base_lower_lod0": 0.0,
+    "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0": 0.0,
+    "models\\heroes\\lina\\lina_arms.vmdl_c.lina_arms": 0.0,
+    "models\\heroes\\lina\\lina_belt.vmdl_c.lina_belt": 0.0,
+    "models\\heroes\\lina\\lina_head.vmdl_c.lina_head": 0.0,
+    "models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": 0.0
+  },
+  "invariants": {
+    "raw_mesh_morph_hash": "592bf47da649019a17c0b064c9579cc8d48616be517eefaef55c6905ebab74d4",
+    "actions_hash": "6d163be34cfc31fdac43e142835efe84e962a9157d772d1bb1b5f68e852a8c49",
+    "face_values_hash": "e1220391a517886ba4cd27d9f65a8b4ec7330bfeb5f7027468aab2a3aec3da60",
+    "face_samples": 108
+  },
+  "stage_identical": true,
+  "eye_region": {
+    "triangles": 695,
+    "min_area_ratio": 0.8551821499461186,
+    "max_area_ratio": 1.0965016685822606,
+    "limitation": "Morph-displacement mask around eyes, not a complete eyelid contact test."
+  },
+  "status": "integrity_pass_not_artistic_acceptance",
+  "outcome": "Rejected as convincing attention; new hair contacts remain.",
+  "remaining_new_contact_pairs": {
+    "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0 | models\\heroes\\lina\\lina_head.vmdl_c.lina_head": [
+      [
+        1115,
+        507
+      ]
+    ],
+    "models\\heroes\\lina\\lina_head.vmdl_c.lina_head | models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": [
+      [
+        230,
+        354
+      ]
+    ]
+  }
+}

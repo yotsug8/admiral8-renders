@@ -1,0 +1,35 @@
+{
+  "frames": 450,
+  "fps": 30,
+  "duration": 15.0,
+  "cuts": [
+    0,
+    105,
+    210,
+    330
+  ],
+  "sources": [
+    {
+      "file": "foundation_jump_land_three_quarter.mp4",
+      "frames": 105,
+      "sha256": "e5cf81f9f4c2ffbdfd3cc660a75e818e042806cb50e2ace7e2f8d30698d6ee8f"
+    },
+    {
+      "file": "foundation_jump_land_profile.mp4",
+      "frames": 105,
+      "sha256": "ae1a2e312d9c0440a28341d415b230b707f3f500c2abdae6dac05af86ff0f49b"
+    },
+    {
+      "file": "foundation_prop_turn_three_quarter.mp4",
+      "frames": 120,
+      "sha256": "cfe40205adb8a3268e09f5e28857332fae66c1ed1c3c36d32da345b7cfec0f5d"
+    },
+    {
+      "file": "foundation_prop_turn_profile.mp4",
+      "frames": 120,
+      "sha256": "c695fdfe0b46c6e3810715b8fc2481047791be144b016809461aca64f3ae7718"
+    }
+  ],
+  "sha256": "a5559e5010f4ef2a59afd2229e0ee5f4a888d6c5cc5b182ea0f1ff3fb0ac0e03",
+  "scope": "Silent report, source motion unchanged; frame counts verified. Not new animation acceptance."
+}

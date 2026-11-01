@@ -1,0 +1,64 @@
+{
+  "samples": 1905,
+  "sole_drift": 7.450580596923828e-09,
+  "length_error": 2.730175674980906e-07,
+  "joint_error": 3.899010627863467e-06,
+  "min_floor": 0.0,
+  "min_body_box_clearance": 0.009998790025711059,
+  "min_arm_body_clearance": 0.044996634085876897,
+  "min_palm_body_clearance": 0.08526816521923358,
+  "palm_penetration": 8.940696716308594e-08,
+  "face_gap": 8.940696716308594e-08,
+  "contact_drift": 3.6048800955423547e-07,
+  "contact_margin": 0.10999984085559844,
+  "hold_surface_speed": 0.0,
+  "max_point_step": 0.004329883138408755,
+  "box_scale_error": 5.960464477539063e-08,
+  "box_motion_error": 2.4080276489257812e-05,
+  "stand_gap": 1.4305114759416426e-08,
+  "return_error": 0.0,
+  "rotation_span": 0.42133256793022156,
+  "min_margin": {
+    "three_quarter": 0.043888308107852936,
+    "profile": 0.03425212949514389
+  },
+  "contact_vertices": {
+    "L": 4,
+    "R": 4
+  },
+  "sole_vertices": {
+    "L": 4,
+    "R": 4
+  },
+  "blender_version": "5.2.3 LTS",
+  "engine": "CYCLES",
+  "negative_tests": [
+    "palm_gap",
+    "palm_slide",
+    "palm_penetration",
+    "sliding_sole",
+    "stretched_arm",
+    "box_body_collision"
+  ],
+  "elapsed_seconds": 14.577529099886306,
+  "movies": {
+    "three_quarter": {
+      "sha256": "cfe40205adb8a3268e09f5e28857332fae66c1ed1c3c36d32da345b7cfec0f5d",
+      "bytes": 72666,
+      "frames": 120,
+      "fps": 30,
+      "duration": 4.0,
+      "max_encoding_error": 1.5323842592592594
+    },
+    "profile": {
+      "sha256": "c695fdfe0b46c6e3810715b8fc2481047791be144b016809461aca64f3ae7718",
+      "bytes": 65828,
+      "frames": 120,
+      "fps": 30,
+      "duration": 4.0,
+      "max_encoding_error": 1.6203472222222222
+    }
+  },
+  "decoded_frames_reviewed": 240,
+  "review_scope": "All decoded frames on sheets; rigid palms, no fingers or mass dynamics."
+}

@@ -17,7 +17,7 @@ on:
         description: "фраза для прослушки голосов (пусто — стандартная)"
         default: ""
       ep:
-        description: "номер выпуска для рендера, например demo_layouts (пусто — изменённые в последнем коммите)"
+        description: "имя выпуска, например demo_layouts (пусто — последний коммит; push — весь диапазон)"
         default: ""
       silent:
         description: "1 — без озвучки (тишина, тайминги по темпу речи)"
@@ -35,10 +35,17 @@ permissions:
 jobs:
   render:
     runs-on: ubuntu-latest
+    env:
+      CI_EP: ${{ inputs.ep }}
+      CI_TAKES: ${{ inputs.takes }}
+      CI_VOICES: ${{ inputs.voices }}
+      CI_AUDITION: ${{ inputs.audition }}
+      FV_SILENT: ${{ inputs.silent }}
+      FV_DRAFT: ${{ inputs.draft }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2                 # чтобы видеть, какие выпуски изменились в коммите
+          fetch-depth: 0                 # весь before..sha, включая push из нескольких коммитов
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -59,10 +66,9 @@ jobs:
       - name: Какие выпуски рендерить
         id: eps
         if: ${{ (inputs.takes == '' || inputs.takes == null) && (inputs.voices == '' || inputs.voices == null) }}
-        run: |
-          if [ -n "${{ inputs.ep }}" ]; then E="${{ inputs.ep }}"
-          else E=$(git diff --name-only HEAD~1 HEAD | grep -oE '(episodes/|voice/)[0-9]{3}' | grep -oE '[0-9]{3}' | sort -u | tr '\n' ' '); fi
-          echo "list=$E" >> "$GITHUB_OUTPUT"; echo "выпуски: ${E:-нет}"
+        env:
+          CI_BEFORE: ${{ github.event.before }}
+        run: python tools/ci_artifacts.py select
       - name: Зависимости
         if: ${{ steps.eps.outputs.list != '' }}
         run: |
@@ -77,7 +83,7 @@ jobs:
           set -o pipefail
           mkdir -p out
           pip install -q pillow numpy
-          python video.py --voices "${{ inputs.voices }}" out 2>&1 | tee out/render.log
+          python video.py --voices "$CI_VOICES" out 2>&1 | tee out/render.log
       - name: Дубли озвучки
         if: ${{ inputs.takes != '' && inputs.takes != null }}
         env:
@@ -87,46 +93,31 @@ jobs:
           mkdir -p out
           sudo apt-get install -y -q ffmpeg >/dev/null
           pip install -q pillow numpy faster-whisper
-          FV_TAKES_ANALYZE=1 python video.py --takes "${{ inputs.takes }}" out 2>&1 | tee out/render.log
+          FV_TAKES_ANALYZE=1 python video.py --takes "$CI_TAKES" out 2>&1 | tee out/render.log
       - name: Рендер
         if: ${{ steps.eps.outputs.list != '' }}
         env:
           FISH_API_KEY: ${{ secrets.FISH_API_KEY }}
+          EPISODES: ${{ steps.eps.outputs.list }}
         run: |
           set -o pipefail
           mkdir -p out
           T0=$(date +%s)
-          if [ -n "${{ inputs.audition }}" ]; then
-            FV_WORKERS=4 python video.py --audition "episodes/${{ inputs.ep }}.json" "${{ inputs.audition }}" out 2>&1 | tee -a out/render.log
+          if [ -n "$CI_AUDITION" ]; then
+            FV_WORKERS=4 python video.py --audition "episodes/$CI_EP.json" "$CI_AUDITION" out 2>&1 | tee -a out/render.log
             echo "рендер занял $(( $(date +%s) - T0 )) с" | tee -a out/render.log; exit 0
           fi
-          for n in ${{ steps.eps.outputs.list }}; do
+          SUFFIX=""; if [ "$FV_DRAFT" = 1 ]; then SUFFIX="_draft"; fi
+          read -r -a EPISODE_NAMES <<< "$EPISODES"
+          for n in "${EPISODE_NAMES[@]}"; do
             echo "== Выпуск $n" | tee -a out/render.log
-            FV_WORKERS=4 FV_SILENT="${{ inputs.silent }}" FV_DRAFT="${{ inputs.draft }}" python video.py "episodes/$n.json" "out/$n${{ inputs.draft == '1' && '_draft' || '' }}.mp4" 2>&1 | tee -a out/render.log
+            FV_WORKERS=4 python video.py "episodes/$n.json" "out/$n$SUFFIX.mp4" 2>&1 | tee -a out/render.log
           done
           echo "рендер занял $(( $(date +%s) - T0 )) с" | tee -a out/render.log
       # Готовые ролики кладём в ветку renders: оттуда их удобно скачать и смотреть на GitHub
       - name: Публикация в ветку renders
         if: always()          # лог публикуется и при ошибке — чтобы было видно причину
         run: |
-          BR=renders; [ -n "${{ inputs.takes }}${{ inputs.voices }}" ] && BR=takes
-          [ -z "$(ls out)" ] && exit 0
-          if [ "$BR" = renders ]; then          # прошлые ролики сохраняем: берём ветку и докладываем новые файлы
-            git clone -q --depth 1 -b renders "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" prev || mkdir prev
-            rm -rf prev/.git; cp -n prev/*.mp4 prev/cover_*.png out/ 2>/dev/null || true
-          fi
-          cd out
-          # Страница-папка: список роликов со ссылками на скачивание
-          {
-            echo "# Ролики Admiral 8"
-            echo
-            echo "Нажми на ссылку, чтобы скачать. Обновлено: $(TZ=Europe/Moscow date '+%d.%m.%Y %H:%M')"
-            echo
-            for f in $(ls -r *.mp4 *.mp3 cover_*.png 2>/dev/null); do
-              echo "- [$f](https://github.com/${{ github.repository }}/raw/$BR/$f)"
-            done
-          } > README.md
-          git init -q -b renders
-          git add -A
-          git -c user.name="render-bot" -c user.email="render-bot@users.noreply.github.com" commit -q -m "Рендер ${GITHUB_SHA::7}"
-          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:$BR
+          BR=renders
+          if [ -n "$CI_TAKES$CI_VOICES" ]; then BR=takes; fi
+          python tools/ci_artifacts.py publish out "$BR"

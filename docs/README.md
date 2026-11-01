@@ -46,6 +46,8 @@
 | [PROJECT_HISTORY_2026_11_01.md](PROJECT_HISTORY_2026_11_01.md) | Архив состояния; прежние назначения |
 | [README.md](audit/2026-11-02/README.md) | Уборка файлов и веток: квитанция и границы |
 | [docs_cleanup.md](audit/2026-11-02/docs_cleanup.md) | Уборка документации: изменения и покрытие |
+| [ci_followup.md](audit/2026-11-02/ci_followup.md) | Выбор выпусков и сохранность публикаций |
+| [render_lifecycle.md](audit/2026-11-02/render_lifecycle.md) | Закрытие ресурсов рендера и дополнительные дубли |
 | [code_cleanup.md](audit/2026-11-02/code_cleanup.md) | Уборка кода: изменения, проверки и ограничения |
 | [animation.md](audit/2026-11-01/animation.md) | Срез Blender до исправлений |
 | [production.md](audit/2026-11-01/production.md) | Срез производства и движка до исправлений |

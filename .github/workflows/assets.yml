@@ -39,6 +39,7 @@ jobs:
   assets:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -60,6 +61,7 @@ jobs:
           TEXTURES: ${{ inputs.textures }}
         run: |
           set +e                                   # любая ошибка — в лог, ветка всё равно пушится
+          set -f                                   # ключи не должны раскрываться как shell glob
           mkdir -p a
           python - 2>> a/err.txt <<'PY'
           import os, urllib.request, io
@@ -179,7 +181,7 @@ jobs:
             mkdir -p "a/anim_$k"
             ffprobe -v error -show_entries format=duration:stream=width,height,codec_name,r_frame_rate -of compact "a/anim_$k.webm" >> a/log.txt 2>&1
             # родная частота кадров — в meta.json (раньше брали 15 к/с, анимация шла рывками)
-            ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "a/anim_$k.webm" | python -c "import sys,json; a,b=sys.stdin.read().strip().split('/'); json.dump({'fps': float(a)/float(b)}, open('a/anim_$k/meta.json','w'))"
+            ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "a/anim_$k.webm" | python -c "import sys,json; a,b=sys.stdin.read().strip().split('/'); json.dump({'fps': float(a)/float(b)}, open(sys.argv[1],'w'))" "a/anim_$k/meta.json"
             ffmpeg -v error -c:v libvpx-vp9 -i "a/anim_$k.webm" "a/anim_$k/%03d.png" 2>> a/log.txt \
               || ffmpeg -v error -i "a/anim_$k.webm" "a/anim_$k/%03d.png" 2>> a/log.txt || echo "$k: ffmpeg не смог" >> a/log.txt
             python - "$k" 2>> a/err.txt <<'PY'
@@ -196,9 +198,8 @@ jobs:
               (im.crop(box) if box else im).save(f.replace(".png", ".webp"), lossless=True, method=4)
           print(k, "кадров:", len(fs), "кроп:", box, "альфа min первого:", Image.open(fs[0]).getextrema()[3][0] if fs else None, file=open("a/log.txt", "a"))
           PY
-            rm -f "a/anim_$k"/*.png
+            find "a/anim_$k" -maxdepth 1 -type f -name '*.png' -delete
           done
-          cd a
-          git init -q -b assets && git add -A
-          git -c user.name=render-bot -c user.email=render-bot@users.noreply.github.com commit -q -m assets
-          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" assets
+      - name: Публикация в ветку assets
+        if: always()
+        run: python tools/ci_artifacts.py publish a assets

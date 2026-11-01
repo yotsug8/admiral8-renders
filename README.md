@@ -32,4 +32,5 @@
 - [Погоня v7](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v7_30fps.mp4) — 12,8 с, 360×640/30 fps; второй ракурс сбоку, панорама шагов обоих планов. Предпросмотр, не финальный 1080p.
 
 - [Погоня v8: вариант цветокоррекции](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v8_30fps.mp4) — 12,8 с, 360×640/30 fps. Светлее средние тона, сдержаннее зелень; движение, камеры и звук как в v7. Предпросмотр, не финальный 1080p.
-`n- [Проверка склеек камеры](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/chase_camera_cuts_study.mp4) — сравнение 2 с/30 fps, без звука. Слева v8, справа отклонённый диагональный кандидат: крупность лучше, но скачет фон и хвост перекрывает корпус. На 1 с намеренный переход между двумя выборками. Разбор — docs/studies/CHASE_CAMERA.md в main.
+
+- [Проверка склеек камеры](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/chase_camera_cuts_study.mp4) — сравнение 2 с/30 fps, без звука. Слева v8, справа отклонённый диагональный кандидат: крупность лучше, но скачет фон и хвост перекрывает корпус. На 1 с намеренный переход между двумя выборками. Разбор — docs/studies/CHASE_CAMERA.md в main.

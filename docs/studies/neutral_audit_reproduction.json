@@ -1,0 +1,39 @@
+{
+  "task_id": "neutral_audit_reproducibility",
+  "comparisons": {
+    "converter_tpose_matrices.json": {
+      "numeric_values": 112,
+      "max_abs_difference": 0.0,
+      "parsed_json_exact": true,
+      "old_sha256": "21e67ff79d1b4c5672aaea7ef46ec05129743abb3ff2b43c66f8f91cef062215",
+      "new_sha256": "00b8e180654e9a412effd8bf39bf3636557b4d9bd33105bf94e1e69729ef77a8"
+    },
+    "windows.json": {
+      "numeric_values": 6618,
+      "max_abs_difference": 0,
+      "parsed_json_exact": true,
+      "old_sha256": "0dd856706107d362a71a05ac632d854fe2417bb1f677782bc5e752ed98994063",
+      "new_sha256": "aa7086db19399e9c62673667012b78e3bca875345ae9a90fa2824a10d9542b2a"
+    }
+  },
+  "checks": {
+    "known_rotations_10deg_steps": true,
+    "input_frame_and_amc_labels_preserved": true,
+    "missing_frame_rejected": true,
+    "reflected_basis_rejected": true,
+    "existing_output_rejected_without_change": true,
+    "only_line_endings_and_final_newline_changed": true
+  },
+  "input_hashes": {
+    "study/ready_motion_rotation_audit/neutral/converter_tpose.bvh": "4cb153226b26b193f7fbccce1c6fdbe28df5c7855d0c3749b46037780c5fc225",
+    "study/ready_motion_rotation_audit/neutral/converter_tpose_matrices.json": "21e67ff79d1b4c5672aaea7ef46ec05129743abb3ff2b43c66f8f91cef062215",
+    "study/ready_motion_rotation_audit/neutral/windows.json": "0dd856706107d362a71a05ac632d854fe2417bb1f677782bc5e752ed98994063",
+    "study/ready_motion_rotation_audit/result/rotations.json": "44de6db9ac7af383402a277df53cfaeae75c2ec5c5afddb1bf1ae42f4db22bb1"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "python": "3.10.11",
+    "blender": "5.2.0 LTS fbe6228777e7"
+  },
+  "note": "JSON values exact; byte hashes differ only due to explicit UTF-8/LF serialization and final newline. No motion changes."
+}

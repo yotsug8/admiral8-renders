@@ -17,6 +17,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ROOT / 'tools/blender'))
 from contact_reaction import _rig, _solve_leg, _basis
 from pudge_tank_color import apply_color
+from pudge_tank_finish import ground_actor_shadow
 
 scene = bpy.context.scene
 obstruction = bpy.data.objects.get('radiant_tower002.radiant_tower002_model.004')
@@ -528,6 +529,8 @@ for frame in range(300):
         obj.keyframe_insert('scale', frame=frame)
         obj.keyframe_insert('location', frame=frame)
 
+shadow_report = ground_actor_shadow(scene)
+(OUT / 'shadow_qa.json').write_text(json.dumps(shadow_report, indent=2), encoding='utf-8')
 scene.frame_set(0)
 bpy.context.view_layer.update()
 report = {'frames': 300, 'fps': 30, 'cuts': [s[0] for s in shots] + [300],

@@ -1,0 +1,58 @@
+[
+  {
+    "path": "vendor/three/three.module.min.js",
+    "url": "https://raw.githubusercontent.com/mrdoob/three.js/r170/build/three.module.min.js",
+    "local_sha256": "8e71269b773b81802e7f5f71d8528f1e0c29a82c55f0609845b528389aed8439",
+    "upstream_sha256": "08fd7545d13d2c7fb65ab691530a802dafefd638596501854f267d0fb13c39e7",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/three/addons/loaders/GLTFLoader.js",
+    "url": "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/jsm/loaders/GLTFLoader.js",
+    "local_sha256": "5bb7bde28842727558c1f9a692004229c76ed8e8f846469d7c6258e719c7ee8c",
+    "upstream_sha256": "45139faddd5aaf48ed2d62203d976e5cbd703db1a592de40527f9f6cf58abd44",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/three/addons/utils/BufferGeometryUtils.js",
+    "url": "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/jsm/utils/BufferGeometryUtils.js",
+    "local_sha256": "5beb9dc7e9248a32f7b5e8cc0dd5fd4054d227d8e19a3a98b4715f6d2784c4ef",
+    "upstream_sha256": "c25b7930e570e9ec56173cd3b866ec8d2e10016630db3937efb439daf1cedbf6",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/lottie/lottie_light.min.js",
+    "url": "https://raw.githubusercontent.com/airbnb/lottie-web/v5.13.0/build/player/lottie_light.min.js",
+    "local_sha256": "0a7a554b1ce297e6b6dbc4358d7b134dd257209b14b5afd547e1ff581548ac1b",
+    "upstream_sha256": "9588432bec30c8ef8200bac4a67d8aaad881047bc2a6c9fa624d90ec96402410",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/gsap/gsap.min.js",
+    "url": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/gsap.min.js",
+    "local_sha256": "dd7dc87e023b3480f9707296342565ca2e361c8393cabb30f9557e06eb1bed4d",
+    "upstream_sha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/gsap/CustomEase.min.js",
+    "url": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/CustomEase.min.js",
+    "local_sha256": "d19a2e3a54218ea54f46f8e14eae04a838ae4b4f6069c21fd759be160721ed3d",
+    "upstream_sha256": "466e426a5c60c21c94b15a30a3dffacac9bb39ce8f4e07d071d7d4bb1be43390",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  },
+  {
+    "path": "vendor/gsap/SplitText.min.js",
+    "url": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/SplitText.min.js",
+    "local_sha256": "e6a2238d89046fa9acccce1fcc3c547167f6ebdd0afd8cbb46be4515fe4b58ff",
+    "upstream_sha256": "419f7027a5f086a12cb7988736d8fdd3a6ed2200229661de25b6628ca7ced344",
+    "byte_equal": false,
+    "newline_normalized_equal": true
+  }
+]

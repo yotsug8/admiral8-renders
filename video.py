@@ -543,7 +543,7 @@ def meme(node):
                 audio=float(node.get("audio", 1 if m["audio"] else 0)), hold=node.get("hold", False))   # мем показался — и ушёл
 
 
-def resolve_scene(node, heroes, items):
+def resolve_scene(node, heroes, items, *, _stage_actor=False):
     """Обход описания сцены: "src": "hero:…/item:…/ability:…/file:…" → file:// URI, "anim": "ключ" → кадры анимации,
     видео → кадры, lottie → JSON анимации внутрь описания."""
     if isinstance(node, list):
@@ -583,7 +583,10 @@ def resolve_scene(node, heroes, items):
     for k, v in node.items():
         if k == "src" and isinstance(v, str) and v.split(":", 1)[0] in ("hero", "item", "ability", "file", "game"):
             out[k] = image_ref(v, heroes, items)
-        elif k == "anim" and isinstance(v, str) and node.get("type") != "model":   # у 3D-модели anim — имя анимации
+        elif k == "actors" and node.get("type") == "stage" and isinstance(v, list):
+            out[k] = [resolve_scene(a, heroes, items, _stage_actor=True) for a in v]
+        elif k == "anim" and isinstance(v, str) and node.get("type") != "model" and not _stage_actor:
+            # У model и актёров stage anim — имя GLB-анимации, а не ключ 2D-кадров.
             out[k] = anim_frames(v)
         else:
             out[k] = resolve_scene(v, heroes, items)

@@ -96,7 +96,12 @@ def main():
         raise ValueError('Invalid picture duration or black tail')
     if any(not 0 <= f < count for f in recipe['look_samples']):
         raise ValueError('Look sample outside pictures')
-    for path in paths:
+    reference_files = recipe.get('look_reference_files')
+    if reference_files is not None and (not isinstance(reference_files, list) or not reference_files):
+        raise ValueError('Explicit look references must be a nonempty list')
+    look_paths = ([asset(root, p) for p in reference_files] if reference_files is not None
+                  else [paths[f] for f in recipe['look_samples']])
+    for path in paths + look_paths:
         with Image.open(path) as im:
             im.verify()
     if args.validate_only:
@@ -109,8 +114,8 @@ def main():
     frames = out / 'frames'
     frames.mkdir()
     samples = []
-    for f in recipe['look_samples']:
-        with Image.open(paths[f]) as im:
+    for path in look_paths:
+        with Image.open(path) as im:
             samples.append(np.asarray(im.convert('RGB').resize((270, 480))))
     look = ChaseLook(np.stack(samples))
     hashes = []
@@ -129,6 +134,8 @@ def main():
     report['recipe'] = recipe
     report['source_frames'] = hashes
     report['audio_sha256'] = hashlib.sha256(audio.read_bytes()).hexdigest()
+    report['look_references'] = [dict(source=p.relative_to(root).as_posix(),
+                                    sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in look_paths]
     (out/'assembly_report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(json.dumps({k: v for k, v in report.items() if k not in ('recipe', 'source_frames')}))
 

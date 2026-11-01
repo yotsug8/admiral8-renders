@@ -8,6 +8,8 @@
 
 ## Новый компьютер
 
+Дополнительный компьютер для параллельных задач: [подключение и разделение работы](WORKER.md).
+
 1. Установить Git, Python 3.11, Node.js. Для анимационных сценок — Dota 2 с Workshop Tools, Blender 5.2 и Source2Viewer-CLI.
    Для Blender MCP отдельно установить [uv по официальной инструкции](https://docs.astral.sh/uv/getting-started/installation/), затем проверить `Get-Command uvx` в PowerShell. Для скриптов записи из движка нужен Git Bash из Git for Windows (пример ниже).
 2. Клонировать проект, подставив URL репозитория вместо `<repository-url>`:

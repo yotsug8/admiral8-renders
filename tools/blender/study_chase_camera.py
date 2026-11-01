@@ -17,8 +17,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--actors', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
-    parser.add_argument('--shot', action='store_true', help='Render all 96 candidate frames instead of paired stills')
+    parser.add_argument('--shot', action='store_true', help='Render every candidate frame instead of paired stills')
+    parser.add_argument('--start', type=int, default=144)
+    parser.add_argument('--end', type=int, default=239)
+    parser.add_argument('--offset', type=float, nargs=3, default=(2.5, 8, 2.8))
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
+    if args.end < args.start:
+        parser.error('--end must be >= --start')
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     actors = json.loads(args.actors.read_text(encoding='utf-8'))
@@ -34,12 +39,12 @@ def main():
     scene.render.image_settings.file_format = 'PNG'
     points_by_frame = {}
     poses = {}
-    for frame in range(144, 240):
+    for frame in range(args.start, args.end + 1):
         scene.frame_set(frame)
         h = bpy.data.objects[actors['hoodwink']['root']].matrix_world.translation.copy()
         k = bpy.data.objects[actors['kunkka']['root']].matrix_world.translation.copy()
         target = h * .8 + k * .2 + Vector((0, 0, 1.5))
-        position = h + Vector((2.5, 8, 2.8))
+        position = h + Vector(args.offset)
         poses[frame] = (position, target)
         dg = bpy.context.evaluated_depsgraph_get()
         points = []
@@ -83,7 +88,8 @@ def main():
                     for curve in bag.fcurves:
                         for key in curve.keyframe_points:
                             key.interpolation = 'LINEAR'
-    report = {'lens': chosen, 'frames': list(range(144, 240)) if args.shot else [144, 192, 239],
+    report = {'lens': chosen, 'range': [args.start, args.end], 'offset': list(args.offset),
+              'frames': list(range(args.start, args.end + 1)) if args.shot else sorted({args.start, (args.start + args.end + 1)//2, args.end}),
               'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Source is not saved.'}
     (out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     if args.shot:

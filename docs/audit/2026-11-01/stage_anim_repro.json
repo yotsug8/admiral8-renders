@@ -1,0 +1,16 @@
+{
+  "input": {
+    "hero": "kunkka",
+    "anim": "walk"
+  },
+  "output": {
+    "hero": "kunkka",
+    "anim": {
+      "fps": 24,
+      "frames": [
+        "stub"
+      ]
+    }
+  },
+  "method": "Exact AST-extracted function, 2D resource helper stubbed; no asset access or browser"
+}

@@ -1,0 +1,2293 @@
+{
+  "date": "2026-11-01",
+  "scope": "Current main checkout including two pending production files; not every historic commit or every local game asset.",
+  "files": [
+    {
+      "path": ".codex/config.toml",
+      "bytes_at_inventory": 148,
+      "mode": "full_text_review",
+      "sha256_reviewed": "cc4b345d621aab43d76884d63c4068f19d1c694c1832ed9e19768f6a38e9c902",
+      "role": "Подключение MCP",
+      "review": "instructions.md",
+      "sha256_after_corrections": "cc4b345d621aab43d76884d63c4068f19d1c694c1832ed9e19768f6a38e9c902",
+      "changed_after_review": false
+    },
+    {
+      "path": ".github/workflows/assets.yml",
+      "bytes_at_inventory": 13562,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a6137969c73589e1e01635de04d94f7dc639b023423e495f84e8e29127e3271e",
+      "role": "Загрузка ассетов в CI",
+      "review": "instructions.md",
+      "sha256_after_corrections": "a6137969c73589e1e01635de04d94f7dc639b023423e495f84e8e29127e3271e",
+      "changed_after_review": false
+    },
+    {
+      "path": ".github/workflows/render.yml",
+      "bytes_at_inventory": 6917,
+      "mode": "full_text_review",
+      "sha256_reviewed": "38a6b1fcac7a9fdc6c8da4326aa5206f2bc664eda81aefb078f0fb976e6bc870",
+      "role": "CI рендера, голосов и публикации",
+      "review": "instructions.md",
+      "sha256_after_corrections": "38a6b1fcac7a9fdc6c8da4326aa5206f2bc664eda81aefb078f0fb976e6bc870",
+      "changed_after_review": false
+    },
+    {
+      "path": ".gitignore",
+      "bytes_at_inventory": 396,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "54279c4da8872f14790a0b59af998c44e952d6dffcd556667e74e90e43f7536e",
+      "sha256_after_corrections": "54279c4da8872f14790a0b59af998c44e952d6dffcd556667e74e90e43f7536e",
+      "changed_after_review": false
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes_at_inventory": 17099,
+      "mode": "full_text_review",
+      "sha256_reviewed": "c5dbd9bb1f1be4a6971f8f9aa3dbe8a966ca651b71b6ec9b8f5432a2acda7c77",
+      "role": "Единые правила и внешние ресурсы Blender",
+      "review": "instructions.md",
+      "sha256_after_corrections": "c49b58a2db8475f488f30fd568ddd180725057e7ba36facf5634ebe085084620",
+      "changed_after_review": true
+    },
+    {
+      "path": "DESIGN.md",
+      "bytes_at_inventory": 9461,
+      "mode": "full_text_review",
+      "sha256_reviewed": "998e6302334929a88f5d1cccb94e946ac066e743ac7885ff8511a3c7997f04ab",
+      "role": "Правила визуального оформления и звука",
+      "review": "instructions.md",
+      "sha256_after_corrections": "42fa0f95a258b2a6ea0dcc8020b96065d4d689e818d398586fe631b1b1988db9",
+      "changed_after_review": true
+    },
+    {
+      "path": "README.md",
+      "bytes_at_inventory": 10005,
+      "mode": "full_text_review",
+      "sha256_reviewed": "56bbc63f91405c53f29dfb3735a5196b7cb080dc97a1f5265fbe4197a6ffe67c",
+      "role": "Общий вход и схема выпуска",
+      "review": "instructions.md",
+      "sha256_after_corrections": "56bbc63f91405c53f29dfb3735a5196b7cb080dc97a1f5265fbe4197a6ffe67c",
+      "changed_after_review": false
+    },
+    {
+      "path": "SCENES.md",
+      "bytes_at_inventory": 11888,
+      "mode": "full_text_review",
+      "sha256_reviewed": "0f30537b4bd77aff0bdf8c4f1eeea1c33c0f7a0432f875d2735e67a4b73dc825",
+      "role": "Контракт JSON сцен, 3D, эффектов и звука",
+      "review": "instructions.md",
+      "sha256_after_corrections": "0f30537b4bd77aff0bdf8c4f1eeea1c33c0f7a0432f875d2735e67a4b73dc825",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_celestial_hammer.png",
+      "bytes_at_inventory": 31085,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "bb6cb79af9344a4f8955497cac22fa624351db35219223fc4dbcf45694a8e9f1",
+      "sha256_after_corrections": "bb6cb79af9344a4f8955497cac22fa624351db35219223fc4dbcf45694a8e9f1",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_fire_wreath.png",
+      "bytes_at_inventory": 32070,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "f47f6f5e7af704b7a9f99f5b01d3823d80f8b8666284b4b777b8eb4e0a8ff632",
+      "sha256_after_corrections": "f47f6f5e7af704b7a9f99f5b01d3823d80f8b8666284b4b777b8eb4e0a8ff632",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_luminosity.png",
+      "bytes_at_inventory": 37390,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "4f012c5a6a7e3583433064790aba91be11024f9e1ec0c820e491518bbeead2ef",
+      "sha256_after_corrections": "4f012c5a6a7e3583433064790aba91be11024f9e1ec0c820e491518bbeead2ef",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_solar_guardian.png",
+      "bytes_at_inventory": 29975,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "28c11bea4a8507f1d3d8e146752aae6fa0cdad0e69bb6773c5a492c6ec6d02bb",
+      "sha256_after_corrections": "28c11bea4a8507f1d3d8e146752aae6fa0cdad0e69bb6773c5a492c6ec6d02bb",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/earthshaker_aftershock.png",
+      "bytes_at_inventory": 22912,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "5dea27fe9b9abc3cc27bf505378bad167a2ec4c73f5d573477eb6e945f53298f",
+      "sha256_after_corrections": "5dea27fe9b9abc3cc27bf505378bad167a2ec4c73f5d573477eb6e945f53298f",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/hoodwink_scurry.png",
+      "bytes_at_inventory": 34210,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "08e44b1d72a36645d366649f33245ed74585f0b54c9238771281aaf8adfc42e8",
+      "sha256_after_corrections": "08e44b1d72a36645d366649f33245ed74585f0b54c9238771281aaf8adfc42e8",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_admirals_rum.png",
+      "bytes_at_inventory": 38646,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "25b7355e4ca6757f7096b2ccf783d8cee92c18737a2d5b953b477e4cc16b374d",
+      "sha256_after_corrections": "25b7355e4ca6757f7096b2ccf783d8cee92c18737a2d5b953b477e4cc16b374d",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_ghostship.png",
+      "bytes_at_inventory": 29542,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "b3085907a917c31973d9b7dfeb12f2f86dee966db8ef21e6d82373bdb45e29ba",
+      "sha256_after_corrections": "b3085907a917c31973d9b7dfeb12f2f86dee966db8ef21e6d82373bdb45e29ba",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_tidal_wave.png",
+      "bytes_at_inventory": 38270,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "6411940ae9c74024cdf387ac2fb75119f16407b1b5f386feb0200810dc2c4af7",
+      "sha256_after_corrections": "6411940ae9c74024cdf387ac2fb75119f16407b1b5f386feb0200810dc2c4af7",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_tidebringer.png",
+      "bytes_at_inventory": 30521,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "1907dde2c8d8d1c38b1626985e1d18a8cc4980e1354137956014c2473108277a",
+      "sha256_after_corrections": "1907dde2c8d8d1c38b1626985e1d18a8cc4980e1354137956014c2473108277a",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_torrent.png",
+      "bytes_at_inventory": 32726,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "5706e8a6b8945f1cc037e01b4ae596ed8defb0263c35ab4efadbeaf4769edbe6",
+      "sha256_after_corrections": "5706e8a6b8945f1cc037e01b4ae596ed8defb0263c35ab4efadbeaf4769edbe6",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_torrent_storm.png",
+      "bytes_at_inventory": 40562,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "de0d3e58b842ea90d80ea6302a7cf68bd56870d63149025c7b598f6600f578d2",
+      "sha256_after_corrections": "de0d3e58b842ea90d80ea6302a7cf68bd56870d63149025c7b598f6600f578d2",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/kunkka_x_marks_the_spot.png",
+      "bytes_at_inventory": 32341,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "247eb86130ae14571bb8c71c8150bb49d532cb0ed951fd3a28783d2c2642a2fc",
+      "sha256_after_corrections": "247eb86130ae14571bb8c71c8150bb49d532cb0ed951fd3a28783d2c2642a2fc",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/pudge_meat_hook.png",
+      "bytes_at_inventory": 30990,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "e82ba11a8b079fec1ad4f9050ccb6e9c714076b58e3a7f3e335513e5598c7ef8",
+      "sha256_after_corrections": "e82ba11a8b079fec1ad4f9050ccb6e9c714076b58e3a7f3e335513e5598c7ef8",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/silencer_global_silence.png",
+      "bytes_at_inventory": 43446,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "379850f34fc81edc0f1da2c85bb1638055e857a9d53a7628414d17052c5d8ce9",
+      "sha256_after_corrections": "379850f34fc81edc0f1da2c85bb1638055e857a9d53a7628414d17052c5d8ce9",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/abilities/techies_land_mines.png",
+      "bytes_at_inventory": 31490,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "10c13738e6aa244333169af5b9982643ee4067c3b64fcacdce90f99055f8c380",
+      "sha256_after_corrections": "10c13738e6aa244333169af5b9982643ee4067c3b64fcacdce90f99055f8c380",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/001.webp",
+      "bytes_at_inventory": 607556,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "75aa18bdaaeda6a2b37e47458bb5adbacea6ade2c9b33ad7b83274539b3563e3",
+      "sha256_after_corrections": "75aa18bdaaeda6a2b37e47458bb5adbacea6ade2c9b33ad7b83274539b3563e3",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/002.webp",
+      "bytes_at_inventory": 614048,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "b5f6745dab8f8823b3fe5f7bfe26e0862b50b10269cb6f1b03e1f4966a7f1d67",
+      "sha256_after_corrections": "b5f6745dab8f8823b3fe5f7bfe26e0862b50b10269cb6f1b03e1f4966a7f1d67",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/003.webp",
+      "bytes_at_inventory": 612598,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "bbd35ba451f674d14c7187e66263c40eb4fdec2190ca3fdafe7817973195197d",
+      "sha256_after_corrections": "bbd35ba451f674d14c7187e66263c40eb4fdec2190ca3fdafe7817973195197d",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/004.webp",
+      "bytes_at_inventory": 607948,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "55121e540a31d940ea8781f417edc40986da8979f7dfa6406481ecbaf75e0416",
+      "sha256_after_corrections": "55121e540a31d940ea8781f417edc40986da8979f7dfa6406481ecbaf75e0416",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/005.webp",
+      "bytes_at_inventory": 607052,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "47dac148cafb6489f6917404e138c6249626b401ffd36c172ab3a9f403eb0711",
+      "sha256_after_corrections": "47dac148cafb6489f6917404e138c6249626b401ffd36c172ab3a9f403eb0711",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/006.webp",
+      "bytes_at_inventory": 605192,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "62830068bbcbaabae3c200e27bc31cc854ac2cf798ec4956863f3f49ece85710",
+      "sha256_after_corrections": "62830068bbcbaabae3c200e27bc31cc854ac2cf798ec4956863f3f49ece85710",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/007.webp",
+      "bytes_at_inventory": 604568,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "71d589fb756738ee6260656e26404430c31ec0a4a8664434ac0734a180229545",
+      "sha256_after_corrections": "71d589fb756738ee6260656e26404430c31ec0a4a8664434ac0734a180229545",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/008.webp",
+      "bytes_at_inventory": 603974,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "070385e6f23c89c8440a0fd722b85674b9ad5ef83d90ea97455507ef89daae86",
+      "sha256_after_corrections": "070385e6f23c89c8440a0fd722b85674b9ad5ef83d90ea97455507ef89daae86",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/009.webp",
+      "bytes_at_inventory": 604180,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "060b140efad8ae3aa3b315bf6e5995bab8660089c18b98553a0b5fc02eb517ac",
+      "sha256_after_corrections": "060b140efad8ae3aa3b315bf6e5995bab8660089c18b98553a0b5fc02eb517ac",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/010.webp",
+      "bytes_at_inventory": 603820,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "68372b3b5a46eb36fb9986839901ef3dcf373404abef25920c2265f64d83801e",
+      "sha256_after_corrections": "68372b3b5a46eb36fb9986839901ef3dcf373404abef25920c2265f64d83801e",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/011.webp",
+      "bytes_at_inventory": 602122,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "4cb99a18d20ba36b46db374fa228915470c81c97d90aebe20e683389487deaf9",
+      "sha256_after_corrections": "4cb99a18d20ba36b46db374fa228915470c81c97d90aebe20e683389487deaf9",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/012.webp",
+      "bytes_at_inventory": 596678,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "2df87d0f30dfef52fb46225054244bdb111befc1ad5e24afc7c98faa98a40b35",
+      "sha256_after_corrections": "2df87d0f30dfef52fb46225054244bdb111befc1ad5e24afc7c98faa98a40b35",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/013.webp",
+      "bytes_at_inventory": 607774,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "9929755d7537e116a95bacd7b49c7d9ccce2c233fd6cc9d9bcb014127e4adeba",
+      "sha256_after_corrections": "9929755d7537e116a95bacd7b49c7d9ccce2c233fd6cc9d9bcb014127e4adeba",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/014.webp",
+      "bytes_at_inventory": 608182,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "57837263127bd88a70ddd76e93a612409689ba0da33d582a53943a081fc3e9e5",
+      "sha256_after_corrections": "57837263127bd88a70ddd76e93a612409689ba0da33d582a53943a081fc3e9e5",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/015.webp",
+      "bytes_at_inventory": 601222,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "81fbfef538d6c28f2697dffd6c94664f22590ab9f58a43c5ae4cb38e96b29fb9",
+      "sha256_after_corrections": "81fbfef538d6c28f2697dffd6c94664f22590ab9f58a43c5ae4cb38e96b29fb9",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/016.webp",
+      "bytes_at_inventory": 598062,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "76fbb3130d2d71089506a7e0d9656aae772936ee6ccc25e2f631c75004d9af53",
+      "sha256_after_corrections": "76fbb3130d2d71089506a7e0d9656aae772936ee6ccc25e2f631c75004d9af53",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/017.webp",
+      "bytes_at_inventory": 592838,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "cda959660fcb94d7f14f94f8911b931497bb7b0bed6e9ef3c69aa482a77d8f77",
+      "sha256_after_corrections": "cda959660fcb94d7f14f94f8911b931497bb7b0bed6e9ef3c69aa482a77d8f77",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/018.webp",
+      "bytes_at_inventory": 594552,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "7324e9808f69649b51e6f4043ea2d4e1ca34ccd5032bb59f8acd2e60340a41ae",
+      "sha256_after_corrections": "7324e9808f69649b51e6f4043ea2d4e1ca34ccd5032bb59f8acd2e60340a41ae",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/019.webp",
+      "bytes_at_inventory": 590822,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "2b62b2e97b01d7e706e34ec4865326126fdfdf2e3fac23eea0adf603e21f30f4",
+      "sha256_after_corrections": "2b62b2e97b01d7e706e34ec4865326126fdfdf2e3fac23eea0adf603e21f30f4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/020.webp",
+      "bytes_at_inventory": 590562,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "879e68600e5c5c587d3eee219e5017d629bda4133896c6214ab847e0468cebbd",
+      "sha256_after_corrections": "879e68600e5c5c587d3eee219e5017d629bda4133896c6214ab847e0468cebbd",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/021.webp",
+      "bytes_at_inventory": 592820,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "16c35764ef65a610ab53ccbb9fd0952baa044c4eb18b69ecb05ac7be28e489e4",
+      "sha256_after_corrections": "16c35764ef65a610ab53ccbb9fd0952baa044c4eb18b69ecb05ac7be28e489e4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/022.webp",
+      "bytes_at_inventory": 591408,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "d863147933b1e647043ab0e029ab763fc66240e62477ab50347d7daf5fcb17cc",
+      "sha256_after_corrections": "d863147933b1e647043ab0e029ab763fc66240e62477ab50347d7daf5fcb17cc",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/023.webp",
+      "bytes_at_inventory": 583278,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "0266bf1eb9cc1afb236c03a5404aaed5d8be5871f0ddd1c227f4ce5374d1b2be",
+      "sha256_after_corrections": "0266bf1eb9cc1afb236c03a5404aaed5d8be5871f0ddd1c227f4ce5374d1b2be",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/024.webp",
+      "bytes_at_inventory": 590680,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "db0b2b48a879e2cd72a58128a85d5b4b84352e5e2e52d784b122792d42e39fc2",
+      "sha256_after_corrections": "db0b2b48a879e2cd72a58128a85d5b4b84352e5e2e52d784b122792d42e39fc2",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/025.webp",
+      "bytes_at_inventory": 587390,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "609e768cf6f8185e938781226f87be0d9011251b5185ad252dea4de6a81d3608",
+      "sha256_after_corrections": "609e768cf6f8185e938781226f87be0d9011251b5185ad252dea4de6a81d3608",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/026.webp",
+      "bytes_at_inventory": 596986,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "bd88c4e113a303f819445b5f7e50bb6c66feef132347782960944bb093be0b01",
+      "sha256_after_corrections": "bd88c4e113a303f819445b5f7e50bb6c66feef132347782960944bb093be0b01",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/027.webp",
+      "bytes_at_inventory": 601394,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "e502f189a4315030c49e979ac6a788fb4036c3c4203a5f64d4bf3b38efc40f80",
+      "sha256_after_corrections": "e502f189a4315030c49e979ac6a788fb4036c3c4203a5f64d4bf3b38efc40f80",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/028.webp",
+      "bytes_at_inventory": 593816,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "fd29898e443dc01c0d6ba259a41af25cb8e240f70bdd724130009f9e1d300e12",
+      "sha256_after_corrections": "fd29898e443dc01c0d6ba259a41af25cb8e240f70bdd724130009f9e1d300e12",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/029.webp",
+      "bytes_at_inventory": 592156,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "87e927c40388d44080f6793889b220767069d6764a84566a1d859ebcc3e14fa2",
+      "sha256_after_corrections": "87e927c40388d44080f6793889b220767069d6764a84566a1d859ebcc3e14fa2",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/030.webp",
+      "bytes_at_inventory": 586510,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "86ce5b993e7487c1478a82505a5e766457793d51ad59e1c97f53aa71a35c29f7",
+      "sha256_after_corrections": "86ce5b993e7487c1478a82505a5e766457793d51ad59e1c97f53aa71a35c29f7",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/031.webp",
+      "bytes_at_inventory": 585538,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "7494a75e6b0d2b8d83f6c148b8fa34e8d4ba6057e5bb8ad7992864aad220aead",
+      "sha256_after_corrections": "7494a75e6b0d2b8d83f6c148b8fa34e8d4ba6057e5bb8ad7992864aad220aead",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/032.webp",
+      "bytes_at_inventory": 586128,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "40c0867885547bbbf79fb1cf33721a5b4ba16b3941caa21182bd711fa3da5264",
+      "sha256_after_corrections": "40c0867885547bbbf79fb1cf33721a5b4ba16b3941caa21182bd711fa3da5264",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/033.webp",
+      "bytes_at_inventory": 593184,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "772668826d83b9de9ae94e179354d9f38f8e2e4a943c4feef09c31b12b47b8b1",
+      "sha256_after_corrections": "772668826d83b9de9ae94e179354d9f38f8e2e4a943c4feef09c31b12b47b8b1",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/034.webp",
+      "bytes_at_inventory": 593202,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "8f69bf7102393a77845bab5d35159751331ac69103b787f78dcae68318445c2c",
+      "sha256_after_corrections": "8f69bf7102393a77845bab5d35159751331ac69103b787f78dcae68318445c2c",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/035.webp",
+      "bytes_at_inventory": 591404,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "5edbd78d41050d4c4049595810eb12bfbbeed7bdf2bbca8565daba64b9c73847",
+      "sha256_after_corrections": "5edbd78d41050d4c4049595810eb12bfbbeed7bdf2bbca8565daba64b9c73847",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/036.webp",
+      "bytes_at_inventory": 590816,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "b05c16a915ff2d305bce12b17c9e08a81beee86f4c775a5d851b008bdd8d69db",
+      "sha256_after_corrections": "b05c16a915ff2d305bce12b17c9e08a81beee86f4c775a5d851b008bdd8d69db",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/037.webp",
+      "bytes_at_inventory": 591354,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "1e0c34d78d59b08f7a075f8e3bb7f89f25849603366a9adabf1668bcbd57c825",
+      "sha256_after_corrections": "1e0c34d78d59b08f7a075f8e3bb7f89f25849603366a9adabf1668bcbd57c825",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/038.webp",
+      "bytes_at_inventory": 588964,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "2e97086da799fef41caf9897e403f3a2a936c74143f08d28d1ffd5fbbe63bd78",
+      "sha256_after_corrections": "2e97086da799fef41caf9897e403f3a2a936c74143f08d28d1ffd5fbbe63bd78",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/039.webp",
+      "bytes_at_inventory": 589078,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "940ccd13ddb6e74581c05d0d5dc91ab067c50731a4b4fb4a32c1851315d71a36",
+      "sha256_after_corrections": "940ccd13ddb6e74581c05d0d5dc91ab067c50731a4b4fb4a32c1851315d71a36",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/040.webp",
+      "bytes_at_inventory": 593966,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "3d01cd16dccdd160633edc2473f9eea3fc9a58fcda334b87967c75a7c350166f",
+      "sha256_after_corrections": "3d01cd16dccdd160633edc2473f9eea3fc9a58fcda334b87967c75a7c350166f",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/041.webp",
+      "bytes_at_inventory": 594670,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "64f22a6bebd219ef27ccd882080132436b606a73016fe52efe3e4b5d7f64f1d9",
+      "sha256_after_corrections": "64f22a6bebd219ef27ccd882080132436b606a73016fe52efe3e4b5d7f64f1d9",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/042.webp",
+      "bytes_at_inventory": 606890,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "78c3589feeb3387eca7a103913c517733f06e9eea13fe8dd3c5b61711d2141fb",
+      "sha256_after_corrections": "78c3589feeb3387eca7a103913c517733f06e9eea13fe8dd3c5b61711d2141fb",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/anim/kunkka/meta.json",
+      "bytes_at_inventory": 13,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "afb1bb762368186be6afa16e8f7cb6730b9e3aa98fa656b219237aecd3d849d4",
+      "sha256_after_corrections": "afb1bb762368186be6afa16e8f7cb6730b9e3aa98fa656b219237aecd3d849d4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/events/bali_major_2023.png",
+      "bytes_at_inventory": 54575,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "b0c46fdc59159d3cbbd7cfe4faea13d4d20c998e6a95376a37d61132cb7ca480",
+      "sha256_after_corrections": "b0c46fdc59159d3cbbd7cfe4faea13d4d20c998e6a95376a37d61132cb7ca480",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/events/fissure_special.png",
+      "bytes_at_inventory": 6285,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "3255ce8afae9d8a6e0fd4e09b1eb531cd1eedfd56328bcaf6415aca96765195e",
+      "sha256_after_corrections": "3255ce8afae9d8a6e0fd4e09b1eb531cd1eedfd56328bcaf6415aca96765195e",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/events/ti_2025.png",
+      "bytes_at_inventory": 503817,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "1e3ac478a9efed168ea65ad9867b29e72f4814009e8a76c5e54fab4668be2eeb",
+      "sha256_after_corrections": "1e3ac478a9efed168ea65ad9867b29e72f4814009e8a76c5e54fab4668be2eeb",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/heroes/pudge.png",
+      "bytes_at_inventory": 883401,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "bfaee283180172ce3e88d18d0216abf5561ad6de0111acbc389f6787e2eecaed",
+      "sha256_after_corrections": "bfaee283180172ce3e88d18d0216abf5561ad6de0111acbc389f6787e2eecaed",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/items/blink.png",
+      "bytes_at_inventory": 12523,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "e8524e5890362d9eb9e5c46482d30d98085da0d34f81351f84b3c18749549330",
+      "sha256_after_corrections": "e8524e5890362d9eb9e5c46482d30d98085da0d34f81351f84b3c18749549330",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/items/bottle.png",
+      "bytes_at_inventory": 9559,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "3adb252782298abf51779c17b3fca61134da6f3e1e05bfbaef0fc1bc604fe7d3",
+      "sha256_after_corrections": "3adb252782298abf51779c17b3fca61134da6f3e1e05bfbaef0fc1bc604fe7d3",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/items/cheese.png",
+      "bytes_at_inventory": 9562,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "6593e58f131ffba5d00e9b94bc911b27e954402dc97c3a406e7e4f7e91300fb5",
+      "sha256_after_corrections": "6593e58f131ffba5d00e9b94bc911b27e954402dc97c3a406e7e4f7e91300fb5",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/items/rapier.png",
+      "bytes_at_inventory": 12374,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "8bda8837184ca61e618becae687325eb67b3924b066a6ed2d4b2077e6953e38f",
+      "sha256_after_corrections": "8bda8837184ca61e618becae687325eb67b3924b066a6ed2d4b2077e6953e38f",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/items/tango.png",
+      "bytes_at_inventory": 10368,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "f41ce862391ab0869215ffdf5f6a20c4ce9aee7ee1b316895bc36b9450a99ddb",
+      "sha256_after_corrections": "f41ce862391ab0869215ffdf5f6a20c4ce9aee7ee1b316895bc36b9450a99ddb",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/lottie/burst.json",
+      "bytes_at_inventory": 1360,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "fa9b2062b14163947fe50b1553742669afc8de71450a89878fcc1b0502ceea0e",
+      "sha256_after_corrections": "fa9b2062b14163947fe50b1553742669afc8de71450a89878fcc1b0502ceea0e",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/orgs/valve.png",
+      "bytes_at_inventory": 2202,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "973dc22520fa2f6fc11de371ba12ea204b89793957ee6549cfd6b70edea3deff",
+      "sha256_after_corrections": "973dc22520fa2f6fc11de371ba12ea204b89793957ee6549cfd6b70edea3deff",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/teams/gaimin_gladiators.png",
+      "bytes_at_inventory": 41215,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "6608dc35a5b8035479182845ae4f0d4bd070a55047574d95b9bea631255f7ba4",
+      "sha256_after_corrections": "6608dc35a5b8035479182845ae4f0d4bd070a55047574d95b9bea631255f7ba4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/teams/mosquito_clan.png",
+      "bytes_at_inventory": 674188,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "215f970653e752f35278a489568c61d753d7737005027ee96a8067500e926e6c",
+      "sha256_after_corrections": "215f970653e752f35278a489568c61d753d7737005027ee96a8067500e926e6c",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/teams/og.png",
+      "bytes_at_inventory": 176183,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "62e1ab5ce48433324cf7fea9696c1f4fa2d5e4fd6b0e8c21bf2cbcabe5d02bbc",
+      "sha256_after_corrections": "62e1ab5ce48433324cf7fea9696c1f4fa2d5e4fd6b0e8c21bf2cbcabe5d02bbc",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/teams/quest.png",
+      "bytes_at_inventory": 51697,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "3bf7f0de94de00f7b726c4ff35319d479d9280e1696da91f314cc55c69193a25",
+      "sha256_after_corrections": "3bf7f0de94de00f7b726c4ff35319d479d9280e1696da91f314cc55c69193a25",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/teams/team_falcons.png",
+      "bytes_at_inventory": 232138,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "7629bc202959c8a226cd9c6776a12515dd8b2105195ae0f0396c1f1ccbd8b944",
+      "sha256_after_corrections": "7629bc202959c8a226cd9c6776a12515dd8b2105195ae0f0396c1f1ccbd8b944",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/README.md",
+      "bytes_at_inventory": 717,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5a189cc8417f5bc471f78290ec152458420bd4a626550de485fc1f06563c8d35",
+      "role": "Алиасы фото-текстур и источники",
+      "review": "instructions.md",
+      "sha256_after_corrections": "5a189cc8417f5bc471f78290ec152458420bd4a626550de485fc1f06563c8d35",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/blocks.jpg",
+      "bytes_at_inventory": 304500,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "54c75ffda953822a9bdd6fc3a2859fcbfbace42c2df768485cc98207a8cb33bf",
+      "sha256_after_corrections": "54c75ffda953822a9bdd6fc3a2859fcbfbace42c2df768485cc98207a8cb33bf",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/burlap.jpg",
+      "bytes_at_inventory": 336309,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "bd7de0a217591eaabaf33aa0eee199e959fe1c862f443cfee7314bae21c70495",
+      "sha256_after_corrections": "bd7de0a217591eaabaf33aa0eee199e959fe1c862f443cfee7314bae21c70495",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/cliff.jpg",
+      "bytes_at_inventory": 229347,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "d97c28bdca0e260ef86be6951d4e7a92a326f55d8bdb605e0d7951a72105adb4",
+      "sha256_after_corrections": "d97c28bdca0e260ef86be6951d4e7a92a326f55d8bdb605e0d7951a72105adb4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/cobble.jpg",
+      "bytes_at_inventory": 224850,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "edbd3a74761f0916919eaacf84f6b4f4092567e0452a7071df0437325715a985",
+      "sha256_after_corrections": "edbd3a74761f0916919eaacf84f6b4f4092567e0452a7071df0437325715a985",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/concrete.jpg",
+      "bytes_at_inventory": 341532,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "10ac5f85f27b8d462cdfdfbdf4ed4422ef1794c8f380e15c3f41dacbf790a09e",
+      "sha256_after_corrections": "10ac5f85f27b8d462cdfdfbdf4ed4422ef1794c8f380e15c3f41dacbf790a09e",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/doors.jpg",
+      "bytes_at_inventory": 362650,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "fa3f9dd0fb122f38e50e1714de2dbc06d9c63bfb3f371a867631b00e69d6c1d6",
+      "sha256_after_corrections": "fa3f9dd0fb122f38e50e1714de2dbc06d9c63bfb3f371a867631b00e69d6c1d6",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/forest.jpg",
+      "bytes_at_inventory": 462495,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "e030cc436122fda31de94334e7958486fe71e156ead3155d84c5b87254e8e119",
+      "sha256_after_corrections": "e030cc436122fda31de94334e7958486fe71e156ead3155d84c5b87254e8e119",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/leather.jpg",
+      "bytes_at_inventory": 194590,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "87f1d7a97d133c8157b327c603aeac31f1891d3071624f4214ad63106bde9015",
+      "sha256_after_corrections": "87f1d7a97d133c8157b327c603aeac31f1891d3071624f4214ad63106bde9015",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/metal.jpg",
+      "bytes_at_inventory": 66722,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "33f1c33bfae2c304cc6fb6e17486ea204e7e82cad06888c1b97b18ba5840c3cb",
+      "sha256_after_corrections": "33f1c33bfae2c304cc6fb6e17486ea204e7e82cad06888c1b97b18ba5840c3cb",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/oldwood.jpg",
+      "bytes_at_inventory": 147030,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "16a3fa1e817a43feb2fcb71cb3c50656d72912c66268a4df0a8c4ee223cac1af",
+      "sha256_after_corrections": "16a3fa1e817a43feb2fcb71cb3c50656d72912c66268a4df0a8c4ee223cac1af",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/paper.jpg",
+      "bytes_at_inventory": 260328,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "ff8443e4650639bfb03d3e156a3ef8f762353ffe06a0d28e251169337958394a",
+      "sha256_after_corrections": "ff8443e4650639bfb03d3e156a3ef8f762353ffe06a0d28e251169337958394a",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/parchment.jpg",
+      "bytes_at_inventory": 69643,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "a3efc3f18ab949c8ee7b2baa6617b7b15cf1e783a1f398c33e11a38eb464234c",
+      "sha256_after_corrections": "a3efc3f18ab949c8ee7b2baa6617b7b15cf1e783a1f398c33e11a38eb464234c",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/planks.jpg",
+      "bytes_at_inventory": 146699,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "d1d2d9d14a2bc588e4c967d4b27afb433e478d1d36f8feab4bab5d3804543203",
+      "sha256_after_corrections": "d1d2d9d14a2bc588e4c967d4b27afb433e478d1d36f8feab4bab5d3804543203",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/plaster.jpg",
+      "bytes_at_inventory": 204585,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "4c47db27071e33e43bb36679d34698a669fc307eb47823d427f8dbed69831181",
+      "sha256_after_corrections": "4c47db27071e33e43bb36679d34698a669fc307eb47823d427f8dbed69831181",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/plate.jpg",
+      "bytes_at_inventory": 164728,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "76f0ea9932a5c6dba709dc470dfe5d6d2a462370c1956ea26e2e264a794c94f8",
+      "sha256_after_corrections": "76f0ea9932a5c6dba709dc470dfe5d6d2a462370c1956ea26e2e264a794c94f8",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/rock.jpg",
+      "bytes_at_inventory": 107937,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "6e4509b6f8c0972d285709b79b8ac82addc58dcd799b6a14b7c19bb4c6d9f595",
+      "sha256_after_corrections": "6e4509b6f8c0972d285709b79b8ac82addc58dcd799b6a14b7c19bb4c6d9f595",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/rust.jpg",
+      "bytes_at_inventory": 211284,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "290596a4ac640225b35efad2178acf8ae65107efbb0a659236551526c7f6e630",
+      "sha256_after_corrections": "290596a4ac640225b35efad2178acf8ae65107efbb0a659236551526c7f6e630",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/stone.jpg",
+      "bytes_at_inventory": 329502,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "566a91b05bd5498e86007732542c63df4430eab3e94e69271cf2546e25fac1b4",
+      "sha256_after_corrections": "566a91b05bd5498e86007732542c63df4430eab3e94e69271cf2546e25fac1b4",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/tex/wood.jpg",
+      "bytes_at_inventory": 173096,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "2287fb13856ef4da8631d7ab8270b89dcf3d6229eb17faca8fc681e9e2255268",
+      "sha256_after_corrections": "2287fb13856ef4da8631d7ab8270b89dcf3d6229eb17faca8fc681e9e2255268",
+      "changed_after_review": false
+    },
+    {
+      "path": "assets/ui/daynight.png",
+      "bytes_at_inventory": 27938,
+      "mode": "full_image_decode_and_visual_contact_sheet",
+      "sha256_reviewed": "690ae4b44a3c7f56bd5b7b2726bebf2c4ff4569230a3335023fa6c0ec6b86f48",
+      "sha256_after_corrections": "690ae4b44a3c7f56bd5b7b2726bebf2c4ff4569230a3335023fa6c0ec6b86f48",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/ANIMATION.md",
+      "bytes_at_inventory": 86661,
+      "mode": "full_text_review",
+      "sha256_reviewed": "e97b2ab0dc0f50b96114d7e576a07e6e93300d2bba8c2751bc0ba7aa71026ee8",
+      "role": "Техника Blender и история испытаний",
+      "review": "instructions.md",
+      "sha256_after_corrections": "edc4aa0c93fe1c44cae3244fefd4d95dddd99421f6b390fc53081cdb5faa348b",
+      "changed_after_review": true
+    },
+    {
+      "path": "docs/ANIMATION_BACKLOG.md",
+      "bytes_at_inventory": 36153,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5ff64e181b38af102491bb0ead711b94d6c4ae9aa1f6d599a1be6fa27ea5a204",
+      "role": "Открытые навыки и критерии",
+      "review": "instructions.md",
+      "sha256_after_corrections": "5ff64e181b38af102491bb0ead711b94d6c4ae9aa1f6d599a1be6fa27ea5a204",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/DOTA_ENGINE.md",
+      "bytes_at_inventory": 9165,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b272c09fdbc9ec7bb86ec69de3d38f643e8ba51d65b864caed40bcded3c7ea5e",
+      "role": "Постановка и запись в Dota",
+      "review": "instructions.md",
+      "sha256_after_corrections": "b272c09fdbc9ec7bb86ec69de3d38f643e8ba51d65b864caed40bcded3c7ea5e",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/IDEAS.md",
+      "bytes_at_inventory": 3411,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d8fe6c9fd4ee8bd9a1b8b179e6db3ac35cdcd057548c1347e315cf47d19777b9",
+      "role": "Реестр идей",
+      "review": "instructions.md",
+      "sha256_after_corrections": "d8fe6c9fd4ee8bd9a1b8b179e6db3ac35cdcd057548c1347e315cf47d19777b9",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/LEARNING.md",
+      "bytes_at_inventory": 9706,
+      "mode": "full_text_review",
+      "sha256_reviewed": "3f5169e8fc69bc1eeec27a7ca50bf1d33312db0c88d4d674c390921893cac2d5",
+      "role": "Указатель результатов и воспроизведения",
+      "review": "instructions.md",
+      "sha256_after_corrections": "34d6bea3c6b3f9962c6c6a63ab7b0b895b5fa6d8797315772ea5ed99a3786ba2",
+      "changed_after_review": true
+    },
+    {
+      "path": "docs/LOCAL_FILES.md",
+      "bytes_at_inventory": 4287,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8fd890c27c5d3f8ceb626887d08c11bebcb64b89718e9b18e9da29f5623b393e",
+      "role": "Перенос локальных ресурсов",
+      "review": "instructions.md",
+      "sha256_after_corrections": "8fd890c27c5d3f8ceb626887d08c11bebcb64b89718e9b18e9da29f5623b393e",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/PROJECT_STATE.md",
+      "bytes_at_inventory": 43258,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b8235148e4aefeadb664b9b1f9e4f41bf6edaecce80e987de437db961a6084db",
+      "role": "Передача задач и история погони",
+      "review": "instructions.md",
+      "sha256_after_corrections": "118b190dd62da7420e3f021197e12f374a57a8a4a48e2a75ea3f8611ad48775b",
+      "changed_after_review": true
+    },
+    {
+      "path": "docs/SETUP.md",
+      "bytes_at_inventory": 5791,
+      "mode": "full_text_review",
+      "sha256_reviewed": "24ac0fbfaddb14ba228285de9dfa6fab016e76fd5589a302a9f43a62888879b0",
+      "role": "Настройка окружения",
+      "review": "instructions.md",
+      "sha256_after_corrections": "ac0ffa9545c520c21262e0d524dcee59c81f16b48a1aae914d659c22694df222",
+      "changed_after_review": true
+    },
+    {
+      "path": "docs/studies/BLOCKING_MATCHCUT.md",
+      "bytes_at_inventory": 10886,
+      "mode": "full_text_review",
+      "sha256_reviewed": "4715b7e1672b3a412c122c93ce0471a5d03604cd2adc87d7bb91841c96a0f6bc",
+      "role": "Монтаж двумя камерами с сохранением движения",
+      "review": "instructions.md",
+      "sha256_after_corrections": "4715b7e1672b3a412c122c93ce0471a5d03604cd2adc87d7bb91841c96a0f6bc",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/CHASE_CAMERA.md",
+      "bytes_at_inventory": 2416,
+      "mode": "full_text_review",
+      "sha256_reviewed": "c8011ecde9b9d768359dbb5a55ee22d99b6a839fa3df2b312de673268bd38444",
+      "role": "Ракурс погони и предпросмотр v6",
+      "review": "instructions.md",
+      "sha256_after_corrections": "c8011ecde9b9d768359dbb5a55ee22d99b6a839fa3df2b312de673268bd38444",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/CONTACT_EVENTS.md",
+      "bytes_at_inventory": 5273,
+      "mode": "full_text_review",
+      "sha256_reviewed": "14a57bee439076a090ae4e7b89f8f349adca39a00f85d6dadfc0c502f1dac7b1",
+      "role": "Перенос парных контактов в звук",
+      "review": "instructions.md",
+      "sha256_after_corrections": "14a57bee439076a090ae4e7b89f8f349adca39a00f85d6dadfc0c502f1dac7b1",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/POSE_TIMING.md",
+      "bytes_at_inventory": 25389,
+      "mode": "full_text_review",
+      "sha256_reviewed": "59ca994c3ffd58c6c29411934e7a78bb29bda1788c6a324f71bc70d6bda3fcb3",
+      "role": "Проект и выполненная проба жеста",
+      "review": "instructions.md",
+      "sha256_after_corrections": "59ca994c3ffd58c6c29411934e7a78bb29bda1788c6a324f71bc70d6bda3fcb3",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/REACH_ATTENTION.md",
+      "bytes_at_inventory": 14780,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8f50c26ec487441c67c345bde5f16c78b505d11a0a754e99ce398903c52cbe81",
+      "role": "Кисть к цели, внимание, другой rig, крепление предмета",
+      "review": "instructions.md",
+      "sha256_after_corrections": "8f50c26ec487441c67c345bde5f16c78b505d11a0a754e99ce398903c52cbe81",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/pose_timing_results.json",
+      "bytes_at_inventory": 4940,
+      "mode": "full_text_review",
+      "sha256_reviewed": "6b9fc22d054dcd68c76181d9a8225c08dace1697d319958cdfff7aa0c95bc04a",
+      "role": "Измерения двух плечевых жестов",
+      "review": "instructions.md",
+      "sha256_after_corrections": "6b9fc22d054dcd68c76181d9a8225c08dace1697d319958cdfff7aa0c95bc04a",
+      "changed_after_review": false
+    },
+    {
+      "path": "docs/studies/reach_attention_results.json",
+      "bytes_at_inventory": 16620,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f5ff72be110d1c8da9917b2d1cf82291c6e47442ccf66b6214165619e4b52bb2",
+      "role": "Измерения reach, головы и зазоров",
+      "review": "instructions.md",
+      "sha256_after_corrections": "f5ff72be110d1c8da9917b2d1cf82291c6e47442ccf66b6214165619e4b52bb2",
+      "changed_after_review": false
+    },
+    {
+      "path": "dota_map.js",
+      "bytes_at_inventory": 6757,
+      "mode": "full_text_review",
+      "sha256_reviewed": "167fc4ff6dcec88ea7c4c75e6a122ad6e22ace36ca97aac3c037fb902955b962",
+      "role": "Материалы карты: multiblend, tint, вода и текстуры",
+      "review": "frontend.md",
+      "sha256_after_corrections": "167fc4ff6dcec88ea7c4c75e6a122ad6e22ace36ca97aac3c037fb902955b962",
+      "changed_after_review": false
+    },
+    {
+      "path": "episodes/demo_layouts.json",
+      "bytes_at_inventory": 1439,
+      "mode": "full_text_review",
+      "sha256_reviewed": "478056543f57c334e9366105a2d4d665b40608030979b3528b35e7bccaed2a67",
+      "role": "Демонстрация четырёх раскладок",
+      "review": "instructions.md",
+      "sha256_after_corrections": "478056543f57c334e9366105a2d4d665b40608030979b3528b35e7bccaed2a67",
+      "changed_after_review": false
+    },
+    {
+      "path": "episodes/demo_scene.json",
+      "bytes_at_inventory": 8651,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b95bee92fea2a3650f0102bc071aa0d4e5e327ff400d4d8aee2d53d7e7d9e0f5",
+      "role": "Демонстрация JSON сцен",
+      "review": "instructions.md",
+      "sha256_after_corrections": "b95bee92fea2a3650f0102bc071aa0d4e5e327ff400d4d8aee2d53d7e7d9e0f5",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/LICENSE-manrope",
+      "bytes_at_inventory": 4476,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "c5eb6ee975b663e5e3a993cade91be2f84f7404496d9eef91f67402774d422a7",
+      "sha256_after_corrections": "c5eb6ee975b663e5e3a993cade91be2f84f7404496d9eef91f67402774d422a7",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/LICENSE-unbounded",
+      "bytes_at_inventory": 4483,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "3ced390bd845153d5253b49e69d476d316462f5d93b27b9dd76eabbeef0e99cf",
+      "sha256_after_corrections": "3ced390bd845153d5253b49e69d476d316462f5d93b27b9dd76eabbeef0e99cf",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/manrope-cyrillic-600-normal.woff2",
+      "bytes_at_inventory": 7872,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "80b86efbef1c9fb66557cc4cc7b6db42db2fd631f1a9b8735f3bbefbb5128799",
+      "loaded": true,
+      "sha256_after_corrections": "80b86efbef1c9fb66557cc4cc7b6db42db2fd631f1a9b8735f3bbefbb5128799",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/manrope-cyrillic-800-normal.woff2",
+      "bytes_at_inventory": 7588,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "e76a69e66b624abdb84cdda1e96b04417afbfb1f3cb684488a867b29bcb3870c",
+      "loaded": true,
+      "sha256_after_corrections": "e76a69e66b624abdb84cdda1e96b04417afbfb1f3cb684488a867b29bcb3870c",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/manrope-latin-600-normal.woff2",
+      "bytes_at_inventory": 14172,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "f7ac6258da20ab7541939b59851155753d1d24f1b30cbcb949077a3faa3d1593",
+      "loaded": true,
+      "sha256_after_corrections": "f7ac6258da20ab7541939b59851155753d1d24f1b30cbcb949077a3faa3d1593",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/manrope-latin-800-normal.woff2",
+      "bytes_at_inventory": 13648,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "74c161dbcbce7c3590803cc72dc1f63313c360e13367aba5075a7b7b3818ea49",
+      "loaded": true,
+      "sha256_after_corrections": "74c161dbcbce7c3590803cc72dc1f63313c360e13367aba5075a7b7b3818ea49",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/unbounded-cyrillic-900-normal.woff2",
+      "bytes_at_inventory": 12900,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "47cf6520d0ac057a7b1d5deed45a0f7dfcfc569898e3d59942c31159c784ee3a",
+      "loaded": true,
+      "sha256_after_corrections": "47cf6520d0ac057a7b1d5deed45a0f7dfcfc569898e3d59942c31159c784ee3a",
+      "changed_after_review": false
+    },
+    {
+      "path": "fonts/unbounded-latin-900-normal.woff2",
+      "bytes_at_inventory": 21112,
+      "mode": "chromium_font_load",
+      "sha256_reviewed": "d84ca6bdf94ebb12a42e2d6f08ceb3437c6b8b1411575fcd0a370d60b54c0040",
+      "loaded": true,
+      "sha256_after_corrections": "d84ca6bdf94ebb12a42e2d6f08ceb3437c6b8b1411575fcd0a370d60b54c0040",
+      "changed_after_review": false
+    },
+    {
+      "path": "package-lock.json",
+      "bytes_at_inventory": 25482,
+      "mode": "all_47_package_records_structurally_parsed",
+      "sha256_reviewed": "b5044c4c80bd9ee552f637e0c4ffbc168d589410c49f4db0c5fbc97655dcaead",
+      "sha256_after_corrections": "b5044c4c80bd9ee552f637e0c4ffbc168d589410c49f4db0c5fbc97655dcaead",
+      "changed_after_review": false
+    },
+    {
+      "path": "package.json",
+      "bytes_at_inventory": 265,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "947de3aa3858b0bcfcf90cf9cfd8c943c937dc7a3cc3a7bfe6f2a0488bcb154d",
+      "sha256_after_corrections": "947de3aa3858b0bcfcf90cf9cfd8c943c937dc7a3cc3a7bfe6f2a0488bcb154d",
+      "changed_after_review": false
+    },
+    {
+      "path": "scene.css",
+      "bytes_at_inventory": 11516,
+      "mode": "full_text_review",
+      "sha256_reviewed": "16abb56b93c07050c5ca79b0f7ce7f514618eb0fdf788b3420055f53b8878197",
+      "role": "Стили элементов JSON-сцены, рамки, текстуры и субтитры",
+      "review": "frontend.md",
+      "sha256_after_corrections": "16abb56b93c07050c5ca79b0f7ce7f514618eb0fdf788b3420055f53b8878197",
+      "changed_after_review": false
+    },
+    {
+      "path": "scene.js",
+      "bytes_at_inventory": 32098,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f22beaa36bd4c9eceb7b9862e485805af54ee868336ec59e53fa28649b82825a",
+      "role": "JSON-конструктор, GSAP, видео/Lottie и Three.js model/stage",
+      "review": "frontend.md",
+      "sha256_after_corrections": "f22beaa36bd4c9eceb7b9862e485805af54ee868336ec59e53fa28649b82825a",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/chase_v5_assembly.json",
+      "bytes_at_inventory": 702,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d6d045978d0a29d88008cd1d500d3b5d972ddcee801b0573f2baa9c59bf1a891",
+      "role": "Рецепт CPU-сборки v5",
+      "review": "instructions.md",
+      "sha256_after_corrections": "d6d045978d0a29d88008cd1d500d3b5d972ddcee801b0573f2baa9c59bf1a891",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/chase_v6_assembly.json",
+      "bytes_at_inventory": 1150,
+      "mode": "full_text_review",
+      "sha256_reviewed": "af4598c8d40b56276f2fc0451413540097f6c328ccb3776246be8c2d71b2697b",
+      "role": "Рецепт первого плана v6, звука и поста",
+      "review": "instructions.md",
+      "sha256_after_corrections": "af4598c8d40b56276f2fc0451413540097f6c328ccb3776246be8c2d71b2697b",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/kryuk.txt",
+      "bytes_at_inventory": 1219,
+      "mode": "full_text_review",
+      "sha256_reviewed": "241ab9770b0f8efa0a782b045c7ecee76d5a236489c61d3c79efeb8733edc9d4",
+      "role": "Базовая сценка крюка",
+      "review": "instructions.md",
+      "sha256_after_corrections": "241ab9770b0f8efa0a782b045c7ecee76d5a236489c61d3c79efeb8733edc9d4",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/kunkka_chase.json",
+      "bytes_at_inventory": 1835,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a953b55105cf98d7e6845810dbd8ad236b9d0d427c00c5b10aeefdfaa144dd69",
+      "role": "Раскадровка и параметры погони",
+      "review": "instructions.md",
+      "sha256_after_corrections": "a953b55105cf98d7e6845810dbd8ad236b9d0d427c00c5b10aeefdfaa144dd69",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe10.txt",
+      "bytes_at_inventory": 1119,
+      "mode": "full_text_review",
+      "sha256_reviewed": "9f826dfcb25fea812eaf64b950e7e7980ccd492abfd35928e3d4a467047e8631",
+      "role": "Асимметричные гримасы",
+      "review": "instructions.md",
+      "sha256_after_corrections": "9f826dfcb25fea812eaf64b950e7e7980ccd492abfd35928e3d4a467047e8631",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe11.txt",
+      "bytes_at_inventory": 1074,
+      "mode": "full_text_review",
+      "sha256_reviewed": "c94d9638481db808c51b799cc56d269b21648c0564bbcdb2927ab1b493c84de2",
+      "role": "Реакция, субъективный план, крюк из-за кадра",
+      "review": "instructions.md",
+      "sha256_after_corrections": "c94d9638481db808c51b799cc56d269b21648c0564bbcdb2927ab1b493c84de2",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe12.txt",
+      "bytes_at_inventory": 944,
+      "mode": "full_text_review",
+      "sha256_reviewed": "3e03c97fc6fbf1da2c77d56e99b4694dd486602dd4b3bbf17eaa0fb4d580ac80",
+      "role": "Шаг, поворот и замах Тайдхантера",
+      "review": "instructions.md",
+      "sha256_after_corrections": "3e03c97fc6fbf1da2c77d56e99b4694dd486602dd4b3bbf17eaa0fb4d580ac80",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe13.txt",
+      "bytes_at_inventory": 1252,
+      "mode": "full_text_review",
+      "sha256_reviewed": "cdd42a459b6cae9ce1e6efa0e53261595f3d7e2dfca1d79f13718cfdbf96ca35",
+      "role": "Жесты по словам и контакт",
+      "review": "instructions.md",
+      "sha256_after_corrections": "cdd42a459b6cae9ce1e6efa0e53261595f3d7e2dfca1d79f13718cfdbf96ca35",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe14.txt",
+      "bytes_at_inventory": 591,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5a43977cb9eb6b3959bfefa06428a5b0932297e3ca183e88cc7eef2a504f2615",
+      "role": "Подход и хлопок по плечу",
+      "review": "instructions.md",
+      "sha256_after_corrections": "5a43977cb9eb6b3959bfefa06428a5b0932297e3ca183e88cc7eef2a504f2615",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe15.txt",
+      "bytes_at_inventory": 810,
+      "mode": "full_text_review",
+      "sha256_reviewed": "0508685935bc8a8ac04527528f8e0a89f6a9e63077ffb3f036d9937c2805c8ea",
+      "role": "Пауза и лицо слушателя",
+      "review": "instructions.md",
+      "sha256_after_corrections": "0508685935bc8a8ac04527528f8e0a89f6a9e63077ffb3f036d9937c2805c8ea",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe16.txt",
+      "bytes_at_inventory": 678,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d747faff723fbfcce525c40439d92c2bc06da88957a32bd5578b7b9ae1853eac",
+      "role": "Возврат жеста и повторная реплика",
+      "review": "instructions.md",
+      "sha256_after_corrections": "d747faff723fbfcce525c40439d92c2bc06da88957a32bd5578b7b9ae1853eac",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe17.txt",
+      "bytes_at_inventory": 587,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b69365a34e510d2d1a6fdadd3d4edd510d8e40f1ff022981b7f3d1dbfcfd2e8e",
+      "role": "Присед на двух скелетах",
+      "review": "instructions.md",
+      "sha256_after_corrections": "b69365a34e510d2d1a6fdadd3d4edd510d8e40f1ff022981b7f3d1dbfcfd2e8e",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe4.txt",
+      "bytes_at_inventory": 1221,
+      "mode": "full_text_review",
+      "sha256_reviewed": "855a7ebec6030ca6eee539fb69523062c738db899a21a6044bbb292a8d06656b",
+      "role": "Базовая сценка вида, крюк и игровая реплика",
+      "review": "instructions.md",
+      "sha256_after_corrections": "855a7ebec6030ca6eee539fb69523062c738db899a21a6044bbb292a8d06656b",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe5.txt",
+      "bytes_at_inventory": 753,
+      "mode": "full_text_review",
+      "sha256_reviewed": "ca0cfc34b6f3ecdf209ff42a54a8d7a2214124293d4f3bc4afde661d35aa748c",
+      "role": "Скольжение в Т-позе",
+      "review": "instructions.md",
+      "sha256_after_corrections": "ca0cfc34b6f3ecdf209ff42a54a8d7a2214124293d4f3bc4afde661d35aa748c",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe6.txt",
+      "bytes_at_inventory": 831,
+      "mode": "full_text_review",
+      "sha256_reviewed": "2f817cd98c6c828d8b551d074e08244030238fb271592c0b9fd7c490432780e1",
+      "role": "Походка с переваливанием",
+      "review": "instructions.md",
+      "sha256_after_corrections": "2f817cd98c6c828d8b551d074e08244030238fb271592c0b9fd7c490432780e1",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe7.txt",
+      "bytes_at_inventory": 1278,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5f089033c2588dd04fb7bf9b24a3502c0f5b3005b3644a8e97443756ba70d3b4",
+      "role": "Развороты и замах",
+      "review": "instructions.md",
+      "sha256_after_corrections": "5f089033c2588dd04fb7bf9b24a3502c0f5b3005b3644a8e97443756ba70d3b4",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe8.txt",
+      "bytes_at_inventory": 1423,
+      "mode": "full_text_review",
+      "sha256_reviewed": "1d74f856c7c6c557dfa1dd35cfe9bacf29b64e4be1475463aff94a1391b0a681",
+      "role": "Бросок, уход после поворота и второй скелет",
+      "review": "instructions.md",
+      "sha256_after_corrections": "1d74f856c7c6c557dfa1dd35cfe9bacf29b64e4be1475463aff94a1391b0a681",
+      "changed_after_review": false
+    },
+    {
+      "path": "skits/probe_pudge3.txt",
+      "bytes_at_inventory": 784,
+      "mode": "full_text_review",
+      "sha256_reviewed": "52ae1d23ad058c9bc3c7bde725f0019fb0ed34675c4703f5fe09059df001da09",
+      "role": "Ранняя проба света и жеста",
+      "review": "instructions.md",
+      "sha256_after_corrections": "52ae1d23ad058c9bc3c7bde725f0019fb0ed34675c4703f5fe09059df001da09",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/airborne_pose.py",
+      "bytes_at_inventory": 8593,
+      "mode": "full_text_review",
+      "sha256_reviewed": "9cde63d523491acdfc7972a301986098a0eebd33c3af9fd6f71636298bc8682d",
+      "role": "Поджатие ног в прыжке поверх траектории корня",
+      "review": "animation.md",
+      "sha256_after_corrections": "9cde63d523491acdfc7972a301986098a0eebd33c3af9fd6f71636298bc8682d",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/camera_audit.py",
+      "bytes_at_inventory": 10370,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d50af64c9779781453baf67ec007f12dd75f67b6021d0b32d56018bf80b8c03e",
+      "role": "CLI-аудит проекций evaluated поверхностей головы/тела",
+      "review": "animation.md",
+      "sha256_after_corrections": "d50af64c9779781453baf67ec007f12dd75f67b6021d0b32d56018bf80b8c03e",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_acting.py",
+      "bytes_at_inventory": 7320,
+      "mode": "full_text_review",
+      "sha256_reviewed": "dc9dce2c7d442a26d68355d6efbc94bcd68fbf51d4619072b04343f43e612603",
+      "role": "Взгляд и моргание Худвинк с защитой остальных каналов",
+      "review": "animation.md",
+      "sha256_after_corrections": "dc9dce2c7d442a26d68355d6efbc94bcd68fbf51d4619072b04343f43e612603",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_audit.py",
+      "bytes_at_inventory": 3059,
+      "mode": "full_text_review",
+      "sha256_reviewed": "37662d95c5053b1313a6827dad4e0f187901f19e874408bcc3234b46389b3f8d",
+      "role": "Аудит локального скачка вращений и мировых свидетелей",
+      "review": "animation.md",
+      "sha256_after_corrections": "37662d95c5053b1313a6827dad4e0f187901f19e874408bcc3234b46389b3f8d",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_depth.py",
+      "bytes_at_inventory": 2958,
+      "mode": "full_text_review",
+      "sha256_reviewed": "9d4d9a487238b29cfd4c1dc303d85f9377849ba89979997c63a628c4240a2c38",
+      "role": "Добавление игрового лесного горизонта и земли",
+      "review": "animation.md",
+      "sha256_after_corrections": "9d4d9a487238b29cfd4c1dc303d85f9377849ba89979997c63a628c4240a2c38",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_environment.py",
+      "bytes_at_inventory": 23135,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8d644f70998af97afe16a2a26f4b55debb4e388051b26fd8ce5194ade9593807",
+      "role": "Восстановление видимости карты и расширение лесного коридора",
+      "review": "animation.md",
+      "sha256_after_corrections": "8d644f70998af97afe16a2a26f4b55debb4e388051b26fd8ce5194ade9593807",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_ground.py",
+      "bytes_at_inventory": 3619,
+      "mode": "full_text_review",
+      "sha256_reviewed": "87bb7f1dd136490a58adc6fa26223910930cd2d93edd56badbeab88213b24a36",
+      "role": "Экспериментальный подъём корня по нижней поверхности лап",
+      "review": "animation.md",
+      "sha256_after_corrections": "87bb7f1dd136490a58adc6fa26223910930cd2d93edd56badbeab88213b24a36",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_motion.py",
+      "bytes_at_inventory": 13476,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a5442c0059956551febc7c309cdf1250a21dd1b648e6cbfbc00204b42a49926e",
+      "role": "Заморозка основного и дополнительных скелетов в Т-позе",
+      "review": "animation.md",
+      "sha256_after_corrections": "a5442c0059956551febc7c309cdf1250a21dd1b648e6cbfbc00204b42a49926e",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_performance.py",
+      "bytes_at_inventory": 15262,
+      "mode": "full_text_review",
+      "sha256_reviewed": "163287a5cea94ddfc77b663384ee95a40da38417751cdc79cfaa0294cf1e6f60",
+      "role": "Замыкание native run и альтернативный ограниченный испуг",
+      "review": "animation.md",
+      "sha256_after_corrections": "163287a5cea94ddfc77b663384ee95a40da38417751cdc79cfaa0294cf1e6f60",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/chase_reaction.py",
+      "bytes_at_inventory": 4244,
+      "mode": "full_text_review",
+      "sha256_reviewed": "151b3d6cfca562befcc225e90739ea23ca7d9ff08c66af3335eac9c2e333a98d",
+      "role": "Спокойный испуг с удержанием позы до жёсткой склейки",
+      "review": "animation.md",
+      "sha256_after_corrections": "151b3d6cfca562befcc225e90739ea23ca7d9ff08c66af3335eac9c2e333a98d",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/contact_metrics.py",
+      "bytes_at_inventory": 15272,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f839b7d2f394e684dfb8e25369bb066a85af8e018e54c8b5f92c9cdfc76d238b",
+      "role": "CLI-замеры penetration вершин около кисти в другого героя",
+      "review": "animation.md",
+      "sha256_after_corrections": "f839b7d2f394e684dfb8e25369bb066a85af8e018e54c8b5f92c9cdfc76d238b",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/contact_reaction.py",
+      "bytes_at_inventory": 26165,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b93fceabd567d56dde8477756023a053ead2615672097cad7614fac8649b21da",
+      "role": "Общий IK, proxy bake, контактные приседы и проверка стоп",
+      "review": "animation.md",
+      "sha256_after_corrections": "b93fceabd567d56dde8477756023a053ead2615672097cad7614fac8649b21da",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/deformation_metrics.py",
+      "bytes_at_inventory": 12110,
+      "mode": "full_text_review",
+      "sha256_reviewed": "1b197ddb8bf2e2bb665758792e84f2992418ba0210ccb5cc99540a1e47070d04",
+      "role": "Сравнение рёбер и площадей evaluated сеток двух сцен",
+      "review": "animation.md",
+      "sha256_after_corrections": "1b197ddb8bf2e2bb665758792e84f2992418ba0210ccb5cc99540a1e47070d04",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/dota_map.py",
+      "bytes_at_inventory": 15158,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a34132ed9cf52cb40bb0b0a8cad66fffe00b448d0389bd77ad909d07047b0727",
+      "role": "Импорт карты и восстановление материалов multiblend/props",
+      "review": "animation.md",
+      "sha256_after_corrections": "a34132ed9cf52cb40bb0b0a8cad66fffe00b448d0389bd77ad909d07047b0727",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/export_world.bat",
+      "bytes_at_inventory": 652,
+      "mode": "full_text_review",
+      "sha256_reviewed": "afac5e5ec5b6c47982f0e69d43274d4428f15bfb5d57fce3eaf36b1d4ac92345",
+      "role": "Экспорт мира через Source2Viewer CLI",
+      "review": "animation.md",
+      "sha256_after_corrections": "afac5e5ec5b6c47982f0e69d43274d4428f15bfb5d57fce3eaf36b1d4ac92345",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/face.py",
+      "bytes_at_inventory": 15737,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d3d5f2f2d8c29a1f244d7ec5c20244b4d063be866f0fcf6ab22495c458a2d18e",
+      "role": "Виземы, асимметричные морфы, эмоции, моргание и взгляд",
+      "review": "animation.md",
+      "sha256_after_corrections": "d3d5f2f2d8c29a1f244d7ec5c20244b4d063be866f0fcf6ab22495c458a2d18e",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/finish_chase.py",
+      "bytes_at_inventory": 8649,
+      "mode": "full_text_review",
+      "sha256_reviewed": "e15b0c5eb14865d88e2118053fc14c03f269b8bd5603f0b56d07493bcc695c0a",
+      "role": "CPU-сборка кадров/видео с явным stereo WAV и чёрным хвостом",
+      "review": "animation.md",
+      "sha256_after_corrections": "e15b0c5eb14865d88e2118053fc14c03f269b8bd5603f0b56d07493bcc695c0a",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/gait_metrics.py",
+      "bytes_at_inventory": 11135,
+      "mode": "full_text_review",
+      "sha256_reviewed": "7d2487e03c3b05c79fd7a65f4c435d236d771715ed36cf22d92873c9ccf08eb1",
+      "role": "Выбор поверхностей лап и метрики опоры/скольжения",
+      "review": "animation.md",
+      "sha256_after_corrections": "7d2487e03c3b05c79fd7a65f4c435d236d771715ed36cf22d92873c9ccf08eb1",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/gaze.py",
+      "bytes_at_inventory": 4131,
+      "mode": "full_text_review",
+      "sha256_reviewed": "126b73c6ed892eadfd0921178d8b95e3f9c679d6e06c694b971663609d8861e3",
+      "role": "Pure-валидация и композиция FACS-направлений глаз",
+      "review": "animation.md",
+      "sha256_after_corrections": "126b73c6ed892eadfd0921178d8b95e3f9c679d6e06c694b971663609d8861e3",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/hoodwink_run_grounding.py",
+      "bytes_at_inventory": 7129,
+      "mode": "full_text_review",
+      "sha256_reviewed": "6b81188ba926d1ca30cbafc4acb8f95e2b202059ae911bfbb2d6849e4f6985cd",
+      "role": "Экспериментальная библиотека grounded run action",
+      "review": "animation.md",
+      "sha256_after_corrections": "6b81188ba926d1ca30cbafc4acb8f95e2b202059ae911bfbb2d6849e4f6985cd",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/hq_textures.py",
+      "bytes_at_inventory": 1802,
+      "mode": "full_text_review",
+      "sha256_reviewed": "582f8244401e8302bf87b3e6d01f196096913a7042ce81126f5ba1076d400e3c",
+      "role": "Отдельный набор увеличенных цветовых текстур",
+      "review": "animation.md",
+      "sha256_after_corrections": "582f8244401e8302bf87b3e6d01f196096913a7042ce81126f5ba1076d400e3c",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/inspect_pose_study.py",
+      "bytes_at_inventory": 5476,
+      "mode": "full_text_review",
+      "sha256_reviewed": "c7c54bd5743f23ee424c5c4231dc74e9df45aa5254ed1a245fe2d37fb8084b79",
+      "role": "Read-only инвентаризация rigs/цепочек/весов и drift",
+      "review": "animation.md",
+      "sha256_after_corrections": "c7c54bd5743f23ee424c5c4231dc74e9df45aa5254ed1a245fe2d37fb8084b79",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/joint_skin.py",
+      "bytes_at_inventory": 7348,
+      "mode": "full_text_review",
+      "sha256_reviewed": "876da65bf972c59695ffa667073dbe0f36f622ee51fc403e9db25320bef167ee",
+      "role": "Локальное сглаживание весов ног с сохранением reference поверхности",
+      "review": "animation.md",
+      "sha256_after_corrections": "876da65bf972c59695ffa667073dbe0f36f622ee51fc403e9db25320bef167ee",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/jump_motion.py",
+      "bytes_at_inventory": 14603,
+      "mode": "full_text_review",
+      "sha256_reviewed": "16204990b4100265e8aecb167a0beb0dadcf4f98d961512de3c93e033924d507",
+      "role": "Pure-планировщик прыжка и уточнение Z-кривой",
+      "review": "animation.md",
+      "sha256_after_corrections": "16204990b4100265e8aecb167a0beb0dadcf4f98d961512de3c93e033924d507",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/jump_shadows.py",
+      "bytes_at_inventory": 6114,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d8a17c0ef303b2784f5727d704f15518f4f089972cbc29d5e77b57a0d550374c",
+      "role": "Драйверы плоской тени на время полёта",
+      "review": "animation.md",
+      "sha256_after_corrections": "d8a17c0ef303b2784f5727d704f15518f4f089972cbc29d5e77b57a0d550374c",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/kunkka_chase.py",
+      "bytes_at_inventory": 17477,
+      "mode": "full_text_review",
+      "sha256_reviewed": "1295d7f695121edf8664f41c8264b0de20cfcb64afafe446eca0459f0dc2198b",
+      "role": "Сборщик конкретной погони из готовой карты и игровых assets",
+      "review": "animation.md",
+      "sha256_after_corrections": "1295d7f695121edf8664f41c8264b0de20cfcb64afafe446eca0459f0dc2198b",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/look_motion.py",
+      "bytes_at_inventory": 14705,
+      "mode": "full_text_review",
+      "sha256_reviewed": "417dc7a8150e46289f4d7b1932e3c49cf8a3114e04ad83076ca52362cbc46d7e",
+      "role": "Pure eye-lead plan и NLA neck/head look",
+      "review": "animation.md",
+      "sha256_after_corrections": "417dc7a8150e46289f4d7b1932e3c49cf8a3114e04ad83076ca52362cbc46d7e",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/probe_compare.py",
+      "bytes_at_inventory": 2652,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d22cdc1d3d02861c9360bd95b7cf8bda6401105dd964dc39f8c03408383bacdc",
+      "role": "Пиксельная сверка парных проб и guard неизменившегося результата",
+      "review": "animation.md",
+      "sha256_after_corrections": "d22cdc1d3d02861c9360bd95b7cf8bda6401105dd964dc39f8c03408383bacdc",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/prop_attachment.py",
+      "bytes_at_inventory": 5282,
+      "mode": "full_text_review",
+      "sha256_reviewed": "274e7be1f710830e7aa7f4ce5ffdc35c2df22cd8c4ea6f14f091092eb2218889",
+      "role": "Запекание передачи жёсткого предмета в систему руки",
+      "review": "animation.md",
+      "sha256_after_corrections": "274e7be1f710830e7aa7f4ce5ffdc35c2df22cd8c4ea6f14f091092eb2218889",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/render_scene.py",
+      "bytes_at_inventory": 74789,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5e70335fbdff16152ce8d322057431302b83fd12542c346333882c0b57b57a20",
+      "role": "Главная сборка Stage JSON, герои/NLA/лицо/слои/карта/камера/рендер",
+      "review": "animation.md",
+      "sha256_after_corrections": "5e70335fbdff16152ce8d322057431302b83fd12542c346333882c0b57b57a20",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/render_study_frames.py",
+      "bytes_at_inventory": 2563,
+      "mode": "full_text_review",
+      "sha256_reviewed": "3fa67ffa7499e4567244e0bae154952485b01e727ea50093b397a3797bed2da5",
+      "role": "Рендер явных диапазонов готовой сцены без ретайминга",
+      "review": "animation.md",
+      "sha256_after_corrections": "3fa67ffa7499e4567244e0bae154952485b01e727ea50093b397a3797bed2da5",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/shot_continuity.py",
+      "bytes_at_inventory": 18755,
+      "mode": "full_text_review",
+      "sha256_reviewed": "fc3858271f574ebe4d9a0bd3135e9896ae03992ae5249b03a0ed1aa9b939d018",
+      "role": "Аудит монтажа, проекций, движения, оружия и фоновых лучей",
+      "review": "animation.md",
+      "sha256_after_corrections": "20e201463327993a143c6ae55a01db1e14a430b08e92fd740c2d4f9be6ce87f9",
+      "changed_after_review": true
+    },
+    {
+      "path": "tools/blender/skit_talk.py",
+      "bytes_at_inventory": 40330,
+      "mode": "full_text_review",
+      "sha256_reviewed": "e64c3caa9213a751d8472165e4aad97e3e67c72d20693436e7d06db206cadd27",
+      "role": "Авторская речь, жесты, шаги, повороты и межгеройные касания",
+      "review": "animation.md",
+      "sha256_after_corrections": "e64c3caa9213a751d8472165e4aad97e3e67c72d20693436e7d06db206cadd27",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_arm_clearance.py",
+      "bytes_at_inventory": 2911,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b1213c12f9510853b12480f749d6a2843b16d37b2ea0f453cfa9aa3519d0b95f",
+      "role": "Проверка области запястья против заданных сеток своего тела",
+      "review": "animation.md",
+      "sha256_after_corrections": "b1213c12f9510853b12480f749d6a2843b16d37b2ea0f453cfa9aa3519d0b95f",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_attention.py",
+      "bytes_at_inventory": 3110,
+      "mode": "full_text_review",
+      "sha256_reviewed": "206554bdfec4460811cb637d2713f1182c3687435ae4fad9b435df303747e13a",
+      "role": "Учебный look поверх готового reach с защитой тела",
+      "review": "animation.md",
+      "sha256_after_corrections": "206554bdfec4460811cb637d2713f1182c3687435ae4fad9b435df303747e13a",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_blocking.py",
+      "bytes_at_inventory": 6967,
+      "mode": "full_text_review",
+      "sha256_reviewed": "15069f54fa681ae353b4d704aad75ea6661a0f29914320f80de83d09cb9d6035",
+      "role": "Камерная склейка непрерывного reach с повторным открытием и hash-проверкой",
+      "review": "animation.md",
+      "sha256_after_corrections": "15069f54fa681ae353b4d704aad75ea6661a0f29914320f80de83d09cb9d6035",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_bounce.py",
+      "bytes_at_inventory": 5939,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f29ce9f06b52efe894bb99ec62c327c80cbd91894306be6772c877a0f51793bd",
+      "role": "Кинематическое упражнение дуг/тайминга/сжатия сфер",
+      "review": "animation.md",
+      "sha256_after_corrections": "f29ce9f06b52efe894bb99ec62c327c80cbd91894306be6772c877a0f51793bd",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_chase_camera.py",
+      "bytes_at_inventory": 4817,
+      "mode": "full_text_review",
+      "sha256_reviewed": "669b47111656ff0a9eb9a1569bfe17e34da61c84ecc7db1133318c75ff6555b2",
+      "role": "Сравнение более близкой камеры погони",
+      "review": "animation.md",
+      "sha256_after_corrections": "2c7091a056444dadef3c64b0604552fef82ea8adae4120548f6f86412e5650f3",
+      "changed_after_review": true
+    },
+    {
+      "path": "tools/blender/study_contact_events.py",
+      "bytes_at_inventory": 6641,
+      "mode": "full_text_review",
+      "sha256_reviewed": "5d3fbb01393a2010679f2660a3cc41c72424375ddce11c25d3af596411dad0df",
+      "role": "Парные события шагов из gait JSON с камерным pan/gain",
+      "review": "animation.md",
+      "sha256_after_corrections": "5d3fbb01393a2010679f2660a3cc41c72424375ddce11c25d3af596411dad0df",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_pose_timing.py",
+      "bytes_at_inventory": 13452,
+      "mode": "full_text_review",
+      "sha256_reviewed": "bec20aa4afb7f840461c44bfc8d44eba26dbe4a1a9e7421291fc86bd4aa41b3a",
+      "role": "Два варианта плечевого жеста или wrist reach",
+      "review": "animation.md",
+      "sha256_after_corrections": "bec20aa4afb7f840461c44bfc8d44eba26dbe4a1a9e7421291fc86bd4aa41b3a",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/study_static.py",
+      "bytes_at_inventory": 4158,
+      "mode": "full_text_review",
+      "sha256_reviewed": "15fe6b46b6d9eddc051ed09379513abaf592260598b05b8c40c6a06025321ea3",
+      "role": "Заморозка основной позы героя для воспроизводимых упражнений",
+      "review": "animation.md",
+      "sha256_after_corrections": "15fe6b46b6d9eddc051ed09379513abaf592260598b05b8c40c6a06025321ea3",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/test_deformation_metrics.py",
+      "bytes_at_inventory": 2811,
+      "mode": "full_text_review",
+      "sha256_reviewed": "77492cfaff56502b4b8fcdae19cb4a1f39eea819bf82bf6cd5e5fb732968a1b7",
+      "role": "Пять регрессий топологии/тесселяции/деформаций",
+      "review": "animation.md",
+      "sha256_after_corrections": "77492cfaff56502b4b8fcdae19cb4a1f39eea819bf82bf6cd5e5fb732968a1b7",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/test_prop_attachment.py",
+      "bytes_at_inventory": 3351,
+      "mode": "full_text_review",
+      "sha256_reviewed": "eef4dca64e3d9d60ab4820213583e8ce4b09cb3a0ebdbdd9044d22d9886baf39",
+      "role": "Шесть регрессий attachment и отказов на неподдержанном вводе",
+      "review": "animation.md",
+      "sha256_after_corrections": "eef4dca64e3d9d60ab4820213583e8ce4b09cb3a0ebdbdd9044d22d9886baf39",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/views_world.py",
+      "bytes_at_inventory": 17391,
+      "mode": "full_text_review",
+      "sha256_reviewed": "842cbca78932ac40b9cda127e9d5c698b0008aede5db0e306167525123a22e48",
+      "role": "Диагностические камеры и проверки оружия/рывков/контактов",
+      "review": "animation.md",
+      "sha256_after_corrections": "842cbca78932ac40b9cda127e9d5c698b0008aede5db0e306167525123a22e48",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/blender/weight_shift.py",
+      "bytes_at_inventory": 20356,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8197e2a772019445577e88547567bd6e43855e5301eee901c103f888c86d4c80",
+      "role": "Fixed-support перенос веса с IK и транзакционным skin repair",
+      "review": "animation.md",
+      "sha256_after_corrections": "8197e2a772019445577e88547567bd6e43855e5301eee901c103f888c86d4c80",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/check.py",
+      "bytes_at_inventory": 3425,
+      "mode": "full_text_review",
+      "sha256_reviewed": "db82ebb837196a1b27ba1fd41bd65e9fcbbbb9408ecd7ba1dc6d59a37eff1288",
+      "role": "Общий запуск QA выпусков и планов сценок",
+      "review": "production.md",
+      "sha256_after_corrections": "db82ebb837196a1b27ba1fd41bd65e9fcbbbb9408ecd7ba1dc6d59a37eff1288",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/cover.py",
+      "bytes_at_inventory": 1644,
+      "mode": "full_text_review",
+      "sha256_reviewed": "2975b0dc1bfdba6cbce84819e0eb270b570f59f55455cfa95f4355d993957d26",
+      "role": "HTML-обложки в PNG через Chromium",
+      "review": "production.md",
+      "sha256_after_corrections": "2975b0dc1bfdba6cbce84819e0eb270b570f59f55455cfa95f4355d993957d26",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/a8_cam.js",
+      "bytes_at_inventory": 3559,
+      "mode": "full_text_review",
+      "sha256_reviewed": "75109f06c2f1240315e11ed3dc4496f671aced6bc025225d42a2a13ac267df43",
+      "role": "Panorama: HUD, камера и клиентская интерполяция ключей",
+      "review": "production.md",
+      "sha256_after_corrections": "75109f06c2f1240315e11ed3dc4496f671aced6bc025225d42a2a13ac267df43",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/a8_trees.txt",
+      "bytes_at_inventory": 120581,
+      "mode": "full_text_review",
+      "sha256_reviewed": "cfc70e482aa5cd255cec16d2685497a0345b19933f5bbfc2e19083db64c88fdb",
+      "role": "Таблица моделей и размещения деревьев для Lua-загрузчика",
+      "review": "production.md",
+      "sha256_after_corrections": "cfc70e482aa5cd255cec16d2685497a0345b19933f5bbfc2e19083db64c88fdb",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/addon_game_mode.lua",
+      "bytes_at_inventory": 24675,
+      "mode": "full_text_review",
+      "sha256_reviewed": "cb732f9fccb5dd2f844e804c0a98e7332d7443a74b00c1af17d27a390ba17c41",
+      "role": "Директор сцен Dota: актёры, камера, эффекты, деревья, команды диагностики",
+      "review": "production.md",
+      "sha256_after_corrections": "cb732f9fccb5dd2f844e804c0a98e7332d7443a74b00c1af17d27a390ba17c41",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/anim_to_dmx.py",
+      "bytes_at_inventory": 7536,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f12536928dc9078e642b37f34d6395c181cfac4e6ffe598f7ed6caf918843577",
+      "role": "Перенос Blender-анимаций в DMX по эталонному idle",
+      "review": "production.md",
+      "sha256_after_corrections": "f12536928dc9078e642b37f34d6395c181cfac4e6ffe598f7ed6caf918843577",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/anims.py",
+      "bytes_at_inventory": 6711,
+      "mode": "full_text_review",
+      "sha256_reviewed": "b0224326a7fc10b4166d2dc13eab2cfd1ac85c32b4b9b5944714f9966756b209",
+      "role": "Экспорт GLB, каталог анимаций, траектории костей, оценка stride",
+      "review": "production.md",
+      "sha256_after_corrections": "b0224326a7fc10b4166d2dc13eab2cfd1ac85c32b4b9b5944714f9966756b209",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/calib.py",
+      "bytes_at_inventory": 2192,
+      "mode": "full_text_review",
+      "sha256_reviewed": "87a091b65680a1638ab28e0f17777f4044d755b4a04f231fff41a63c9256b4ed",
+      "role": "Создание калибровочной сцены и предсказание проекций",
+      "review": "production.md",
+      "sha256_after_corrections": "87a091b65680a1638ab28e0f17777f4044d755b4a04f231fff41a63c9256b4ed",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/calib_measure.py",
+      "bytes_at_inventory": 2125,
+      "mode": "full_text_review",
+      "sha256_reviewed": "be4ec4b800d0f62096aab259a4f01b751ca5e10f47a98a08ad56f036a6d0fbd5",
+      "role": "Измерение цветовых пятен на TGA калибровки",
+      "review": "production.md",
+      "sha256_after_corrections": "be4ec4b800d0f62096aab259a4f01b751ca5e10f47a98a08ad56f036a6d0fbd5",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/custom_ui_manifest.xml",
+      "bytes_at_inventory": 118,
+      "mode": "full_text_review",
+      "sha256_reviewed": "eadc19c07ae950466596827b0ad6326f4fe3091e8c2c7a81b72ad059ef106fa0",
+      "role": "Подключение a8_cam.js в пользовательский UI",
+      "review": "production.md",
+      "sha256_after_corrections": "eadc19c07ae950466596827b0ad6326f4fe3091e8c2c7a81b72ad059ef106fa0",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/datamodel.py",
+      "bytes_at_inventory": 34158,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a40fc1967dfba8ac4a06024a97a5f1af5dfc88f7422ea009a06d32cfade668b9",
+      "role": "Сторонний MIT DMX reader/writer с типами и KV2/binary",
+      "review": "production.md",
+      "sha256_after_corrections": "a40fc1967dfba8ac4a06024a97a5f1af5dfc88f7422ea009a06d32cfade668b9",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/dota_console.py",
+      "bytes_at_inventory": 901,
+      "mode": "full_text_review",
+      "sha256_reviewed": "11d480da8e2e2ac4676e503d0ed70a0cdb49940c1a77e3576f6ebeb0bb6c2894",
+      "role": "Отправка консольных команд через локальный TCP",
+      "review": "production.md",
+      "sha256_after_corrections": "11d480da8e2e2ac4676e503d0ed70a0cdb49940c1a77e3576f6ebeb0bb6c2894",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/focus.ps1",
+      "bytes_at_inventory": 2629,
+      "mode": "full_text_review",
+      "sha256_reviewed": "9de266081080ee7bd824f983f67be2af23438f1f26d9a40dc0e0ea0c670655bc",
+      "role": "Фокус и размеры окна Dota через Win32",
+      "review": "production.md",
+      "sha256_after_corrections": "9de266081080ee7bd824f983f67be2af23438f1f26d9a40dc0e0ea0c670655bc",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/framing.py",
+      "bytes_at_inventory": 15941,
+      "mode": "full_text_review",
+      "sha256_reviewed": "3945f52fdb9c3f94f97b9fae537b3b5ca9e32f2258b3e76e8465990a6b3ae827",
+      "role": "Автоподбор close/over/two/wide и плана склеек",
+      "review": "production.md",
+      "sha256_after_corrections": "3945f52fdb9c3f94f97b9fae537b3b5ca9e32f2258b3e76e8465990a6b3ae827",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/ground_map.py",
+      "bytes_at_inventory": 6243,
+      "mode": "full_text_review",
+      "sha256_reviewed": "3be2061918315199b76c47c752ba2b2da03c2cf4fac2f0b4b30cb19a17542ced",
+      "role": "Выгрузка высот/проходимости и выборки Ground",
+      "review": "production.md",
+      "sha256_after_corrections": "3be2061918315199b76c47c752ba2b2da03c2cf4fac2f0b4b30cb19a17542ced",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/hero_parts.py",
+      "bytes_at_inventory": 4009,
+      "mode": "full_text_review",
+      "sha256_reviewed": "a7e45ddb7506b57f6254720f77fb71383e35a2f7244a892f80c58ed3c6802b63",
+      "role": "Модели тела и стандартных частей из игровых KV",
+      "review": "production.md",
+      "sha256_after_corrections": "a7e45ddb7506b57f6254720f77fb71383e35a2f7244a892f80c58ed3c6802b63",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/project.py",
+      "bytes_at_inventory": 3889,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8eacf97645befbf2b796621d9b23653c845d660b68c7a0b820644ef3c6a3d193",
+      "role": "Проекция/обратная проекция Dota и перекрытие рамок",
+      "review": "production.md",
+      "sha256_after_corrections": "8eacf97645befbf2b796621d9b23653c845d660b68c7a0b820644ef3c6a3d193",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/record.sh",
+      "bytes_at_inventory": 7131,
+      "mode": "full_text_review",
+      "sha256_reviewed": "ae83eff32c9afa82b60b860ca33daba5a5b4a5223b9dbc7dcf795dd694f3672d",
+      "role": "Запись игрового дубля, небо, кодирование, лист кадров",
+      "review": "production.md",
+      "sha256_after_corrections": "ae83eff32c9afa82b60b860ca33daba5a5b4a5223b9dbc7dcf795dd694f3672d",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/shots.sh",
+      "bytes_at_inventory": 2733,
+      "mode": "full_text_review",
+      "sha256_reviewed": "4447f866f2ce3166a930a1937b63186b2e5b0949d348f1df1c919bdc4df88cda",
+      "role": "Скриншоты выбранных времён и контактный лист",
+      "review": "production.md",
+      "sha256_after_corrections": "4447f866f2ce3166a930a1937b63186b2e5b0949d348f1df1c919bdc4df88cda",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/sky_comp.py",
+      "bytes_at_inventory": 4631,
+      "mode": "full_text_review",
+      "sha256_reviewed": "7e54b04f1d9ae3642e23c7bd1c8db1e922f10ffb7c2230c70ccdfaf8f09f39f1",
+      "role": "Поиск конца дубля и подстановка неба по тёмной маске",
+      "review": "production.md",
+      "sha256_after_corrections": "7e54b04f1d9ae3642e23c7bd1c8db1e922f10ffb7c2230c70ccdfaf8f09f39f1",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/stage.py",
+      "bytes_at_inventory": 25754,
+      "mode": "full_text_review",
+      "sha256_reviewed": "09c4f52b4bdfb194e627ce7d53df71f3d2c9a6ebdc74653783ebe5f0dab207bb",
+      "role": "Площадка: якоря, движение, проверки, KV/JSON экспорт",
+      "review": "production.md",
+      "sha256_after_corrections": "09c4f52b4bdfb194e627ce7d53df71f3d2c9a6ebdc74653783ebe5f0dab207bb",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/troupe.py",
+      "bytes_at_inventory": 6231,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f7a7917b57adf72d3dc7206c585d10a28834a2c5a0e932f1a8e71c488f10bb61",
+      "role": "Подготовка героев, измерения и регистрация DMX-анимаций",
+      "review": "production.md",
+      "sha256_after_corrections": "f7a7917b57adf72d3dc7206c585d10a28834a2c5a0e932f1a8e71c488f10bb61",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_engine/water_map.py",
+      "bytes_at_inventory": 2378,
+      "mode": "full_text_review",
+      "sha256_reviewed": "492a95ba575efc10806e56ecdb44b7a4d0eb5304a3eec6d8d3af769d8a5c54ab",
+      "role": "Растр воды из world glTF и поиск удалённых от берега точек",
+      "review": "production.md",
+      "sha256_after_corrections": "492a95ba575efc10806e56ecdb44b7a4d0eb5304a3eec6d8d3af769d8a5c54ab",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/dota_export.py",
+      "bytes_at_inventory": 5240,
+      "mode": "full_text_review",
+      "sha256_reviewed": "85c4d1bbbffd881621721ca291106c3bb7adf712d04d2ef10cedb9a053324549",
+      "role": "S2V-конвертация сырых ресурсов и упаковка PNG в GLB",
+      "review": "production.md",
+      "sha256_after_corrections": "85c4d1bbbffd881621721ca291106c3bb7adf712d04d2ef10cedb9a053324549",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/make_textures.py",
+      "bytes_at_inventory": 6141,
+      "mode": "full_text_review",
+      "sha256_reviewed": "9d32d66b467f6a62ada54bebf15e5765ad262d3cbd51f90ddffa27d9c6db2d75",
+      "role": "Детерминированные процедурные текстуры",
+      "review": "production.md",
+      "sha256_after_corrections": "9d32d66b467f6a62ada54bebf15e5765ad262d3cbd51f90ddffa27d9c6db2d75",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/map_crop.mjs",
+      "bytes_at_inventory": 930,
+      "mode": "full_text_review",
+      "sha256_reviewed": "6afd070f34d17fa6eb9f227008786f9232ba6dff77a22c3894014b261a3a8447",
+      "role": "Вырезка GLB/glTF по габаритам узлов, prune/dedup",
+      "review": "production.md",
+      "sha256_after_corrections": "6afd070f34d17fa6eb9f227008786f9232ba6dff77a22c3894014b261a3a8447",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/memes.py",
+      "bytes_at_inventory": 6324,
+      "mode": "full_text_review",
+      "sha256_reviewed": "729ad0b51d7db183862cd34c54b89973532ac9aa2ebe7223365a864da1b82917",
+      "role": "Каталог локальных мемов, пик, crop и лист просмотра",
+      "review": "production.md",
+      "sha256_after_corrections": "729ad0b51d7db183862cd34c54b89973532ac9aa2ebe7223365a864da1b82917",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/paths.py",
+      "bytes_at_inventory": 1273,
+      "mode": "full_text_review",
+      "sha256_reviewed": "d82a48aaa8d38f921a902729cbdadea6560f58d75285c395d6926cb823a21281",
+      "role": "Общие пути к Dota, addon, S2V и Blender",
+      "review": "production.md",
+      "sha256_after_corrections": "d82a48aaa8d38f921a902729cbdadea6560f58d75285c395d6926cb823a21281",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/assemble_study.py",
+      "bytes_at_inventory": 6862,
+      "mode": "full_text_review",
+      "sha256_reviewed": "acbf39b2a27b6ae9df48e5d3e8ce22ef6a7f490483f493562f2e3f06397ae626",
+      "role": "CPU-сборка по явному рецепту и decoded QA",
+      "review": "production.md",
+      "sha256_after_corrections": "acbf39b2a27b6ae9df48e5d3e8ce22ef6a7f490483f493562f2e3f06397ae626",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/chase_audio.py",
+      "bytes_at_inventory": 8707,
+      "mode": "full_text_review",
+      "sha256_reviewed": "64743472929be39240a2f85fe44bc8163019099c8213f1f2c08334906d034939",
+      "role": "Специализированный stereo-микс погони по контактам",
+      "review": "production.md",
+      "sha256_after_corrections": "64743472929be39240a2f85fe44bc8163019099c8213f1f2c08334906d034939",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/chase_camera_audio.py",
+      "bytes_at_inventory": 9675,
+      "mode": "full_text_review",
+      "sha256_reviewed": "6e552140163244ceb86de5fa728caa9318a40a819857887f13cffd355e931026",
+      "role": "Точное восстановление WAV и панорама изменённого плана",
+      "review": "production.md",
+      "sha256_after_corrections": "a833a233b177e03d048ce067e3af2d78dbb99ff7cabad89e7e1739411b96801e",
+      "changed_after_review": true
+    },
+    {
+      "path": "tools/skit/chase_look.py",
+      "bytes_at_inventory": 762,
+      "mode": "full_text_review",
+      "sha256_reviewed": "ba34957c193fe7c2913eb718d6dcc80309306475c70b8282e1548ab6ecca393b",
+      "role": "Единая цветовая кривая и виньетка погони",
+      "review": "production.md",
+      "sha256_after_corrections": "ba34957c193fe7c2913eb718d6dcc80309306475c70b8282e1548ab6ecca393b",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/footsteps.py",
+      "bytes_at_inventory": 3048,
+      "mode": "full_text_review",
+      "sha256_reviewed": "6c3ccc88fc67e7069f3450b9e3846ba3cbc56f1ba06b0762a46c858215f06b69",
+      "role": "Валидация и выбор семплов по явным контактам",
+      "review": "production.md",
+      "sha256_after_corrections": "6c3ccc88fc67e7069f3450b9e3846ba3cbc56f1ba06b0762a46c858215f06b69",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/game_vo.py",
+      "bytes_at_inventory": 10324,
+      "mode": "full_text_review",
+      "sha256_reviewed": "76dd7995254cbd480a552b2154368fa2b15f5dabc936d20b2b0ac56c733794e0",
+      "role": "Извлечение/ASR/поиск игровых реплик, voice reference и clone",
+      "review": "production.md",
+      "sha256_after_corrections": "76dd7995254cbd480a552b2154368fa2b15f5dabc936d20b2b0ac56c733794e0",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/grade.py",
+      "bytes_at_inventory": 8750,
+      "mode": "full_text_review",
+      "sha256_reviewed": "ba422e239ee3db25e58798f37ea811d261f805ad6ef086969440624e710cc0de",
+      "role": "Измерения Lab, целевой look, обработка видео",
+      "review": "production.md",
+      "sha256_after_corrections": "ba422e239ee3db25e58798f37ea811d261f805ad6ef086969440624e710cc0de",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/hero_render.py",
+      "bytes_at_inventory": 1773,
+      "mode": "full_text_review",
+      "sha256_reviewed": "aace96922959732e8765b806e0a31cafcc7b2c27ebebe31538365696e80e3d60",
+      "role": "Экспорт тела и предметов героя для Blender",
+      "review": "production.md",
+      "sha256_after_corrections": "aace96922959732e8765b806e0a31cafcc7b2c27ebebe31538365696e80e3d60",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/mix.py",
+      "bytes_at_inventory": 10261,
+      "mode": "full_text_review",
+      "sha256_reviewed": "2eed8ddbc967c12272cf1a1dfdb30c6756f02c44bcd261b9b5721ed1aa8f1749",
+      "role": "Монтаж речи, событий SFX, субтитров и grade",
+      "review": "production.md",
+      "sha256_after_corrections": "2eed8ddbc967c12272cf1a1dfdb30c6756f02c44bcd261b9b5721ed1aa8f1749",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/skit.py",
+      "bytes_at_inventory": 59456,
+      "mode": "full_text_review",
+      "sha256_reviewed": "8d6beb8e2ea4c03eab37ca5bcd1fd9d1f7eea2bef8100106c5c989c95922dab8",
+      "role": "Парсер русских сценок и оркестратор всех стадий",
+      "review": "production.md",
+      "sha256_after_corrections": "8d6beb8e2ea4c03eab37ca5bcd1fd9d1f7eea2bef8100106c5c989c95922dab8",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/study.py",
+      "bytes_at_inventory": 5115,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f894319cd26bab1f3497d1ce36f6ccf16a9a93e089585e22bf252f408de0a2ed",
+      "role": "Измерения видео и контактные листы образцов",
+      "review": "production.md",
+      "sha256_after_corrections": "f894319cd26bab1f3497d1ce36f6ccf16a9a93e089585e22bf252f408de0a2ed",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/skit/voices.py",
+      "bytes_at_inventory": 11569,
+      "mode": "full_text_review",
+      "sha256_reviewed": "e6984f8d604de90cc551f053584a3185f1066e7556a8f75b8f503c047dde065d",
+      "role": "Генерация/переиспользование голоса, огибающая и ASR",
+      "review": "production.md",
+      "sha256_after_corrections": "e6984f8d604de90cc551f053584a3185f1066e7556a8f75b8f503c047dde065d",
+      "changed_after_review": false
+    },
+    {
+      "path": "tools/vpk_tool.py",
+      "bytes_at_inventory": 3731,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f65948f361e7b4c10775007fc088b454dcd9f864b9475b1f2732daf2dafbdfe1",
+      "role": "VPK каталог, извлечение и рекурсивные зависимости",
+      "review": "production.md",
+      "sha256_after_corrections": "f65948f361e7b4c10775007fc088b454dcd9f864b9475b1f2732daf2dafbdfe1",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/gsap/CustomEase.min.js",
+      "bytes_at_inventory": 7154,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "d19a2e3a54218ea54f46f8e14eae04a838ae4b4f6069c21fd759be160721ed3d",
+      "upstream": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/CustomEase.min.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "d19a2e3a54218ea54f46f8e14eae04a838ae4b4f6069c21fd759be160721ed3d",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/gsap/SplitText.min.js",
+      "bytes_at_inventory": 7743,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "e6a2238d89046fa9acccce1fcc3c547167f6ebdd0afd8cbb46be4515fe4b58ff",
+      "upstream": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/SplitText.min.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "e6a2238d89046fa9acccce1fcc3c547167f6ebdd0afd8cbb46be4515fe4b58ff",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/gsap/gsap.min.js",
+      "bytes_at_inventory": 72938,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "dd7dc87e023b3480f9707296342565ca2e361c8393cabb30f9557e06eb1bed4d",
+      "upstream": "https://raw.githubusercontent.com/greensock/GSAP/3.15.0/dist/gsap.min.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "dd7dc87e023b3480f9707296342565ca2e361c8393cabb30f9557e06eb1bed4d",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/lottie/LICENSE.md",
+      "bytes_at_inventory": 1095,
+      "mode": "full_text_review",
+      "sha256_reviewed": "4750849de81eeee983513f7e66c419abf4656146a23283e8e93532075e2c242b",
+      "role": "Лицензия MIT Lottie/Bodymovin",
+      "review": "instructions.md",
+      "sha256_after_corrections": "4750849de81eeee983513f7e66c419abf4656146a23283e8e93532075e2c242b",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/lottie/lottie_light.min.js",
+      "bytes_at_inventory": 168395,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "0a7a554b1ce297e6b6dbc4358d7b134dd257209b14b5afd547e1ff581548ac1b",
+      "upstream": "https://raw.githubusercontent.com/airbnb/lottie-web/v5.13.0/build/player/lottie_light.min.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "0a7a554b1ce297e6b6dbc4358d7b134dd257209b14b5afd547e1ff581548ac1b",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/three/LICENSE",
+      "bytes_at_inventory": 1102,
+      "mode": "full_supporting_text_read",
+      "sha256_reviewed": "f57eb9202058667d12aebd854fe8a86d6feaeab51078180df5615bfdbd5cff05",
+      "sha256_after_corrections": "f57eb9202058667d12aebd854fe8a86d6feaeab51078180df5615bfdbd5cff05",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/three/addons/loaders/GLTFLoader.js",
+      "bytes_at_inventory": 115000,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "5bb7bde28842727558c1f9a692004229c76ed8e8f846469d7c6258e719c7ee8c",
+      "upstream": "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/jsm/loaders/GLTFLoader.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "5bb7bde28842727558c1f9a692004229c76ed8e8f846469d7c6258e719c7ee8c",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/three/addons/utils/BufferGeometryUtils.js",
+      "bytes_at_inventory": 33141,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "5beb9dc7e9248a32f7b5e8cc0dd5fd4054d227d8e19a3a98b4715f6d2784c4ef",
+      "upstream": "https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/jsm/utils/BufferGeometryUtils.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "5beb9dc7e9248a32f7b5e8cc0dd5fd4054d227d8e19a3a98b4715f6d2784c4ef",
+      "changed_after_review": false
+    },
+    {
+      "path": "vendor/three/three.module.min.js",
+      "bytes_at_inventory": 691654,
+      "mode": "syntax_and_official_upstream_comparison",
+      "sha256_reviewed": "8e71269b773b81802e7f5f71d8528f1e0c29a82c55f0609845b528389aed8439",
+      "upstream": "https://raw.githubusercontent.com/mrdoob/three.js/r170/build/three.module.min.js",
+      "normalized_equal": true,
+      "sha256_after_corrections": "8e71269b773b81802e7f5f71d8528f1e0c29a82c55f0609845b528389aed8439",
+      "changed_after_review": false
+    },
+    {
+      "path": "video.html",
+      "bytes_at_inventory": 117915,
+      "mode": "full_text_review",
+      "sha256_reviewed": "714d0d626061f9d08aab5395b8f4670f63fd068e1be5ae56c38963dca420bf69",
+      "role": "Шаблон, готовые раскладки, seek, переходы, субтитры и DOM-аудит",
+      "review": "frontend.md",
+      "sha256_after_corrections": "714d0d626061f9d08aab5395b8f4670f63fd068e1be5ae56c38963dca420bf69",
+      "changed_after_review": false
+    },
+    {
+      "path": "video.py",
+      "bytes_at_inventory": 62951,
+      "mode": "full_text_review",
+      "sha256_reviewed": "f25824d2addb56e6e2960dd731cd1427e07381771751b4b2a7ccc43af81f0616",
+      "role": "Подготовка данных, TTS/ASR, ресурсы, рендер-оркестрация, звук и CLI",
+      "review": "frontend.md",
+      "sha256_after_corrections": "075864fc3c72ad46968b26052d1d53d136323efd06f4edd231edaf91bff552b4",
+      "changed_after_review": true
+    }
+  ],
+  "limitations": [
+    "Third-party implementations were compared in full with official version sources, not manually interpreted line by line.",
+    "Media decoding does not prove rights, aesthetics or all runtime behavior.",
+    "Local _game and node_modules are dependency inventories, not fully reviewed source trees."
+  ]
+}

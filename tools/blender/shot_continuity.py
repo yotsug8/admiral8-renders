@@ -146,6 +146,7 @@ def run(args):
                       'Expected actors are explicit input, not inferred from action prose.',
                       'Integer frames only; cuts excluded from all within-shot deltas.',
                       'Surface projection sampled at shot endpoints and --surface-step intervals; unsampled visibility is unknown.',
+                      'Projection step uses net UV displacement per frame between samples; unsampled jumps or reversals can be missed.',
                       'Threshold flags are candidates, not proof of perceptual discontinuity.',
                       'Weapon naming is heuristic; missing selection is inconclusive.',
                       'Weapon surface centroid/bounds do not establish grip or collisions.',
@@ -171,6 +172,7 @@ def run(args):
                     projection[(sample, actor)] = result['frames'][0]
         previous = None
         for shot in shots:
+            previous_projection = {}
             samples = set(range(shot['start'], shot['end']+1, args.scenery_step)) | {shot['end']}
             for frame in range(shot['start'], shot['end']+1):
                 scene.frame_set(frame)
@@ -212,12 +214,18 @@ def run(args):
                                   or sum(p.get(k, 0) for k in ('behind_camera_points', 'near_plane_points', 'far_plane_points')) == p['surface_vertices']
                                   or p.get('clipped_bbox_area', 0) < args.min_bbox)
                         if absent: report['flags'].append(dict(frame=frame, actor=actor, kind='expected_projection_missing'))
-                        if previous and previous['shot'] == shot['index']:
-                            prior = previous['actors'][actor].get('projection', {})
+                        if actor in previous_projection:
+                            prior_frame, prior = previous_projection[actor]
                             if prior.get('center_uv') and p.get('center_uv'):
+                                interval = frame-prior_frame
+                                p['previous_projection_frame'] = prior_frame
+                                p['projection_frame_interval'] = interval
                                 p['consecutive_center_drift_uv'] = math.dist(prior['center_uv'], p['center_uv'])
-                                if p['consecutive_center_drift_uv'] > args.max_uv_step:
+                                # max_uv_step is a per-frame threshold, also for sparse samples.
+                                p['center_drift_uv_per_frame'] = p['consecutive_center_drift_uv']/interval
+                                if p['center_drift_uv_per_frame'] > args.max_uv_step:
                                     report['flags'].append(dict(frame=frame, actor=actor, kind='projection_step'))
+                        previous_projection[actor] = (frame, p)
                     row['actors'][actor] = entry
                 if previous:
                     changes = dict(camera=delta(previous['camera'], row['camera']), actors={})
@@ -279,7 +287,9 @@ def main():
     for name, value in [('min-bbox', .0001), ('max-uv-step', .1),
                         ('max-camera-step', .5), ('max-root-step', .25),
                         ('max-weapon-step', .5), ('max-angle', 20.), ('max-lens-step', 5.)]:
-        p.add_argument('--'+name, type=float, default=value)
+        p.add_argument('--'+name, type=float, default=value,
+                       help='Maximum net UV center displacement per frame between surface samples'
+                       if name == 'max-uv-step' else None)
     args = p.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
     try:
         if args.surface_step < 1: raise ValueError('surface-step must be positive')

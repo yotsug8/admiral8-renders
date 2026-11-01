@@ -1,0 +1,879 @@
+[
+  {
+    "ref": "origin/assets",
+    "path": "err.txt",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/assets",
+    "path": "hero_kunkka.png",
+    "check": "full_image_decode",
+    "size": [
+      1240,
+      1412
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "item_tango.png",
+    "check": "full_image_decode",
+    "size": [
+      88,
+      64
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "log.txt",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/blue_metal_plate.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/brown_leather.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/brown_planks_05.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/castle_wall_slates.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/cliff_side.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/cobblestone_floor_01.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/dark_rock.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/dark_wooden_planks.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/forest_floor.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/hessian_230.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2036
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/medieval_blocks_02.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/medieval_wood.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/metal_plate.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/old_planks_02.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/rough_concrete.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/rusty_metal_02.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/assets",
+    "path": "tex/worn_plaster_wall.jpg",
+    "check": "full_image_decode",
+    "size": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "ref": "origin/takes",
+    "path": "README.md",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/takes",
+    "path": "render.log",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/takes",
+    "path": "take_end_1.mp3",
+    "check": "audio_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "codec_type": "audio"
+        }
+      ],
+      "format": {}
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/takes",
+    "path": "take_end_2.mp3",
+    "check": "audio_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "codec_type": "audio"
+        }
+      ],
+      "format": {}
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/takes",
+    "path": "take_end_3.mp3",
+    "check": "audio_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "codec_type": "audio"
+        }
+      ],
+      "format": {}
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/takes",
+    "path": "takes.json",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/renders",
+    "path": "README.md",
+    "check": "text_read"
+  },
+  {
+    "ref": "origin/renders",
+    "path": "foundation_pose_timing.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 720,
+          "height": 800,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "2.800000",
+        "size": "194459"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "foundation_reach_attention.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 720,
+          "height": 800,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "2.800000",
+        "size": "198263"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "foundation_reach_directions.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 720,
+          "height": 800,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "2.800000",
+        "size": "188526"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "foundation_reach_sniper.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 720,
+          "height": 800,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "2.800000",
+        "size": "190990"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "foundation_timing_arcs.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 640,
+          "height": 360,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "4.000000",
+        "size": "49769"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "hoodwink_grounded_run_two_views.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 960,
+          "height": 480,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "2.000000",
+        "size": "452582"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kryuk.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "15.000000",
+        "size": "29983314"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kryuk_blender.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "15.000000",
+        "size": "22983712"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_chase_v2_30fps.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.800000",
+        "size": "5884890"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_chase_v3_30fps.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.800000",
+        "size": "5876935"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_chase_v4_30fps.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.800000",
+        "size": "5701832"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_chase_v5_30fps.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 360,
+          "height": 640,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.800000",
+        "size": "3451941"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_chase_v6_30fps.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 360,
+          "height": 640,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.800000",
+        "size": "3423556"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_grounded_audio.wav",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "pcm_s24le",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "9.600000",
+        "size": "2764902"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_grounded_draft.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "15/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "9.600000",
+        "size": "3068458"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_pursuit_test_v1.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 360,
+          "height": 640,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "6.400000",
+        "size": "1059536"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "kunkka_hoodwink_pursuit_test_v2.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 360,
+          "height": 640,
+          "avg_frame_rate": "30/1"
+        }
+      ],
+      "format": {
+        "duration": "6.400000",
+        "size": "2028249"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe10_faces.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "17.600000",
+        "size": "2320646"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe11_montage.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.320000",
+        "size": "5232173"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe12_tide.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "5.800000",
+        "size": "917185"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe13_gest.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 810,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "10.833333",
+        "size": "1263366"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe4_look.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "11.366667",
+        "size": "15251734"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe7_turn.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1080,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "10.908000",
+        "size": "3151081"
+      }
+    },
+    "error": ""
+  },
+  {
+    "ref": "origin/renders",
+    "path": "probe8_check.mp4",
+    "check": "media_metadata_only",
+    "metadata": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 540,
+          "height": 960,
+          "avg_frame_rate": "30/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "avg_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "12.133333",
+        "size": "822390"
+      }
+    },
+    "error": ""
+  }
+]

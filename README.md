@@ -21,3 +21,9 @@
 - [kryuk.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/kryuk.mp4) — «Крюк»: Снайпер и Пудж, сценка в движке доты
 
 - [Малый жест: поза и тайминг](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_pose_timing.mp4) — учебная проба 2,8 с/30 fps, без звука; сверху A, снизу B, слева спереди, справа сбоку. Ограниченная амплитуда, не законченный актёрский жест.
+
+- [Кисть к цели и внимание: Пудж и Снайпер](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_reach_attention.mp4) — техническая проба 2,8 с/30 fps, без звука; ограничения в docs/studies/REACH_ATTENTION.md основной ветки.
+
+- [Два направления кисти Пуджа](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_reach_directions.mp4) — техническая проба 2,8 с/30 fps, без звука; ограничения в docs/studies/REACH_ATTENTION.md основной ветки.
+
+- [Перенос двух направлений на Снайпера](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_reach_sniper.mp4) — техническая проба 2,8 с/30 fps, без звука; ограничения в docs/studies/REACH_ATTENTION.md основной ветки.

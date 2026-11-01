@@ -1,0 +1,54 @@
+{
+  "light": {
+    "case": "light",
+    "samples": 2145,
+    "frames": 135,
+    "fps": 30,
+    "max_segment_length_error_m": 3.2372720809581423e-07,
+    "max_grip_error_m": 0.0,
+    "max_foot_or_ankle_drift_m": 0.0,
+    "max_joint_endpoint_error_m": 5.733221720921078e-05,
+    "min_box_body_capsule_clearance_m": 0.013000002384185791,
+    "min_box_link_capsule_clearance_m": 0.0182592099905014,
+    "min_floor_clearance_m": 0.0,
+    "min_screen_margin": 0.062430109828710556,
+    "worst_capsule": {
+      "frame": 40.75,
+      "part": "L_thigh"
+    },
+    "grab_seconds": 0.9,
+    "limits": "Sixteenth-frame finite playback samples; capsule/sphere collision envelopes, no dynamics or arbitrary rig certification.",
+    "negative_tests": [
+      "L_foot:delta_location:0",
+      "L_hand:delta_location:0",
+      "Box:delta_location:2",
+      "L_upperarm:scale:2"
+    ]
+  },
+  "heavy": {
+    "case": "heavy",
+    "samples": 2145,
+    "frames": 135,
+    "fps": 30,
+    "max_segment_length_error_m": 3.1575529485516896e-07,
+    "max_grip_error_m": 0.0,
+    "max_foot_or_ankle_drift_m": 0.0,
+    "max_joint_endpoint_error_m": 0.000652277547086076,
+    "min_box_body_capsule_clearance_m": 0.003675671560697924,
+    "min_box_link_capsule_clearance_m": 0.003675671560697924,
+    "min_floor_clearance_m": 0.0,
+    "min_screen_margin": 0.062430109828710556,
+    "worst_capsule": {
+      "frame": 85.875,
+      "part": "L_thigh"
+    },
+    "grab_seconds": 1.1,
+    "limits": "Sixteenth-frame finite playback samples; capsule/sphere collision envelopes, no dynamics or arbitrary rig certification.",
+    "negative_tests": [
+      "L_foot:delta_location:0",
+      "L_hand:delta_location:0",
+      "Box:delta_location:2",
+      "L_upperarm:scale:2"
+    ]
+  }
+}

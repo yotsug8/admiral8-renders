@@ -725,7 +725,9 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
             else [d / f"{p}.glb" for p in node["parts"]]
         node = dict(node, glb=[base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]])
     if node.get("type") == "lottie" and isinstance(node.get("src"), str):
-        node = dict(node, data=json.load(open(HERE / node["src"].split(":", 1)[1], encoding="utf-8")))
+        source = (HERE / node["src"].split(":", 1)[1]).resolve()
+        node = dict(node, data=json.loads(source.read_text(encoding='utf-8')),
+                    assetBase=source.parent.as_uri() + '/')
         node.pop("src")
     out = {}
     for k, v in node.items():

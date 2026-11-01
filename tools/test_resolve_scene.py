@@ -1,6 +1,7 @@
 """Узкая регрессия F01: GLB anim у stage-актёров и обычная 2D-рекурсия."""
 import base64
 import copy
+import json
 import os
 from pathlib import Path
 import sys
@@ -13,6 +14,21 @@ import video
 
 
 class ResolveSceneTests(unittest.TestCase):
+    def test_lottie_source_directory_is_preserved_without_mutation(self):
+        with tempfile.TemporaryDirectory(prefix="lottie_source_") as tmp:
+            source = Path(tmp) / "nested" / "anim.json"
+            source.parent.mkdir()
+            animation = {"assets": [{"u": "images/", "p": "example.png"}]}
+            source.write_text(json.dumps(animation), encoding="utf-8")
+            scene = {"type": "panel", "children": [
+                {"type": "lottie", "src": "file:" + source.as_posix()}]}
+            original = copy.deepcopy(scene)
+            result = video.resolve_scene(scene, {}, {})["children"][0]
+            self.assertEqual(result["data"], animation)
+            self.assertEqual(result["assetBase"], source.parent.as_uri() + "/")
+            self.assertNotIn("src", result)
+            self.assertEqual(scene, original)
+
     def test_stage_actor_anim_preserves_2d_model_and_sources(self):
         with tempfile.TemporaryDirectory(prefix="resolve_scene_") as tmp:
             root = Path(tmp)

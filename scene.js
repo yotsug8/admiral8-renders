@@ -202,13 +202,38 @@ const SCN = (() => {
 
   // ---------- 3D-модели героев: GLB из файлов игры (tools/dota_export.py), части привязываются к скелету героя ----------
   // Герой из набора GLB (база + части): части привязываются к скелету героя по именам костей
-  async function hero(glbs, animName) {
-    const { THREE, GLTFLoader } = window.T3, L = new GLTFLoader();
-    const parse = b64 => new Promise((ok, no) => {
-      const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
-      L.parse(bin, "", ok, no);
+  function resource(label, start) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (error, value) => {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        if (error) reject(new Error(`${label}: ${error.message || error}`));
+        else resolve(value);
+      };
+      const timer = setTimeout(() => finish(new Error("таймаут загрузки 30000 мс")), 30000);
+      try { start(value => finish(null, value), error => finish(error || new Error("ошибка загрузки"))); }
+      catch (error) { finish(error); }
     });
-    const [base, ...parts] = await Promise.all(glbs.map(parse));
+  }
+
+  function gltf(label, read) {
+    return resource(label, (ok, fail) => {
+      const manager = new window.T3.THREE.LoadingManager();
+      // GLTFLoader can swallow texture errors and return a model without its map.
+      manager.onError = url => fail(new Error(`не удалось загрузить зависимость ${url}`));
+      read(new window.T3.GLTFLoader(manager), ok, fail);
+    });
+  }
+
+  async function hero(glbs, animName, label) {
+    const { THREE } = window.T3;
+    if (!Array.isArray(glbs) || !glbs.length) throw new Error(`${label}: пустой набор GLB`);
+    const parsed = glbs.map((b64, index) => gltf(`${label}, GLB ${index + 1}`, (loader, ok, fail) => {
+      const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+      loader.parse(bin, "", ok, fail);
+    }));
+    const [base, ...parts] = await Promise.all(parsed);
     const root = new THREE.Group(); root.add(base.scene);
     const bones = {}; base.scene.traverse(o => { if (o.isBone) bones[o.name] = o; });
     for (const p of parts) {
@@ -225,18 +250,24 @@ const SCN = (() => {
       root.add(p.scene);
     }
     const mixer = new THREE.AnimationMixer(base.scene);
-    const clip = base.animations.find(a => a.name === animName) || base.animations[0];
+    const clip = animName ? base.animations.find(a => a.name === animName) : base.animations[0];
+    if (animName && !clip) throw new Error(`${label}: нет GLB-анимации «${animName}»`);
     if (clip) mixer.clipAction(clip).play();
     mixer.setTime(0);
+    root.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(root, true);
+    if (bounds.isEmpty() || ![...bounds.min.toArray(), ...bounds.max.toArray()].every(Number.isFinite))
+      throw new Error(`${label}: нет конечных границ геометрии`);
     const rootBone = base.scene.getObjectByProperty("isBone", true), r0 = rootBone ? rootBone.position.clone() : null;
     return { root, base, mixer, clip, rootBone, r0, names: base.animations.map(a => a.name) };
   }
 
   async function load(g) {
+    for (const lot of g.sc.lots) await loadSceneLottie(lot);
     for (const st of g.sc.stages) await stage(st);
     for (const m of g.sc.models) {
       const { THREE } = window.T3, it = m.it;
-      const { root, mixer, clip, rootBone, r0 } = await hero(it.glb, it.anim);
+      const { root, mixer, clip, rootBone, r0 } = await hero(it.glb, it.anim, `Модель ${m.box.dataset.sid}`);
       const W = it.w, H = it.h;
       const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       r.setPixelRatio(1); r.setSize(W, H); r.outputColorSpace = THREE.SRGBColorSpace;
@@ -274,7 +305,8 @@ const SCN = (() => {
     let map = null;
     if (it.map) {
       // Кусок настоящей карты (tools/map_crop.mjs): рельеф, деревья, камни, вода — с материалами как в игре
-      const gm = await new window.T3.GLTFLoader().loadAsync(D.http + `_game/maps/${it.map}.glb`);
+      const url = D.http + `_game/maps/${it.map}.glb`;
+      const gm = await gltf(`Карта ${url}`, (loader, ok, fail) => loader.load(url, ok, undefined, fail));
       sc.add(gm.scene);
       map = window.T3.prepareDotaMap(THREE, gm.scene, D.http + `_game/maps/${it.map}_tex/`, { water: it.water || {}, sun: it.sun_dir });
       await map.ready;
@@ -286,14 +318,23 @@ const SCN = (() => {
         fragmentShader: "uniform vec3 top, bot; varying float h; void main(){ gl_FragColor = vec4(mix(bot, top, smoothstep(0., .45, h)), 1.); }" })));
     }
     // Дно и берега — фото-текстуры из assets/tex
-    const TL = new THREE.TextureLoader(), tex = (n, rep) => { const t = TL.load(`assets/tex/${n}.jpg`); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); t.colorSpace = THREE.SRGBColorSpace; return t; };
     const own = !map;
-    const bed = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tex(it.bed || "cobble", 14), roughness: 1, color: 0x6f7d78 }));
-    bed.rotation.x = -Math.PI / 2; bed.position.y = lvl - (it.depth ?? 2.2); if (own) sc.add(bed);
-    const bankMat = new THREE.MeshStandardMaterial({ map: tex(it.bank || "forest", 6), roughness: 1 });
-    // Дальний берег — пологий склон за рекой (ближнего нет: камера стоит на нём)
-    const bank = new THREE.Mesh(new THREE.BoxGeometry(120, 6, 40), bankMat);
-    bank.position.set(0, lvl - 2.2, -(it.river_width ?? 16) / 2 - 20); bank.rotation.x = 0.12; if (own) sc.add(bank);
+    if (own) {
+      const tex = async (name, rep) => {
+        const url = `assets/tex/${name}.jpg`;
+        const texture = await resource(`Текстура площадки ${url}`, (ok, fail) =>
+          new THREE.TextureLoader().load(url, ok, undefined, () => fail(new Error("не удалось загрузить изображение"))));
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(rep, rep); texture.colorSpace = THREE.SRGBColorSpace;
+        return texture;
+      };
+      const [bedTex, bankTex] = await Promise.all([tex(it.bed || "cobble", 14), tex(it.bank || "forest", 6)]);
+      const bed = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: bedTex, roughness: 1, color: 0x6f7d78 }));
+      bed.rotation.x = -Math.PI / 2; bed.position.y = lvl - (it.depth ?? 2.2); sc.add(bed);
+      // Дальний берег — пологий склон за рекой (ближнего нет: камера стоит на нём).
+      const bank = new THREE.Mesh(new THREE.BoxGeometry(120, 6, 40), new THREE.MeshStandardMaterial({ map: bankTex, roughness: 1 }));
+      bank.position.set(0, lvl - 2.2, -(it.river_width ?? 16) / 2 - 20); bank.rotation.x = 0.12; sc.add(bank);
+    }
     // Вода: волны в вершинах, круги вокруг героев, блик по Френелю
     const actorsXZ = new Array(8).fill(0).map(() => new THREE.Vector3(999, 0, 999));
     const water = new THREE.Mesh(new THREE.PlaneGeometry(80, 80, 200, 200), new THREE.ShaderMaterial({
@@ -323,7 +364,7 @@ const SCN = (() => {
     // Герои
     const actors = [];
     for (const a of it.actors || []) {
-      const h = await hero(it.heroes[a.hero], a.anim);
+      const h = await hero(it.heroes?.[a.hero], a.anim, `Площадка ${st.box.dataset.sid}, герой ${a.hero}`);
       h.root.position.set(a.x || 0, lvl + (a.y ?? -1.2), a.z || 0);
       h.root.rotation.y = (a.yaw || 0) * Math.PI / 180;
       h.root.scale.setScalar(a.scale || 1);
@@ -386,8 +427,6 @@ const SCN = (() => {
     g.sc.models.forEach(o => { o.t0 = start(o.it); });
     g.sc.lots.forEach(o => {
       o.t0 = start(o.it);
-      o.a = lottie.loadAnimation({ container: o.box, renderer: "svg", loop: false, autoplay: false, animationData: o.it.data,
-                                   rendererSettings: { preserveAspectRatio: o.it.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet" } });
     });
     g.sc.anims.forEach(o => { const b = o.box; placeAnim(o.A, b.offsetWidth / 2, b.offsetHeight, b.offsetWidth, b.offsetHeight); o.A.cv.style.position = "absolute"; });
     // Камера: медленный наезд на весь сегмент (можно выключить или задать)

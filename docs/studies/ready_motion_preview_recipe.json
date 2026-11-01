@@ -1,0 +1,18 @@
+{
+  "task_id": "ready_motion_preview",
+  "source": "CMU 77_01 AMC samples 721-900; saved world-space joint endpoints",
+  "poses_sha256": "f33555094fdb7dbbd9ec1ea91b26687cc66356933fcf6977f81b04e175f15293",
+  "source_samples": 180,
+  "source_fps": 60,
+  "fps": 30,
+  "duration_seconds": 3,
+  "size": [1200, 720],
+  "pixels_per_meter": 350,
+  "ground_pixel_y": 565,
+  "floor_world_z_m": 0,
+  "front_axis": "Normalized horizontal mean ankle-to-toe-end vector at first sample, fixed for the whole clip",
+  "side_axis": "Orthogonal to front, also fixed",
+  "sampling": "Exact source indices 0,2,...,178; no interpolation, smoothing or speed change",
+  "measurements": "All 180 original samples, including final sample 179",
+  "license": "CMU permits use and redistribution; direct resale of motion data prohibited. BVH conversion: Bruce Hahne / CGspeed, 2010-06-26. See READY_MOTION_CLIP.md."
+}

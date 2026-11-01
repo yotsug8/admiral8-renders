@@ -64,7 +64,7 @@ def freeze(members, arm):
         raise ValueError('Expected unconstrained source main rig')
 
 
-def build(folder):
+def build(folder, animate=None, frame_end=60, limits=None):
     package = api.check_package(folder)
     api.guard(folder, folder/'journal.json')
     source_hash = digest(SOURCE)
@@ -95,7 +95,7 @@ def build(folder):
     for ob in list(sc.objects):
         if ob not in members:
             bpy.data.objects.remove(ob, do_unlink=True)
-    sc.frame_start, sc.frame_end, sc.render.fps = 1,60,30
+    sc.frame_start, sc.frame_end, sc.render.fps = 1,frame_end,30
     arm['retarget_main'] = True
     initial = {b.name: [list(r) for r in b.matrix] for b in arm.pose.bones}
     local = {b.name: [list(r) for r in b.matrix_basis] for b in arm.pose.bones}
@@ -127,16 +127,19 @@ def build(folder):
             for field,name in zip(api.FIELDS[1:],api.BONES[1:]):
                 setattr(mapping.spine,field,prefix+name)
             mapping.deform_preset = '--'
-        for f in range(1,61):
-            for name in api.BONES:
-                b = donor.pose.bones['donor_'+name]
-                b.rotation_mode = 'QUATERNION'
-                base = Matrix(local[name])
-                angle = math.sin(2*math.pi*(f-1)/60)
-                if name == 'spine2': base = base @ Quaternion((1,0,0),math.radians(4)*angle).to_matrix().to_4x4()
-                if name == 'neck1': base = base @ Quaternion((0,0,1),math.radians(3)*angle).to_matrix().to_4x4()
-                b.location,b.rotation_quaternion,b.scale = base.decompose()
-                for channel in ('location','rotation_quaternion','scale'): b.keyframe_insert(channel,frame=f)
+        if animate is not None:
+            report['source_motion']=animate(donor, arm, local)
+        else:
+            for f in range(sc.frame_start,sc.frame_end+1):
+                for name in api.BONES:
+                    b = donor.pose.bones['donor_'+name]
+                    b.rotation_mode = 'QUATERNION'
+                    base = Matrix(local[name])
+                    angle = math.sin(2*math.pi*(f-1)/60)
+                    if name == 'spine2': base = base @ Quaternion((1,0,0),math.radians(4)*angle).to_matrix().to_4x4()
+                    if name == 'neck1': base = base @ Quaternion((0,0,1),math.radians(3)*angle).to_matrix().to_4x4()
+                    b.location,b.rotation_quaternion,b.scale = base.decompose()
+                    for channel in ('location','rotation_quaternion','scale'): b.keyframe_insert(channel,frame=f)
         action = donor.animation_data.action
         bag = anim_utils.action_get_channelbag_for_slot(action,donor.animation_data.action_slot)
         for c in bag.fcurves:
@@ -157,7 +160,7 @@ def build(folder):
         else: raise ValueError('No visible motion transferred')
         api.write_json(folder/'live_matrices.json',live)
         api.select_only(arm)
-        module.bone_utils.bake_anim(frame_start=1,frame_end=60,only_selected=False,
+        module.bone_utils.bake_anim(frame_start=1,frame_end=frame_end,only_selected=False,
             bake_bones=True,bake_object=False,use_current_action=False,
             suffix=module.bone_utils.cp_suffix,step=1,interpolation='LINEAR',inverse=False)
         for _,c in added:c.mute=True
@@ -169,7 +172,7 @@ def build(folder):
         if report['initial_surface_error']>2e-5: raise ValueError('Transfer changed initial skin pose')
         sc['retarget_initial']=json.dumps(initial)
         sc['retarget_source_sha256']=source_hash
-        sc['retarget_limits']='Frozen Pudge frame0; matched rest pose, spine2 +/-4deg, neck1 +/-3deg. Hidden cleaver excluded.'
+        sc['retarget_limits']=limits or 'Frozen Pudge frame0; matched rest pose, spine2 +/-4deg, neck1 +/-3deg. Hidden cleaver excluded.'
         bpy.ops.wm.save_as_mainfile(filepath=str(folder/'character.blend'))
         report['source_unchanged']=digest(SOURCE)==source_hash
         if not report['source_unchanged']:raise ValueError('Source changed')
@@ -178,7 +181,7 @@ def build(folder):
         api.write_json(folder/'build.json',report)
 
 
-def audit(folder):
+def audit(folder, moving_roots=('spine2','neck1')):
     if any(n=='retarget' or n.startswith('retarget.') for n in sys.modules):
         raise ValueError('Audit must run without addon')
     bpy.ops.wm.open_mainfile(filepath=str(folder/'character.blend'))
@@ -188,7 +191,7 @@ def audit(folder):
     graph=bpy.context.evaluated_depsgraph_get()
     base={o.name:evaluated_vertices(o,graph) for o in meshes()}
     initial=json.loads(sc['retarget_initial'])
-    moving={b.name for n in ('spine2','neck1') for b in [arm.pose.bones[n],*arm.pose.bones[n].children_recursive]}
+    moving={b.name for n in moving_roots for b in [arm.pose.bones[n],*arm.pose.bones[n].children_recursive]}
     report.update(protected_bone_error=0.,max_edge_ratio=1.,max_sole_drift=0.,meshes={})
     weapon=next(o for o in meshes() if 'righthook_model' in o.name)
     bodies=[o for o in meshes() if any(n in o.name for n in ('upper_body','lower_body','.head','leftarm_model'))]
@@ -213,7 +216,7 @@ def audit(folder):
     for o in meshes():
         if 'lower_body' in o.name:
             feet[o.name]=np.where(base[o.name][0][:,2]<base[o.name][0][:,2].min()+.045)[0]
-    for f in range(1,61):
+    for f in range(sc.frame_start,sc.frame_end+1):
         sc.frame_set(f);bpy.context.view_layer.update()
         new_pairs={n:len(p-original_crossings[n]) for n,p in crossings().items()}
         report['weapon_crossings']['frames'].append({'frame':f,'new_pairs':new_pairs})
@@ -238,8 +241,8 @@ def audit(folder):
     if not report['technical_pass'] or not report['source_unchanged']: raise ValueError(json.dumps(report))
 
 
-def keys(folder):
-    if not json.loads((folder/'audit.json').read_text())['technical_pass']:
+def keys(folder, diagnostic=False, frames=None):
+    if not json.loads((folder/'audit.json').read_text())['technical_pass'] and not diagnostic:
         raise ValueError('Audit required before render')
     bpy.ops.wm.open_mainfile(filepath=str(folder/'character.blend'))
     sc=bpy.context.scene;sc.frame_set(1);bpy.context.view_layer.update()
@@ -262,11 +265,12 @@ def keys(folder):
         cam=bpy.data.objects.new(name,bpy.data.cameras.new(name));sc.collection.objects.link(cam)
         cam.location=center+Vector(offset);cam.rotation_euler=(center-cam.location).to_track_quat('-Z','Y').to_euler()
         cam.data.type='ORTHO';cam.data.ortho_scale=float(max(high-low)*1.45);sc.camera=cam
-        for frame in (1,16,46):
-            sc.frame_set(frame);sc.render.filepath=str(folder/f'{name}_{frame:03d}.png')
+        for frame in frames or (1,1+sc.frame_end//4,1+3*sc.frame_end//4):
+            prefix='diagnostic_' if diagnostic else ''
+            sc.frame_set(frame);sc.render.filepath=str(folder/f'{prefix}{name}_{frame:03d}.png')
             bpy.ops.render.render(write_still=True)
     bpy.context.preferences.filepaths.file_preview_type='NONE';bpy.context.preferences.filepaths.save_version=0
-    bpy.ops.wm.save_as_mainfile(filepath=str(folder/'preview.blend'))
+    bpy.ops.wm.save_as_mainfile(filepath=str(folder/('diagnostic_preview.blend' if diagnostic else 'preview.blend')))
 
 
 def video(folder):
@@ -281,7 +285,7 @@ def video(folder):
         if target.exists():raise ValueError('Fresh frame directory required: '+str(target))
         target.mkdir()
         sc.camera=bpy.data.objects[name]
-        for frame in range(1,61):
+        for frame in range(sc.frame_start,sc.frame_end+1):
             sc.frame_set(frame);sc.render.filepath=str(target/f'{frame:04d}.png')
             bpy.ops.render.render(write_still=True)
 

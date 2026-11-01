@@ -21,6 +21,7 @@
 | Подбор готовых решений, включая независимых авторов | [READY_MADE_TOOLS](studies/READY_MADE_TOOLS.md), [RETARGET_CANDIDATES](studies/RETARGET_CANDIDATES.md) |
 | Перенос движения готовым Retarget | `tools/blender/study_retarget_*.py`, [Пудж](studies/RETARGET_CHARACTER.md), [разные длины](studies/RETARGET_PROPORTIONS.md), [оси](studies/RETARGET_AXES.md); узкая проверка, не универсальный mocap |
 | Перекат стопы (изолированная кинематика, не походка героя) | `tools/blender/study_foot_roll.py`, [FOOT_ROLL](studies/FOOT_ROLL.md) |
+| Реальные записи движения: проверка времени, вращений и пригодности | [READY_MOTION_CLIP](studies/READY_MOTION_CLIP.md), [PREVIEW](studies/READY_MOTION_PREVIEW.md), [TRANSFER](studies/READY_MOTION_TRANSFER.md); большой разворот отклонён до рендера, не считается готовой анимацией героя |
 | Установка и полный список внешних файлов | [SETUP.md](SETUP.md), [LOCAL_FILES.md](LOCAL_FILES.md) |
 
 Готовые просмотровые файлы находятся в ветке `renders`. Основная ветка хранит методы и исходники, а не игровые модели и чужие референсы.

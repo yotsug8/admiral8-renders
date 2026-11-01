@@ -399,8 +399,8 @@ def image_ref(ref, heroes, items):
             "ability": lambda: HERE / "assets" / "abilities" / f"{key}.png",
             "file": lambda: HERE / key,
             "game": lambda: Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "img" / key}[kind]()   # картинки из файлов игры
-    if not Path(path).exists():                    # пустое место в кадре вместо картинки — заметить до рендера
-        print(f"    ⚠ нет картинки: {ref} ({path})")
+    if not Path(path).is_file() or not Path(path).stat().st_size:
+        raise FileNotFoundError(f"нет непустого файла картинки: {ref} ({path})")
     return path.as_uri()
 
 
@@ -499,32 +499,111 @@ def check_scene(sc, label):
     return warn
 
 
+def _clip_file_record(path):
+    import hashlib
+    return dict(name=path.name, size=path.stat().st_size,
+                sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+
+
+def _ready_clip_frames(out, w, h):
+    """Only a completed extraction with unchanged, contiguous frames is reusable."""
+    try:
+        data = json.loads((out / 'frames.json').read_text(encoding='utf-8'))
+        entries = data['frames']
+        if data['version'] != 1 or data['fps'] != FPS or data['size'] != [w, h] or not entries:
+            return None
+        names = [f'{i:04d}.jpg' for i in range(1, len(entries) + 1)]
+        if [e['name'] for e in entries] != names or {p.name for p in out.glob('*.jpg')} != set(names):
+            return None
+        paths = [out / name for name in names]
+        if any(_clip_file_record(p) != entry for p, entry in zip(paths, entries)):
+            return None
+        return paths
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def _clip_audio_valid(path):
+    try:
+        with wave.open(str(path)) as stream:
+            return (stream.getnchannels() == 1 and stream.getsampwidth() == 2
+                    and stream.getframerate() == SR and stream.getnframes() > 0
+                    and len(stream.readframes(stream.getnframes())) == stream.getnframes() * 2)
+    except (OSError, EOFError, wave.Error):
+        return False
+
+
 def video_frames(node):
     """Клип из файла → кадры JPG под размер элемента (обрезка по центру), по желанию — звук клипа.
     Поля: src "file:…", from (с), dur (с), w, h, audio (громкость звука клипа, 0 — без звука)."""
     import hashlib
+    import tempfile
     path = HERE / node["src"].split(":", 1)[1]
     w, h = int(node.get("w", 880)), int(node.get("h", 495))
     a, d = float(node.get("from", 0)), float(node.get("dur", 6))
+    if w <= 0 or h <= 0 or not math.isfinite(a) or not math.isfinite(d) or a < 0 or d <= 0:
+        raise ValueError('клип: нужны положительные размеры/dur и конечный from >= 0')
     st = path.stat()   # размер и время файла в ключе: новый клип с тем же именем не возьмёт старые кадры из кэша
     key = hashlib.md5(f"{path}|{st.st_size}|{st.st_mtime_ns}|{w}|{h}|{a}|{d}|bars".encode()).hexdigest()[:10]
-    out = WORK / f"vid_{key}"
-    if not out.exists():
-        out.mkdir(parents=True)
+    root = WORK.resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    out = root / f"vid_{key}"
+    # Never replace a cache path redirected outside the selected work directory.
+    if out.resolve() != out or (out.exists() and not out.is_dir()):
+        raise ValueError(f'небезопасный путь кэша клипа: {out}')
+    frames = _ready_clip_frames(out, w, h)
+    if frames is None:
         # чёрные поля вокруг картинки (мемы из TikTok, кино в вертикали) — срезать: поле ищет cropdetect
         det = subprocess.run([ffmpeg_exe(), "-hide_banner", "-ss", str(a), "-t", str(d), "-i", str(path),
-                              "-vf", "cropdetect=24:2:0", "-f", "null", "-"], capture_output=True, text=True, errors="replace").stderr
+                              "-vf", "cropdetect=24:2:0", "-f", "null", "-"], capture_output=True, text=True, errors="replace", check=True).stderr
         crops = re.findall(r"crop=(\d+:\d+:\d+:\d+)", det)
         bars = f"crop={max(set(crops), key=crops.count)}," if crops else ""
-        subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
-                        "-vf", f"{bars}fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
-                        "-q:v", "3", str(out / "%04d.jpg")], check=True)
-    res = dict(fps=FPS, frames=[f.as_uri() for f in sorted(out.glob("*.jpg"))])
+        with tempfile.TemporaryDirectory(prefix=f'.vid_{key}_', dir=root) as tmp:
+            stage = Path(tmp)
+            subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
+                            "-vf", f"{bars}fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
+                            "-q:v", "3", str(stage / "%04d.jpg")], check=True)
+            extracted = sorted(stage.glob('*.jpg'), key=lambda p: int(p.stem))
+            if not extracted or [p.name for p in extracted] != [f'{i:04d}.jpg' for i in range(1, len(extracted) + 1)]:
+                raise ValueError(f'клип не дал полной последовательности кадров: {node["src"]}')
+            for frame in extracted:
+                with Image.open(frame) as im:
+                    im.load()
+                    if im.size != (w, h):
+                        raise ValueError(f'неверный размер кадра: {frame.name}')
+            now = path.stat()
+            if (now.st_size, now.st_mtime_ns) != (st.st_size, st.st_mtime_ns):
+                raise ValueError(f'исходный клип изменился при извлечении: {node["src"]}')
+            manifest = dict(version=1, fps=FPS, size=[w, h], frames=[_clip_file_record(p) for p in extracted])
+            (stage / 'frames.json').write_text(json.dumps(manifest), encoding='utf-8')
+            if out.exists():
+                if out.resolve() != out or out.parent != root:
+                    raise ValueError(f'путь кэша изменился: {out}')
+                shutil.rmtree(out)
+            stage.rename(out)
+            frames = [out / p.name for p in extracted]
+    res = dict(fps=FPS, frames=[f.as_uri() for f in frames])
     if float(node.get("audio", 0)) > 0:
         wav = out / "a.wav"
-        if not wav.exists():
-            subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
-                            "-vn", "-ac", "1", "-ar", str(SR), str(wav)], check=True)
+        marker = out / 'audio.json'
+        try:
+            audio_ready = json.loads(marker.read_text(encoding='utf-8')) == _clip_file_record(wav) and _clip_audio_valid(wav)
+        except (OSError, ValueError):
+            audio_ready = False
+        if not audio_ready:
+            with tempfile.TemporaryDirectory(prefix=f'.audio_{key}_', dir=root) as tmp:
+                staged_wav = Path(tmp) / 'a.wav'
+                subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
+                                "-vn", "-ac", "1", "-ar", str(SR), str(staged_wav)], check=True)
+                if not _clip_audio_valid(staged_wav):
+                    raise ValueError(f'клип не дал корректный звук: {node["src"]}')
+                now = path.stat()
+                if (now.st_size, now.st_mtime_ns) != (st.st_size, st.st_mtime_ns):
+                    raise ValueError(f'исходный клип изменился при извлечении: {node["src"]}')
+                staged_marker = Path(tmp) / 'audio.json'
+                staged_marker.write_text(json.dumps(_clip_file_record(staged_wav)), encoding='utf-8')
+                staged_wav.replace(wav)
+                staged_marker.replace(marker)
         res["wav"] = str(wav)
     return res
 

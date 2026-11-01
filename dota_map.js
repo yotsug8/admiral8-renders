@@ -6,8 +6,17 @@ export function prepareDotaMap(THREE, root, texUrl, opts = {}) {
   const tex = (vtexPath, srgb) => {
     const name = vtexPath.split("/").pop().replace(/\.vtex$/, "") + ".png";
     if (!cache[name]) {
-      let done; wait.push(new Promise(r => { done = r; }));
-      const t = TL.load(texUrl + name, done, undefined, done);   // ждём и удачную, и неудачную загрузку
+      const url = texUrl + name;
+      let done, failed;
+      wait.push(new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(`Текстура карты: ${url} — таймаут загрузки 30000 мс`)), 30000);
+        done = () => { clearTimeout(timer); resolve(); };
+        failed = () => {
+          clearTimeout(timer);
+          reject(new Error(`Текстура карты: ${url} — не удалось загрузить или декодировать изображение`));
+        };
+      }));
+      const t = TL.load(url, done, undefined, failed);
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
       cache[name] = t;

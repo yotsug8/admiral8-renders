@@ -51,6 +51,8 @@
 | [qa_and_segments.md](audit/2026-11-02/qa_and_segments.md) | Покрытие QA, пустые проверки и скрытие старых планов |
 | [dom_safe_area.md](audit/2026-11-02/dom_safe_area.md) | Точные границы кадра и видимость DOM |
 | [media_timing.md](audit/2026-11-02/media_timing.md) | Экранный текст запасного голоса, старт и повтор звука клипов |
+| [clip_cache.md](audit/2026-11-02/clip_cache.md) | Восстановление недописанных кадров и звука клипов |
+| [resource_loading.md](audit/2026-11-02/resource_loading.md) | Ошибки и таймауты картинок, мозаики и multiblend-текстур |
 | [blender_output_safety.md](audit/2026-11-02/blender_output_safety.md) | Защита исходников от перезаписи отчётом |
 | [code_cleanup.md](audit/2026-11-02/code_cleanup.md) | Уборка кода: изменения, проверки и ограничения |
 | [animation.md](audit/2026-11-01/animation.md) | Срез Blender до исправлений |

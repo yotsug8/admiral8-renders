@@ -19,3 +19,5 @@
 - [probe7_turn.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/probe7_turn.mp4) — проба 7: поворот на месте и замах крюком (слева спереди, справа сбоку)
 - [kryuk_blender.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/kryuk_blender.mp4) — «Крюк» в новом виде: Blender на настоящей карте доты, крупные лица, свет плана
 - [kryuk.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/kryuk.mp4) — «Крюк»: Снайпер и Пудж, сценка в движке доты
+
+- [Малый жест: поза и тайминг](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_pose_timing.mp4) — учебная проба 2,8 с/30 fps, без звука; сверху A, снизу B, слева спереди, справа сбоку. Ограниченная амплитуда, не законченный актёрский жест.

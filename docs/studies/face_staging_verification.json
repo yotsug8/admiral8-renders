@@ -1,0 +1,16 @@
+{
+  "source_sha256": "1f780ed8c12e03e46383d3feb1d096af7e78a89539cca65076829fa871bc0101",
+  "samples_per_variant": 108,
+  "actor_preserved": true,
+  "images": {
+    "a": {
+      "f000.png": "8fa4fa2ffd2c82835e48ca2bfd1dffda601b5002302f5ddd22924915660e1864",
+      "f051.png": "8de88edab3179947c9288de80ae1a675163a788f84c3c12a879ed36a1f8c5b46"
+    },
+    "b": {
+      "f000.png": "503212a8c3c5f2ffd5c7f284654e5d79a49d8c09888d7f305741cdf102c65611",
+      "f051.png": "c2367edc99abd5d90a658b848c56ceea144b2439f9558c0ff2d557b90e937fd4"
+    }
+  },
+  "outcome": "Both compositions rejected as unconvincing target attention; actor preservation verified independently."
+}

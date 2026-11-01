@@ -1,0 +1,85 @@
+{
+  "samples": 1665,
+  "prep_surface_drift": 7.450580596923828e-09,
+  "landed_surface_drift": 5.960464477539063e-08,
+  "length_error": 1.7113960222026048e-06,
+  "joint_error": 0.0003874729598835491,
+  "min_floor": 0.0,
+  "min_arm_clearance": 0.044943809294272274,
+  "ballistic_error": 1.3328003749250113e-07,
+  "flight_min_sole_gap": 0.006133753806352615,
+  "compression_error": 5.3418201477972715e-05,
+  "max_point_step": 0.015606426304674995,
+  "min_margin": {
+    "profile": 0.04283106327056885,
+    "three_quarter": 0.03550993278622627
+  },
+  "airborne_intervals": 1,
+  "velocity_jump": {
+    "takeoff": 0.03859694094979435,
+    "landing": 0.02267461317217998
+  },
+  "sole_vertices": {
+    "L": 4,
+    "R": 4
+  },
+  "events": {
+    "who": "mannequin",
+    "prep_start": 0.25000000000000006,
+    "takeoff": 1.1,
+    "apex": 1.4000000000000001,
+    "land": 1.7000000000000002,
+    "recover": 2.5500000000000003,
+    "flight": 0.6,
+    "height": 0.44145,
+    "gravity": 9.81,
+    "baseline_z": 0,
+    "impact_speed": 2.943,
+    "launch_requested": 0.2,
+    "launch_actual": 0.2,
+    "contact_states": [
+      {
+        "at": 0.25000000000000006,
+        "state": "grounded"
+      },
+      {
+        "at": 1.1,
+        "state": "airborne"
+      },
+      {
+        "at": 1.7000000000000002,
+        "state": "grounded"
+      }
+    ]
+  },
+  "blender_version": "5.2.3 LTS",
+  "engine": "CYCLES",
+  "negative_tests": [
+    "sliding_landed_foot",
+    "ground_penetration",
+    "stretched_shin",
+    "contact_during_flight",
+    "nonballistic_flight"
+  ],
+  "elapsed_seconds": 7.894727999926545,
+  "movies": {
+    "profile": {
+      "sha256": "ae1a2e312d9c0440a28341d415b230b707f3f500c2abdae6dac05af86ff0f49b",
+      "bytes": 77469,
+      "frames": 105,
+      "fps": 30,
+      "duration": 3.5,
+      "max_encoding_error": 1.6147685185185185
+    },
+    "three_quarter": {
+      "sha256": "e5cf81f9f4c2ffbdfd3cc660a75e818e042806cb50e2ace7e2f8d30698d6ee8f",
+      "bytes": 94524,
+      "frames": 105,
+      "fps": 30,
+      "duration": 3.5,
+      "max_encoding_error": 1.488773148148148
+    }
+  },
+  "decoded_frames_reviewed": 210,
+  "review_scope": "All frames in contact sheets; not real-time or complete physical balance certification."
+}

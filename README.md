@@ -34,3 +34,6 @@
 - [Погоня v8: вариант цветокоррекции](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v8_30fps.mp4) — 12,8 с, 360×640/30 fps. Светлее средние тона, сдержаннее зелень; движение, камеры и звук как в v7. Предпросмотр, не финальный 1080p.
 
 - [Проверка склеек камеры](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/chase_camera_cuts_study.mp4) — сравнение 2 с/30 fps, без звука. Слева v8, справа отклонённый диагональный кандидат: крупность лучше, но скачет фон и хвост перекрывает корпус. На 1 с намеренный переход между двумя выборками. Разбор — docs/studies/CHASE_CAMERA.md в main.
+
+- [Опора на колено и ладонь, подъём](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_recovery.mp4) — учебный манекен, два ракурса, 5,2 с, 960×540/30fps, без звука. Контролируемое опускание, не симуляция падения.
+- [Жёсткая остановка и запаздывание](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_followthrough.mp4) — два варианта рядом, 4,5 с, 640×360/30fps, без звука. Корпус и голова заметно доводят движение; различие задержек кистей слабее. Исходники и проверки обоих упражнений — docs/LEARNING.md в main.

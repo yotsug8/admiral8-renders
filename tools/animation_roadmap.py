@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 W, H, SCALE = 1600, 3760, 2
 BG, PANEL, EDGE = '#101b25', '#192832', '#3a464b'
 WHITE, MUTED, MINT, GOLD = '#f7efe2', '#a9b9bf', '#9fcdbb', '#efae69'
+DONE, DONE_BG = '#54e698', '#153e30'
+ACTIVE, ACTIVE_BG = '#ffb443', '#593a16'
+TODO, TODO_BG = '#c0cada', '#303c50'
 
 
 class Poster:
@@ -82,30 +85,32 @@ def render(data, regular, bold, assets):
     # Film-strip edges, not the reference game's grid or branding.
     for y in range(830,3400,56):
         p.rect(17,y,12,25,'#2a363c',3);p.rect(1571,y,12,25,'#2a363c',3)
-    p.picture(assets/data['artwork'],0,0,W,795,top=True)
+    p.rect(0,0,W,795,'#101b29')
+    p.picture(assets/data['artwork'],830,24,706,700)
     p.rect(64,65,40,5,GOLD,2)
     p.text(125,54,'МАСТЕРСКАЯ АНИМАЦИИ',24,WHITE,True)
-    p.text(62,164,'ОТ ПОЗЫ',92,WHITE,True)
-    p.text(62,270,'ДО СЦЕНЫ',92,GOLD,True)
+    p.text(62,164,'ОТ ПОЗЫ',84,WHITE,True)
+    p.text(62,270,'ДО СЦЕНЫ',84,ACTIVE,True)
     p.text(66,403,'ДОРОЖНАЯ КАРТА',32,WHITE,True)
-    p.text(66,465,'Движение. Характер.',27,WHITE)
-    p.text(66,505,'Свет. Звук. Готовый фильм.',27,WHITE)
-    p.text(66,625,'12 НАПРАВЛЕНИЙ',23,GOLD,True)
-    p.text(66,665,f"{data['updated']}  /  ВЕРСИЯ {data['revision']:02d}",22,MUTED)
-    p.rect(1060,744,474,37,BG,3)
-    p.text(1074,752,'ОБЛОЖКА — ОТДЕЛЬНАЯ ИЛЛЮСТРАЦИЯ',17,MUTED)
+    for y,color,label in [(465,DONE,'ГОТОВО В ПРОБАХ'),(523,ACTIVE,'В РАБОТЕ'),(581,TODO,'ЕЩЁ ПРЕДСТОИТ')]:
+        p.rect(64,y,650,46,color,5)
+        p.text(86,y+9,label,24,BG,True)
+    p.text(66,670,'12 НАПРАВЛЕНИЙ',23,GOLD,True)
+    p.text(66,710,f"{data['updated']}  /  ВЕРСИЯ {data['revision']:02d}",22,MUTED)
+    p.rect(830,744,706,37,BG,3)
+    p.text(850,752,'КАДР ИЗ НАШЕЙ СЦЕНКИ · BLENDER',21,MUTED)
     p.line(64,799,1536,799,GOLD,3)
-    p.text(64,830,'УЖЕ ЕСТЬ РЕЗУЛЬТАТЫ',39,WHITE,True)
-    p.text(64,886,'Настоящие кадры проверенных проб. Не готовые художественные сценки.',23,MUTED)
+    p.text(64,835,'ПРОВЕРЕННЫЕ ПРОБЫ',39,DONE,True)
+    p.text(64,902,'Уже проверено — конкретные упражнения, а не всё направление целиком.',22,MUTED)
     for i,item in enumerate(data['previews']):
         x=64+498*i
         p.rect(x,936,476,308,PANEL,0,EDGE)
         p.picture(assets/item['file'],x+1,937,474,222,contain=True)
         p.text(x+16,1177,item['title'],25,WHITE,True)
         p.text(x+16,1214,item['note'],18,MUTED)
-    p.rect(64,1290,1472,167,'#2d302c',7)
-    p.rect(64,1290,8,167,GOLD)
-    p.text(94,1315,'СЕЙЧАС / ГОТОВЫЙ ЖЕСТ → ИГРОВОЙ ГЕРОЙ',32,GOLD,True)
+    p.rect(64,1290,1472,167,ACTIVE_BG,7)
+    p.rect(64,1290,8,167,ACTIVE)
+    p.text(94,1315,'В РАБОТЕ / ГОТОВЫЙ ЖЕСТ → ИГРОВОЙ ГЕРОЙ',32,ACTIVE,True)
     p.text(94,1370,data['milestone'],25,WHITE)
     p.text(94,1414,data['next_action'],23,MUTED)
     chapters=['ДВИЖЕНИЕ СО СМЫСЛОМ','ТЕЛО, КОНТАКТ И ИНСТРУМЕНТЫ',
@@ -118,19 +123,23 @@ def render(data, regular, bold, assets):
         p.line(64,y+55,1536,y+55,GOLD,1)
         for col in range(3):
             block=data['blocks'][row*3+col]
-            x=64+498*col;cy=y+78;w=476;h=350
+            x=64+498*col;cy=y+78;w=476;h=380
             p.rect(x,cy,w,h,PANEL,5,EDGE)
-            if block['status']=='active':p.rect(x,cy,w,5,GOLD)
+            if block['status']=='active':p.rect(x,cy,w,5,ACTIVE)
             p.text(x+18,cy+18,block['id'],29,GOLD if block['status']=='active' else MINT,True)
             p.paragraph(x+72,cy+18,block['title'],w-92,27,WHITE,2,True)
-            p.paragraph(x+18,cy+94,block['scope'],w-36,19,MUTED,2)
-            p.line(x+18,cy+153,x+w-18,cy+153)
-            p.check(x+18,cy+172)
-            p.paragraph(x+53,cy+168,block['done'],w-73,21,WHITE,3)
-            p.text(x+18,cy+261,'→',23,GOLD,True)
-            p.paragraph(x+53,cy+257,block['next'],w-73,21,WHITE,3)
-    p.rect(64,3450,1472,231,'#25332f',8)
-    p.text(94,3475,'ФИНИШ / ГОТОВЫЙ РОЛИК, КОТОРЫЙ МОЖНО ПОВТОРИТЬ',32,WHITE,True)
+            p.rect(x+10,cy+94,w-20,132,DONE_BG,4)
+            p.rect(x+10,cy+94,6,132,DONE,2)
+            p.text(x+28,cy+105,'ГОТОВО В ПРОБАХ',18,DONE,True)
+            p.paragraph(x+28,cy+138,block['done'],w-56,21,WHITE,3)
+            active=block['status']=='active'
+            color,fill=(ACTIVE,ACTIVE_BG) if active else (TODO,TODO_BG)
+            p.rect(x+10,cy+238,w-20,132,fill,4)
+            p.rect(x+10,cy+238,6,132,color,2)
+            p.text(x+28,cy+249,'В РАБОТЕ' if active else 'ЕЩЁ НЕ ГОТОВО',18,color,True)
+            p.paragraph(x+28,cy+282,block['next'],w-56,21,WHITE,3)
+    p.rect(64,3450,1472,231,TODO_BG,8)
+    p.text(94,3475,'ЦЕЛЬ ЕЩЁ ВПЕРЕДИ / ПОВТОРЯЕМЫЙ ГОТОВЫЙ ВЫПУСК',32,WHITE,True)
     for i,step in enumerate(data['finish']):
         x=94+(i%2)*730;y=3540+(i//2)*47
         p.text(x,y,f'{i+1:02d}',23,GOLD,True);p.text(x+48,y,step,24,WHITE)

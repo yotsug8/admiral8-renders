@@ -1,6 +1,6 @@
 {
   "updated": "01.11.2026",
-  "revision": 2,
+  "revision": 3,
   "focus": "От технического переноса — к осмысленному жесту героя",
   "milestone": "Retarget проверен на Пудже, разных длинах и осях костей.",
   "next_action": "Готовый жест → перенос на героя → проверка кожи и оружия",
@@ -180,7 +180,7 @@
     "Объём и баланс",
     "Выразительность"
   ],
-  "artwork": "roadmap-hero.png",
+  "artwork": "roadmap-cover-scene.png",
   "previews": [
     {
       "file": "roadmap-foot-roll.jpg",

@@ -1,7 +1,8 @@
 {
-  "method": "Built-in image_gen",
-  "purpose": "Original decorative cover, not evidence of a rendered animation",
-  "prompt": "Use case: stylized-concept. Create an original illustrated wide game-development roadmap cover banner, landscape 3:2, for an animation workshop focused on funny fantasy game cinematics. A charismatic grizzled naval captain in dark blue and brass coat holds a wooden director's clapperboard, an expressive mischievous woodland squirrel with a huge tail peers beside a vintage cinema camera; behind them a miniature enchanted forest film set and ship mast rigging, subtle drawn animation motion arcs, a puppet joint sketch on a scrap sheet. Rich hand-painted game key art, bold silhouettes, sophisticated cinematic copper-orange sunlight and petrol-blue shadows, pale parchment highlights, tactile brushwork. Composition: characters and filmmaking equipment concentrated in the RIGHT 55 percent; LEFT 45 percent is atmospheric dark navy negative space for a large editable title to be placed later. Bottom fades into deep navy, not a hard frame. Expressive and slightly funny, premium indie-game promotional art. No text, no letters, no logos, no watermark, no scientist, no lab theme, no weapons pointed at camera, no bright cyan neon borders. This is an original cover for our project, not a replica of any existing game's roadmap artwork. Keep anatomy coherent and clapperboard simple.",
-  "asset": "roadmap-hero.png in renders",
-  "reference_policy": "Abiotic Factor references informed the requested game-roadmap feel; its layout, logos, characters and artwork were not copied."
+  "method": "Frame extraction from an existing Blender animation; no generative artwork",
+  "source": "probe4_look.mp4 in renders",
+  "time_seconds": 1,
+  "source_sha256": "bc724ba5ae30ac40ccd46c05cd0cec6e7f96a7b00b8b529bcc404dff9c96e68e",
+  "asset": "roadmap-cover-scene.png in renders",
+  "composition": "Square cover crop of original frame; other preview frames are contained without crop"
 }

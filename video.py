@@ -21,10 +21,10 @@ import subprocess
 import sys
 import urllib.request
 import wave
-from io import BytesIO
 from pathlib import Path
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from bisect import bisect_left
+from tools.render_storage import atomic_copy, cached_file, file_lock
 
 import numpy as np
 from PIL import Image
@@ -43,6 +43,58 @@ SR, FPS = 44100, 30
 PAD = 0.7                     # пауза после факта, сек
 HERE = Path(__file__).resolve().parent
 WORK = HERE / "_fv_work"
+
+
+@contextmanager
+def _run_workspace():
+    """Scratch files belong to one invocation; reusable assets stay in WORK/cache."""
+    import tempfile
+    root = WORK.resolve() / 'runs'
+    root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='render-', dir=root) as directory:
+        yield Path(directory)
+
+
+def _cover_path(out):
+    stem = out.stem
+    return out.with_name((stem.replace('facts_', 'cover_', 1) if stem.startswith('facts_') else 'cover_' + stem) + '.png')
+
+
+def _output_identity(path):
+    name = str(path.resolve())
+    if os.name == 'nt':
+        if name.startswith('\\\\?\\UNC\\'):
+            name = '\\\\' + name[8:]
+        elif name.startswith('\\\\?\\'):
+            name = name[4:]
+    return os.path.normcase(name)
+
+
+@contextmanager
+def _output_lock(out):
+    """Reject concurrent writers of the same video or any of its sidecars."""
+    import hashlib
+    qa = out.with_name('qa_' + out.stem + '.jpg')
+    paths = {_output_identity(p) for p in (out, qa, qa.with_suffix('.json'), _cover_path(out))}
+    with ExitStack() as stack:
+        for path in sorted(paths):
+            key = hashlib.sha256(path.encode()).hexdigest()
+            try:
+                stack.enter_context(file_lock(WORK / 'output_locks' / (key + '.lock')))
+            except RuntimeError as exc:
+                raise RuntimeError(f'Выходной файл занят другим запуском: {path}') from exc
+        yield
+
+
+def _json_valid(path):
+    json.loads(path.read_text(encoding='utf-8'))
+    return True
+
+
+def _image_valid(path):
+    with Image.open(path) as image:
+        image.load()
+        return image.width > 0 and image.height > 0
 
 
 # ---------- вспомогательное ----------
@@ -81,14 +133,11 @@ def load_consts(name, consts_dir):
     local = os.path.join(consts_dir, name)
     if os.path.exists(local):
         return json.load(open(local, encoding="utf-8"))
-    os.makedirs(HERE / "cache", exist_ok=True)
-    cached = os.path.join(HERE, "cache", name)
-    if not os.path.exists(cached):
+    def download(destination):
         with urllib.request.urlopen(CONSTS_URL + name, timeout=30) as r:
-            data = r.read()
-        with open(cached, "wb") as f:
-            f.write(data)
-    return json.load(open(cached, encoding="utf-8"))
+            destination.write_bytes(r.read())
+    cached = cached_file(HERE / 'cache' / name, download, validate=_json_valid)
+    return json.loads(cached.read_text(encoding='utf-8'))
 
 
 def fetch_image(path, cache_dir=None):
@@ -96,16 +145,15 @@ def fetch_image(path, cache_dir=None):
     cache_dir = cache_dir or HERE / "cache"
     os.makedirs(cache_dir, exist_ok=True)
     local = os.path.join(cache_dir, path.split("?")[0].strip("/").replace("/", "_"))
-    if os.path.exists(local):
-        return Image.open(local).convert("RGBA")
+    def download(destination):
+        req = urllib.request.Request(CDN + path, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            destination.write_bytes(r.read())
     for _ in range(2):
         try:
-            req = urllib.request.Request(CDN + path, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=10) as r:
-                data = r.read()
-            with open(local, "wb") as f:
-                f.write(data)
-            return Image.open(BytesIO(data)).convert("RGBA")
+            ready = cached_file(Path(local), download, validate=_image_valid)
+            with Image.open(ready) as image:
+                return image.convert('RGBA')
         except Exception:
             continue
     print("  ⚠ нет картинки на CDN:", path.split("?")[0])
@@ -228,14 +276,16 @@ def align_words(path):
     import hashlib
     key = hashlib.md5(Path(path).read_bytes()).hexdigest()
     cached = HERE / "cache" / "align" / f"{key}.json"
-    if cached.exists():
-        d = json.loads(cached.read_text(encoding="utf-8"))
-        _PROBS[:] = d["probs"]
-        return [tuple(w) for w in d["words"]]
-    words = _align_words(path)
-    cached.parent.mkdir(parents=True, exist_ok=True)
-    cached.write_text(json.dumps({"words": words, "probs": _PROBS}, ensure_ascii=False), encoding="utf-8")
-    return words
+    def build(destination):
+        words = _align_words(path)
+        destination.write_text(json.dumps({"words": words, "probs": _PROBS}, ensure_ascii=False), encoding="utf-8")
+    def valid(candidate):
+        d = json.loads(candidate.read_text(encoding='utf-8'))
+        return isinstance(d['words'], list) and isinstance(d['probs'], list)
+    cached_file(cached, build, validate=valid)
+    d = json.loads(cached.read_text(encoding='utf-8'))
+    _PROBS[:] = d['probs']
+    return [tuple(w) for w in d['words']]
 
 
 def _align_words(path):
@@ -322,9 +372,8 @@ def speak(text, path_mp3, voice_file=None, voice=None):
             import hashlib
             key = hashlib.md5(f"{text}|{voice or FISH_VOICE}|{FISH_MODEL}|{FISH_SPEED}|{FISH_TEMP}".encode()).hexdigest()
             cached = HERE / "cache" / "tts" / f"{key}.mp3"
-            if not cached.exists():
-                cached.parent.mkdir(parents=True, exist_ok=True)
-                tts_fish(text, cached, voice, align=False)
+            cached_file(cached, lambda p: tts_fish(text, p, voice, align=False),
+                        validate=lambda p: len(mp3_to_pcm(p)) > 0)
             shutil.copy(cached, path_mp3)
             return align_to_script(text.replace("\u0301", ""), align_words(path_mp3))
         except Exception as e:                 # ролик всё равно соберётся, но с запасным голосом
@@ -347,31 +396,30 @@ def mp3_to_pcm(path):
 def hero_cutout(key, heroes):
     """Герой в полный рост без фона (PNG с прозрачностью) → путь к файлу."""
     out = WORK / f"hero_{key}.png"
-    if out.exists():
-        return out
-    img = fetch_image(f"/apps/dota2/videos/dota_react/heroes/renders/{key}.png")
-    if img is None:
-        h = heroes[key]
-        img = fetch_image(h["img"]) or placeholder(256, 144)
-    if img.getextrema()[3][0] >= 250:              # фон непрозрачный — вырезаем нейросетью
-        try:
-            from rembg import remove
-            img = remove(img).convert("RGBA")
-        except Exception as e:
-            print("  ⚠ не удалось вырезать фон:", key, e)
-    bbox = img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
-    if bbox:
-        img = img.crop(bbox)
-    img.save(out)
-    return out
+    def build(out):
+        img = fetch_image(f"/apps/dota2/videos/dota_react/heroes/renders/{key}.png")
+        if img is None:
+            h = heroes[key]
+            img = fetch_image(h["img"]) or placeholder(256, 144)
+        if img.getextrema()[3][0] >= 250:              # фон непрозрачный — вырезаем нейросетью
+            try:
+                from rembg import remove
+                img = remove(img).convert("RGBA")
+            except Exception as e:
+                print("  ⚠ не удалось вырезать фон:", key, e)
+        bbox = img.getchannel("A").point(lambda a: 255 if a > 24 else 0).getbbox()
+        if bbox:
+            img = img.crop(bbox)
+        img.save(out)
+    return cached_file(out, build, validate=_image_valid)
 
 
 def item_icon(key, items):
     out = WORK / f"item_{key}.png"
-    if not out.exists():
+    def build(out):
         img = fetch_image(items[key]["img"]) or placeholder(88, 64)
         img.save(out)
-    return out
+    return cached_file(out, build, validate=_image_valid)
 
 
 # ---------- подготовка ----------
@@ -416,7 +464,7 @@ def anim_frames(key):
     res = []
     for f in fs:
         out = out_dir / (f.stem + ".png")
-        if not out.exists():
+        def build(out):
             im = Image.open(f).convert("RGBA")
             pad = 70
             W, H = im.width + 2 * pad, im.height + 2 * pad
@@ -435,6 +483,7 @@ def anim_frames(key):
             if canvas.height > 900:
                 canvas = canvas.resize((round(canvas.width * 900 / canvas.height), 900), Image.LANCZOS)
             canvas.save(out, compress_level=1)
+        cached_file(out, build, validate=_image_valid)
         res.append(out.as_uri())
     meta = HERE / "assets" / "anim" / key / "meta.json"
     fps = json.load(open(meta))["fps"] if meta.exists() else 15
@@ -551,61 +600,62 @@ def video_frames(node):
     # Never replace a cache path redirected outside the selected work directory.
     if out.resolve() != out or (out.exists() and not out.is_dir()):
         raise ValueError(f'небезопасный путь кэша клипа: {out}')
-    frames = _ready_clip_frames(out, w, h)
-    if frames is None:
-        # чёрные поля вокруг картинки (мемы из TikTok, кино в вертикали) — срезать: поле ищет cropdetect
-        det = subprocess.run([ffmpeg_exe(), "-hide_banner", "-ss", str(a), "-t", str(d), "-i", str(path),
-                              "-vf", "cropdetect=24:2:0", "-f", "null", "-"], capture_output=True, text=True, errors="replace", check=True).stderr
-        crops = re.findall(r"crop=(\d+:\d+:\d+:\d+)", det)
-        bars = f"crop={max(set(crops), key=crops.count)}," if crops else ""
-        with tempfile.TemporaryDirectory(prefix=f'.vid_{key}_', dir=root) as tmp:
-            stage = Path(tmp)
-            subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
-                            "-vf", f"{bars}fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
-                            "-q:v", "3", str(stage / "%04d.jpg")], check=True)
-            extracted = sorted(stage.glob('*.jpg'), key=lambda p: int(p.stem))
-            if not extracted or [p.name for p in extracted] != [f'{i:04d}.jpg' for i in range(1, len(extracted) + 1)]:
-                raise ValueError(f'клип не дал полной последовательности кадров: {node["src"]}')
-            for frame in extracted:
-                with Image.open(frame) as im:
-                    im.load()
-                    if im.size != (w, h):
-                        raise ValueError(f'неверный размер кадра: {frame.name}')
-            now = path.stat()
-            if (now.st_size, now.st_mtime_ns) != (st.st_size, st.st_mtime_ns):
-                raise ValueError(f'исходный клип изменился при извлечении: {node["src"]}')
-            manifest = dict(version=1, fps=FPS, size=[w, h], frames=[_clip_file_record(p) for p in extracted])
-            (stage / 'frames.json').write_text(json.dumps(manifest), encoding='utf-8')
-            if out.exists():
-                if out.resolve() != out or out.parent != root:
-                    raise ValueError(f'путь кэша изменился: {out}')
-                shutil.rmtree(out)
-            stage.rename(out)
-            frames = [out / p.name for p in extracted]
-    res = dict(fps=FPS, frames=[f.as_uri() for f in frames])
-    if float(node.get("audio", 0)) > 0:
-        wav = out / "a.wav"
-        marker = out / 'audio.json'
-        try:
-            audio_ready = json.loads(marker.read_text(encoding='utf-8')) == _clip_file_record(wav) and _clip_audio_valid(wav)
-        except (OSError, ValueError):
-            audio_ready = False
-        if not audio_ready:
-            with tempfile.TemporaryDirectory(prefix=f'.audio_{key}_', dir=root) as tmp:
-                staged_wav = Path(tmp) / 'a.wav'
+    with file_lock(root / 'cache_locks' / (out.name + '.lock'), timeout=600):
+        frames = _ready_clip_frames(out, w, h)
+        if frames is None:
+            # чёрные поля вокруг картинки (мемы из TikTok, кино в вертикали) — срезать: поле ищет cropdetect
+            det = subprocess.run([ffmpeg_exe(), "-hide_banner", "-ss", str(a), "-t", str(d), "-i", str(path),
+                                  "-vf", "cropdetect=24:2:0", "-f", "null", "-"], capture_output=True, text=True, errors="replace", check=True).stderr
+            crops = re.findall(r"crop=(\d+:\d+:\d+:\d+)", det)
+            bars = f"crop={max(set(crops), key=crops.count)}," if crops else ""
+            with tempfile.TemporaryDirectory(prefix=f'.vid_{key}_', dir=root) as tmp:
+                stage = Path(tmp)
                 subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
-                                "-vn", "-ac", "1", "-ar", str(SR), str(staged_wav)], check=True)
-                if not _clip_audio_valid(staged_wav):
-                    raise ValueError(f'клип не дал корректный звук: {node["src"]}')
+                                "-vf", f"{bars}fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}",
+                                "-q:v", "3", str(stage / "%04d.jpg")], check=True)
+                extracted = sorted(stage.glob('*.jpg'), key=lambda p: int(p.stem))
+                if not extracted or [p.name for p in extracted] != [f'{i:04d}.jpg' for i in range(1, len(extracted) + 1)]:
+                    raise ValueError(f'клип не дал полной последовательности кадров: {node["src"]}')
+                for frame in extracted:
+                    with Image.open(frame) as im:
+                        im.load()
+                        if im.size != (w, h):
+                            raise ValueError(f'неверный размер кадра: {frame.name}')
                 now = path.stat()
                 if (now.st_size, now.st_mtime_ns) != (st.st_size, st.st_mtime_ns):
                     raise ValueError(f'исходный клип изменился при извлечении: {node["src"]}')
-                staged_marker = Path(tmp) / 'audio.json'
-                staged_marker.write_text(json.dumps(_clip_file_record(staged_wav)), encoding='utf-8')
-                staged_wav.replace(wav)
-                staged_marker.replace(marker)
-        res["wav"] = str(wav)
-    return res
+                manifest = dict(version=1, fps=FPS, size=[w, h], frames=[_clip_file_record(p) for p in extracted])
+                (stage / 'frames.json').write_text(json.dumps(manifest), encoding='utf-8')
+                if out.exists():
+                    if out.resolve() != out or out.parent != root:
+                        raise ValueError(f'путь кэша изменился: {out}')
+                    shutil.rmtree(out)
+                stage.rename(out)
+                frames = [out / p.name for p in extracted]
+        res = dict(fps=FPS, frames=[f.as_uri() for f in frames])
+        if float(node.get("audio", 0)) > 0:
+            wav = out / "a.wav"
+            marker = out / 'audio.json'
+            try:
+                audio_ready = json.loads(marker.read_text(encoding='utf-8')) == _clip_file_record(wav) and _clip_audio_valid(wav)
+            except (OSError, ValueError):
+                audio_ready = False
+            if not audio_ready:
+                with tempfile.TemporaryDirectory(prefix=f'.audio_{key}_', dir=root) as tmp:
+                    staged_wav = Path(tmp) / 'a.wav'
+                    subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-ss", str(a), "-t", str(d), "-i", str(path),
+                                    "-vn", "-ac", "1", "-ar", str(SR), str(staged_wav)], check=True)
+                    if not _clip_audio_valid(staged_wav):
+                        raise ValueError(f'клип не дал корректный звук: {node["src"]}')
+                    now = path.stat()
+                    if (now.st_size, now.st_mtime_ns) != (st.st_size, st.st_mtime_ns):
+                        raise ValueError(f'исходный клип изменился при извлечении: {node["src"]}')
+                    staged_marker = Path(tmp) / 'audio.json'
+                    staged_marker.write_text(json.dumps(_clip_file_record(staged_wav)), encoding='utf-8')
+                    staged_wav.replace(wav)
+                    staged_marker.replace(marker)
+            res["wav"] = str(wav)
+        return res
 
 
 def meme(node):
@@ -691,14 +741,15 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
     return out
 
 
-def prepare(ep, heroes, items):
+def prepare(ep, heroes, items, work_dir=None):
+    work_dir = Path(work_dir) if work_dir is not None else WORK
     segs, t = [], 0.0
     parts = ep["parts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
     if ep.get("hook"):                       # короткий хук перед фактами
         parts = [dict(ep["hook"], hook=True)] + parts
     for i, f in enumerate(parts):
         text = f["voice"]
-        mp3 = WORK / f"v{i}.mp3"
+        mp3 = work_dir / f"v{i}.mp3"
         words = speak(text, mp3, f.get("voice_file"), ep.get("voice_id"))   # голос — свой у каждого выпуска
         pcm = mp3_to_pcm(mp3)
         pad = float(ep.get("pad", PAD))      # пауза после фрагмента: можно задать в выпуске, чтобы уложиться в 45 с
@@ -854,12 +905,12 @@ def _render_chunk(args):
                     png = base64.b64decode(cdp.send("Page.captureScreenshot", shot)["data"])
                     pipe.write(png)
                     if fi == 0:
-                        (WORK / "cover.png").write_bytes(png)         # первый кадр собран — он же обложка
+                        (Path(out_mp4).parent / "cover.png").write_bytes(png)         # первый кадр собран — он же обложка
                     if fi in checks:
                         problems += [f"{t:.1f}с: {b}" for b in page.evaluate("() => audit()")]
                         full = Image.open(BytesIO(png)).convert("RGB")
-                        if os.environ.get("FV_QA_DIR"):
-                            full.save(os.path.join(os.environ["FV_QA_DIR"], f"frame_{t:05.1f}.jpg"), quality=90)
+                        if data.get("qa_dir"):
+                            full.save(os.path.join(data["qa_dir"], f"frame_{fi:06d}_{t:05.2f}.jpg"), quality=90)
                         qa.append((fi, full.resize((270, 480))))
         finally:
             br.close()
@@ -897,9 +948,18 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     """Кадры рендерятся параллельно в нескольких браузерах (FV_WORKERS, по умолчанию — по числу ядер),
     куски склеиваются без перекодирования."""
     from concurrent.futures import ProcessPoolExecutor
+    import tempfile
+    work_dir = Path(video_path).resolve().parent
+    work_dir.mkdir(parents=True, exist_ok=True)
+    qa_dir = None
+    if os.environ.get('FV_QA_DIR'):
+        root = Path(os.environ['FV_QA_DIR']).resolve()
+        root.mkdir(parents=True, exist_ok=True)
+        qa_dir = tempfile.mkdtemp(prefix=Path(qa_path).stem + '-', dir=root)
+        print(f'  QA кадры: {qa_dir}')
     with _frame_server() as http_root:
         data = dict(watermark=WATERMARK, theme=theme,       # theme — вариант оформления выпуска
-                    http=http_root,
+                    http=http_root, qa_dir=qa_dir,
                     transition=(opts or {}).get("transition"), subs_style=(opts or {}).get("subs"),   # переход и стиль субтитров (SCENES.md)
                     badge=os.environ.get("FV_BADGE", ""),   # плашка сверху (для прослушки голосов на видео)
                     segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
@@ -908,7 +968,7 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
         workers = max(1, int(os.environ.get("FV_WORKERS", os.cpu_count() or 2)))
         size = math.ceil(len(frames) / workers)
         gl = bool(re.search(r'"type": "(model|stage)"', json.dumps(data["segs"])))
-        jobs = [(data, frames[k:k + size], checks, WORK / f"chunk_{j}.mp4", gl) for j, k in enumerate(range(0, len(frames), size))]
+        jobs = [(data, frames[k:k + size], checks, work_dir / f"chunk_{j}.mp4", gl) for j, k in enumerate(range(0, len(frames), size))]
         t0 = time.time()
         with ProcessPoolExecutor(len(jobs)) as ex:
             results = list(ex.map(_render_chunk, jobs))
@@ -919,11 +979,12 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
             fps=FPS // 2 if os.environ.get("FV_DRAFT") else FPS,
             frame_index_fps=FPS, rendered_frames=len(frames),
             expected_frames=sorted(checks), actual_frames=sorted(actual), segments=coverage,
+            frames_dir=qa_dir,
         ), ensure_ascii=False, indent=2), encoding='utf-8')
         _require_frame_coverage(checks, actual)
         print(f"  QA: {len(actual)}/{len(checks)} кадров, сегментов: {len(coverage)}")
         print(f"  кадров: {len(frames)}, потоков: {len(jobs)}, {time.time() - t0:.0f} с")
-        lst = WORK / "chunks.txt"
+        lst = work_dir / "chunks.txt"
         lst.write_text("".join(f"file '{j[3]}'\n" for j in jobs))
         subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy", str(video_path)], check=True)
         problems = [p for r in results for p in r[0]]
@@ -1112,27 +1173,40 @@ def mix_audio(segs, total, wav_path):
 
 
 def render(ep, out_path, consts_dir="dotaconstants/build"):
+    """Independent processes use private scratch folders and guarded final outputs."""
+    global FISH_TEMP, FISH_SPEED
+    out_path = Path(out_path).resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    previous = FISH_TEMP, FISH_SPEED
+    try:
+        with _output_lock(out_path), _run_workspace() as work_dir:
+            _render(ep, out_path, consts_dir, work_dir)
+    finally:
+        FISH_TEMP, FISH_SPEED = previous
+
+
+def _render(ep, out_path, consts_dir, work_dir):
     apply_voice_settings(ep)
-    WORK.mkdir(exist_ok=True)
     items = load_consts("items.json", consts_dir)
     heroes = {v["name"].replace("npc_dota_hero_", ""): v
               for v in load_consts("heroes.json", consts_dir).values()}
-    segs, total = prepare(ep, heroes, items)
-    out_path = Path(out_path)
-    video, wav = WORK / "video.mp4", WORK / "audio.wav"
-    qa = out_path.with_name("qa_" + out_path.stem + ".jpg")
+    segs, total = prepare(ep, heroes, items, work_dir)
+    video, wav = work_dir / "video.mp4", work_dir / "audio.wav"
+    qa = work_dir / ("qa_" + out_path.stem + ".jpg")
     problems = render_frames(segs, total, video, qa, ep.get("theme", ""), ep)
     mix_audio(segs, total, wav)
     # Громкость к стандарту площадок (−14 LUFS, пики не выше −1,5 dBTP): TikTok и Shorts всё равно выравнивают,
     # а тихий ролик рядом с соседними звучит слабее
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(video), "-i", str(wav),
                     *([] if os.environ.get("FV_SILENT") else ["-af", loudnorm(wav)]), "-ar", "48000",   # без голоса не выравниваем: иначе фон раздувается
-                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(out_path)], check=True)
-    stem = out_path.stem
-    cover = out_path.with_name((stem.replace("facts_", "cover_", 1) if stem.startswith("facts_") else "cover_" + stem) + ".png")
-    if (WORK / "cover.png").exists() and not os.environ.get("FV_QA_ONLY") and not os.environ.get("FV_DRAFT"):
-        shutil.copy(WORK / "cover.png", cover)
+                    "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(work_dir / 'final.mp4')], check=True)
+    for source in (qa, qa.with_suffix('.json')):
+        atomic_copy(source, out_path.parent / source.name)
+    cover = _cover_path(out_path)
+    if (work_dir / "cover.png").exists() and not os.environ.get("FV_QA_ONLY") and not os.environ.get("FV_DRAFT"):
+        atomic_copy(work_dir / "cover.png", cover)
         print(f"обложка: {cover}")
+    atomic_copy(work_dir / 'final.mp4', out_path)
     print(f"готово: {out_path} ({total:.1f} с)")
     if problems:
         print("ПРОВЕРКА РАСКЛАДКИ: элементы за безопасной зоной:")
@@ -1237,7 +1311,21 @@ def audition(ep_path, voices_arg, out_dir):
     voices_arg: «id:Название,id:Название,…». Итог — out_dir/golosa_<выпуск>.mp4."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    base = json.load(open(ep_path, encoding="utf-8"))
+    target = (out / f'golosa_{Path(ep_path).stem}.mp4').resolve()
+    previous_badge = os.environ.get('FV_BADGE')
+    try:
+        with _output_lock(target), _run_workspace() as work_dir:
+            _audition(ep_path, voices_arg, target, work_dir)
+    finally:
+        if previous_badge is None:
+            os.environ.pop('FV_BADGE', None)
+        else:
+            os.environ['FV_BADGE'] = previous_badge
+
+
+def _audition(ep_path, voices_arg, target, work_dir):
+    with open(ep_path, encoding='utf-8') as source:
+        base = json.load(source)
     parts = []
     pairs = [x.split(":", 1) for x in voices_arg.split(",") if x.strip()]
     for k, (vid, name) in enumerate(pairs, 1):
@@ -1248,24 +1336,16 @@ def audition(ep_path, voices_arg, out_dir):
         for part in [ep.get("hook")] + ep["parts"]:
             if part:
                 part.pop("voice_file", None)
-        for f in WORK.glob("v*.mp3"):
-            f.unlink()
         os.environ["FV_BADGE"] = f"Голос {k} · {name.strip()}"
-        mp4 = out / f"aud_{k}.mp4"
+        mp4 = work_dir / f"aud_{k}.mp4"
         render(ep, mp4)
         parts.append(mp4)
-    os.environ.pop("FV_BADGE", None)
-    lst = WORK / "aud.txt"
+    lst = work_dir / "aud.txt"
     lst.write_text("".join(f"file '{p.resolve()}'\n" for p in parts))
-    name = Path(ep_path).stem
     subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
-                    "-c", "copy", str(out / f"golosa_{name}.mp4")], check=True)
-    for p in parts:
-        p.unlink()
-        q = p.with_name("qa_" + p.stem + ".jpg")
-        if q.exists():
-            q.unlink()
-    print("прослушка:", out / f"golosa_{name}.mp4")
+                    "-c", "copy", str(work_dir / 'final.mp4')], check=True)
+    atomic_copy(work_dir / 'final.mp4', target)
+    print("прослушка:", target)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,55 @@
+{
+  "playback": {
+    "samples": 2481,
+    "min_floor_clearance_m": -5.151513074591607e-07,
+    "max_support_error_m": 8.514550106025728e-07,
+    "max_length_error_m": 3.329645041905138e-07,
+    "max_endpoint_error_m": 8.026346947155298e-06,
+    "min_camera_margin": 0.12941157817840576,
+    "min_actor_screen_gap": 0.1846787929534912,
+    "min_nonadjacent_link_clearance_m": 0.07499922560484718,
+    "max_joint_speed_m_s": 1.4164727232160115,
+    "max_joint_acceleration_m_s2": 13.421002434391722,
+    "limits": "Finite 1/16-frame samples; mesh-floor, prescribed support anchors, link length, attachments, nonadjacent rod capsules and frame bounds. No balance/dynamics, general self-collision, surface visibility or artistic-quality certification. No render performed by verify."
+  },
+  "negative_tests": [
+    {
+      "object": "R_palm",
+      "mutation": "delta_location",
+      "amount": 0.02,
+      "detected_as": "support"
+    },
+    {
+      "object": "R_knee",
+      "mutation": "delta_location",
+      "amount": 0.02,
+      "detected_as": "support"
+    },
+    {
+      "object": "R_foot",
+      "mutation": "delta_location",
+      "amount": 0.02,
+      "detected_as": "support"
+    },
+    {
+      "object": "L_foot",
+      "mutation": "delta_location",
+      "amount": -0.02,
+      "detected_as": "floor"
+    },
+    {
+      "object": "L_upperarm",
+      "mutation": "scale",
+      "amount": 0.02,
+      "detected_as": "length"
+    },
+    {
+      "object": "R_palm",
+      "mutation": "mesh_vertices_x",
+      "amount": 0.02,
+      "detected_as": "support"
+    }
+  ],
+  "blend_sha256": "a419682ccd46a01b54735a6edb7ffefe59aa4c167bd79e0f6f8f362b90936719",
+  "scope": "Parent rerun on saved scene; same verification implementation, not an independent collision algorithm."
+}

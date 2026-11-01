@@ -45,3 +45,6 @@
 - [Лина: сдержанная эмоция и удержание](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_face_hold.mp4) — 3,6 с/30fps, два ракурса, без звука. Моргание исключено после обнаружения деформации века и не исправлено; смещение взгляда слабо читается. Ограниченная проба мимики, не готовая актёрская реакция; docs/studies/FACE_HOLD.md в main.
 
 - [Прыжок и приземление — профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_jump_land_profile.mp4) и [¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_jump_land_three_quarter.mp4) — учебный манекен, по 3,5 с/30fps без звука. Подготовка, баллистический таз и амортизация; плоские стопы, без динамического баланса и переноса на кожу.
+
+- [Двуручный поворот коробки — ¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_prop_turn_three_quarter.mp4) и [профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_prop_turn_profile.mp4) — манекен с плоскими ладонями, по 4 с/30fps, без звука; удержание поверхности без пальцев и физики масс.
+- [Учебные контакты: прыжок и двуручный поворот](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/learning_contacts_2026_11_01.mp4) — сводка, 15 с/30fps; два упражнения с двух сторон, с ограничениями результата.

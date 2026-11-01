@@ -32,6 +32,9 @@ import bpy
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import write_json_report
+
 
 EXCLUDE = re.compile(r"physics|collision|shadow|blob|ground|terrain|floor", re.I)
 WEAPON = re.compile(
@@ -331,8 +334,8 @@ def main():
         print(f"CONTACT ERROR: {exc}", file=sys.stderr, flush=True)
     try:
         # Parent directory must already exist; do not modify the scene or create folders.
-        args.json.write_text(json.dumps(report, ensure_ascii=False, indent=2,
-                                        allow_nan=False) + '\n', encoding='utf-8')
+        write_json_report(args.json, json.dumps(report, ensure_ascii=False, indent=2,
+                                               allow_nan=False) + '\n', [bpy.data.filepath])
     except Exception as exc:
         print(f"CONTACT JSON ERROR: {exc}", file=sys.stderr, flush=True)
         status = 2

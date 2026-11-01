@@ -884,7 +884,11 @@ function seek(t) {
   document.querySelectorAll(".pg i").forEach((bar, k) => {
     bar.style.width = (segs[i].outro || k < fi ? 100 : k === fi && !segs[i].hook ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
   });
-  SEGS.forEach((g, k) => { g.el.style.visibility = k === i ? "visible" : "hidden"; });
+  SEGS.forEach((g, k) => {
+    g.el.style.visibility = k === i ? "visible" : "hidden";
+    // Descendant media may set visibility:visible; display hides the whole old segment.
+    g.el.style.display = k === i ? "" : "none";
+  });
   draw(SEGS[i], lt);
 
   // Шторка: заезжает слева, на стыке закрывает экран, уезжает вправо
@@ -895,6 +899,8 @@ function seek(t) {
     if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
   });
   document.getElementById("wipe").style.transform = `translateX(${x}px)`;
+  document.getElementById("tide").style.visibility = "hidden";
+  document.getElementById("ring").style.visibility = "hidden";
   if (TK && !D.transition) {
     document.querySelectorAll("#waves svg").forEach((sv, k) => { sv.style.transform = `translateX(${-((t * (30 + k * 18)) % 360)}px)`; });
     document.getElementById("compass").style.transform = `rotate(${t * 2}deg)`;

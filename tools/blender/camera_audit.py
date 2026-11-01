@@ -14,6 +14,9 @@ import sys
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import write_json_report
+
 EXCLUDE = re.compile(r'physics|hitbox|collision|blob|helper|shadow|proxy', re.I)
 HEAD = re.compile(r'(?:^|[^a-z])head(?:[^a-z]|$)', re.I)
 LIMITATIONS = [
@@ -187,8 +190,8 @@ def main(argv=None):
         report, code = {'status': 'error', 'error': str(exc), 'limitations': LIMITATIONS}, 2
     payload = json.dumps(report, indent=2, allow_nan=False)
     if args.json:
-        try: args.json.write_text(payload+'\n', encoding='utf-8')
-        except OSError as exc:
+        try: write_json_report(args.json, payload+'\n', [bpy.data.filepath])
+        except (OSError, ValueError, RuntimeError) as exc:
             print(f'camera_audit: cannot write JSON: {exc}', file=sys.stderr)
             return 2
     print(payload)

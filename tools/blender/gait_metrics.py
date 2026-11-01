@@ -20,6 +20,9 @@ import sys
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import write_json_report
+
 
 def summarize(times, positions, roots, floor_m, *, near=.02, penetration=.01,
               slide=.15):
@@ -191,7 +194,8 @@ def main():
         'Root-relative velocity includes turns and all installed pose layers; no isolated native action. '
         'Flat floor only; no balance, force, clothing, weapon or visual validation. '
         'Vertex statistics are pooled and sample-dependent; no pass/fail claim.')
-    args.json.write_text(json.dumps(report,indent=2,allow_nan=False),encoding='utf-8')
+    write_json_report(args.json,json.dumps(report,indent=2,allow_nan=False),
+                      [source,args.metadata])
     print('GAIT_METRICS',args.json,flush=True)
 
 

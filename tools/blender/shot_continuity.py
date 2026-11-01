@@ -23,6 +23,7 @@ from mathutils import Vector, Quaternion
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import camera_audit as surface
+from json_output import write_json_report
 
 
 def scenery_probe(scene, camera, graph, roots):
@@ -301,7 +302,12 @@ def main():
         code = 0 if report['status'] == 'pass' else 1
     except Exception as exc:
         report, code = dict(status='error', error=str(exc)), 2
-    args.json.write_text(json.dumps(report, indent=2, allow_nan=False)+'\n', encoding='utf-8')
+    try:
+        write_json_report(args.json, json.dumps(report, indent=2, allow_nan=False)+'\n',
+                          [bpy.data.filepath, args.storyboard])
+    except (OSError, ValueError, RuntimeError) as exc:
+        print(f'CONTINUITY JSON ERROR: {exc}', file=sys.stderr, flush=True)
+        return 2
     print('CONTINUITY_QA', json.dumps(dict(status=report['status'], frames=len(report.get('frames', [])),
           flags=len(report.get('flags', [])), error=report.get('error'))), flush=True)
     return code

@@ -24,6 +24,7 @@ import wave
 from io import BytesIO
 from pathlib import Path
 from contextlib import contextmanager
+from bisect import bisect_left
 
 import numpy as np
 from PIL import Image
@@ -769,6 +770,33 @@ def _render_chunk(args):
     return problems, qa
 
 
+def _frame_plan(segs, total, draft=False, qa_only=False):
+    """Select audit samples from the actual output cadence, inside every segment."""
+    if not math.isfinite(total) or total <= 0 or not segs:
+        raise ValueError("QA requires a positive duration and at least one segment")
+    frames = list(range(0, int(total * FPS), 2 if draft else 1))
+    times = [f / FPS for f in frames]
+    checks, coverage = set(), []
+    for index, segment in enumerate(segs):
+        start, dur = segment['start'], segment['dur']
+        end = start + dur
+        if not all(math.isfinite(v) for v in (start, dur, end)) or start < 0 or dur <= 0:
+            raise ValueError(f"Invalid QA interval for segment {index}")
+        candidates = frames[bisect_left(times, start):bisect_left(times, end)]
+        if not candidates:
+            raise ValueError(f"Segment {index} has no output frame at the selected cadence")
+        selected = sorted({min(candidates, key=lambda f: abs(f / FPS - target))
+                           for target in (start + 1.2, start + dur * .55, end - .5)})
+        checks.update(selected)
+        coverage.append(dict(segment=index, start=start, end=end, expected_frames=selected))
+    return sorted(checks) if qa_only else frames, checks, coverage
+
+
+def _require_frame_coverage(expected, actual):
+    if not expected or set(actual) != set(expected) or len(actual) != len(set(actual)):
+        raise RuntimeError(f"Incomplete QA frame coverage: expected {sorted(expected)}, actual {sorted(actual)}")
+
+
 def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
     """Кадры рендерятся параллельно в нескольких браузерах (FV_WORKERS, по умолчанию — по числу ядер),
     куски склеиваются без перекодирования."""
@@ -779,12 +807,8 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
                     transition=(opts or {}).get("transition"), subs_style=(opts or {}).get("subs"),   # переход и стиль субтитров (SCENES.md)
                     badge=os.environ.get("FV_BADGE", ""),   # плашка сверху (для прослушки голосов на видео)
                     segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
-        # Ключевые моменты для проверки и контрольного листа
-        checks = set()
-        for s in segs:
-            checks |= {int((s["start"] + x) * FPS) + 1 for x in (1.2, s["dur"] * 0.55, s["dur"] - 0.5)}
-        n = int(total * FPS)
-        frames = sorted(checks) if os.environ.get("FV_QA_ONLY") else list(range(0, n, 2 if os.environ.get("FV_DRAFT") else 1))   # быстрая проверка: только ключевые кадры
+        frames, checks, coverage = _frame_plan(segs, total, bool(os.environ.get("FV_DRAFT")),
+                                                bool(os.environ.get("FV_QA_ONLY")))
         workers = max(1, int(os.environ.get("FV_WORKERS", os.cpu_count() or 2)))
         size = math.ceil(len(frames) / workers)
         gl = bool(re.search(r'"type": "(model|stage)"', json.dumps(data["segs"])))
@@ -792,6 +816,16 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None):
         t0 = time.time()
         with ProcessPoolExecutor(len(jobs)) as ex:
             results = list(ex.map(_render_chunk, jobs))
+        actual = [fi for result in results for fi, _ in result[1]]
+        for record in coverage:
+            record['actual_frames'] = sorted(fi for fi in actual if fi in record['expected_frames'])
+        Path(qa_path).with_suffix('.json').write_text(json.dumps(dict(
+            fps=FPS // 2 if os.environ.get("FV_DRAFT") else FPS,
+            frame_index_fps=FPS, rendered_frames=len(frames),
+            expected_frames=sorted(checks), actual_frames=sorted(actual), segments=coverage,
+        ), ensure_ascii=False, indent=2), encoding='utf-8')
+        _require_frame_coverage(checks, actual)
+        print(f"  QA: {len(actual)}/{len(checks)} кадров, сегментов: {len(coverage)}")
         print(f"  кадров: {len(frames)}, потоков: {len(jobs)}, {time.time() - t0:.0f} с")
         lst = WORK / "chunks.txt"
         lst.write_text("".join(f"file '{j[3]}'\n" for j in jobs))

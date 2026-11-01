@@ -20,6 +20,9 @@ import sys
 
 import bpy
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import json_output_path, write_json_report
+
 
 def frames_arg(value):
     match = re.fullmatch(r"(-?\d+)(?:-(-?\d+))?", value)
@@ -156,10 +159,8 @@ def main():
     parser.add_argument('--top', type=int, default=10)
     parser.add_argument('--hash-inputs', action='store_true')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
-    output = args.json.resolve()
     inputs = [args.baseline.resolve(), args.candidate.resolve()]
-    if not output.parent.is_dir() or output in inputs or output.suffix.lower() == '.blend':
-        raise ValueError('output must have an existing parent and cannot overwrite a scene')
+    output = json_output_path(args.json, inputs)
     report = dict(status='error', warnings=[
         'Normal rotation >90 degrees is not proof of inversion or self-intersection.',
         'These metrics do not infer physical contact or collisions.',
@@ -203,7 +204,7 @@ def main():
     except Exception as exc:
         report['error'] = f'{type(exc).__name__}: {exc}'
         code = 2
-    output.write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
+    write_json_report(output, json.dumps(report, indent=2, allow_nan=False), inputs)
     print(json.dumps(dict(status=report['status'], summary=report.get('summary'),
                           error=report.get('error')), allow_nan=False), flush=True)
     return code

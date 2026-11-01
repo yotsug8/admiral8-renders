@@ -117,7 +117,7 @@ def main():
     for path in look_paths:
         with Image.open(path) as im:
             samples.append(np.asarray(im.convert('RGB').resize((270, 480))))
-    look = ChaseLook(np.stack(samples))
+    look = ChaseLook(np.stack(samples), profile=recipe.get('look_profile', 'legacy'))
     hashes = []
     for frame, path in enumerate(paths):
         hashes.append(dict(frame=frame, source=path.relative_to(root).as_posix(),

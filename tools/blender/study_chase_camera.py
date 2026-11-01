@@ -21,9 +21,15 @@ def main():
     parser.add_argument('--start', type=int, default=144)
     parser.add_argument('--end', type=int, default=239)
     parser.add_argument('--offset', type=float, nargs=3, default=(2.5, 8, 2.8))
+    parser.add_argument('--target-weight', type=float, default=.8,
+                        help='Weight of Hoodwink root in the look target (0..1)')
+    parser.add_argument('--candidate-only', action='store_true',
+                        help='Skip reference renders when they already exist')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
     if args.end < args.start:
         parser.error('--end must be >= --start')
+    if not 0 <= args.target_weight <= 1:
+        parser.error('--target-weight must be between 0 and 1')
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
     actors = json.loads(args.actors.read_text(encoding='utf-8'))
@@ -43,7 +49,7 @@ def main():
         scene.frame_set(frame)
         h = bpy.data.objects[actors['hoodwink']['root']].matrix_world.translation.copy()
         k = bpy.data.objects[actors['kunkka']['root']].matrix_world.translation.copy()
-        target = h * .8 + k * .2 + Vector((0, 0, 1.5))
+        target = h * args.target_weight + k * (1-args.target_weight) + Vector((0, 0, 1.5))
         position = h + Vector(args.offset)
         poses[frame] = (position, target)
         dg = bpy.context.evaluated_depsgraph_get()
@@ -89,6 +95,7 @@ def main():
                         for key in curve.keyframe_points:
                             key.interpolation = 'LINEAR'
     report = {'lens': chosen, 'range': [args.start, args.end], 'offset': list(args.offset),
+              'target_weight': args.target_weight,
               'frames': list(range(args.start, args.end + 1)) if args.shot else sorted({args.start, (args.start + args.end + 1)//2, args.end}),
               'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Source is not saved.'}
     (out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
@@ -97,7 +104,9 @@ def main():
         bpy.ops.wm.save_as_mainfile(filepath=str(out/'camera_candidate.blend'), copy=True)
     for frame in report['frames']:
         scene.frame_set(frame)
-        for label, cam in ([('f', camera)] if args.shot else [('before_', original), ('after_', camera)]):
+        pairs = ([('f', camera)] if args.shot else [('after_', camera)] if args.candidate_only
+                 else [('before_', original), ('after_', camera)])
+        for label, cam in pairs:
             scene.camera = cam
             scene.render.filepath = str(out/f'{label}{frame:04d}.png')
             bpy.ops.render.render(write_still=True)

@@ -1,0 +1,84 @@
+{
+  "fps": 30,
+  "picture_frames": 375,
+  "duration": 12.8,
+  "size": [
+    360,
+    640
+  ],
+  "audio": "two_angle_audio/chase_candidate.wav",
+  "look_samples": [
+    0,
+    30,
+    66,
+    99,
+    126,
+    180,
+    240,
+    300,
+    360
+  ],
+  "look_reference_files": [
+    "calm_fix/assembly_frames/f0000.png",
+    "calm_fix/assembly_frames/f0030.png",
+    "lively_fix/intro_frames/f0066.png",
+    "calm_fix/assembly_frames/f0099.png",
+    "lively_fix/intro_frames/f0126.png",
+    "lively_fix/frames/f0180.png",
+    "lively_fix/frames/f0240.png",
+    "lively_fix/frames/f0300.png",
+    "lively_fix/ending_frames/f0360.png"
+  ],
+  "ranges": [
+    {
+      "start": 0,
+      "stop": 66,
+      "folder": "calm_fix/assembly_frames"
+    },
+    {
+      "start": 66,
+      "stop": 99,
+      "folder": "lively_fix/intro_frames"
+    },
+    {
+      "start": 99,
+      "stop": 126,
+      "folder": "calm_fix/assembly_frames"
+    },
+    {
+      "start": 126,
+      "stop": 144,
+      "folder": "lively_fix/intro_frames"
+    },
+    {
+      "start": 144,
+      "stop": 240,
+      "folder": "close_camera"
+    },
+    {
+      "start": 240,
+      "stop": 336,
+      "folder": "second_angle_frames"
+    },
+    {
+      "start": 336,
+      "stop": 375,
+      "folder": "lively_fix/ending_frames"
+    }
+  ],
+  "moving_ranges": [
+    [
+      144,
+      240
+    ],
+    [
+      240,
+      336
+    ]
+  ],
+  "silent_check": [
+    12.55,
+    12.79
+  ],
+  "look_profile": "daylight"
+}

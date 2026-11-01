@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<script src="scene_resources.js"></script>
 <link rel="stylesheet" href="scene.css">
 <script src="vendor/gsap/gsap.min.js"></script>
 <script src="vendor/gsap/SplitText.min.js"></script>
@@ -858,8 +859,7 @@ async function init(data) {
     }
     SEGS.push(g);
   });
-  await document.fonts.ready;
-  await Promise.all([...document.images].map(im => waitForImage(im)));
+  await Promise.all([waitForSceneStyles(), ...[...document.images].map(im => waitForImage(im))]);
   const MOS = [];
   // Раскладка героев по реальным пропорциям картинок
   SEGS.forEach(g => {

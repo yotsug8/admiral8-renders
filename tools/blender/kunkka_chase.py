@@ -164,6 +164,8 @@ for who,A in ACTORS.items():
     if name in keys.key_blocks:
      kb=keys.key_blocks[name]
      for f,val in [(0,0),(int(2.5*FPS),0),(int(2.9*FPS),.8),(END,.8)]:kb.value=val;kb.keyframe_insert('value',frame=f)
+from chase_acting import apply_chase_acting
+apply_chase_acting(ACTORS,sc,report_path=P/'acting.json')
 sc.render.engine='BLENDER_EEVEE';sc.eevee.taa_render_samples=32 if args.preview else 48;sc.eevee.use_taa_reprojection=True
 sc.render.resolution_x,sc.render.resolution_y=spec['resolution'];sc.render.resolution_percentage=100
 sc.render.image_settings.file_format='PNG';sc.render.film_transparent=False
@@ -212,12 +214,13 @@ def place(f, forced=None):
    sc.frame_set(round(REVEAL_END*FPS));PANIC_HEAD=head_at('hoodwink').copy();sc.frame_set(f)
   target=PANIC_HEAD+Vector((0,0,-.05));pos=target+Vector((.9,-5.2,.3));lens=46;aperture=3.2
  elif t<SIDE_END:
-  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-12,1.5))*2.260903955754426;lens=29;fit=['kunkka','hoodwink'];aperture=5.6
+  u=min(1.,max(0.,(t-PANIC_END)/(SIDE_END-PANIC_END-1/FPS)));push=1-.10*u*u*(3-2*u)
+  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-12,1.5))*2.260903955754426*push;lens=29;fit=['kunkka','hoodwink'];aperture=4.
  elif t<FRONT_END:
-  # A fixed viewpoint reveals actual approach; tracking at runner speed
-  # kept the figures almost unchanged in size and concealed travel speed.
-  target=Vector((X-1,Y+25.5,4.9));pos=Vector((X,Y+41.5,7.0));lens=16
-  aperture=5.6
+  # Retreat more slowly than the runners, keeping faces readable throughout.
+  u=min(1.,max(0.,(t-SIDE_END)/(FRONT_END-SIDE_END-1/FPS)))
+  target=h+Vector((-1,-1,1.8));pos=h+Vector((1,14-6*u,3.6));lens=20
+  aperture=4.
  else:
   u=min(1,max(0,(t-FRONT_END)/(CLOSE_END-FRONT_END-.2)));u=u*u*(3-2*u)
   target=head_at('kunkka')+Vector((0,0,-.05));pos=k+Vector((0,7-3.1*u,3.95));lens=38;aperture=4.0
@@ -256,6 +259,8 @@ if args.forest_depth:
  depth=extend_chase_forest(sc,x=X,y=Y,length=route_length,
                           ground_end_y=Y+route_length+3.5)
  (P/'forest_depth.json').write_text(json.dumps(depth,indent=2))
+ from chase_depth import add_depth
+ (P/'forest_horizon.json').write_text(json.dumps(add_depth(sc),indent=2))
 # Remove only map objects that obstruct a required face from the baked cameras.
 actor_objects={o for A in ACTORS.values() for o in A['objs']}
 removed=[]

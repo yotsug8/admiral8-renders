@@ -1,0 +1,54 @@
+{
+  "samples": 1665,
+  "frames": 105,
+  "fps": 30,
+  "foot_drift": 0.0,
+  "length_error": 2.8632216686474976e-07,
+  "joint_error": 7.88440420319866e-06,
+  "max_step": 0.0045874160377301606,
+  "return_error": 0.0,
+  "quiet_wrist_error": 2.539336692558539e-06,
+  "min_checked_clearance": 0.04499765651958712,
+  "min_floor": 0.04000002384185791,
+  "min_margin": 0.10456222295761108,
+  "hold_pointer_dot": 1.0,
+  "hold_face_dot": 1.0,
+  "motion_onset_seconds": {
+    "head": 0.2625,
+    "body": 0.6145833333333334,
+    "hand": 0.73125
+  },
+  "hold_projection": {
+    "forearm_pixels": 52.90892351023331,
+    "pointer_pixels": 13.090430370358284,
+    "max_forearm_slope": 0.4475021042760406,
+    "target_gap_pixels": 20.217844682635402
+  },
+  "camera_xyz": [
+    -2.5999999046325684,
+    6.5,
+    2.5999999046325684
+  ],
+  "engine": "CYCLES",
+  "blender_version": "5.2.0 LTS",
+  "baseline_comparison": {
+    "mesh_objects": 32,
+    "samples": 1665,
+    "geometry_identical": true,
+    "max_world_matrix_delta": 0.0
+  },
+  "negative_tests": [
+    "L_foot",
+    "L_forearm",
+    "Nose",
+    "foreshortened_camera"
+  ],
+  "movie": {
+    "sha256": "22c9ca644f14d65ba2c9fb3b4e752a9fe49e6deb5fdba7dd70e51dfa12103cce",
+    "bytes": 44390,
+    "frames": 105,
+    "duration": 3.5,
+    "max_encoding_error": 1.6619444444444444
+  },
+  "elapsed_seconds": 3.547133899992332
+}

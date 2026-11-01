@@ -25,6 +25,8 @@ def main():
                         help='Weight of Hoodwink root in the look target (0..1)')
     parser.add_argument('--candidate-only', action='store_true',
                         help='Skip reference renders when they already exist')
+    parser.add_argument('--target-height', type=float, default=1.5)
+    parser.add_argument('--validate-only', action='store_true', help='Check framing without rendering')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
     if args.end < args.start:
         parser.error('--end must be >= --start')
@@ -49,7 +51,7 @@ def main():
         scene.frame_set(frame)
         h = bpy.data.objects[actors['hoodwink']['root']].matrix_world.translation.copy()
         k = bpy.data.objects[actors['kunkka']['root']].matrix_world.translation.copy()
-        target = h * args.target_weight + k * (1-args.target_weight) + Vector((0, 0, 1.5))
+        target = h * args.target_weight + k * (1-args.target_weight) + Vector((0, 0, args.target_height))
         position = h + Vector(args.offset)
         poses[frame] = (position, target)
         dg = bpy.context.evaluated_depsgraph_get()
@@ -96,9 +98,12 @@ def main():
                             key.interpolation = 'LINEAR'
     report = {'lens': chosen, 'range': [args.start, args.end], 'offset': list(args.offset),
               'target_weight': args.target_weight,
+              'target_height': args.target_height,
               'frames': list(range(args.start, args.end + 1)) if args.shot else sorted({args.start, (args.start + args.end + 1)//2, args.end}),
               'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Source is not saved.'}
     (out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+    if args.validate_only:
+        return
     if args.shot:
         scene.camera = camera
         bpy.ops.wm.save_as_mainfile(filepath=str(out/'camera_candidate.blend'), copy=True)

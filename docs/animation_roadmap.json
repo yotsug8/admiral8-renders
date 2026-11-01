@@ -1,6 +1,6 @@
 {
   "updated": "02.11.2026",
-  "revision": 8,
+  "revision": 9,
   "focus": "База анимации через наглядные упражнения",
   "milestone": "Старт и остановка проверены; этюд реакции собран. Поворот в шаге в работе.",
   "next_action": "Поворот в шаге → постановка с реакцией → перенос на персонажа",
@@ -166,7 +166,8 @@
       "evidence": [
         "LEARNING.md",
         "PROJECT_STATE.md",
-        "studies/WORKFLOW_AUDIT.md"
+        "studies/WORKFLOW_AUDIT.md",
+        "productions/DOOMSDAY.md"
       ]
     }
   ],

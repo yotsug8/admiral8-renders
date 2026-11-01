@@ -16,6 +16,7 @@
 | Принятые технические решения, анализ образцов, ограничения проверок | [ANIMATION.md](ANIMATION.md) |
 | Последний результат и незавершённая работа | [PROJECT_STATE.md](PROJECT_STATE.md) |
 | Сценарии упражнений и постановок | `skits/` |
+| Прыжок с оружием и магическая остановка: родные клипы Свена и Рубика, ограниченная проверка | [DOOMSDAY](productions/DOOMSDAY.md), `doomsday_scene.py`, `doomsday_qa.py`; художественная приёмка впереди |
 | Тело, контакт, кожа, взгляд, прыжок, перенос веса | `tools/blender/`: `contact_reaction.py`, `joint_skin.py`, `look_motion.py`, `jump_motion.py`, `weight_shift.py` |
 | Численные проверки контакта и походки | `tools/blender/contact_metrics.py`, `tools/blender/gait_metrics.py` |
 | Постановка погони, дальний лес, актёрские добавки | `tools/blender/kunkka_chase.py`, `chase_depth.py`, `chase_acting.py` |

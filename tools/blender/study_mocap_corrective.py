@@ -1,6 +1,5 @@
 """One isolated Corrective Smooth candidate; never changes source or thresholds."""
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import shutil

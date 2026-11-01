@@ -6,6 +6,7 @@ __pycache__/
 qa/
 _game/
 node_modules/
+.codex-remote-attachments/
 
 # Файлы игровых звуков — только локально
 assets/snd/

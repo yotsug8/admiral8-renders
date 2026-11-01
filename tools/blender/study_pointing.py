@@ -2,7 +2,7 @@
 --out NEW_DIR --mode block|render; --mode review reopens saved scenes.
 Uses the existing rigid mannequin; no dynamics, skin or game-rig claim.
 """
-import argparse, hashlib, json, math, re, subprocess, sys, time
+import argparse, hashlib, json, re, subprocess, sys, time
 from pathlib import Path
 import bpy
 import numpy as np

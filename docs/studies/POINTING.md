@@ -159,7 +159,9 @@ left.mp4  SHA256 4b47804e43645c38d8eedb5b632992abf52fc8b842e028902d4d00a48f98f28
 right.mp4 SHA256 22c9ca644f14d65ba2c9fb3b4e752a9fe49e6deb5fdba7dd70e51dfa12103cce
 ```
 
-Исходники публикуются в `codex/study-pointing`; MP4 и отчёты — в
+Историческая ветка исходников `codex/study-pointing` архивирована;
+для повторения сохранён тег `archive/2026-11-02/codex/study-pointing`.
+MP4 и отчёты — в
 `codex/study-pointing-artifacts`, каталог `artifacts/study_pointing/`.
 Основные ветки и другие упражнения не изменяются.
 

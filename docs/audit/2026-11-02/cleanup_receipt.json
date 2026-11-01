@@ -1,0 +1,2403 @@
+{
+  "deleted_files": 469,
+  "deleted_bytes": 1827271466,
+  "files": [
+    {
+      "path": "tools/blender/__pycache__/airborne_pose.cpython-313.pyc",
+      "bytes": 13868,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/camera_audit.cpython-313.pyc",
+      "bytes": 18230,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_acting.cpython-313.pyc",
+      "bytes": 11832,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_depth.cpython-313.pyc",
+      "bytes": 5815,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_environment.cpython-311.pyc",
+      "bytes": 20043,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_environment.cpython-313.pyc",
+      "bytes": 42130,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_ground.cpython-311.pyc",
+      "bytes": 6851,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_ground.cpython-313.pyc",
+      "bytes": 8083,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_motion.cpython-313.pyc",
+      "bytes": 21414,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_performance.cpython-311.pyc",
+      "bytes": 32282,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_performance.cpython-313.pyc",
+      "bytes": 30403,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/chase_reaction.cpython-313.pyc",
+      "bytes": 9010,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/contact_metrics.cpython-313.pyc",
+      "bytes": 24928,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/contact_reaction.cpython-313.pyc",
+      "bytes": 39457,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/deformation_metrics.cpython-313.pyc",
+      "bytes": 20362,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/dota_map.cpython-313.pyc",
+      "bytes": 26861,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/face.cpython-311.pyc",
+      "bytes": 24752,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/face.cpython-313.pyc",
+      "bytes": 21469,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/finish_chase.cpython-311.pyc",
+      "bytes": 6029,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/gait_metrics.cpython-311.pyc",
+      "bytes": 24884,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/gait_metrics.cpython-313.pyc",
+      "bytes": 21527,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/gaze.cpython-313.pyc",
+      "bytes": 5382,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/joint_skin.cpython-313.pyc",
+      "bytes": 14706,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/jump_motion.cpython-313.pyc",
+      "bytes": 18931,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/jump_shadows.cpython-313.pyc",
+      "bytes": 10068,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/kunkka_chase.cpython-311.pyc",
+      "bytes": 32310,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/look_motion.cpython-313.pyc",
+      "bytes": 23107,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/prop_attachment.cpython-313.pyc",
+      "bytes": 8192,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/pudge_tank_color.cpython-313.pyc",
+      "bytes": 6978,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/pudge_tank_finish.cpython-313.pyc",
+      "bytes": 5778,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/shot_continuity.cpython-311.pyc",
+      "bytes": 33958,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/shot_continuity.cpython-313.pyc",
+      "bytes": 28916,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_character_overlap.cpython-313.pyc",
+      "bytes": 71321,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_chase_camera.cpython-313.pyc",
+      "bytes": 10945,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_followthrough.cpython-313.pyc",
+      "bytes": 35196,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_foot_roll.cpython-313.pyc",
+      "bytes": 45376,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_lift.cpython-313.pyc",
+      "bytes": 39247,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_mocap_look.cpython-311.pyc",
+      "bytes": 12618,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_pointing.cpython-313.pyc",
+      "bytes": 32408,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_prop_turn.cpython-313.pyc",
+      "bytes": 41768,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_reconsider.cpython-313.pyc",
+      "bytes": 23189,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_recovery.cpython-313.pyc",
+      "bytes": 45984,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_retarget_character.cpython-311.pyc",
+      "bytes": 40131,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_retarget_character.cpython-313.pyc",
+      "bytes": 37161,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_start_stop.cpython-313.pyc",
+      "bytes": 34213,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_step_touch.cpython-313.pyc",
+      "bytes": 39894,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/study_throw.cpython-313.pyc",
+      "bytes": 24053,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/test_shot_continuity.cpython-311.pyc",
+      "bytes": 14082,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/blender/__pycache__/weight_shift.cpython-313.pyc",
+      "bytes": 32928,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/anims.cpython-311.pyc",
+      "bytes": 13760,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/datamodel.cpython-311.pyc",
+      "bytes": 73564,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/ground_map.cpython-311.pyc",
+      "bytes": 13466,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/ground_map.cpython-313.pyc",
+      "bytes": 12236,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/hero_parts.cpython-311.pyc",
+      "bytes": 5819,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/project.cpython-311.pyc",
+      "bytes": 6680,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/stage.cpython-311.pyc",
+      "bytes": 46049,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/dota_engine/__pycache__/troupe.cpython-311.pyc",
+      "bytes": 14121,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/assemble_doomsday.cpython-311.pyc",
+      "bytes": 11561,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/assemble_study.cpython-311.pyc",
+      "bytes": 14796,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/chase_audio.cpython-311.pyc",
+      "bytes": 17588,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/chase_look.cpython-311.pyc",
+      "bytes": 4528,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/footsteps.cpython-311.pyc",
+      "bytes": 4717,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/game_vo.cpython-311.pyc",
+      "bytes": 20216,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/grade.cpython-311.pyc",
+      "bytes": 16637,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/post_review.cpython-311.pyc",
+      "bytes": 8446,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/preview_ready_motion.cpython-311.pyc",
+      "bytes": 22802,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/pudge_tank_post.cpython-311.pyc",
+      "bytes": 6283,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/pudge_tank_sound.cpython-311.pyc",
+      "bytes": 8326,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/run_verified.cpython-311.pyc",
+      "bytes": 9803,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/skit.cpython-311.pyc",
+      "bytes": 95323,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/study.cpython-311.pyc",
+      "bytes": 11842,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/test_skit_render.cpython-311.pyc",
+      "bytes": 15890,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/skit/__pycache__/voices.cpython-311.pyc",
+      "bytes": 19735,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/__pycache__/check.cpython-311.pyc",
+      "bytes": 9956,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/__pycache__/paths.cpython-311.pyc",
+      "bytes": 1781,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/__pycache__/paths.cpython-313.pyc",
+      "bytes": 1800,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "tools/__pycache__/vpk_tool.cpython-311.pyc",
+      "bytes": 6833,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "_game/skits/chase_finish/scene_final.blend1",
+      "bytes": 182534138,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/chase_finish/scene_revised.blend1",
+      "bytes": 182238408,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/chase_finish/scene_smooth.blend1",
+      "bytes": 182569499,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/chase_v2/lively_fix/environment.blend1",
+      "bytes": 185182459,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/chase_v2/pursuit_fix/scene.blend1",
+      "bytes": 184791033,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/chase_v2/pursuit_fix/scene_cameras.blend1",
+      "bytes": 184790326,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe14/pose_search.blend1",
+      "bytes": 79381726,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe14/side_debug.blend1",
+      "bytes": 79646027,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe17/baseline.blend1",
+      "bytes": 76773563,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe17/crouch.blend1",
+      "bytes": 77493910,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe17/skin_trial.blend1",
+      "bytes": 77581277,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe20/look.blend1",
+      "bytes": 41387977,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe20/look_head.blend1",
+      "bytes": 41367866,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/skits/probe21/jump_pose_v4.blend1",
+      "bytes": 77631762,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/study/face_staging/b/face_staging.blend1",
+      "bytes": 41234040,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "_game/study/foundations/timing_arcs/scene.blend1",
+      "bytes": 154605,
+      "reason": "Blender previous-save backup; current blend exists"
+    },
+    {
+      "path": "__pycache__/video.cpython-311.pyc",
+      "bytes": 120732,
+      "reason": "Regenerable Python bytecode"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0000.png",
+      "bytes": 340171,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0001.png",
+      "bytes": 339941,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0002.png",
+      "bytes": 339991,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0003.png",
+      "bytes": 339939,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0004.png",
+      "bytes": 339671,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0005.png",
+      "bytes": 339884,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0006.png",
+      "bytes": 339894,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0007.png",
+      "bytes": 340012,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0008.png",
+      "bytes": 340130,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0009.png",
+      "bytes": 340799,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0010.png",
+      "bytes": 340797,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0011.png",
+      "bytes": 340869,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0012.png",
+      "bytes": 341522,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0013.png",
+      "bytes": 341441,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0014.png",
+      "bytes": 341619,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0015.png",
+      "bytes": 342088,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0016.png",
+      "bytes": 342132,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0017.png",
+      "bytes": 341795,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0018.png",
+      "bytes": 342183,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0019.png",
+      "bytes": 342354,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0020.png",
+      "bytes": 342559,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0021.png",
+      "bytes": 342326,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0022.png",
+      "bytes": 342568,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0023.png",
+      "bytes": 342664,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0024.png",
+      "bytes": 342645,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0025.png",
+      "bytes": 342834,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0026.png",
+      "bytes": 342705,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0027.png",
+      "bytes": 342320,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0028.png",
+      "bytes": 342478,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0029.png",
+      "bytes": 342573,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0030.png",
+      "bytes": 342364,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0031.png",
+      "bytes": 342418,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0032.png",
+      "bytes": 342231,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0033.png",
+      "bytes": 342501,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0034.png",
+      "bytes": 342412,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0035.png",
+      "bytes": 342372,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0036.png",
+      "bytes": 342479,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0037.png",
+      "bytes": 342638,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0038.png",
+      "bytes": 342263,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0039.png",
+      "bytes": 341881,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0040.png",
+      "bytes": 341668,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0041.png",
+      "bytes": 341525,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0042.png",
+      "bytes": 341124,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0043.png",
+      "bytes": 340940,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0044.png",
+      "bytes": 340830,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0045.png",
+      "bytes": 340391,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0046.png",
+      "bytes": 340106,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0047.png",
+      "bytes": 339796,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0048.png",
+      "bytes": 339853,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0049.png",
+      "bytes": 339804,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0050.png",
+      "bytes": 339485,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0051.png",
+      "bytes": 339311,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0052.png",
+      "bytes": 339036,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0053.png",
+      "bytes": 338837,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0054.png",
+      "bytes": 338893,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0055.png",
+      "bytes": 339037,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0056.png",
+      "bytes": 338914,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0057.png",
+      "bytes": 338659,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0058.png",
+      "bytes": 338772,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0059.png",
+      "bytes": 338955,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0060.png",
+      "bytes": 339246,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0061.png",
+      "bytes": 339408,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0062.png",
+      "bytes": 339767,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0063.png",
+      "bytes": 339860,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0064.png",
+      "bytes": 339967,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0065.png",
+      "bytes": 340206,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0066.png",
+      "bytes": 362340,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0067.png",
+      "bytes": 363034,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0068.png",
+      "bytes": 361051,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0069.png",
+      "bytes": 361793,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0070.png",
+      "bytes": 365469,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0071.png",
+      "bytes": 367404,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0072.png",
+      "bytes": 367142,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0073.png",
+      "bytes": 366939,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0074.png",
+      "bytes": 366909,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0075.png",
+      "bytes": 366978,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0076.png",
+      "bytes": 367455,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0077.png",
+      "bytes": 367050,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0078.png",
+      "bytes": 367477,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0079.png",
+      "bytes": 367693,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0080.png",
+      "bytes": 366583,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0081.png",
+      "bytes": 362882,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0082.png",
+      "bytes": 360104,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0083.png",
+      "bytes": 359756,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0084.png",
+      "bytes": 359559,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0085.png",
+      "bytes": 358845,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0086.png",
+      "bytes": 358042,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0087.png",
+      "bytes": 357353,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0088.png",
+      "bytes": 357059,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0089.png",
+      "bytes": 357029,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0090.png",
+      "bytes": 357170,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0091.png",
+      "bytes": 356867,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0092.png",
+      "bytes": 356797,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0093.png",
+      "bytes": 356930,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0094.png",
+      "bytes": 356711,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0095.png",
+      "bytes": 356821,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0096.png",
+      "bytes": 356607,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0097.png",
+      "bytes": 356326,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0098.png",
+      "bytes": 356674,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0099.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0100.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0101.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0102.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0103.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0104.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0105.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0106.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0107.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0108.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0109.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0110.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0111.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0112.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0113.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0114.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0115.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0116.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0117.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0118.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0119.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0120.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0121.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0122.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0123.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0124.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0125.png",
+      "bytes": 345155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0126.png",
+      "bytes": 358268,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0127.png",
+      "bytes": 358268,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0128.png",
+      "bytes": 358268,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0129.png",
+      "bytes": 358268,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0130.png",
+      "bytes": 358268,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0131.png",
+      "bytes": 358303,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0132.png",
+      "bytes": 358353,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0133.png",
+      "bytes": 358241,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0134.png",
+      "bytes": 358119,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0135.png",
+      "bytes": 357951,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0136.png",
+      "bytes": 357661,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0137.png",
+      "bytes": 357457,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0138.png",
+      "bytes": 357111,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0139.png",
+      "bytes": 356837,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0140.png",
+      "bytes": 356579,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0141.png",
+      "bytes": 356305,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0142.png",
+      "bytes": 356552,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0143.png",
+      "bytes": 356528,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0144.png",
+      "bytes": 358140,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0145.png",
+      "bytes": 354229,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0146.png",
+      "bytes": 341900,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0147.png",
+      "bytes": 329548,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0148.png",
+      "bytes": 338122,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0149.png",
+      "bytes": 350237,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0150.png",
+      "bytes": 357938,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0151.png",
+      "bytes": 358826,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0152.png",
+      "bytes": 358060,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0153.png",
+      "bytes": 357613,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0154.png",
+      "bytes": 357538,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0155.png",
+      "bytes": 357134,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0156.png",
+      "bytes": 357090,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0157.png",
+      "bytes": 356247,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0158.png",
+      "bytes": 356359,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0159.png",
+      "bytes": 356569,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0160.png",
+      "bytes": 356348,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0161.png",
+      "bytes": 355964,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0162.png",
+      "bytes": 355931,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0163.png",
+      "bytes": 355134,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0164.png",
+      "bytes": 354902,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0165.png",
+      "bytes": 354116,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0166.png",
+      "bytes": 353758,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0167.png",
+      "bytes": 353682,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0168.png",
+      "bytes": 353873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0169.png",
+      "bytes": 353610,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0170.png",
+      "bytes": 353565,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0171.png",
+      "bytes": 353745,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0172.png",
+      "bytes": 353614,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0173.png",
+      "bytes": 353943,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0174.png",
+      "bytes": 353825,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0175.png",
+      "bytes": 354426,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0176.png",
+      "bytes": 354603,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0177.png",
+      "bytes": 355391,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0178.png",
+      "bytes": 355867,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0179.png",
+      "bytes": 356090,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0180.png",
+      "bytes": 356872,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0181.png",
+      "bytes": 356709,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0182.png",
+      "bytes": 356457,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0183.png",
+      "bytes": 355905,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0184.png",
+      "bytes": 355399,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0185.png",
+      "bytes": 354416,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0186.png",
+      "bytes": 353391,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0187.png",
+      "bytes": 352057,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0188.png",
+      "bytes": 350968,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0189.png",
+      "bytes": 349877,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0190.png",
+      "bytes": 349097,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0191.png",
+      "bytes": 348239,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0192.png",
+      "bytes": 347414,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0193.png",
+      "bytes": 347267,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0194.png",
+      "bytes": 346160,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0195.png",
+      "bytes": 344578,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0196.png",
+      "bytes": 342951,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0197.png",
+      "bytes": 341818,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0198.png",
+      "bytes": 341456,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0199.png",
+      "bytes": 340842,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0200.png",
+      "bytes": 340068,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0201.png",
+      "bytes": 338538,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0202.png",
+      "bytes": 338007,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0203.png",
+      "bytes": 337193,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0204.png",
+      "bytes": 337421,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0205.png",
+      "bytes": 337624,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0206.png",
+      "bytes": 337391,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0207.png",
+      "bytes": 337995,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0208.png",
+      "bytes": 338168,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0209.png",
+      "bytes": 338141,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0210.png",
+      "bytes": 338842,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0211.png",
+      "bytes": 339659,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0212.png",
+      "bytes": 340407,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0213.png",
+      "bytes": 341171,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0214.png",
+      "bytes": 342299,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0215.png",
+      "bytes": 343493,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0216.png",
+      "bytes": 345451,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0217.png",
+      "bytes": 346660,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0218.png",
+      "bytes": 347890,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0219.png",
+      "bytes": 348358,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0220.png",
+      "bytes": 349731,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0221.png",
+      "bytes": 350155,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0222.png",
+      "bytes": 350862,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0223.png",
+      "bytes": 351573,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0224.png",
+      "bytes": 352250,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0225.png",
+      "bytes": 352975,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0226.png",
+      "bytes": 353703,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0227.png",
+      "bytes": 353924,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0228.png",
+      "bytes": 354076,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0229.png",
+      "bytes": 353941,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0230.png",
+      "bytes": 353798,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0231.png",
+      "bytes": 352640,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0232.png",
+      "bytes": 351705,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0233.png",
+      "bytes": 350348,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0234.png",
+      "bytes": 349219,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0235.png",
+      "bytes": 347855,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0236.png",
+      "bytes": 347306,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0237.png",
+      "bytes": 346983,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0238.png",
+      "bytes": 346009,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0239.png",
+      "bytes": 345776,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0240.png",
+      "bytes": 341805,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0241.png",
+      "bytes": 343106,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0242.png",
+      "bytes": 343838,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0243.png",
+      "bytes": 345508,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0244.png",
+      "bytes": 346800,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0245.png",
+      "bytes": 348118,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0246.png",
+      "bytes": 348835,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0247.png",
+      "bytes": 349350,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0248.png",
+      "bytes": 350244,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0249.png",
+      "bytes": 351579,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0250.png",
+      "bytes": 352349,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0251.png",
+      "bytes": 352607,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0252.png",
+      "bytes": 352693,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0253.png",
+      "bytes": 353674,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0254.png",
+      "bytes": 353680,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0255.png",
+      "bytes": 353567,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0256.png",
+      "bytes": 354199,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0257.png",
+      "bytes": 353739,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0258.png",
+      "bytes": 352790,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0259.png",
+      "bytes": 351920,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0260.png",
+      "bytes": 350830,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0261.png",
+      "bytes": 350800,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0262.png",
+      "bytes": 350191,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0263.png",
+      "bytes": 349753,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0264.png",
+      "bytes": 349879,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0265.png",
+      "bytes": 349347,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0266.png",
+      "bytes": 350435,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0267.png",
+      "bytes": 350677,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0268.png",
+      "bytes": 350848,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0269.png",
+      "bytes": 350252,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0270.png",
+      "bytes": 349840,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0271.png",
+      "bytes": 349315,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0272.png",
+      "bytes": 348619,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0273.png",
+      "bytes": 347785,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0274.png",
+      "bytes": 348482,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0275.png",
+      "bytes": 348014,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0276.png",
+      "bytes": 348918,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0277.png",
+      "bytes": 349455,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0278.png",
+      "bytes": 350966,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0279.png",
+      "bytes": 351976,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0280.png",
+      "bytes": 353008,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0281.png",
+      "bytes": 353482,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0282.png",
+      "bytes": 353519,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0283.png",
+      "bytes": 352594,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0284.png",
+      "bytes": 351002,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0285.png",
+      "bytes": 349391,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0286.png",
+      "bytes": 348986,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0287.png",
+      "bytes": 348395,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0288.png",
+      "bytes": 347660,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0289.png",
+      "bytes": 347365,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0290.png",
+      "bytes": 347181,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0291.png",
+      "bytes": 347548,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0292.png",
+      "bytes": 348121,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0293.png",
+      "bytes": 349160,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0294.png",
+      "bytes": 348320,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0295.png",
+      "bytes": 348143,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0296.png",
+      "bytes": 346826,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0297.png",
+      "bytes": 346339,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0298.png",
+      "bytes": 346734,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0299.png",
+      "bytes": 347104,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0300.png",
+      "bytes": 347297,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0301.png",
+      "bytes": 346505,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0302.png",
+      "bytes": 344557,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0303.png",
+      "bytes": 344489,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0304.png",
+      "bytes": 344891,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0305.png",
+      "bytes": 344513,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0306.png",
+      "bytes": 346226,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0307.png",
+      "bytes": 345928,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0308.png",
+      "bytes": 344807,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0309.png",
+      "bytes": 343925,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0310.png",
+      "bytes": 341871,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0311.png",
+      "bytes": 343395,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0312.png",
+      "bytes": 342522,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0313.png",
+      "bytes": 341501,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0314.png",
+      "bytes": 339745,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0315.png",
+      "bytes": 339319,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0316.png",
+      "bytes": 339358,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0317.png",
+      "bytes": 339372,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0318.png",
+      "bytes": 338602,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0319.png",
+      "bytes": 337160,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0320.png",
+      "bytes": 336436,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0321.png",
+      "bytes": 334514,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0322.png",
+      "bytes": 333094,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0323.png",
+      "bytes": 333709,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0324.png",
+      "bytes": 334638,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0325.png",
+      "bytes": 337626,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0326.png",
+      "bytes": 338796,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0327.png",
+      "bytes": 339911,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0328.png",
+      "bytes": 343467,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0329.png",
+      "bytes": 348929,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0330.png",
+      "bytes": 354121,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0331.png",
+      "bytes": 354944,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0332.png",
+      "bytes": 355943,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0333.png",
+      "bytes": 356346,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0334.png",
+      "bytes": 355523,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0335.png",
+      "bytes": 355318,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0336.png",
+      "bytes": 357458,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0337.png",
+      "bytes": 357387,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0338.png",
+      "bytes": 357569,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0339.png",
+      "bytes": 357315,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0340.png",
+      "bytes": 357386,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0341.png",
+      "bytes": 357594,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0342.png",
+      "bytes": 357908,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0343.png",
+      "bytes": 357652,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0344.png",
+      "bytes": 357494,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0345.png",
+      "bytes": 357204,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0346.png",
+      "bytes": 357185,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0347.png",
+      "bytes": 356741,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0348.png",
+      "bytes": 357053,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0349.png",
+      "bytes": 356968,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0350.png",
+      "bytes": 356498,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0351.png",
+      "bytes": 356471,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0352.png",
+      "bytes": 356396,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0353.png",
+      "bytes": 355558,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0354.png",
+      "bytes": 354667,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0355.png",
+      "bytes": 353368,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0356.png",
+      "bytes": 352038,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0357.png",
+      "bytes": 350611,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0358.png",
+      "bytes": 347455,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0359.png",
+      "bytes": 345754,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0360.png",
+      "bytes": 343931,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0361.png",
+      "bytes": 342003,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0362.png",
+      "bytes": 340871,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0363.png",
+      "bytes": 339676,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0364.png",
+      "bytes": 338752,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0365.png",
+      "bytes": 338059,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0366.png",
+      "bytes": 337417,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0367.png",
+      "bytes": 337294,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0368.png",
+      "bytes": 336921,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0369.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0370.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0371.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0372.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0373.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    },
+    {
+      "path": "_game\\study\\repro_chase_v5\\frames\\f0374.png",
+      "bytes": 336873,
+      "reason": "Exact duplicate of lively_fix/full_frames"
+    }
+  ],
+  "archived_branches": [
+    {
+      "branch": "codex/study-followthrough",
+      "sha": "bb8a6f62b802d23442c4a78072f3b1c65a24ab56",
+      "same": {
+        "docs/studies/FOLLOWTHROUGH.md": false,
+        "tools/blender/study_followthrough.py": true
+      }
+    },
+    {
+      "branch": "codex/study-lift",
+      "sha": "b09309701d86cbbf1e068f209c6616d41afb8efb",
+      "same": {
+        "docs/studies/LIFT_WEIGHT.md": false,
+        "tools/blender/study_lift.py": false
+      }
+    },
+    {
+      "branch": "codex/study-pointing",
+      "sha": "43e0e56e83f3453df8d779400726f112f206b97b",
+      "same": {
+        "docs/studies/POINTING.md": false,
+        "tools/blender/study_pointing.py": true
+      }
+    },
+    {
+      "branch": "codex/study-setdown",
+      "sha": "d7742f680ac067728ecbc676b14c3d08e05b6a89",
+      "same": {
+        "docs/studies/SETDOWN.md": false,
+        "tools/blender/study_setdown.py": true
+      }
+    },
+    {
+      "branch": "codex/study-step-touch",
+      "sha": "9340f740550192a39d0aab0220c06f7f273014c9",
+      "same": {
+        "docs/studies/POINTING.md": false,
+        "docs/studies/STEP_TOUCH.md": false,
+        "tools/blender/study_pointing.py": true,
+        "tools/blender/study_step_touch.py": false
+      }
+    }
+  ],
+  "retained": [
+    "game assets and source scenes",
+    "voice and downloaded source caches",
+    "all original examples and attachments",
+    "artifact branches and worker refs needed for reproduction",
+    "active production files",
+    "QA/video working cache while another process uses it"
+  ]
+}

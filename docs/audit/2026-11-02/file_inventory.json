@@ -1,0 +1,2491 @@
+{
+  "scope": "Initial tracked working-tree snapshot; hashes and format checks, not a claim of manual review of all contents.",
+  "files": [
+    {
+      "path": ".codex/config.toml",
+      "bytes": 148,
+      "sha256": "cc4b345d621aab43d76884d63c4068f19d1c694c1832ed9e19768f6a38e9c902",
+      "format_check": "inventoried"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 89,
+      "sha256": "10b4c29fb8cf00c868904a70b9ce52e02c340c248c5e094f1e4cdfd781984766",
+      "format_check": "inventoried"
+    },
+    {
+      "path": ".github/workflows/assets.yml",
+      "bytes": 13562,
+      "sha256": "a6137969c73589e1e01635de04d94f7dc639b023423e495f84e8e29127e3271e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": ".github/workflows/render.yml",
+      "bytes": 6917,
+      "sha256": "38a6b1fcac7a9fdc6c8da4326aa5206f2bc664eda81aefb078f0fb976e6bc870",
+      "format_check": "inventoried"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 396,
+      "sha256": "54279c4da8872f14790a0b59af998c44e952d6dffcd556667e74e90e43f7536e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 20319,
+      "sha256": "69113c3fe2c2170a6b28a6f0027596b1662163e74e3be49d2ebdde36ab8be643",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "DESIGN.md",
+      "bytes": 9955,
+      "sha256": "42fa0f95a258b2a6ea0dcc8020b96065d4d689e818d398586fe631b1b1988db9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10005,
+      "sha256": "56bbc63f91405c53f29dfb3735a5196b7cb080dc97a1f5265fbe4197a6ffe67c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "SCENES.md",
+      "bytes": 11888,
+      "sha256": "0f30537b4bd77aff0bdf8c4f1eeea1c33c0f7a0432f875d2735e67a4b73dc825",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_celestial_hammer.png",
+      "bytes": 31085,
+      "sha256": "bb6cb79af9344a4f8955497cac22fa624351db35219223fc4dbcf45694a8e9f1",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_fire_wreath.png",
+      "bytes": 32070,
+      "sha256": "f47f6f5e7af704b7a9f99f5b01d3823d80f8b8666284b4b777b8eb4e0a8ff632",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_luminosity.png",
+      "bytes": 37390,
+      "sha256": "4f012c5a6a7e3583433064790aba91be11024f9e1ec0c820e491518bbeead2ef",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/dawnbreaker_solar_guardian.png",
+      "bytes": 29975,
+      "sha256": "28c11bea4a8507f1d3d8e146752aae6fa0cdad0e69bb6773c5a492c6ec6d02bb",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/earthshaker_aftershock.png",
+      "bytes": 22912,
+      "sha256": "5dea27fe9b9abc3cc27bf505378bad167a2ec4c73f5d573477eb6e945f53298f",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/hoodwink_scurry.png",
+      "bytes": 34210,
+      "sha256": "08e44b1d72a36645d366649f33245ed74585f0b54c9238771281aaf8adfc42e8",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_admirals_rum.png",
+      "bytes": 38646,
+      "sha256": "25b7355e4ca6757f7096b2ccf783d8cee92c18737a2d5b953b477e4cc16b374d",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_ghostship.png",
+      "bytes": 29542,
+      "sha256": "b3085907a917c31973d9b7dfeb12f2f86dee966db8ef21e6d82373bdb45e29ba",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_tidal_wave.png",
+      "bytes": 38270,
+      "sha256": "6411940ae9c74024cdf387ac2fb75119f16407b1b5f386feb0200810dc2c4af7",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_tidebringer.png",
+      "bytes": 30521,
+      "sha256": "1907dde2c8d8d1c38b1626985e1d18a8cc4980e1354137956014c2473108277a",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_torrent.png",
+      "bytes": 32726,
+      "sha256": "5706e8a6b8945f1cc037e01b4ae596ed8defb0263c35ab4efadbeaf4769edbe6",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_torrent_storm.png",
+      "bytes": 40562,
+      "sha256": "de0d3e58b842ea90d80ea6302a7cf68bd56870d63149025c7b598f6600f578d2",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/kunkka_x_marks_the_spot.png",
+      "bytes": 32341,
+      "sha256": "247eb86130ae14571bb8c71c8150bb49d532cb0ed951fd3a28783d2c2642a2fc",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/pudge_meat_hook.png",
+      "bytes": 30990,
+      "sha256": "e82ba11a8b079fec1ad4f9050ccb6e9c714076b58e3a7f3e335513e5598c7ef8",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/silencer_global_silence.png",
+      "bytes": 43446,
+      "sha256": "379850f34fc81edc0f1da2c85bb1638055e857a9d53a7628414d17052c5d8ce9",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/abilities/techies_land_mines.png",
+      "bytes": 31490,
+      "sha256": "10c13738e6aa244333169af5b9982643ee4067c3b64fcacdce90f99055f8c380",
+      "format_check": "image decoded (128, 128)"
+    },
+    {
+      "path": "assets/anim/kunkka/001.webp",
+      "bytes": 607556,
+      "sha256": "75aa18bdaaeda6a2b37e47458bb5adbacea6ade2c9b33ad7b83274539b3563e3",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/002.webp",
+      "bytes": 614048,
+      "sha256": "b5f6745dab8f8823b3fe5f7bfe26e0862b50b10269cb6f1b03e1f4966a7f1d67",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/003.webp",
+      "bytes": 612598,
+      "sha256": "bbd35ba451f674d14c7187e66263c40eb4fdec2190ca3fdafe7817973195197d",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/004.webp",
+      "bytes": 607948,
+      "sha256": "55121e540a31d940ea8781f417edc40986da8979f7dfa6406481ecbaf75e0416",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/005.webp",
+      "bytes": 607052,
+      "sha256": "47dac148cafb6489f6917404e138c6249626b401ffd36c172ab3a9f403eb0711",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/006.webp",
+      "bytes": 605192,
+      "sha256": "62830068bbcbaabae3c200e27bc31cc854ac2cf798ec4956863f3f49ece85710",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/007.webp",
+      "bytes": 604568,
+      "sha256": "71d589fb756738ee6260656e26404430c31ec0a4a8664434ac0734a180229545",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/008.webp",
+      "bytes": 603974,
+      "sha256": "070385e6f23c89c8440a0fd722b85674b9ad5ef83d90ea97455507ef89daae86",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/009.webp",
+      "bytes": 604180,
+      "sha256": "060b140efad8ae3aa3b315bf6e5995bab8660089c18b98553a0b5fc02eb517ac",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/010.webp",
+      "bytes": 603820,
+      "sha256": "68372b3b5a46eb36fb9986839901ef3dcf373404abef25920c2265f64d83801e",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/011.webp",
+      "bytes": 602122,
+      "sha256": "4cb99a18d20ba36b46db374fa228915470c81c97d90aebe20e683389487deaf9",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/012.webp",
+      "bytes": 596678,
+      "sha256": "2df87d0f30dfef52fb46225054244bdb111befc1ad5e24afc7c98faa98a40b35",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/013.webp",
+      "bytes": 607774,
+      "sha256": "9929755d7537e116a95bacd7b49c7d9ccce2c233fd6cc9d9bcb014127e4adeba",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/014.webp",
+      "bytes": 608182,
+      "sha256": "57837263127bd88a70ddd76e93a612409689ba0da33d582a53943a081fc3e9e5",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/015.webp",
+      "bytes": 601222,
+      "sha256": "81fbfef538d6c28f2697dffd6c94664f22590ab9f58a43c5ae4cb38e96b29fb9",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/016.webp",
+      "bytes": 598062,
+      "sha256": "76fbb3130d2d71089506a7e0d9656aae772936ee6ccc25e2f631c75004d9af53",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/017.webp",
+      "bytes": 592838,
+      "sha256": "cda959660fcb94d7f14f94f8911b931497bb7b0bed6e9ef3c69aa482a77d8f77",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/018.webp",
+      "bytes": 594552,
+      "sha256": "7324e9808f69649b51e6f4043ea2d4e1ca34ccd5032bb59f8acd2e60340a41ae",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/019.webp",
+      "bytes": 590822,
+      "sha256": "2b62b2e97b01d7e706e34ec4865326126fdfdf2e3fac23eea0adf603e21f30f4",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/020.webp",
+      "bytes": 590562,
+      "sha256": "879e68600e5c5c587d3eee219e5017d629bda4133896c6214ab847e0468cebbd",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/021.webp",
+      "bytes": 592820,
+      "sha256": "16c35764ef65a610ab53ccbb9fd0952baa044c4eb18b69ecb05ac7be28e489e4",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/022.webp",
+      "bytes": 591408,
+      "sha256": "d863147933b1e647043ab0e029ab763fc66240e62477ab50347d7daf5fcb17cc",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/023.webp",
+      "bytes": 583278,
+      "sha256": "0266bf1eb9cc1afb236c03a5404aaed5d8be5871f0ddd1c227f4ce5374d1b2be",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/024.webp",
+      "bytes": 590680,
+      "sha256": "db0b2b48a879e2cd72a58128a85d5b4b84352e5e2e52d784b122792d42e39fc2",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/025.webp",
+      "bytes": 587390,
+      "sha256": "609e768cf6f8185e938781226f87be0d9011251b5185ad252dea4de6a81d3608",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/026.webp",
+      "bytes": 596986,
+      "sha256": "bd88c4e113a303f819445b5f7e50bb6c66feef132347782960944bb093be0b01",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/027.webp",
+      "bytes": 601394,
+      "sha256": "e502f189a4315030c49e979ac6a788fb4036c3c4203a5f64d4bf3b38efc40f80",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/028.webp",
+      "bytes": 593816,
+      "sha256": "fd29898e443dc01c0d6ba259a41af25cb8e240f70bdd724130009f9e1d300e12",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/029.webp",
+      "bytes": 592156,
+      "sha256": "87e927c40388d44080f6793889b220767069d6764a84566a1d859ebcc3e14fa2",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/030.webp",
+      "bytes": 586510,
+      "sha256": "86ce5b993e7487c1478a82505a5e766457793d51ad59e1c97f53aa71a35c29f7",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/031.webp",
+      "bytes": 585538,
+      "sha256": "7494a75e6b0d2b8d83f6c148b8fa34e8d4ba6057e5bb8ad7992864aad220aead",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/032.webp",
+      "bytes": 586128,
+      "sha256": "40c0867885547bbbf79fb1cf33721a5b4ba16b3941caa21182bd711fa3da5264",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/033.webp",
+      "bytes": 593184,
+      "sha256": "772668826d83b9de9ae94e179354d9f38f8e2e4a943c4feef09c31b12b47b8b1",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/034.webp",
+      "bytes": 593202,
+      "sha256": "8f69bf7102393a77845bab5d35159751331ac69103b787f78dcae68318445c2c",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/035.webp",
+      "bytes": 591404,
+      "sha256": "5edbd78d41050d4c4049595810eb12bfbbeed7bdf2bbca8565daba64b9c73847",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/036.webp",
+      "bytes": 590816,
+      "sha256": "b05c16a915ff2d305bce12b17c9e08a81beee86f4c775a5d851b008bdd8d69db",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/037.webp",
+      "bytes": 591354,
+      "sha256": "1e0c34d78d59b08f7a075f8e3bb7f89f25849603366a9adabf1668bcbd57c825",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/038.webp",
+      "bytes": 588964,
+      "sha256": "2e97086da799fef41caf9897e403f3a2a936c74143f08d28d1ffd5fbbe63bd78",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/039.webp",
+      "bytes": 589078,
+      "sha256": "940ccd13ddb6e74581c05d0d5dc91ab067c50731a4b4fb4a32c1851315d71a36",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/040.webp",
+      "bytes": 593966,
+      "sha256": "3d01cd16dccdd160633edc2473f9eea3fc9a58fcda334b87967c75a7c350166f",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/041.webp",
+      "bytes": 594670,
+      "sha256": "64f22a6bebd219ef27ccd882080132436b606a73016fe52efe3e4b5d7f64f1d9",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/042.webp",
+      "bytes": 606890,
+      "sha256": "78c3589feeb3387eca7a103913c517733f06e9eea13fe8dd3c5b61711d2141fb",
+      "format_check": "image decoded (1331, 1414)"
+    },
+    {
+      "path": "assets/anim/kunkka/meta.json",
+      "bytes": 13,
+      "sha256": "afb1bb762368186be6afa16e8f7cb6730b9e3aa98fa656b219237aecd3d849d4",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "assets/events/bali_major_2023.png",
+      "bytes": 54575,
+      "sha256": "b0c46fdc59159d3cbbd7cfe4faea13d4d20c998e6a95376a37d61132cb7ca480",
+      "format_check": "image decoded (600, 255)"
+    },
+    {
+      "path": "assets/events/fissure_special.png",
+      "bytes": 6285,
+      "sha256": "3255ce8afae9d8a6e0fd4e09b1eb531cd1eedfd56328bcaf6415aca96765195e",
+      "format_check": "image decoded (365, 136)"
+    },
+    {
+      "path": "assets/events/ti_2025.png",
+      "bytes": 503817,
+      "sha256": "1e3ac478a9efed168ea65ad9867b29e72f4814009e8a76c5e54fab4668be2eeb",
+      "format_check": "image decoded (520, 512)"
+    },
+    {
+      "path": "assets/heroes/pudge.png",
+      "bytes": 883401,
+      "sha256": "bfaee283180172ce3e88d18d0216abf5561ad6de0111acbc389f6787e2eecaed",
+      "format_check": "image decoded (1256, 880)"
+    },
+    {
+      "path": "assets/items/blink.png",
+      "bytes": 12523,
+      "sha256": "e8524e5890362d9eb9e5c46482d30d98085da0d34f81351f84b3c18749549330",
+      "format_check": "image decoded (88, 64)"
+    },
+    {
+      "path": "assets/items/bottle.png",
+      "bytes": 9559,
+      "sha256": "3adb252782298abf51779c17b3fca61134da6f3e1e05bfbaef0fc1bc604fe7d3",
+      "format_check": "image decoded (88, 64)"
+    },
+    {
+      "path": "assets/items/cheese.png",
+      "bytes": 9562,
+      "sha256": "6593e58f131ffba5d00e9b94bc911b27e954402dc97c3a406e7e4f7e91300fb5",
+      "format_check": "image decoded (88, 64)"
+    },
+    {
+      "path": "assets/items/rapier.png",
+      "bytes": 12374,
+      "sha256": "8bda8837184ca61e618becae687325eb67b3924b066a6ed2d4b2077e6953e38f",
+      "format_check": "image decoded (88, 64)"
+    },
+    {
+      "path": "assets/items/tango.png",
+      "bytes": 10368,
+      "sha256": "f41ce862391ab0869215ffdf5f6a20c4ce9aee7ee1b316895bc36b9450a99ddb",
+      "format_check": "image decoded (88, 64)"
+    },
+    {
+      "path": "assets/lottie/burst.json",
+      "bytes": 1360,
+      "sha256": "fa9b2062b14163947fe50b1553742669afc8de71450a89878fcc1b0502ceea0e",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "assets/orgs/valve.png",
+      "bytes": 2202,
+      "sha256": "973dc22520fa2f6fc11de371ba12ea204b89793957ee6549cfd6b70edea3deff",
+      "format_check": "image decoded (147, 40)"
+    },
+    {
+      "path": "assets/teams/gaimin_gladiators.png",
+      "bytes": 41215,
+      "sha256": "6608dc35a5b8035479182845ae4f0d4bd070a55047574d95b9bea631255f7ba4",
+      "format_check": "image decoded (241, 400)"
+    },
+    {
+      "path": "assets/teams/mosquito_clan.png",
+      "bytes": 674188,
+      "sha256": "215f970653e752f35278a489568c61d753d7737005027ee96a8067500e926e6c",
+      "format_check": "image decoded (1245, 945)"
+    },
+    {
+      "path": "assets/teams/og.png",
+      "bytes": 176183,
+      "sha256": "62e1ab5ce48433324cf7fea9696c1f4fa2d5e4fd6b0e8c21bf2cbcabe5d02bbc",
+      "format_check": "image decoded (2050, 3000)"
+    },
+    {
+      "path": "assets/teams/quest.png",
+      "bytes": 51697,
+      "sha256": "3bf7f0de94de00f7b726c4ff35319d479d9280e1696da91f314cc55c69193a25",
+      "format_check": "image decoded (356, 400)"
+    },
+    {
+      "path": "assets/teams/team_falcons.png",
+      "bytes": 232138,
+      "sha256": "7629bc202959c8a226cd9c6776a12515dd8b2105195ae0f0396c1f1ccbd8b944",
+      "format_check": "image decoded (2479, 3000)"
+    },
+    {
+      "path": "assets/tex/README.md",
+      "bytes": 717,
+      "sha256": "5a189cc8417f5bc471f78290ec152458420bd4a626550de485fc1f06563c8d35",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "assets/tex/blocks.jpg",
+      "bytes": 304500,
+      "sha256": "54c75ffda953822a9bdd6fc3a2859fcbfbace42c2df768485cc98207a8cb33bf",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/burlap.jpg",
+      "bytes": 336309,
+      "sha256": "bd7de0a217591eaabaf33aa0eee199e959fe1c862f443cfee7314bae21c70495",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/cliff.jpg",
+      "bytes": 229347,
+      "sha256": "d97c28bdca0e260ef86be6951d4e7a92a326f55d8bdb605e0d7951a72105adb4",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/cobble.jpg",
+      "bytes": 224850,
+      "sha256": "edbd3a74761f0916919eaacf84f6b4f4092567e0452a7071df0437325715a985",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/concrete.jpg",
+      "bytes": 341532,
+      "sha256": "10ac5f85f27b8d462cdfdfbdf4ed4422ef1794c8f380e15c3f41dacbf790a09e",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/doors.jpg",
+      "bytes": 362650,
+      "sha256": "fa3f9dd0fb122f38e50e1714de2dbc06d9c63bfb3f371a867631b00e69d6c1d6",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/forest.jpg",
+      "bytes": 462495,
+      "sha256": "e030cc436122fda31de94334e7958486fe71e156ead3155d84c5b87254e8e119",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/leather.jpg",
+      "bytes": 194590,
+      "sha256": "87f1d7a97d133c8157b327c603aeac31f1891d3071624f4214ad63106bde9015",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/metal.jpg",
+      "bytes": 66722,
+      "sha256": "33f1c33bfae2c304cc6fb6e17486ea204e7e82cad06888c1b97b18ba5840c3cb",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/oldwood.jpg",
+      "bytes": 147030,
+      "sha256": "16a3fa1e817a43feb2fcb71cb3c50656d72912c66268a4df0a8c4ee223cac1af",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/paper.jpg",
+      "bytes": 260328,
+      "sha256": "ff8443e4650639bfb03d3e156a3ef8f762353ffe06a0d28e251169337958394a",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/parchment.jpg",
+      "bytes": 69643,
+      "sha256": "a3efc3f18ab949c8ee7b2baa6617b7b15cf1e783a1f398c33e11a38eb464234c",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/planks.jpg",
+      "bytes": 146699,
+      "sha256": "d1d2d9d14a2bc588e4c967d4b27afb433e478d1d36f8feab4bab5d3804543203",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/plaster.jpg",
+      "bytes": 204585,
+      "sha256": "4c47db27071e33e43bb36679d34698a669fc307eb47823d427f8dbed69831181",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/plate.jpg",
+      "bytes": 164728,
+      "sha256": "76f0ea9932a5c6dba709dc470dfe5d6d2a462370c1956ea26e2e264a794c94f8",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/rock.jpg",
+      "bytes": 107937,
+      "sha256": "6e4509b6f8c0972d285709b79b8ac82addc58dcd799b6a14b7c19bb4c6d9f595",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/rust.jpg",
+      "bytes": 211284,
+      "sha256": "290596a4ac640225b35efad2178acf8ae65107efbb0a659236551526c7f6e630",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/stone.jpg",
+      "bytes": 329502,
+      "sha256": "566a91b05bd5498e86007732542c63df4430eab3e94e69271cf2546e25fac1b4",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/tex/wood.jpg",
+      "bytes": 173096,
+      "sha256": "2287fb13856ef4da8631d7ab8270b89dcf3d6229eb17faca8fc681e9e2255268",
+      "format_check": "image decoded (1024, 1024)"
+    },
+    {
+      "path": "assets/ui/daynight.png",
+      "bytes": 27938,
+      "sha256": "690ae4b44a3c7f56bd5b7b2726bebf2c4ff4569230a3335023fa6c0ec6b86f48",
+      "format_check": "image decoded (256, 256)"
+    },
+    {
+      "path": "docs/ANIMATION.md",
+      "bytes": 89739,
+      "sha256": "776b1be9f0da2519a6ffce30368a22d391ca38de3dc1dbf7dd0d83221ad7c695",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/ANIMATION_BACKLOG.md",
+      "bytes": 44080,
+      "sha256": "c3a3106dba056deeea52576c70f2faedbe4b6597d5a6ed97d7312fe974e43dfc",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/ANIMATION_ROADMAP.md",
+      "bytes": 5982,
+      "sha256": "395a179af8574e4b240c44d62897d0e1008c762fd35f56ad65a73b49d76e4758",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/DOTA_ENGINE.md",
+      "bytes": 9878,
+      "sha256": "68584886f3876529f11e46b6636a0abfc35a6e5e7f306413edd4713b72305c4c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/IDEAS.md",
+      "bytes": 3411,
+      "sha256": "d8fe6c9fd4ee8bd9a1b8b179e6db3ac35cdcd057548c1347e315cf47d19777b9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/LEARNING.md",
+      "bytes": 23743,
+      "sha256": "3274d6cb3f0e4f0ed36a650a517b22a6bd82da9625512aa716b4052b36d47e43",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/LOCAL_FILES.md",
+      "bytes": 4287,
+      "sha256": "8fd890c27c5d3f8ceb626887d08c11bebcb64b89718e9b18e9da29f5623b393e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/PROJECT_HISTORY_2026_11_01.md",
+      "bytes": 73391,
+      "sha256": "f4b32c2964a15c0f35cfcbfa8d35290ab143d9291bf97e2062d5388c3e0dc205",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/PROJECT_STATE.md",
+      "bytes": 12854,
+      "sha256": "bbc3d51f45f14d5c742139e75b0d9205359250e9f29efa30b066c748826fa66f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/REPOSITORY_MAP.md",
+      "bytes": 14616,
+      "sha256": "e29343de42510aa818fc5adfeb7a99532b41434a6fd504f9e764fba7612d382e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/SETUP.md",
+      "bytes": 5958,
+      "sha256": "ac0ffa9545c520c21262e0d524dcee59c81f16b48a1aae914d659c22694df222",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/WORKER.md",
+      "bytes": 12594,
+      "sha256": "3ee13ae2ecc9b41c423f74f5e4db60c397f15b5b8b207a048092fa67f35e04b1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/animation_roadmap.json",
+      "bytes": 12487,
+      "sha256": "d61d81368f8b19dca0bdea833415273d2da8757d12992f51ba9cc14fceace98d",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/audit/2026-11-01/animation.md",
+      "bytes": 31112,
+      "sha256": "faacf35b686cd0eb1ab3e96495a9b7a95b2794c9f81ce02879b1d29c4ec61977",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/audit/2026-11-01/branches.json",
+      "bytes": 18680,
+      "sha256": "d3728d8b99521a0a7bbe57cd25513ef0355eb6b6746d8169c8ed3bc1e095c232",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/audit/2026-11-01/coverage.json",
+      "bytes": 112793,
+      "sha256": "5c66f1c93936829e5cca80e764b84d1421a1a979dbdf2641016f06469b69c511",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/audit/2026-11-01/dependencies.json",
+      "bytes": 12422,
+      "sha256": "f9203141448765a9e962a7f19d9155615c2ff9f8f6bf67189befb4afce42d3e0",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/audit/2026-11-01/frontend.md",
+      "bytes": 27750,
+      "sha256": "64bd773dab0c27cb1c0e97c5cb894bae62459384ea285d03ed7ba71d22f58021",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/audit/2026-11-01/instructions.md",
+      "bytes": 22951,
+      "sha256": "473555ea4183728d618a706687b8ba615a19aa97c10ce115a7aa2d40d8d4b698",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/audit/2026-11-01/production.md",
+      "bytes": 38792,
+      "sha256": "0f15be965e056cd1083f53c78d1418cd8545ec43a9bad4a12ee6025ae39e3d02",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/audit/2026-11-01/stage_anim_repro.json",
+      "bytes": 295,
+      "sha256": "adfa3e251ce5001517d539b0e1ec899aab87a89704ca1831bcbfb0438c488c54",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/audit/2026-11-01/vendor_origin.json",
+      "bytes": 2844,
+      "sha256": "1dd56b0d649c585d65bdbe2d9c055b58238aa6cb0448d225e5b61a0fd94a7b5c",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/productions/PRIVET.md",
+      "bytes": 4425,
+      "sha256": "4ab382770e29df71a805628cd8ced956fd4fc36b237451176b93f1faa19af013",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/productions/PUDGE_TANK.md",
+      "bytes": 26102,
+      "sha256": "35f743923fef97a0d7ebfc550050c4e83c62b63c80fbe02b592bda6e8dd0f1f4",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/productions/PUDGE_TANK_ASSETS.md",
+      "bytes": 4813,
+      "sha256": "a6bf9aa2b39e9fc66f49fbb15bca671b5691a1ba3704399ff09314845f986093",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/BLOCKING_MATCHCUT.md",
+      "bytes": 10886,
+      "sha256": "4715b7e1672b3a412c122c93ce0471a5d03604cd2adc87d7bb91841c96a0f6bc",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/CHARACTER_OVERLAP.md",
+      "bytes": 22355,
+      "sha256": "74c5a8db30dca51f247a53759f1b9c4f24a264c1e52415e16b6fae2636e1896a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/CHASE_CAMERA.md",
+      "bytes": 27104,
+      "sha256": "b1e035e3fd839163fe2082791c9a2ba30dc6ad35ab327b6f88aaa6e0d1b207c1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/CLOSE_NECK_AUDIT.md",
+      "bytes": 7926,
+      "sha256": "ccac68a80ab5ab85470b1cf39e7394fda94b4ad9bdb88ac124af6c18b9f8ea90",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/CONTACT_EVENTS.md",
+      "bytes": 5273,
+      "sha256": "14a57bee439076a090ae4e7b89f8f349adca39a00f85d6dadfc0c502f1dac7b1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/EYE_CALIBRATION.md",
+      "bytes": 13504,
+      "sha256": "e5789c2e83a2e15031de39e65c2279c0978142cf098fc4fe1c7affa89f675076",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/FACE_HOLD.md",
+      "bytes": 15031,
+      "sha256": "928b343f435a2d430282c5184f6ec4603967c33c73d419d637689c169e652d28",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/FACE_STAGING.md",
+      "bytes": 13992,
+      "sha256": "076b1588b7b456d1afc1089b8f711e00afaf41a9804749dc67c8817ccf1c635f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/FOLLOWTHROUGH.md",
+      "bytes": 11765,
+      "sha256": "db80bdae9d472ed41f5fa5f366b958168720c33dbc9eef38c26229913e702771",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/FOOT_ROLL.md",
+      "bytes": 15413,
+      "sha256": "33da3e9fa1d83063e725643c9758d98cf77b61dff73eb2baf578c595f79f47b9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/HEAD_TARGET.md",
+      "bytes": 19281,
+      "sha256": "f0f21d3dd0a263c03cb1b979a7073d968e6a6096c41b12a438677a6326492591",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/JUMP_LAND.md",
+      "bytes": 13624,
+      "sha256": "bdaa5fd9750ef1719197075c4c10ae9d184273ef4361bd185c9c96ef0dae29eb",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/LIFT_WEIGHT.md",
+      "bytes": 15998,
+      "sha256": "0f782dd7aa1a64b35a247d3accabdbeeb20b76dd0913b35141a4633bf023d4e6",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/NEUTRAL_AUDIT_REPRODUCIBILITY.md",
+      "bytes": 6348,
+      "sha256": "2ebd602498020654e7fe6b199b7298fc2e7665ddce6babfe6ef1336154785ad5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/POINTING.md",
+      "bytes": 15983,
+      "sha256": "b114d68d7e9063e1938676f514c8f3afa392064c465b334e3fa052497739520f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/POSE_TIMING.md",
+      "bytes": 25389,
+      "sha256": "59ca994c3ffd58c6c29411934e7a78bb29bda1788c6a324f71bc70d6bda3fcb3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/PROP_TURN.md",
+      "bytes": 16726,
+      "sha256": "f7d56d897e87e01e19fdf6ceac8d46107a07ecca7844750f86e6b0b294f06ea3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/REACH_ATTENTION.md",
+      "bytes": 14780,
+      "sha256": "8f50c26ec487441c67c345bde5f16c78b505d11a0a754e99ce398903c52cbe81",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_MADE_TOOLS.md",
+      "bytes": 4793,
+      "sha256": "2faf3b488243a328fb9b1b55432ee6e52d9b43c9c6e64c22f54a3f4d37b6b975",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_MOTION_CLIP.md",
+      "bytes": 12410,
+      "sha256": "9108d67ee80de971b9eeccfbd8858f91fd4fcc1e301dd6a561321a461dfe51f9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_MOTION_PREVIEW.md",
+      "bytes": 8663,
+      "sha256": "291e7fcaccdb9bdb575db005af6b0500b97ea5a1115a3fd8bd030dfdc6914e1e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_MOTION_ROTATION_AUDIT.md",
+      "bytes": 12696,
+      "sha256": "c49b746bed000d2729821d0cd0be32dc51f0c8846bc2e7f868b2479336697734",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_MOTION_TRANSFER.md",
+      "bytes": 9981,
+      "sha256": "9c1d710bf7a1763512c41dea385fa4713d1dffefc043359056c7ea935e9e5aa5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/READY_STANDING_CLIP.md",
+      "bytes": 8078,
+      "sha256": "d97862593ed898dea83c2ede57f0393372f1f748fb53d38079807e4775a5bd02",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RECONSIDER.md",
+      "bytes": 6350,
+      "sha256": "b6a31d581657a6c94f72fc0ab3d5f2e88c2fdebf759880ea1976adbdbc9776e1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RECOVERY.md",
+      "bytes": 15884,
+      "sha256": "d467403d95cecf254e6be62a74f7f937e20240c8a65d68aed7fc23a836692b21",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/REFERENCE_HOLD_FOCUS.md",
+      "bytes": 3362,
+      "sha256": "dc3fd7c44cf0065caffc38862e038abbb479f3e43629e7556bca472919e82dd8",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/REFERENCE_REACTION_CONTRAST.md",
+      "bytes": 4633,
+      "sha256": "1f94954ba58ef18e35358345b39084f1e6fba7a27ac3ecf1fdfd721818635f9f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RELATIVE_SHAPE_SKIN.md",
+      "bytes": 9727,
+      "sha256": "bc420a2e1929845833bcf38b4aad1ebab29e6e7343d3dff81e3dd5d193444315",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RETARGET_AXES.md",
+      "bytes": 8266,
+      "sha256": "338732e343c3543f765bda7b09099c6bed1e9441fca94251ec1d81a97fea19ac",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RETARGET_CANDIDATES.md",
+      "bytes": 19507,
+      "sha256": "9a3d5b50fa1a16568d83fe3de7a4790c440f46f7a75f5ac70e4815fed6122bda",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RETARGET_CHARACTER.md",
+      "bytes": 7459,
+      "sha256": "110cbe3cfacf3ed3d6d177e00131323d5ff01ad09ad3342759a5663fdac96db9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RETARGET_CHARACTER_RECEIPT.json",
+      "bytes": 4919,
+      "sha256": "cd91e393a5b502ddebf73f80d2227fb75d79b9863fd0b605c000a097008b1934",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/RETARGET_PROPORTIONS.md",
+      "bytes": 8075,
+      "sha256": "bf9b11edbb968300daa8cea8d09ee524917ed8f589009681fe5a46e9c561c834",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/RETARGET_SMOKE.md",
+      "bytes": 10254,
+      "sha256": "657358947025efadc6e3056dccdab118ebd183e8cfcbad1ba24da04a90513759",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/ROADMAP_ART.json",
+      "bytes": 437,
+      "sha256": "ad9191b5f6ddee41d4974e5a8fa9e625a769e465c0ece1aa13384365bb7fadd8",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/SETDOWN.md",
+      "bytes": 15308,
+      "sha256": "759d088513af087e0d58f5a2e6a2d36ba072ed53efbddb012729aa7380066c74",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/SKIN_CLOSEUP_AUDIT.md",
+      "bytes": 5863,
+      "sha256": "f39e28725c25b24f12af52d3a6c319cb68af77034e5f8a3a048142f4a7180085",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/START_STOP.md",
+      "bytes": 14022,
+      "sha256": "52f401c91e2de563f82c416cd077a62654791dd6640c17b0a2750afd3d16b8d9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/STEP_TOUCH.md",
+      "bytes": 13794,
+      "sha256": "204e4fa70dffca33d94229a1abf373809abb9299aef94ea710f1d3eec1b288de",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/THROW_PERFORMANCE.md",
+      "bytes": 5428,
+      "sha256": "f12ac0cd1496910c72875dd13253908c2bf028bea8083fa96cbe03f956cd1830",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/WORKFLOW_AUDIT.md",
+      "bytes": 10341,
+      "sha256": "35f223e798e31cd154e6c7bb95dc7c73e40e8ebef4dd4e7c38de0d3f83d15cad",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "docs/studies/character_overlap_verification.json",
+      "bytes": 2743,
+      "sha256": "48bed80ac6784225412ccbfd2e391f2b597093f18141d42e5a53134e28c9a17e",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/close_neck_audit_result.json",
+      "bytes": 3188,
+      "sha256": "f527084e206ddf3c61e506860c0048bb8baf2fd6a4eee8027674e8de21fd6745",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/contacts_progress_2026_11_01_verification.json",
+      "bytes": 1022,
+      "sha256": "508abf0dd4bc9150bb18cce990a0925108a61846b3fabf6f92b24eeec8022568",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/face_hold_verification.json",
+      "bytes": 1269,
+      "sha256": "540e2dcd99d3a760ba3961a125815d823ace875c7af337fedcd29bbd5da84481",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/face_staging_verification.json",
+      "bytes": 679,
+      "sha256": "d1801e99dbdf008b98efcdc0700af4347bfa4b3f91538bcdaba069e9d72ca9e9",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/followthrough_local_verification.json",
+      "bytes": 1441,
+      "sha256": "ed36ff0b15153746b0f64a0aa1162606804e8d18feec53372eaf6b6ed11a6fb2",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/foot_roll_local_verification.json",
+      "bytes": 3750,
+      "sha256": "c6e7d554fddc9efe8d1ddf39241801e51a532dcb1c964307ee048e2ed3f24229",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/head_target_verification.json",
+      "bytes": 1719,
+      "sha256": "ca26e7fe9d331f0515543bd72c37e0030c4a1cbd44761228c11b9c7426ad9b50",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/jump_land_local_verification.json",
+      "bytes": 2318,
+      "sha256": "fbe398e71d1ad4efacb1d28ae2c57d71c86e1c3c51ef37023dead1fa824361ab",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/lift_local_verification.json",
+      "bytes": 1799,
+      "sha256": "4a088734f63c47b16c6f4f882c623c164ff41b1428184d57cf1575b0d4772fe1",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/neutral_audit_reproduction.json",
+      "bytes": 1788,
+      "sha256": "fbc1f4727ee808313057a1c8c02cf49695e57483b8f3d4fa47dbff30a803d5fc",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/pointing_local_verification.json",
+      "bytes": 2695,
+      "sha256": "c9ed1dd58d439e1820ee48ef26dc71fb2657e9b479818ec8e3f960f164c95d7e",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/pose_timing_results.json",
+      "bytes": 4940,
+      "sha256": "6b9fc22d054dcd68c76181d9a8225c08dace1697d319958cdfff7aa0c95bc04a",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/progress_2026_11_01_verification.json",
+      "bytes": 1182,
+      "sha256": "924064da579507e1ed32b63d64f8a83a0d7f79777ff9c9cb17885d82ff1c9652",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/prop_turn_local_verification.json",
+      "bytes": 1882,
+      "sha256": "15478975bd1dd6f29c942ef1403b288c3f1821c8a540904eb171ffeb96fe7d8e",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/reach_attention_results.json",
+      "bytes": 16620,
+      "sha256": "f5ff72be110d1c8da9917b2d1cf82291c6e47442ccf66b6214165619e4b52bb2",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/ready_motion_preview_recipe.json",
+      "bytes": 889,
+      "sha256": "cf8b5a5d849d3f996a19b351565e25c5ee89d424d1ce684b7387bba4bfc64f18",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/recovery_local_verification.json",
+      "bytes": 1833,
+      "sha256": "79cfceb417780b740d3247b0a4a56b4368bb63ec8ede27e09bad8149222d15d8",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/setdown_local_verification.json",
+      "bytes": 1688,
+      "sha256": "9e11f9e1c5801a60728df8c9e763a87ea7d15c6124992c67ea8def884bfeb371",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/start_stop_review.json",
+      "bytes": 4164,
+      "sha256": "dbb74aaab0f1881d3548aeef8250bef7f8eb83d464c77bf05d5232493aa08553",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/step_touch_local_verification.json",
+      "bytes": 1119,
+      "sha256": "87c78fd5a68f3fbb027d83514032be893e0f78d4bb6f6e877d72b70d273ba996",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "docs/studies/worker_v7_result.json",
+      "bytes": 975,
+      "sha256": "2b5382fd944e6f212b4d595f802c320cb53eee71be3e1939d974b724a4df1f9f",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "dota_map.js",
+      "bytes": 6757,
+      "sha256": "167fc4ff6dcec88ea7c4c75e6a122ad6e22ace36ca97aac3c037fb902955b962",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "episodes/demo_layouts.json",
+      "bytes": 1439,
+      "sha256": "478056543f57c334e9366105a2d4d665b40608030979b3528b35e7bccaed2a67",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "episodes/demo_scene.json",
+      "bytes": 8651,
+      "sha256": "b95bee92fea2a3650f0102bc071aa0d4e5e327ff400d4d8aee2d53d7e7d9e0f5",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "fonts/LICENSE-manrope",
+      "bytes": 4476,
+      "sha256": "c5eb6ee975b663e5e3a993cade91be2f84f7404496d9eef91f67402774d422a7",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "fonts/LICENSE-unbounded",
+      "bytes": 4483,
+      "sha256": "3ced390bd845153d5253b49e69d476d316462f5d93b27b9dd76eabbeef0e99cf",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "fonts/manrope-cyrillic-600-normal.woff2",
+      "bytes": 7872,
+      "sha256": "80b86efbef1c9fb66557cc4cc7b6db42db2fd631f1a9b8735f3bbefbb5128799",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "fonts/manrope-cyrillic-800-normal.woff2",
+      "bytes": 7588,
+      "sha256": "e76a69e66b624abdb84cdda1e96b04417afbfb1f3cb684488a867b29bcb3870c",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "fonts/manrope-latin-600-normal.woff2",
+      "bytes": 14172,
+      "sha256": "f7ac6258da20ab7541939b59851155753d1d24f1b30cbcb949077a3faa3d1593",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "fonts/manrope-latin-800-normal.woff2",
+      "bytes": 13648,
+      "sha256": "74c161dbcbce7c3590803cc72dc1f63313c360e13367aba5075a7b7b3818ea49",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "fonts/unbounded-cyrillic-900-normal.woff2",
+      "bytes": 12900,
+      "sha256": "47cf6520d0ac057a7b1d5deed45a0f7dfcfc569898e3d59942c31159c784ee3a",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "fonts/unbounded-latin-900-normal.woff2",
+      "bytes": 21112,
+      "sha256": "d84ca6bdf94ebb12a42e2d6f08ceb3437c6b8b1411575fcd0a370d60b54c0040",
+      "format_check": "font signature 774f4632"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 25482,
+      "sha256": "b5044c4c80bd9ee552f637e0c4ffbc168d589410c49f4db0c5fbc97655dcaead",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "package.json",
+      "bytes": 265,
+      "sha256": "947de3aa3858b0bcfcf90cf9cfd8c943c937dc7a3cc3a7bfe6f2a0488bcb154d",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "scene.css",
+      "bytes": 11516,
+      "sha256": "16abb56b93c07050c5ca79b0f7ce7f514618eb0fdf788b3420055f53b8878197",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "scene.js",
+      "bytes": 32098,
+      "sha256": "f22beaa36bd4c9eceb7b9862e485805af54ee868336ec59e53fa28649b82825a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/chase_v5_assembly.json",
+      "bytes": 702,
+      "sha256": "d6d045978d0a29d88008cd1d500d3b5d972ddcee801b0573f2baa9c59bf1a891",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/chase_v6_assembly.json",
+      "bytes": 1150,
+      "sha256": "af4598c8d40b56276f2fc0451413540097f6c328ccb3776246be8c2d71b2697b",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/chase_v7_assembly.json",
+      "bytes": 1512,
+      "sha256": "a7523b2c9e489cd8d8e77ea9024fdfceaa0c1c6a881e56afd7a7cd31586e9939",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/chase_v8_assembly.json",
+      "bytes": 1543,
+      "sha256": "d6b2f7d8a6f421349f0e2c7b431860284b21916db9f873da475c01e6da4bd4e2",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/kryuk.txt",
+      "bytes": 1219,
+      "sha256": "241ab9770b0f8efa0a782b045c7ecee76d5a236489c61d3c79efeb8733edc9d4",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/kunkka_chase.json",
+      "bytes": 1835,
+      "sha256": "a953b55105cf98d7e6845810dbd8ad236b9d0d427c00c5b10aeefdfaa144dd69",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/learning_contacts_2026_11_01.json",
+      "bytes": 1159,
+      "sha256": "634c23aacd479714d8759f17bf7f6b95b12a197320c5fe9954563b7161cc4bce",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/learning_progress_2026_11_01.json",
+      "bytes": 1421,
+      "sha256": "af72d95901e621f1dd3210bcf26923aa344f7bb8642d785c7344211cd97e089e",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/learning_transfer_2026_11_01.json",
+      "bytes": 887,
+      "sha256": "77f73787432bc1b480abeebe6bbd1487911b05a04d322730f36719845d637e77",
+      "format_check": "JSON parsed"
+    },
+    {
+      "path": "skits/privet.txt",
+      "bytes": 635,
+      "sha256": "ec76958803dfc089bd570819e80f8f0e4a006a014a84a2a8edeacb3897742708",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe10.txt",
+      "bytes": 1119,
+      "sha256": "9f826dfcb25fea812eaf64b950e7e7980ccd492abfd35928e3d4a467047e8631",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe11.txt",
+      "bytes": 1074,
+      "sha256": "c94d9638481db808c51b799cc56d269b21648c0564bbcdb2927ab1b493c84de2",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe12.txt",
+      "bytes": 944,
+      "sha256": "3e03c97fc6fbf1da2c77d56e99b4694dd486602dd4b3bbf17eaa0fb4d580ac80",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe13.txt",
+      "bytes": 1252,
+      "sha256": "cdd42a459b6cae9ce1e6efa0e53261595f3d7e2dfca1d79f13718cfdbf96ca35",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe14.txt",
+      "bytes": 591,
+      "sha256": "5a43977cb9eb6b3959bfefa06428a5b0932297e3ca183e88cc7eef2a504f2615",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe15.txt",
+      "bytes": 810,
+      "sha256": "0508685935bc8a8ac04527528f8e0a89f6a9e63077ffb3f036d9937c2805c8ea",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe16.txt",
+      "bytes": 678,
+      "sha256": "d747faff723fbfcce525c40439d92c2bc06da88957a32bd5578b7b9ae1853eac",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe17.txt",
+      "bytes": 587,
+      "sha256": "b69365a34e510d2d1a6fdadd3d4edd510d8e40f1ff022981b7f3d1dbfcfd2e8e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe4.txt",
+      "bytes": 1221,
+      "sha256": "855a7ebec6030ca6eee539fb69523062c738db899a21a6044bbb292a8d06656b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe5.txt",
+      "bytes": 753,
+      "sha256": "ca0cfc34b6f3ecdf209ff42a54a8d7a2214124293d4f3bc4afde661d35aa748c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe6.txt",
+      "bytes": 831,
+      "sha256": "2f817cd98c6c828d8b551d074e08244030238fb271592c0b9fd7c490432780e1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe7.txt",
+      "bytes": 1278,
+      "sha256": "5f089033c2588dd04fb7bf9b24a3502c0f5b3005b3644a8e97443756ba70d3b4",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe8.txt",
+      "bytes": 1423,
+      "sha256": "1d74f856c7c6c557dfa1dd35cfe9bacf29b64e4be1475463aff94a1391b0a681",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "skits/probe_pudge3.txt",
+      "bytes": 784,
+      "sha256": "52ae1d23ad058c9bc3c7bde725f0019fb0ed34675c4703f5fe09059df001da09",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/analyze_neutral_windows.py",
+      "bytes": 6921,
+      "sha256": "02875b4d1fffc64586646397690e2b36180f22fedc02c017118c497a606b3414",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/animation_roadmap.py",
+      "bytes": 10836,
+      "sha256": "db41d36ee4d1c7fce2620bf0eb6fb6ac2f22afb4b38c4acd25efe8db66abbb33",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/airborne_pose.py",
+      "bytes": 8593,
+      "sha256": "9cde63d523491acdfc7972a301986098a0eebd33c3af9fd6f71636298bc8682d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/audit_chase_framing.py",
+      "bytes": 3876,
+      "sha256": "27661b2cf59820ad6f61107a767d08d240946c18cee78223e3b35591543983ff",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/audit_ready_motion_rotations.py",
+      "bytes": 7609,
+      "sha256": "8b19a50c292bfe7c6b51ec3f9570b4968cfef44ad26693174444dab20b2d9ecd",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/camera_audit.py",
+      "bytes": 10370,
+      "sha256": "d50af64c9779781453baf67ec007f12dd75f67b6021d0b32d56018bf80b8c03e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_acting.py",
+      "bytes": 7320,
+      "sha256": "dc9dce2c7d442a26d68355d6efbc94bcd68fbf51d4619072b04343f43e612603",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_audit.py",
+      "bytes": 3059,
+      "sha256": "37662d95c5053b1313a6827dad4e0f187901f19e874408bcc3234b46389b3f8d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_depth.py",
+      "bytes": 2958,
+      "sha256": "9d4d9a487238b29cfd4c1dc303d85f9377849ba89979997c63a628c4240a2c38",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_environment.py",
+      "bytes": 23135,
+      "sha256": "8d644f70998af97afe16a2a26f4b55debb4e388051b26fd8ce5194ade9593807",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_ground.py",
+      "bytes": 3619,
+      "sha256": "87bb7f1dd136490a58adc6fa26223910930cd2d93edd56badbeab88213b24a36",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_motion.py",
+      "bytes": 13476,
+      "sha256": "a5442c0059956551febc7c309cdf1250a21dd1b648e6cbfbc00204b42a49926e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_performance.py",
+      "bytes": 15262,
+      "sha256": "163287a5cea94ddfc77b663384ee95a40da38417751cdc79cfaa0294cf1e6f60",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/chase_reaction.py",
+      "bytes": 4244,
+      "sha256": "151b3d6cfca562befcc225e90739ea23ca7d9ff08c66af3335eac9c2e333a98d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/contact_metrics.py",
+      "bytes": 15272,
+      "sha256": "f839b7d2f394e684dfb8e25369bb066a85af8e018e54c8b5f92c9cdfc76d238b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/contact_reaction.py",
+      "bytes": 26165,
+      "sha256": "b93fceabd567d56dde8477756023a053ead2615672097cad7614fac8649b21da",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/deformation_metrics.py",
+      "bytes": 12110,
+      "sha256": "1b197ddb8bf2e2bb665758792e84f2992418ba0210ccb5cc99540a1e47070d04",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/dota_map.py",
+      "bytes": 15158,
+      "sha256": "a34132ed9cf52cb40bb0b0a8cad66fffe00b448d0389bd77ad909d07047b0727",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/export_neutral.py",
+      "bytes": 2879,
+      "sha256": "bfe26210d44edc4075baffebf28943cf135956192dad09ec4f1f3acaf22ec0c3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/export_world.bat",
+      "bytes": 652,
+      "sha256": "afac5e5ec5b6c47982f0e69d43274d4428f15bfb5d57fce3eaf36b1d4ac92345",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/face.py",
+      "bytes": 15737,
+      "sha256": "d3d5f2f2d8c29a1f244d7ec5c20244b4d063be866f0fcf6ab22495c458a2d18e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/finish_chase.py",
+      "bytes": 8649,
+      "sha256": "e15b0c5eb14865d88e2118053fc14c03f269b8bd5603f0b56d07493bcc695c0a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/gait_metrics.py",
+      "bytes": 11135,
+      "sha256": "7d2487e03c3b05c79fd7a65f4c435d236d771715ed36cf22d92873c9ccf08eb1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/gaze.py",
+      "bytes": 4131,
+      "sha256": "126b73c6ed892eadfd0921178d8b95e3f9c679d6e06c694b971663609d8861e3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/hoodwink_run_grounding.py",
+      "bytes": 7129,
+      "sha256": "6b81188ba926d1ca30cbafc4acb8f95e2b202059ae911bfbb2d6849e4f6985cd",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/hq_textures.py",
+      "bytes": 1802,
+      "sha256": "582f8244401e8302bf87b3e6d01f196096913a7042ce81126f5ba1076d400e3c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/inspect_mocap_skin.py",
+      "bytes": 2174,
+      "sha256": "928c4b51e72f41d5471a4917e119add2824f81c7269ce22f5d461bc7184f152c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/inspect_pose_study.py",
+      "bytes": 5476,
+      "sha256": "c7c54bd5743f23ee424c5c4231dc74e9df45aa5254ed1a245fe2d37fb8084b79",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/joint_skin.py",
+      "bytes": 7348,
+      "sha256": "876da65bf972c59695ffa667073dbe0f36f622ee51fc403e9db25320bef167ee",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/jump_motion.py",
+      "bytes": 14603,
+      "sha256": "16204990b4100265e8aecb167a0beb0dadcf4f98d961512de3c93e033924d507",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/jump_shadows.py",
+      "bytes": 6114,
+      "sha256": "d8a17c0ef303b2784f5727d704f15518f4f089972cbc29d5e77b57a0d550374c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/kunkka_chase.py",
+      "bytes": 17477,
+      "sha256": "1295d7f695121edf8664f41c8264b0de20cfcb64afafe446eca0459f0dc2198b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/look_motion.py",
+      "bytes": 14705,
+      "sha256": "417dc7a8150e46289f4d7b1932e3c49cf8a3114e04ad83076ca52362cbc46d7e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/privet_cull.py",
+      "bytes": 2683,
+      "sha256": "78e61eedd67ecb221230de794cb26f46048c8ca034770b6dadb7a6ea1470aaa3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/privet_layers.py",
+      "bytes": 3017,
+      "sha256": "88ff60b04e7cb7529cb5e94145159ffc9cc1655e6d62a556403d77e66801b234",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/privet_preview.py",
+      "bytes": 1080,
+      "sha256": "c285072cc368f74eb718074f295df2a5f5558875a756fb89e4a6a01840c95679",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/privet_refine.py",
+      "bytes": 2302,
+      "sha256": "26570885d8897a5e2bc2d03663b73a451ba089c50619c5b0f46de0a2335d3368",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/probe_compare.py",
+      "bytes": 2652,
+      "sha256": "d22cdc1d3d02861c9360bd95b7cf8bda6401105dd964dc39f8c03408383bacdc",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/prop_attachment.py",
+      "bytes": 5282,
+      "sha256": "274e7be1f710830e7aa7f4ce5ffdc35c2df22cd8c4ea6f14f091092eb2218889",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank.py",
+      "bytes": 16721,
+      "sha256": "681ceebe881a3503a5bce0f504270c19b42ea594f177c80b30cc78ee12276f20",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_action.py",
+      "bytes": 12444,
+      "sha256": "ccd320a94404195e75c10cb368f8ec4e7d4317f997f047224814d5d21ff4007a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_action_plate.py",
+      "bytes": 1249,
+      "sha256": "f159db35b17180fafa47513a06ec785f238cba3011402d0970ff19699f14bba6",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_assets_probe.py",
+      "bytes": 1820,
+      "sha256": "5da4ffdf2538530d024bf1c710ca494adbe0f0b70522dc5e459ed57aa9c7d595",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_camera_audit.py",
+      "bytes": 521,
+      "sha256": "3cfdc6871815c4673040e2ab8523004d703339a6624906cd2fa8c5251e0876b2",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_color.py",
+      "bytes": 3371,
+      "sha256": "dc63e017600b59f64195db68d50f99e61b86139fc8ab9db860e21aa9679b8dda",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_epic.py",
+      "bytes": 10595,
+      "sha256": "13e42d30afcff2ed34e8dbbf4c0c9d3a2efd91405b4f406212360d7dd159a416",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_epic_qa.py",
+      "bytes": 4114,
+      "sha256": "7cb1fc82ee18d6730b6a8109fee863f5e8bb4d9f041ffe63bd5506bdb1ca9d08",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_finish.py",
+      "bytes": 2702,
+      "sha256": "7ae27a38176f41f7ca3b5cd3884e1a4c833e530d557df956a8cef69ac9c4edf9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_grip_probe.py",
+      "bytes": 1341,
+      "sha256": "9a33fc7dab8b7ed56f8edb6fe8492d5966b77f0ac2e2574f43420c99efa73af1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_inspect.py",
+      "bytes": 2930,
+      "sha256": "39a256fc1931b2b2889bf4b8c09474dc6c11a0ca2cf1e7ab54ba933ba2a41bcf",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_layers.py",
+      "bytes": 1393,
+      "sha256": "09f11f08ec479e8238af187896de962a7b9e29a1d0a1811240a146eecd9502e6",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_motion.py",
+      "bytes": 25801,
+      "sha256": "1e592afa50ac78dce20ab1b93dc59fdc43fa2be9e2a0b4abbf298bb37141db34",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_motion_qa.py",
+      "bytes": 4450,
+      "sha256": "52943c41aaf9f427ff779fba50dba440433c7c583a728f369ad7b8126a185f03",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_motion_refine.py",
+      "bytes": 896,
+      "sha256": "0c3999e02048dea9a310a6eb422583cb13d5ad21fb5d058f6e2a193c55b758c0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_native_grip.py",
+      "bytes": 1818,
+      "sha256": "50e241c05e0d7af1a1dc1c938ce68ff772398edb1193d2ed7639298a47632aee",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_native_set.py",
+      "bytes": 9419,
+      "sha256": "a4311aeafac3297bfcb6e30f0366a4a6477ba5884314d8d1fccc2851c0b30984",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_revision.py",
+      "bytes": 17907,
+      "sha256": "ef02d5739aa4263d4e8b0959453573d00fe5e5b044a9e236c5a85042d59d5a2c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_rpg_import.py",
+      "bytes": 1325,
+      "sha256": "c3482ad29810ab6643a93a5c0e968b45e40aec659d4c8f5b89aba04627ca9453",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_shadow_refine.py",
+      "bytes": 1248,
+      "sha256": "3d5859b56a14bba3828eaf347880c3e2a2249a839eb77edd0c095937e87484cc",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_still_qa.py",
+      "bytes": 4399,
+      "sha256": "241446376d18435ac7fcc0bd721589ac3018f318271459d5aa21bb88c06fc4ea",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/pudge_tank_twohand.py",
+      "bytes": 16273,
+      "sha256": "6ef8a959f41033136646dc74b45fc1c548c4239298f93ee908ab4f1bd4ea2593",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/render_scene.py",
+      "bytes": 74789,
+      "sha256": "5e70335fbdff16152ce8d322057431302b83fd12542c346333882c0b57b57a20",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/render_study_frames.py",
+      "bytes": 2563,
+      "sha256": "3fa67ffa7499e4567244e0bae154952485b01e727ea50093b397a3797bed2da5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/shot_continuity.py",
+      "bytes": 19539,
+      "sha256": "20e201463327993a143c6ae55a01db1e14a430b08e92fd740c2d4f9be6ce87f9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/skit_talk.py",
+      "bytes": 40330,
+      "sha256": "e64c3caa9213a751d8472165e4aad97e3e67c72d20693436e7d06db206cadd27",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_arm_clearance.py",
+      "bytes": 2911,
+      "sha256": "b1213c12f9510853b12480f749d6a2843b16d37b2ea0f453cfa9aa3519d0b95f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_attention.py",
+      "bytes": 3110,
+      "sha256": "206554bdfec4460811cb637d2713f1182c3687435ae4fad9b435df303747e13a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_blocking.py",
+      "bytes": 6967,
+      "sha256": "15069f54fa681ae353b4d704aad75ea6661a0f29914320f80de83d09cb9d6035",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_bounce.py",
+      "bytes": 5939,
+      "sha256": "f29ce9f06b52efe894bb99ec62c327c80cbd91894306be6772c877a0f51793bd",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_character_overlap.py",
+      "bytes": 36483,
+      "sha256": "eade8abb505c00031c9a6b7175905ae5e3ae117dea8a6b692d4896661fa52c79",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_chase_camera.py",
+      "bytes": 6648,
+      "sha256": "5a2645f22530a18bc761a26594070bbc6215b68505d7a0211406615ef81f0038",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_chase_spacing.py",
+      "bytes": 8053,
+      "sha256": "0fb97926b291a7f5143903f9a897fd728c748773412e11920a4f24eaaec282ac",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_close_neck_audit.py",
+      "bytes": 6746,
+      "sha256": "39cd2a53c99cf3d67356f23d6491378f8159376e6e3e5445f62a9a99ec25a950",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_contact_events.py",
+      "bytes": 6641,
+      "sha256": "5d3fbb01393a2010679f2660a3cc41c72424375ddce11c25d3af596411dad0df",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_eye_calibration.py",
+      "bytes": 17969,
+      "sha256": "fcf067419b2259235b243f4eec3e3b874fb04540ee464fa2c5bc62349d58a295",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_face_hold.py",
+      "bytes": 23899,
+      "sha256": "475d3e8b76d13480c2c8ebcc8eaf729209b8e3d745ac860cd8bf7edaab591ba0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_face_staging.py",
+      "bytes": 18398,
+      "sha256": "e4b07827ee46805adefac82d5e08183b7ba7f0d51a0585ad5ac8dc315827cb6c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_fill_light.py",
+      "bytes": 4337,
+      "sha256": "48c029bcfc1e4a6c8a75a239502c25f4bc6b1efbd399020844b96c385b658e9c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_followthrough.py",
+      "bytes": 19398,
+      "sha256": "5e7617e754dfe93b0f84c3ba7f4f7d7f4200d362de0ac07fb175a5a26956f711",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_foot_roll.py",
+      "bytes": 23134,
+      "sha256": "20cca42b7a264d43e81da3d66f15cbb942358744810825f539dadff994a69288",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_head_target.py",
+      "bytes": 18051,
+      "sha256": "3f00c3cd6752f1b038ff437dd31571a43fc1f5325fcb3d7a0552ce0d3de045bb",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_jump_land.py",
+      "bytes": 19584,
+      "sha256": "c78b97dbc2dc1d8acbc415e1fcb9e0235d8263cb7d0398fed94821aa6d162884",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_lift.py",
+      "bytes": 24822,
+      "sha256": "3c90c5063eb835e8b0e535a604d9dfb1e5ad1e562c0e8923a315fbb2129ee918",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_mocap_corrective.py",
+      "bytes": 2367,
+      "sha256": "95f920b8ddd34bc1351f8ce5059c14f40816f7c6070a2bf4b7a17c73f55b123a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_mocap_helpers.py",
+      "bytes": 4381,
+      "sha256": "41f42ba6227cff3d31d27ec4513029228602dce0b1e3b88dea7fb08a4c677f12",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_mocap_look.py",
+      "bytes": 7444,
+      "sha256": "b75143d323210d64adf9436d2fb83e89228bd920ad9674aeb9a7ca3422c6c61c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_pointing.py",
+      "bytes": 16478,
+      "sha256": "f01ca330873bb2780d979e9bd740ebe4bf258eb50f5c05025eff63bea7a54f67",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_pose_timing.py",
+      "bytes": 13452,
+      "sha256": "bec20aa4afb7f840461c44bfc8d44eba26dbe4a1a9e7421291fc86bd4aa41b3a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_prop_turn.py",
+      "bytes": 22354,
+      "sha256": "59640e1a6b558a5425133e847bea7df63aeff5c7acd04674f86b5740f96449a4",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_ready_standing_clip.py",
+      "bytes": 8869,
+      "sha256": "e965c3af528fbddce75a23f67337bdf0ec93377e260be97358f0bb4e6365ec45",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_reconsider.py",
+      "bytes": 11011,
+      "sha256": "99fec8cd12ba42a57ee782a7991969978d4947811233562f3765ee1c158ea042",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_recovery.py",
+      "bytes": 29252,
+      "sha256": "3990875339de2a4ef2a824ae59d9e8a2f54b784617bd5511bac772918c0a78c5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_relative_shape_skin.py",
+      "bytes": 12493,
+      "sha256": "b46dcce76dc0513e0e6f9bad258be07a3024d7d5402ea58cd61d7c366f613a1e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_retarget_axes.py",
+      "bytes": 10432,
+      "sha256": "05a73793fdb274f8bea0f9c8a74071eb3d936e1bcf9559536245e7d17774b883",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_retarget_character.py",
+      "bytes": 16912,
+      "sha256": "17d8d8b23a0f7631f25b965d930274525937a61c3fc38d3bbf1f4e64eb0a0228",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_retarget_proportions.py",
+      "bytes": 11362,
+      "sha256": "75860df6423048839df6f84a03c774e908c2210ac56906c2cac804959100583e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_retarget_smoke.py",
+      "bytes": 15012,
+      "sha256": "a2dca337c6f378e1e76fbf50cfdf855eea02f6b3d7e43587e6a35483614e34b0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_setdown.py",
+      "bytes": 11229,
+      "sha256": "2bf794c370722ce648eb07e184059a213f8e1a09ab25745a90e37f7d7bbe0d12",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_shader_light.py",
+      "bytes": 3329,
+      "sha256": "0b83864f780d6c4dacc39adbea9f395f2c662520f540de81b94b846e7e9ee51a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_skin_closeups.py",
+      "bytes": 3461,
+      "sha256": "c3814ecd32a7c5250a7feaf2f948dfa841c9ef5f32adc453955737bf11c2dd27",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_start_stop.py",
+      "bytes": 17726,
+      "sha256": "82083a7e2c89e874b3ae460a454052e6ee57eddcee1b36c90f5edf1e78448f3e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_static.py",
+      "bytes": 4158,
+      "sha256": "15fe6b46b6d9eddc051ed09379513abaf592260598b05b8c40c6a06025321ea3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_step_touch.py",
+      "bytes": 20980,
+      "sha256": "b53814267318235a1bd31d86acf32bd5a633f34fc4e1536da21b80fdaa4bd0e5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/study_throw.py",
+      "bytes": 12550,
+      "sha256": "80b65ab5f178133851f8d042e687f884f283a88f3bcc5101319c609fd97b6335",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/test_deformation_metrics.py",
+      "bytes": 2811,
+      "sha256": "77492cfaff56502b4b8fcdae19cb4a1f39eea819bf82bf6cd5e5fb732968a1b7",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/test_prop_attachment.py",
+      "bytes": 3351,
+      "sha256": "eef4dca64e3d9d60ab4820213583e8ce4b09cb3a0ebdbdd9044d22d9886baf39",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/test_shot_continuity.py",
+      "bytes": 5798,
+      "sha256": "80deea1a340186a540940515e4f97f7f092c3fdd393b518ecb0f93b883f6957a",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/views_world.py",
+      "bytes": 17391,
+      "sha256": "842cbca78932ac40b9cda127e9d5c698b0008aede5db0e306167525123a22e48",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/blender/weight_shift.py",
+      "bytes": 20356,
+      "sha256": "8197e2a772019445577e88547567bd6e43855e5301eee901c103f888c86d4c80",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/check.py",
+      "bytes": 4758,
+      "sha256": "9be3cf3724414e4626c9951e9ce81c3e3669f2c5dd2e2c4a40299eb031a85e89",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/cover.py",
+      "bytes": 1644,
+      "sha256": "2975b0dc1bfdba6cbce84819e0eb270b570f59f55455cfa95f4355d993957d26",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/a8_cam.js",
+      "bytes": 3559,
+      "sha256": "75109f06c2f1240315e11ed3dc4496f671aced6bc025225d42a2a13ac267df43",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/a8_trees.txt",
+      "bytes": 120581,
+      "sha256": "cfc70e482aa5cd255cec16d2685497a0345b19933f5bbfc2e19083db64c88fdb",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/addon_game_mode.lua",
+      "bytes": 24675,
+      "sha256": "cb732f9fccb5dd2f844e804c0a98e7332d7443a74b00c1af17d27a390ba17c41",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/anim_to_dmx.py",
+      "bytes": 7536,
+      "sha256": "f12536928dc9078e642b37f34d6395c181cfac4e6ffe598f7ed6caf918843577",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/anims.py",
+      "bytes": 6711,
+      "sha256": "b0224326a7fc10b4166d2dc13eab2cfd1ac85c32b4b9b5944714f9966756b209",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/calib.py",
+      "bytes": 2192,
+      "sha256": "87a091b65680a1638ab28e0f17777f4044d755b4a04f231fff41a63c9256b4ed",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/calib_measure.py",
+      "bytes": 2125,
+      "sha256": "be4ec4b800d0f62096aab259a4f01b751ca5e10f47a98a08ad56f036a6d0fbd5",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/custom_ui_manifest.xml",
+      "bytes": 118,
+      "sha256": "eadc19c07ae950466596827b0ad6326f4fe3091e8c2c7a81b72ad059ef106fa0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/datamodel.py",
+      "bytes": 34158,
+      "sha256": "a40fc1967dfba8ac4a06024a97a5f1af5dfc88f7422ea009a06d32cfade668b9",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/dota_console.py",
+      "bytes": 901,
+      "sha256": "11d480da8e2e2ac4676e503d0ed70a0cdb49940c1a77e3576f6ebeb0bb6c2894",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/focus.ps1",
+      "bytes": 2629,
+      "sha256": "9de266081080ee7bd824f983f67be2af23438f1f26d9a40dc0e0ea0c670655bc",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/framing.py",
+      "bytes": 15941,
+      "sha256": "3945f52fdb9c3f94f97b9fae537b3b5ca9e32f2258b3e76e8465990a6b3ae827",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/ground_map.py",
+      "bytes": 6243,
+      "sha256": "3be2061918315199b76c47c752ba2b2da03c2cf4fac2f0b4b30cb19a17542ced",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/hero_parts.py",
+      "bytes": 4009,
+      "sha256": "a7e45ddb7506b57f6254720f77fb71383e35a2f7244a892f80c58ed3c6802b63",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/project.py",
+      "bytes": 3889,
+      "sha256": "8eacf97645befbf2b796621d9b23653c845d660b68c7a0b820644ef3c6a3d193",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/record.sh",
+      "bytes": 7485,
+      "sha256": "0c38dfc8e8abf1160e5fbec790dc6cc76986b73b936e67e4e7f5068f6b7b3784",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/shots.sh",
+      "bytes": 2772,
+      "sha256": "fa2fe5567beb300cf2cb8f2fc6ce1aedde9796c55f2ad9324ca08768ca1afdc0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/sky_comp.py",
+      "bytes": 4631,
+      "sha256": "7e54b04f1d9ae3642e23c7bd1c8db1e922f10ffb7c2230c70ccdfaf8f09f39f1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/stage.py",
+      "bytes": 25754,
+      "sha256": "09c4f52b4bdfb194e627ce7d53df71f3d2c9a6ebdc74653783ebe5f0dab207bb",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/test_capture_restore.py",
+      "bytes": 3509,
+      "sha256": "f264b3b37932848b18cd4e90a1ea8a2ea32ac45bceec792894bbae288e4b5499",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/troupe.py",
+      "bytes": 6231,
+      "sha256": "f7a7917b57adf72d3dc7206c585d10a28834a2c5a0e932f1a8e71c488f10bb61",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_engine/water_map.py",
+      "bytes": 2378,
+      "sha256": "492a95ba575efc10806e56ecdb44b7a4d0eb5304a3eec6d8d3af769d8a5c54ab",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/dota_export.py",
+      "bytes": 5240,
+      "sha256": "85c4d1bbbffd881621721ca291106c3bb7adf712d04d2ef10cedb9a053324549",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/make_textures.py",
+      "bytes": 6141,
+      "sha256": "9d32d66b467f6a62ada54bebf15e5765ad262d3cbd51f90ddffa27d9c6db2d75",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/map_crop.mjs",
+      "bytes": 930,
+      "sha256": "6afd070f34d17fa6eb9f227008786f9232ba6dff77a22c3894014b261a3a8447",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/memes.py",
+      "bytes": 6324,
+      "sha256": "729ad0b51d7db183862cd34c54b89973532ac9aa2ebe7223365a864da1b82917",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/paths.py",
+      "bytes": 1273,
+      "sha256": "d82a48aaa8d38f921a902729cbdadea6560f58d75285c395d6926cb823a21281",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/prepare_pudge_launcher.cjs",
+      "bytes": 3046,
+      "sha256": "cac7689dd7b689e6240de63b8c9f9352660da1be2d70d37092209bad6ea4ec9d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/assemble_progress.py",
+      "bytes": 5328,
+      "sha256": "63fe9f5e0e421e91d8cb83443b217f3d4b388fb63c3a6149e72ccf6bedce09c7",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/assemble_study.py",
+      "bytes": 6908,
+      "sha256": "8a86bca18a79cf9b4fbdda1f09b9a8fe3d850015c79b852d625070735d5d8748",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/assemble_throw.py",
+      "bytes": 3231,
+      "sha256": "e3023d0b28e7d173fe05ca9cb0ecdc70001c98e96f6e72081f6bb83dbdf18a4d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/chase_audio.py",
+      "bytes": 8707,
+      "sha256": "64743472929be39240a2f85fe44bc8163019099c8213f1f2c08334906d034939",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/chase_camera_audio.py",
+      "bytes": 10469,
+      "sha256": "a833a233b177e03d048ce067e3af2d78dbb99ff7cabad89e7e1739411b96801e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/chase_look.py",
+      "bytes": 1917,
+      "sha256": "1e0e7b1459dce94905db600d2f58b293f7f8a62f86628f76bbe1d622aa9e6116",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/encode_study_frames.py",
+      "bytes": 3133,
+      "sha256": "967253e9df73a9d8425b0067ae1d05b8868e51a469a752e4d66180195eca2d1e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/footsteps.py",
+      "bytes": 3048,
+      "sha256": "6c3ccc88fc67e7069f3450b9e3846ba3cbc56f1ba06b0762a46c858215f06b69",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/game_vo.py",
+      "bytes": 10324,
+      "sha256": "76dd7995254cbd480a552b2154368fa2b15f5dabc936d20b2b0ac56c733794e0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/grade.py",
+      "bytes": 8750,
+      "sha256": "ba422e239ee3db25e58798f37ea811d261f805ad6ef086969440624e710cc0de",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/hero_render.py",
+      "bytes": 1773,
+      "sha256": "aace96922959732e8765b806e0a31cafcc7b2c27ebebe31538365696e80e3d60",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/mix.py",
+      "bytes": 10261,
+      "sha256": "2eed8ddbc967c12272cf1a1dfdb30c6756f02c44bcd261b9b5721ed1aa8f1749",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/post_review.py",
+      "bytes": 3655,
+      "sha256": "86c3bdec1305de568156a6cfe0597c3d13ed77761459febf47693a9ce9a5c1ad",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/preview_ready_motion.py",
+      "bytes": 10469,
+      "sha256": "63f146a54f87c8ca59857a0ec01b3ae526f3a67de644ae7bf8221d08cee75ed0",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/privet_delivery.py",
+      "bytes": 3869,
+      "sha256": "e954af5f8912e70c2a915c453f34ea2ca45a7205902a420043a8c1f47153c213",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/pudge_tank_delivery.py",
+      "bytes": 5053,
+      "sha256": "d7f058841839a01804e17f2fbe6d47a2c17c8ac4eae17f4bcb04deab2ddc6e5f",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/pudge_tank_polish.py",
+      "bytes": 4559,
+      "sha256": "bd59921d4a758d65d9ecfcad3893c5c42b9c48c11fd29ae9f74cb9c7466c8b2b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/pudge_tank_post.py",
+      "bytes": 2369,
+      "sha256": "d7e5dcd7db56190db55e91484c3d25a2c98edcba34e023b9b751c47968cc6d79",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/pudge_tank_sound.py",
+      "bytes": 3532,
+      "sha256": "9626df320608c8b749f006cf0990d9de37b8f098cba55a37dee2aa6bf92edf06",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/review_shader_motion.py",
+      "bytes": 3986,
+      "sha256": "245799872d1eb6a78e1375e548df5610bc01b26cafe3d5d0e8e3af1eb882dae6",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/run_verified.py",
+      "bytes": 4826,
+      "sha256": "ca2a7eb63d3c4d2aff75e90fa9cc02ccf4026c07514b3a9d1731dff89767fae2",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/skit.py",
+      "bytes": 60213,
+      "sha256": "72c7daca6e01e2582efa7bfe60d49e3e2df1a52155762796bffb82a53b696ae3",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/study.py",
+      "bytes": 5115,
+      "sha256": "f894319cd26bab1f3497d1ce36f6ccf16a9a93e089585e22bf252f408de0a2ed",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/test_chase_look.py",
+      "bytes": 1288,
+      "sha256": "ea21eb62052db642e18d9bba862b86dd6bf247dcca5b7cd9b12a30fa664d0459",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/test_post_review.py",
+      "bytes": 872,
+      "sha256": "57a97ed2fbeadf1a9c332a81284dab4a835c3b16249f2e841c18b3a682771a28",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/test_run_verified.py",
+      "bytes": 2930,
+      "sha256": "9b6434e9d3639aa87994e9bf750fcb3e7ebaf474ec0b48c5154f444f3ad76915",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/test_skit_render.py",
+      "bytes": 7300,
+      "sha256": "a24939fdb2e9da14d927f5f7fbff6f07300fdd4f6433f520c5ef5091f35b10df",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/skit/voices.py",
+      "bytes": 11569,
+      "sha256": "e6984f8d604de90cc551f053584a3185f1066e7556a8f75b8f503c047dde065d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/test_check_lock.py",
+      "bytes": 1489,
+      "sha256": "0e486c84de34de171bedee1d55af0afee98d6528fbc0515e783fd5910055d55e",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/test_resolve_scene.py",
+      "bytes": 3414,
+      "sha256": "8fc377b2abcecb4c18b6b20fcace09ae97d35b923b8b0ed8e6491ac536874f44",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "tools/vpk_tool.py",
+      "bytes": 3731,
+      "sha256": "f65948f361e7b4c10775007fc088b454dcd9f864b9475b1f2732daf2dafbdfe1",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/gsap/CustomEase.min.js",
+      "bytes": 7154,
+      "sha256": "d19a2e3a54218ea54f46f8e14eae04a838ae4b4f6069c21fd759be160721ed3d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/gsap/SplitText.min.js",
+      "bytes": 7743,
+      "sha256": "e6a2238d89046fa9acccce1fcc3c547167f6ebdd0afd8cbb46be4515fe4b58ff",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/gsap/gsap.min.js",
+      "bytes": 72938,
+      "sha256": "dd7dc87e023b3480f9707296342565ca2e361c8393cabb30f9557e06eb1bed4d",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/lottie/LICENSE.md",
+      "bytes": 1095,
+      "sha256": "4750849de81eeee983513f7e66c419abf4656146a23283e8e93532075e2c242b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/lottie/lottie_light.min.js",
+      "bytes": 168395,
+      "sha256": "0a7a554b1ce297e6b6dbc4358d7b134dd257209b14b5afd547e1ff581548ac1b",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/three/LICENSE",
+      "bytes": 1102,
+      "sha256": "f57eb9202058667d12aebd854fe8a86d6feaeab51078180df5615bfdbd5cff05",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/three/addons/loaders/GLTFLoader.js",
+      "bytes": 115000,
+      "sha256": "5bb7bde28842727558c1f9a692004229c76ed8e8f846469d7c6258e719c7ee8c",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/three/addons/utils/BufferGeometryUtils.js",
+      "bytes": 33141,
+      "sha256": "5beb9dc7e9248a32f7b5e8cc0dd5fd4054d227d8e19a3a98b4715f6d2784c4ef",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "vendor/three/three.module.min.js",
+      "bytes": 691654,
+      "sha256": "8e71269b773b81802e7f5f71d8528f1e0c29a82c55f0609845b528389aed8439",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "video.html",
+      "bytes": 117915,
+      "sha256": "714d0d626061f9d08aab5395b8f4670f63fd068e1be5ae56c38963dca420bf69",
+      "format_check": "inventoried"
+    },
+    {
+      "path": "video.py",
+      "bytes": 63227,
+      "sha256": "075864fc3c72ad46968b26052d1d53d136323efd06f4edd231edaf91bff552b4",
+      "format_check": "inventoried"
+    }
+  ],
+  "duplicates": [],
+  "errors": []
+}

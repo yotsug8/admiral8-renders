@@ -1,0 +1,55 @@
+QA cleanup — 2026-11-02
+FINAL RESULT: PASS, exit code 0 (second invocation).
+The first stalled process tree was stopped after verifying its identity.
+The retry ran with elevated access; no source changes between invocations.
+The precise cause of the first stall was not established.
+
+Retry output:
+demo_layouts: ок
+demo_scene: ок
+сценка kryuk.txt: ок
+сценка privet.txt: ок
+сценка probe10.txt: ок
+сценка probe11.txt: ок
+сценка probe12.txt: ок
+сценка probe13.txt: ок
+сценка probe14.txt: ок
+сценка probe15.txt: ок
+сценка probe16.txt: ок
+сценка probe17.txt: ок
+сценка probe4.txt: ок
+сценка probe5.txt: ок
+сценка probe6.txt: ок
+сценка probe7.txt: ок
+сценка probe8.txt: ок
+сценка probe_pudge3.txt: ок
+итог: всё в порядке
+
+Historical first invocation observations (before retry):
+Command: Python 3.11 tools/check.py
+Invocations: 1
+Started: 01:13:26 local time
+Status: INCOMPLETE / stalled; success NOT confirmed
+Exit code: null (execution transport has not returned a completion code)
+stdout: empty
+stderr: empty
+
+Observed stage:
+  video.py episodes/demo_layouts.json qa/check_demo_layouts.mp4
+  Two Python multiprocessing workers.
+  Each started FFmpeg with PNG image2pipe input, writing chunk_0.mp4 / chunk_1.mp4.
+  No browser or Playwright Node process in this execution's descendant tree.
+  Worker CPU/read/write counters unchanged between observations.
+  No new QA files produced during this execution.
+  Exact cause not established. This is not a proven browser crash.
+
+Final transport poll: still running, no output, no exit code.
+Final system snapshot: check.py, video.py, two workers and two FFmpeg children
+still listed. The report therefore cannot claim normal completion or a numeric
+failure code. No process was stopped by this audit. No second check was started.
+
+Collection limitation:
+check.py captures child output until the episode finishes, and its own stdout
+is buffered. Empty output does not prove that no child diagnostic exists.
+Only the output actually delivered by the execution transport is recorded above.
+No per-frame visual or audio acceptance is claimed.

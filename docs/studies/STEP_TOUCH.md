@@ -134,7 +134,9 @@ three_quarter.mp4 SHA256 60928fc215cd43a673da29c23eb728541067764e95c6a6b2c26e24b
 без Playwright, 15 игровых сценок пропущены без `troupe.json`. Python 3.11
 не установлен; полный pass проекта на этой машине не заявляется.
 
-Исходники — `codex/study-step-touch`; MP4 и QA —
+Историческая ветка исходников `codex/study-step-touch` архивирована;
+для повторения сохранён тег `archive/2026-11-02/codex/study-step-touch`.
+MP4 и QA —
 `codex/study-step-touch-artifacts`, каталог `artifacts/study_step_touch/`.
 Основные ветки и ранее сохранённые упражнения не изменяются.
 

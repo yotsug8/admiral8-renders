@@ -118,7 +118,9 @@ SHA256 followthrough.mp4
 `troupe.json`. Python 3.11 на этой машине отсутствует. Полный pass проекта
 не заявляется; новые зависимости не устанавливались.
 
-Исходники: `codex/study-followthrough`. Малый MP4 и отчёты передаются
+Историческая ветка исходников `codex/study-followthrough` архивирована;
+для повторения сохранён тег `archive/2026-11-02/codex/study-followthrough`.
+Малый MP4 и отчёты передаются
 отдельно в `codex/study-followthrough-artifacts`, каталог
 `artifacts/study_followthrough/`. Основные ветки и результаты других
 упражнений этим изменением не обновляются.

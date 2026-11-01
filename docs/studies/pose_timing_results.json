@@ -1,0 +1,187 @@
+{
+  "scope": "15 degree shoulder-only exercise; no collision or artistic certification",
+  "skeleton": [
+    {
+      "variant": "A",
+      "samples": 673,
+      "max_protected_matrix_error": 2.384185791015625e-07,
+      "max_segment_length_error_m": 8.841947721771604e-06,
+      "direction": [
+        0.65,
+        -1,
+        0.2
+      ],
+      "shoulder_excursion_degrees": 15.000031153264294
+    },
+    {
+      "variant": "B",
+      "samples": 673,
+      "max_protected_matrix_error": 2.384185791015625e-07,
+      "max_segment_length_error_m": 8.479308340469949e-06,
+      "direction": [
+        0.95,
+        -0.8,
+        0.2
+      ],
+      "shoulder_excursion_degrees": 14.999978219298225
+    }
+  ],
+  "deformation": [
+    {
+      "variant": "A",
+      "mesh": "leftarm_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 39,
+        "max_edge_ratio": 1.5234792826989534,
+        "max_growth_m": 0.10898714099183732,
+        "min_area_ratio": 0.6184780162624133
+      }
+    },
+    {
+      "variant": "A",
+      "mesh": "upper_body",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 39,
+        "max_edge_ratio": 1.002661490097651,
+        "max_growth_m": 0.0010704340584514749,
+        "min_area_ratio": 0.9969513077796667
+      }
+    },
+    {
+      "variant": "A",
+      "mesh": "lower_body",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.0000057614860742,
+        "max_growth_m": 2.3741023091883307e-07,
+        "min_area_ratio": 0.9999989314171635
+      }
+    },
+    {
+      "variant": "A",
+      "mesh": "bracer_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.000147191312547,
+        "max_growth_m": 7.391959309592522e-06,
+        "min_area_ratio": 0.9998649599645002
+      }
+    },
+    {
+      "variant": "A",
+      "mesh": "belt_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.00000282501207,
+        "max_growth_m": 1.858905937929256e-07,
+        "min_area_ratio": 0.9999804410175214
+      }
+    },
+    {
+      "variant": "A",
+      "mesh": "back_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.0000983125311311,
+        "max_growth_m": 7.112592602845358e-06,
+        "min_area_ratio": 0.9999382183010566
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "leftarm_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 42,
+        "max_edge_ratio": 1.4384587447217958,
+        "max_growth_m": 0.10254312565182094,
+        "min_area_ratio": 0.6348177226933063
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "upper_body",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 39,
+        "max_edge_ratio": 1.0024398352553496,
+        "max_growth_m": 0.0009812859182312672,
+        "min_area_ratio": 0.997258074416135
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "lower_body",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.0000057614860742,
+        "max_growth_m": 2.3741023091883307e-07,
+        "min_area_ratio": 0.9999989314171635
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "bracer_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.000147191312547,
+        "max_growth_m": 7.391959309592522e-06,
+        "min_area_ratio": 0.9998649599645002
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "belt_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.00000282501207,
+        "max_growth_m": 1.858905937929256e-07,
+        "min_area_ratio": 0.9999804410175214
+      }
+    },
+    {
+      "variant": "B",
+      "mesh": "back_model",
+      "status": "pass",
+      "summary": {
+        "frames": 85,
+        "flagged_frames": [],
+        "worst_edge_frame": 0,
+        "max_edge_ratio": 1.0000983125311311,
+        "max_growth_m": 7.112592602845358e-06,
+        "min_area_ratio": 0.9999382183010566
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "fps": 30,
+  "picture_frames": 375,
+  "duration": 12.8,
+  "size": [360, 640],
+  "audio": "lively_fix/audio/chase_candidate.wav",
+  "look_samples": [0, 30, 66, 99, 126, 180, 240, 300, 360],
+  "ranges": [
+    {"start": 0, "stop": 66, "folder": "calm_fix/assembly_frames"},
+    {"start": 66, "stop": 99, "folder": "lively_fix/intro_frames"},
+    {"start": 99, "stop": 126, "folder": "calm_fix/assembly_frames"},
+    {"start": 126, "stop": 144, "folder": "lively_fix/intro_frames"},
+    {"start": 144, "stop": 336, "folder": "lively_fix/frames"},
+    {"start": 336, "stop": 375, "folder": "lively_fix/ending_frames"}
+  ],
+  "moving_ranges": [[144, 240], [240, 336]],
+  "silent_check": [12.55, 12.79]
+}

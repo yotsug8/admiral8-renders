@@ -15,9 +15,29 @@ by [dannzjs](https://sketchfab.com/dannzjs), licensed under
 размещение, освещение, шейдер окраски с сохранением исходных UV и камуфляжа.
 В пробе 29 сеток и 255872 треугольника;
 текстуры PBR успешно импортированы Blender 5.2.
+В новой `epic/candidate.blend` восстановлены исходные PBR-материалы
+и добавлено физическое освещение; плоский шейдер предыдущей пробы отклонён.
 При публикации кадров и видео сохранять эту атрибуцию в описании.
 
-## Ракетница
+## Ракетница текущей кинематографической пробы
+
+[FPS Weapons Pack by Sotudios](https://sotudios.com/Assets/FPS-WeaponsPack/),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Использован Rocket Launcher из версии 1.0.0: 7998 треугольников,
+две текстуры 2048×2048. Лицензия сохранена в локальном пакете.
+Изменения: декодирование KTX2 в PNG, сглаживание, масштаб, размещение,
+настройка материала, привязка к кисти. При публикации сохранять атрибуцию.
+
+Локально: `fps-weapons/fps-weapons-pack-v1.0.0/models/glb/rocket.glb`;
+подготовленная копия `heavy_launcher.glb`. Конвертер:
+`tools/prepare_pudge_launcher.cjs`. Требует локальных
+`basis/basis_transcoder.cjs` и `basis/basis_transcoder.wasm` из
+[Three.js r170, Basis](https://github.com/mrdoob/three.js/tree/r170/examples/jsm/libs/basis),
+официальный проект и лицензия декодера:
+[Basis Universal](https://github.com/BinomialLLC/basis_universal).
+Внешние файлы не включены в Git.
+
+## Ракетница предыдущей отклонённой пробы
 
 [Rocket Launcher, Polyfork](https://polyfork.dev/asset/rocket-launcher-032299).
 Страница разрешает бесплатное коммерческое использование и не требует

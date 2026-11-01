@@ -1,0 +1,65 @@
+{
+  "geometry": {
+    "case": "setdown",
+    "samples": 2145,
+    "frames": 135,
+    "fps": 30,
+    "max_segment_length_error_m": 2.7412419012495803e-07,
+    "max_foot_or_ankle_drift_m": 0.0,
+    "max_joint_endpoint_error_m": 1.3262033462524414e-06,
+    "min_box_body_capsule_clearance_m": 0.013000002384185791,
+    "min_box_link_capsule_clearance_m": 0.018256587386131284,
+    "min_floor_clearance_m": 0.0,
+    "min_screen_margin": 0.062430109828710556,
+    "worst_capsule": {
+      "frame": 30.125,
+      "part": "L_thigh"
+    },
+    "limits": "Sixteenth-frame finite playback samples; capsule/sphere collision envelopes, no dynamics or arbitrary rig certification."
+  },
+  "temporal": {
+    "contact_seconds": 2.15,
+    "release_seconds": 2.75,
+    "supported_dwell_seconds": 0.6000000000000001,
+    "max_grip_error_before_release_m": 0.0,
+    "max_box_rest_error_after_contact_m": 0.0,
+    "max_box_upward_step_m": 0.0,
+    "max_box_step_per_sixteenth_frame_m": 0.0014617475652868412,
+    "max_hand_step_per_sixteenth_frame_m": 0.0035380776475428177,
+    "final_stance_point_error_m": 0.0,
+    "contact_speed_m_s": 7.152557373046875e-06,
+    "hand_release_speeds_m_s": [
+      9.596162699460081e-05,
+      9.596162699460081e-05
+    ],
+    "min_release_gap_step_m": 0.0,
+    "final_min_hand_handle_gap_m": 0.8657943736692392
+  },
+  "blender": "5.2.0 LTS",
+  "limits": "Finite sampled rigid mannequin; no dynamics, fingers, skin, physical support certification or arbitrary rig transfer.",
+  "negative_tests": [
+    "L_foot:delta_location",
+    "L_upperarm:scale",
+    "Box:delta_location",
+    "early_release",
+    "post_contact_hop"
+  ],
+  "movie": {
+    "name": "lift_setdown.mp4",
+    "sha256": "fe742fe5e39d50f7f4afc7f4492818e0f8c2d747ffbe1538d1cf2aeff9ff698a",
+    "bytes": 100839,
+    "decoded_frames": 135,
+    "size": [
+      640,
+      360
+    ],
+    "fps": 30,
+    "duration": 4.5,
+    "audio_stream": false,
+    "max_decoded_source_mean_abs_error": 1.6580787037037037,
+    "min_frame_mean": 133.12912037037037,
+    "review_sheets": 9,
+    "review_order": "15 consecutive frames per sheet; rows left-to-right; sheets 01\u201309 cover 0\u2013134."
+  },
+  "elapsed_seconds": 5.94294679997256
+}

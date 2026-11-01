@@ -1,0 +1,41 @@
+{
+  "frames": 600,
+  "fps": 30,
+  "duration": 20.0,
+  "cuts": [
+    0,
+    156,
+    291,
+    375,
+    480
+  ],
+  "sources": [
+    {
+      "file": "foundation_recovery.mp4",
+      "frames": 156,
+      "sha256": "3e311574497b118c6225abfb42c3c28450d7340a7eec876120870a56fee8734e"
+    },
+    {
+      "file": "foundation_followthrough.mp4",
+      "frames": 135,
+      "sha256": "7e3e39a8744c313ddaee51ffd8c4bb20e5ae0b74413e3c2ed3288cc66d3ff350"
+    },
+    {
+      "file": "foundation_character_overlap.mp4",
+      "frames": 84,
+      "sha256": "4f8f046c78dcf27c1344a72348fe0d9c8ae4c3bdabcf2285a05e0cea2afdc22f"
+    },
+    {
+      "file": "foundation_pointing_right.mp4",
+      "frames": 105,
+      "sha256": "22c9ca644f14d65ba2c9fb3b4e752a9fe49e6deb5fdba7dd70e51dfa12103cce"
+    },
+    {
+      "file": "foundation_step_touch_three_quarter.mp4",
+      "frames": 120,
+      "sha256": "60928fc215cd43a673da29c23eb728541067764e95c6a6b2c26e24b15b0f69b6"
+    }
+  ],
+  "sha256": "f0a080f9426b391219c676196ccd067e5be01857fc1c7ac6711e03b04f5cb5d6",
+  "scope": "Silent report, source motion unchanged; frame counts verified. Not new animation acceptance."
+}

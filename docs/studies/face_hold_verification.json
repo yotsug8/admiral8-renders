@@ -1,0 +1,35 @@
+{
+  "samples": 429,
+  "frames": 108,
+  "fps": 30,
+  "total_triangles": 2914,
+  "skin_triangles": 2840,
+  "excluded_triangles": 74,
+  "max_skin_normal_deg": 67.15263689556609,
+  "min_skin_area_ratio": 0.40340251285889406,
+  "max_edge_stretch": 2.546965217560895,
+  "max_vertex_speed_m_s": 0.049409195427816036,
+  "hold_max_coordinate_drift_m": 0.0,
+  "blink_max": 0.0,
+  "max_adjacent_frame_vertex_delta_m": 0.0016459206687955837,
+  "reopen_vertex_error_m": 0.0,
+  "reopen_channel_error": 0.0,
+  "limitations": [
+    "Finite quarter-frame samples, not a proof over continuous time.",
+    "No exhaustive eyelid/eyeball or lip collision solver; inspect rendered frames.",
+    "Gaze weights express direction, not precise binocular fixation.",
+    "Skin excludes native eyelid/lip flips and jaw interior as in face.unfold."
+  ],
+  "movie": {
+    "frames": 108,
+    "size": [
+      640,
+      360
+    ],
+    "fps": 30,
+    "duration": 3.6,
+    "audio_streams": 0,
+    "sha256": "687805be1d0246058555a0e611fa0a5f3bd57f8d103079df2fa1d14ff5474782"
+  },
+  "limits": "Native blink omitted, not repaired. Weak attention cue; no verified binocular fixation. Full frame review by study author; integration review sampled keys and eye close-up."
+}

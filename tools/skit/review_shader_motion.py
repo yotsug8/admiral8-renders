@@ -1,7 +1,8 @@
 """Assemble short, aligned shader comparisons against existing graded frames.
 
 Each --segment is FOLDER START STOP (half-open); cuts between segments are
-intentional. The baseline must use the same cameras, poses and daylight look.
+intentional. FOLDER '-' explicitly keeps baseline frames on both sides.
+Raw candidates receive daylight once; the baseline must already be graded.
 """
 import argparse
 import json
@@ -20,6 +21,8 @@ def main():
     p.add_argument('--baseline', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--fps', type=int, default=30)
+    p.add_argument('--prefix', default='candidate_', help='Raw candidate filename prefix')
+    p.add_argument('--label', default='shader candidate')
     args = p.parse_args()
     if args.fps <= 0:
         raise ValueError('Positive FPS required')
@@ -28,28 +31,31 @@ def main():
         start, stop = int(start), int(stop)
         if start < 0 or stop <= start:
             raise ValueError('Invalid half-open segment')
-        pairs.extend((f, Path(folder)/f'candidate_{f:04d}.png',
+        pairs.extend((f, None if folder == '-' else Path(folder)/f'{args.prefix}{f:04d}.png',
                       args.baseline/f'f{f:04d}.png') for f in range(start, stop))
     for _, new, old in pairs:
-        if not new.is_file() or not old.is_file():
+        if (new is not None and not new.is_file()) or not old.is_file():
             raise ValueError('Missing comparison frame')
     out = args.out.resolve();out.mkdir(parents=True, exist_ok=False)
     frames = out/'frames';frames.mkdir()
     look = ChaseLook(None, 'daylight')
     rows = []
     for i, (f, new, old) in enumerate(pairs):
-        with Image.open(new) as im:
-            rgb = look(np.asarray(im.convert('RGB')))
         with Image.open(old) as im:
             baseline = im.convert('RGB')
+        if new is None:
+            rgb = np.asarray(baseline)
+        else:
+            with Image.open(new) as im:
+                rgb = look(np.asarray(im.convert('RGB')))
         if rgb.shape != (640,360,3) or baseline.size != (360,640):
             raise ValueError('Expected matching 360x640 study frames')
         sheet = Image.new('RGB', (720,660), '#202020')
         sheet.paste(baseline,(0,20));sheet.paste(Image.fromarray(rgb),(360,20))
         d = ImageDraw.Draw(sheet)
-        d.text((8,3),'baseline',fill='white');d.text((368,3),'shader candidate',fill='white')
+        d.text((8,3),'baseline',fill='white');d.text((368,3),args.label,fill='white')
         sheet.save(frames/f'f{i:04d}.png')
-        rows.append(dict(frame=f,mean=float(rgb.mean()),
+        rows.append(dict(frame=f,baseline_context=new is None,mean=float(rgb.mean()),
                          channel_limit_fraction=float((rgb>=254).any(axis=2).mean())))
     ff = imageio_ffmpeg.get_ffmpeg_exe();video=out/'comparison.mp4'
     subprocess.run([ff,'-v','error','-framerate',str(args.fps),'-i',str(frames/'f%04d.png'),

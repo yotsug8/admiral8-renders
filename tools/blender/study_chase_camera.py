@@ -27,9 +27,14 @@ def main():
                         help='Skip reference renders when they already exist')
     parser.add_argument('--target-height', type=float, default=1.5)
     parser.add_argument('--validate-only', action='store_true', help='Check framing without rendering')
+    parser.add_argument('--frames', type=int, nargs='+', help='Selected frames; full range still checked')
+    parser.add_argument('--save-scene', action='store_true', help='Save candidate copy even for selected probes')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
     if args.end < args.start:
         parser.error('--end must be >= --start')
+    if args.frames and (args.shot or len(set(args.frames)) != len(args.frames)
+                        or any(not args.start <= f <= args.end for f in args.frames)):
+        parser.error('--frames must be unique, inside range, and not combined with --shot')
     if not 0 <= args.target_weight <= 1:
         parser.error('--target-weight must be between 0 and 1')
     out = args.out.resolve()
@@ -99,12 +104,12 @@ def main():
     report = {'lens': chosen, 'range': [args.start, args.end], 'offset': list(args.offset),
               'target_weight': args.target_weight,
               'target_height': args.target_height,
-              'frames': list(range(args.start, args.end + 1)) if args.shot else sorted({args.start, (args.start + args.end + 1)//2, args.end}),
-              'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Source is not saved.'}
+              'frames': sorted(args.frames) if args.frames else list(range(args.start, args.end + 1)) if args.shot else sorted({args.start, (args.start + args.end + 1)//2, args.end}),
+              'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Original scene is never overwritten.'}
     (out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     if args.validate_only:
         return
-    if args.shot:
+    if args.shot or args.save_scene:
         scene.camera = camera
         bpy.ops.wm.save_as_mainfile(filepath=str(out/'camera_candidate.blend'), copy=True)
     for frame in report['frames']:

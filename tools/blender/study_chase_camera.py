@@ -17,6 +17,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--actors', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--shot', action='store_true', help='Render all 96 candidate frames instead of paired stills')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -82,14 +83,17 @@ def main():
                     for curve in bag.fcurves:
                         for key in curve.keyframe_points:
                             key.interpolation = 'LINEAR'
-    report = {'lens': chosen, 'frames': [144, 192, 239],
+    report = {'lens': chosen, 'frames': list(range(144, 240)) if args.shot else [144, 192, 239],
               'limits': 'Camera-only candidate. Bounding boxes are not an occlusion or artistic-quality test. Source is not saved.'}
     (out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+    if args.shot:
+        scene.camera = camera
+        bpy.ops.wm.save_as_mainfile(filepath=str(out/'camera_candidate.blend'), copy=True)
     for frame in report['frames']:
         scene.frame_set(frame)
-        for label, cam in [('before', original), ('after', camera)]:
+        for label, cam in ([('f', camera)] if args.shot else [('before_', original), ('after_', camera)]):
             scene.camera = cam
-            scene.render.filepath = str(out/f'{label}_{frame:04d}.png')
+            scene.render.filepath = str(out/f'{label}{frame:04d}.png')
             bpy.ops.render.render(write_still=True)
     scene.camera = original
 

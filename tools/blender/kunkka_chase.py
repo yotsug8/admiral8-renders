@@ -98,13 +98,22 @@ bpy.ops.wm.save_as_mainfile(filepath=str(P/'actors_cache.blend'))
 # Runners move down the open corridor. Read the audited route when available.
 X=-83.;Y=78.5;SPEED=float(spec.get('chase_speed_mps',5.0))
 if not math.isfinite(SPEED) or SPEED<=0:raise ValueError('Chase speed must be positive and finite')
+GAP_START=float(spec.get('chase_gap_start_m',3.5));GAP_END=float(spec.get('chase_gap_end_m',3.5))
+HOVER=float(spec.get('chase_hover_m',0.))
+if not math.isfinite(HOVER) or HOVER<0:raise ValueError('Hover height must be finite and nonnegative')
+if not all(math.isfinite(v) for v in (GAP_START,GAP_END)) or GAP_START<GAP_END or GAP_END<3.5:
+ raise ValueError('Chase gap must close towards a safe separation of at least 3.5 m')
 def root_at(who,t):
  # Each chase shot stages its own safe forest corridor. The camera cut hides
  # relocation; never interpolate the actor across that cut into scenery.
  shot_start=SIDE_END if t>=SIDE_END else PANIC_END
  shot_end=FRONT_END if t>=SIDE_END else SIDE_END
  progress=min(shot_end-shot_start,max(0,t-shot_start))*SPEED
- return Vector((X,Y+(3.5 if who=='hoodwink' else 0)+progress,3.25119+(.00885 if who=='kunkka' else 0 if args.grounded_run else .0185)))
+ # Close the lead across the whole chase, including the hidden corridor reset.
+ u=min(1.,max(0.,(t-PANIC_END)/(FRONT_END-PANIC_END)))
+ gap=GAP_START+(GAP_END-GAP_START)*u
+ offset=3.5 if who=='hoodwink' else -(gap-3.5) if t>=PANIC_END else 0.
+ return Vector((X-1.5 if who=='kunkka' and t>=PANIC_END else X,Y+offset+progress,3.25119+(HOVER if who=='kunkka' and t>=PANIC_END else 0)+(.00885 if who=='kunkka' else 0 if args.grounded_run else .0185)))
 for who,A in ACTORS.items():
  root=A['root']
  for f in range(END+1):
@@ -116,7 +125,7 @@ for who,A in ACTORS.items():
   for st in a.strips:
    for bag in st.channelbags:
     for fc in bag.fcurves:
-     for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' or round(k.co.x)+1==round(SIDE_END*FPS) else 'LINEAR'
+     for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' or round(k.co.x)+1 in {round(PANIC_END*FPS),round(SIDE_END*FPS)} else 'LINEAR'
 A=ACTORS['hoodwink'];run=A['acts'].get('mouse_run_squirrel') or A['acts']['mouse_run_squirrel_anim']
 from chase_performance import make_seamless_run
 if args.grounded_run:
@@ -203,12 +212,11 @@ def place(f, forced=None):
    sc.frame_set(round(REVEAL_END*FPS));PANIC_HEAD=head_at('hoodwink').copy();sc.frame_set(f)
   target=PANIC_HEAD+Vector((0,0,-.05));pos=target+Vector((.9,-5.2,.3));lens=46;aperture=3.2
  elif t<SIDE_END:
-  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-9,1.5));lens=29;fit=['kunkka','hoodwink'];aperture=5.6
+  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-12,1.5))*2.260903955754426;lens=29;fit=['kunkka','hoodwink'];aperture=5.6
  elif t<FRONT_END:
-  u=min(1,max(0,(t-(FRONT_END-.35))/.35));u=u*u*(3-2*u)
-  target=(h+Vector((0,-1.6,1.7))).lerp(head_at('kunkka'),u)
-  pos=h+Vector((0,10,2.8));lens=27+u*9
-  if t<FRONT_END-.35:fit=['kunkka','hoodwink']
+  # A fixed viewpoint reveals actual approach; tracking at runner speed
+  # kept the figures almost unchanged in size and concealed travel speed.
+  target=Vector((X-1,Y+25.5,4.9));pos=Vector((X,Y+41.5,7.0));lens=16
   aperture=5.6
  else:
   u=min(1,max(0,(t-FRONT_END)/(CLOSE_END-FRONT_END-.2)));u=u*u*(3-2*u)

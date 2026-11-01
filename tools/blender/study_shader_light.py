@@ -16,6 +16,8 @@ def main():
     p.add_argument('--frames', nargs='+', type=int, default=[30,90,360])
     p.add_argument('--key', type=float, default=.65)
     p.add_argument('--ambient', type=float, default=.95)
+    p.add_argument('--candidate-only', action='store_true',
+                   help='Render only candidate when baseline frames already exist')
     args = p.parse_args(sys.argv[sys.argv.index('--')+1:])
     if not 0 <= args.key <= 2 or not 0 <= args.ambient <= 2:
         raise ValueError('Study parameters must be within 0..2')
@@ -48,7 +50,7 @@ def main():
     try:
         for f in args.frames:
             scene.frame_set(f)
-            for variant in ['before','candidate']:
+            for variant in (['candidate'] if args.candidate_only else ['before','candidate']):
                 for name,n,key,ambient in targets:
                     n.inputs[1].default_value = key if variant == 'before' else args.key
                     n.inputs[2].default_value = ambient if variant == 'before' else args.ambient
@@ -59,7 +61,8 @@ def main():
             n.inputs[1].default_value,n.inputs[2].default_value=key,ambient
     (out/'report.json').write_text(json.dumps(dict(frames=args.frames,key=args.key,
         ambient=args.ambient,materials=[dict(name=name,key=key,ambient=ambient) for name,n,key,ambient in targets],
-        limits='Still comparison only; no full-motion or artistic acceptance.'),indent=2),encoding='utf-8')
+        candidate_only=args.candidate_only,
+        limits='Only requested frames checked; no whole-film or artistic acceptance.'),indent=2),encoding='utf-8')
 
 
 if __name__ == '__main__':

@@ -50,3 +50,5 @@
 - [Учебные контакты: прыжок и двуручный поворот](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/learning_contacts_2026_11_01.mp4) — сводка, 15 с/30fps; два упражнения с двух сторон, с ограничениями результата.
 
 - [Перекат стопы — профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_foot_roll_profile.mp4) и [¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_foot_roll_three_quarter.mp4) — по4с/30fps, без звука; пятка → подошва → носок. Жёсткий манекен, не естественная походка героя или баланс. Повторная проверка и границы — docs/studies/FOOT_ROLL.md в main.
+
+- [Перекат и перенос движения](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/learning_transfer_2026_11_01.mp4) — 10 с/30fps без звука: перекат стопы манекена с двух сторон и малое движение Пуджа через Retarget. Ограничения подписаны; это технические пробы, не готовая походка/актёрская сцена. [Пудж отдельно](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_retarget_character.mp4), 2 с, два ракурса. Код и результаты — docs/studies/RETARGET_CHARACTER.md в main.

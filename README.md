@@ -2,7 +2,7 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 01.11.2026
 
-- [Обновлённая погоня Кунки и Худвинк — 30 fps](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v2_30fps.mp4) — 12,8 с, 540×960; удлинённая и ускоренная погоня, более плотный лес, исправление резкого поворота кисти и новые события шагов. Версия для оценки перед финальным разрешением.
+- [Обновлённая погоня Кунки и Худвинк — 30 fps](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v3_30fps.mp4) — 12,8 с, 540×960; удлинённая и ускоренная погоня, более плотный лес, исправление кисти и реакции испуга на 4,2–4,8 с, новые события шагов. Версия для оценки перед финальным разрешением.
 - [Предыдущая проба погони](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_grounded_draft.mp4) — 9,6 с, 540×960, 15 fps; сохранена для сравнения, не принятый результат.
 - [Бег Худвинк с двух сторон](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/hoodwink_grounded_run_two_views.mp4) — техническая проверка сохранённой анимации, 30 fps, без карты и звука.
 - [Звуковая дорожка погони](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_grounded_audio.wav) — WAV, стерео, обновлённые события шагов.

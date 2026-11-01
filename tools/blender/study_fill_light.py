@@ -21,12 +21,22 @@ def main():
     p.add_argument('--energy', type=float, default=400)
     p.add_argument('--kind', choices=['AREA', 'SPOT'], default='AREA')
     p.add_argument('--cone', type=float, default=35)
+    p.add_argument('--armature', help='Use this armature and --bone as a measured target')
+    p.add_argument('--bone', default='head')
+    p.add_argument('--allow-unlit', action='store_true',
+                   help='Diagnostic override: emission-shaded actors ignore scene lights')
     args = p.parse_args(sys.argv[sys.argv.index('--')+1:])
     args.out = args.out.resolve()
     scene = bpy.context.scene
     actor = bpy.data.objects.get(args.actor)
     if actor is None or args.energy < 0:
         raise ValueError('Actor missing or negative light energy')
+    meshes = [obj for obj in actor.children_recursive if obj.type == 'MESH']
+    unlit = [slot.material.name for obj in meshes for slot in obj.material_slots
+             if slot.material and slot.material.get('_dota')]
+    if unlit and not args.allow_unlit:
+        raise ValueError('Actor uses emission-based Dota shading. Change its shader, not scene lamps; '
+                         'use --allow-unlit only for an explicit diagnostic comparison.')
     if not 1 <= args.cone <= 179:
         raise ValueError('Cone must be between 1 and 179 degrees')
     if any(f < scene.frame_start or f > scene.frame_end for f in [args.anchor]+args.frames):
@@ -34,6 +44,12 @@ def main():
     args.out.mkdir(parents=True, exist_ok=False)
     scene.frame_set(args.anchor)
     target = actor.matrix_world.translation + Vector((0, 0, 1.7))
+    if args.armature:
+        arm = bpy.data.objects.get(args.armature)
+        if arm is None or arm.type != 'ARMATURE' or args.bone not in arm.pose.bones:
+            raise ValueError('Target armature or bone missing')
+        evaluated = arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        target = evaluated.matrix_world @ evaluated.pose.bones[args.bone].head
     camera = scene.camera.matrix_world
     towards = (camera.translation-target).normalized()
     right = camera.to_quaternion() @ Vector((1, 0, 0))
@@ -62,6 +78,8 @@ def main():
             bpy.ops.render.render(write_still=True)
     report = dict(frames=args.frames, energy=args.energy, position=list(position),
                   target=list(target), kind=args.kind, cone=args.cone,
+                  target_source=args.bone if args.armature else 'root plus fixed 1.7m',
+                  unlit_actor_materials=sorted(set(unlit)),
                   size=4 if args.kind == 'AREA' else None, anchor=args.anchor,
                   limits='Still-frame lighting study only. Check shadows and movement before adoption.')
     (args.out/'report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

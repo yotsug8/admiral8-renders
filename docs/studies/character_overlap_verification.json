@@ -1,0 +1,101 @@
+{
+  "validation": {
+    "samples": 665,
+    "root_error": 0.0,
+    "protected_bone_error": 0.0,
+    "max_edge_ratio": 1.2610482274407362,
+    "max_sole_drift": 0.0,
+    "technical_pass": true
+  },
+  "support_contact": {
+    "samples": 665,
+    "actors": {
+      "0_control": {
+        "sole_vertices": 36,
+        "min_gap": 0.0,
+        "max_gap": 0.0,
+        "max_sole_drift": 0.0,
+        "min_xy_margin": 1.383103847503662,
+        "foot_min_gap_ranges": {
+          "L": [
+            0.000415802001953125,
+            0.000415802001953125
+          ],
+          "R": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "0_follow": {
+        "sole_vertices": 36,
+        "min_gap": 0.0,
+        "max_gap": 0.0,
+        "max_sole_drift": 0.0,
+        "min_xy_margin": 1.383103847503662,
+        "foot_min_gap_ranges": {
+          "L": [
+            0.000415802001953125,
+            0.000415802001953125
+          ],
+          "R": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "1_control": {
+        "sole_vertices": 36,
+        "min_gap": -1.862645149230957e-09,
+        "max_gap": -1.862645149230957e-09,
+        "max_sole_drift": 0.0,
+        "min_xy_margin": 0.7695266008377075,
+        "foot_min_gap_ranges": {
+          "L": [
+            0.00041566602885723114,
+            0.00041566602885723114
+          ],
+          "R": [
+            -1.862645149230957e-09,
+            -1.862645149230957e-09
+          ]
+        }
+      },
+      "1_follow": {
+        "sole_vertices": 36,
+        "min_gap": -1.862645149230957e-09,
+        "max_gap": -1.862645149230957e-09,
+        "max_sole_drift": 0.0,
+        "min_xy_margin": 0.7695266008377075,
+        "foot_min_gap_ranges": {
+          "L": [
+            0.00041566602885723114,
+            0.00041566602885723114
+          ],
+          "R": [
+            -1.862645149230957e-09,
+            -1.862645149230957e-09
+          ]
+        }
+      }
+    },
+    "limits": "Horizontal plane at the minimum evaluated sole point. Not full contact of both feet or physical balance.",
+    "contact_precision": 2e-05,
+    "pass": true
+  },
+  "motion_unchanged": true,
+  "baseline_unchanged": true,
+  "movie": {
+    "frames": 84,
+    "fps": 30,
+    "size": [
+      960,
+      540
+    ],
+    "duration": 2.8,
+    "sha256": "4f8f046c78dcf27c1344a72348fe0d9c8ae4c3bdabcf2285a05e0cea2afdc22f",
+    "max_encoding_mae": 1.839806455761317
+  },
+  "project_check": "passed",
+  "limits": "One frozen Pudge pose. Same study verifier; no independent collision algorithm. All frames reviewed by study author; integration review sampled key and return frames."
+}

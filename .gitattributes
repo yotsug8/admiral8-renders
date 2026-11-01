@@ -1,0 +1,2 @@
+# Bash entry points must run after a fresh checkout on Windows as well.
+*.sh text eol=lf

@@ -23,10 +23,14 @@ OLD_EDGE=$(get dota_camera_edgemove); OLD_ZOOM=$(get dota_camera_disable_zoom); 
 # полоски здоровья над вышками и юнитами (интерфейс мод скрывает, а их — нет): на время дубля выключить
 OLD_HB=$(get dota_hud_healthbars)
 # глубина резкости размывает всё за героями — на время дубля выключить
-OLD_DOF=$(get r_depth_of_field); OLD_DOF=${OLD_DOF:-1}
+OLD_DOF=$(get r_depth_of_field)
+OLD_HOST=$(get host_framerate)
+OLD_FOG_OVERRIDE=$(get fog_override_enable); OLD_FOG=$(get fog_enable); OLD_FAR=$(get r_farz)
 echo "настройки до дубля: edgemove=$OLD_EDGE disable_zoom=$OLD_ZOOM fps_max=$OLD_FPS"
-[ -n "$OLD_EDGE" ] && [ -n "$OLD_ZOOM" ] && [ -n "$OLD_FPS" ] && [ -n "$OLD_HB" ] || { echo "не прочитал настройки доты — не трогаю их"; exit 1; }
-trap 'C "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "host_framerate 0" "fps_max $OLD_FPS" "dota_hud_healthbars $OLD_HB" "r_depth_of_field $OLD_DOF"' EXIT
+[ -n "$OLD_EDGE" ] && [ -n "$OLD_ZOOM" ] && [ -n "$OLD_FPS" ] && [ -n "$OLD_HB" ] && [ -n "$OLD_DOF" ] && [ -n "$OLD_HOST" ] && [ -n "$OLD_FOG_OVERRIDE" ] && [ -n "$OLD_FOG" ] && [ -n "$OLD_FAR" ] || { echo "не прочитал настройки доты — не трогаю их"; exit 1; }
+trap 'C "dota_camera_edgemove $OLD_EDGE" "dota_camera_disable_zoom $OLD_ZOOM" "host_framerate $OLD_HOST" "fps_max $OLD_FPS" "dota_hud_healthbars $OLD_HB" "r_depth_of_field $OLD_DOF" "fog_override_enable $OLD_FOG_OVERRIDE" "fog_enable $OLD_FOG" "r_farz $OLD_FAR"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 C "dota_camera_edgemove 0" "dota_camera_disable_zoom 1" "dota_hud_healthbars 0" "r_depth_of_field 0"
 C "fog_override_enable 0" "fog_enable 0" "r_farz 60000" "fps_max $FPS"
 # Дубль пишется только пока окно доты впереди; если его увели (щелчок мимо) — кадров меньше, пробуем снова.
@@ -43,7 +47,7 @@ for TRY in 1 2 3; do
     awk -v m="mark $TOK" 'index($0, m) { s = 1 } s && /play done/ { f = 1 } END { exit !f }' "$LOG" && break
     sleep 2
   done
-  C "endmovie" "host_framerate 0"; sleep 3
+  C "endmovie" "host_framerate $OLD_HOST"; sleep 3
   # папка и число кадров — из лога своей записи (не «самая новая папка»: при пустой записи это был бы прошлый дубль)
   read -r M FR < <(py -3.11 - "$LOG" "mark $TOK" <<'PY2'
 import re, sys

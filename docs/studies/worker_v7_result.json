@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-01",
+  "method": "Independent worker downloaded published MP4, verified SHA256, ran assemble_study.decoded_qa, extracted and viewed selected frames",
+  "repository_revision": "35a50e0",
+  "video": "kunkka_hoodwink_chase_v7_30fps.mp4",
+  "sha256": "5d1a7a13deea5377200d2fcff1cec33a24e058ec4992ffd8d7eb30c2c2140eda",
+  "bytes": 3444765,
+  "frames": 384,
+  "size": [360, 640],
+  "fps": 30,
+  "duration_s": 12.8,
+  "decoded_qa": "passed",
+  "black_tail_frames": 9,
+  "timing_s": {"decoded_qa": 0.498, "analysis_and_frame_extraction": 3.370},
+  "timing_excludes": ["installation", "visual inspection"],
+  "visual_sample_frames": 16,
+  "findings": ["Large unused image area around chase", "Hoodwink tail partly occludes Kunkka on frame 335"],
+  "limits": ["Worker-reported measurements", "No listening", "Sparse visual sample, not full artistic acceptance", "Not a Blender speed benchmark", "Python 3.10 isolated environment verified only for this QA task"]
+}

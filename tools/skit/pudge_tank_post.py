@@ -35,3 +35,18 @@ def finish(image):
 
 def composite(plate,actor,shot):
     return finish(Image.alpha_composite(background(plate,shot),actor.convert('RGBA')))
+
+def action_glow(image,frame):
+    """Local halation from visible bright fire, never an exposure flash."""
+    if not (198<=frame<=203 or 207<=frame<=234):
+        return image
+    rgb=np.asarray(image.convert('RGB'),dtype=float)/255
+    luminance=rgb@np.array([.2126,.7152,.0722])
+    warm=np.clip((rgb[...,0]-rgb[...,2])/.35,0,1)
+    mask=np.clip((luminance-.52)/.35,0,1)*warm
+    light=Image.fromarray(np.uint8(mask*255))
+    near=np.asarray(light.filter(ImageFilter.GaussianBlur(6)),dtype=float)/255
+    wide=np.asarray(light.filter(ImageFilter.GaussianBlur(24)),dtype=float)/255
+    spill=(near*.14+wide*.16)[...,None]*np.array([1,.42,.10])
+    rgb=1-(1-rgb)*(1-spill)
+    return Image.fromarray(np.uint8(np.clip(rgb,0,1)*255))

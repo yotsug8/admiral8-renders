@@ -1,30 +1,37 @@
 """Assemble and verify the separately rendered tank finishing revision."""
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import subprocess
 import numpy as np
 import imageio_ffmpeg
 from PIL import Image,ImageDraw
-from pudge_tank_post import background,finish
+from pudge_tank_post import background,finish,action_glow
 from pudge_tank_sound import build
 from chase_audio import decode,loudness
 
 ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/'_game/skits/pudge_tank/motion'
-OUT=ROOT/'_game/skits/pudge_tank/polish_v2'
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--action',action='store_true')
+args=parser.parse_args()
+OUT=ROOT/'_game/skits/pudge_tank'/('action_v3' if args.action else 'polish_v2')
 FF=imageio_ffmpeg.get_ffmpeg_exe()
-data=json.loads((SRC/'build.json').read_text(encoding='utf-8'))
+data=json.loads((OUT/'build.json' if (OUT/'build.json').exists() else SRC/'build.json').read_text(encoding='utf-8'))
 count,fps=data['frames'],data['fps']
-plates=[background(Image.open(SRC/f'plate_{i}.png'),i) for i in range(len(data['cuts'])-1)]
+plate_sources=data.get('plate_sources',list(range(len(data['cuts'])-1)))
+plates=[background(Image.open(OUT/f'plate_{i}.png' if (OUT/f'plate_{i}.png').exists() else SRC/f'plate_{source}.png'),source)
+        for i,source in enumerate(plate_sources)]
 (OUT/'frames').mkdir(exist_ok=True)
 changes=[];previous=None;clipped=[];source_hashes={}
 for frame in range(count):
     shot=max(i for i,cut in enumerate(data['cuts'][:-1]) if cut<=frame)
-    path=OUT/'layers'/f'f{frame:05d}.png'
+    path=OUT/('final_layers' if args.action else 'layers')/f'f{frame:05d}.png'
     source_hashes[path.name]=hashlib.sha256(path.read_bytes()).hexdigest()
     with Image.open(path) as actor:
         final=finish(Image.alpha_composite(plates[shot],actor.convert('RGBA')))
+        if args.action:final=action_glow(final,frame)
     assert final.size==(540,960)
     pixels=np.asarray(final)
     clipped.append({'frame':frame,'black':float((pixels.max(2)<3).mean()),
@@ -35,8 +42,8 @@ for frame in range(count):
         changes.append((frame,float(np.abs(previous-sample).mean())))
     previous=sample
     final.save(OUT/'frames'/f'f{frame:05d}.png')
-sound,sound_report=build(OUT)
-video=OUT/'pudge_tank_v2.mp4'
+sound,sound_report=build(ROOT/'_game/skits/pudge_tank/polish_v2' if args.action else OUT)
+video=OUT/('pudge_tank_v3.mp4' if args.action else 'pudge_tank_v2.mp4')
 subprocess.run([FF,'-y','-v','error','-framerate',str(fps),'-start_number','0',
     '-i',str(OUT/'frames/f%05d.png'),'-i',str(sound),'-frames:v',str(count),
     '-c:v','libx264','-crf','14','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k',

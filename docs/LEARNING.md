@@ -17,6 +17,7 @@
 | Проверка проекта | `tools/check.py` |
 | Защита запуска и исправления рабочего процесса | `tools/skit/run_verified.py`, [WORKFLOW_AUDIT](studies/WORKFLOW_AUDIT.md) |
 | Подбор готовых решений, включая независимых авторов | [READY_MADE_TOOLS](studies/READY_MADE_TOOLS.md), [RETARGET_CANDIDATES](studies/RETARGET_CANDIDATES.md) |
+| Перенос движения готовым Retarget | `tools/blender/study_retarget_*.py`, [Пудж](studies/RETARGET_CHARACTER.md), [разные длины](studies/RETARGET_PROPORTIONS.md), [оси](studies/RETARGET_AXES.md); узкая проверка, не универсальный mocap |
 | Перекат стопы (изолированная кинематика, не походка героя) | `tools/blender/study_foot_roll.py`, [FOOT_ROLL](studies/FOOT_ROLL.md) |
 | Установка и полный список внешних файлов | [SETUP.md](SETUP.md), [LOCAL_FILES.md](LOCAL_FILES.md) |
 
@@ -191,3 +192,8 @@ py -3.11 tools/skit/assemble_study.py skits/chase_v5_assembly.json --assets _gam
 [Склейка на непрерывном движении](studies/BLOCKING_MATCHCUT.md): две камеры одного действия, сохранение поз после пересохранения сцены. Это техническое упражнение без предмета и сюжетной цели.
 
 [Читаемый ракурс погони](studies/CHASE_CAMERA.md): применение композиции к целой сценке, с проверкой крупности и последующим просмотром движения.
+
+Третья подборка — `learning_transfer_2026_11_01.mp4` (10 с/30fps):
+перекат стопы с двух сторон и технический перенос малого движения на Пуджа.
+Рецепт — `skits/learning_transfer_2026_11_01.json`; ограниченный Retarget
+не означает готовность естественных жестов, походки или произвольного mocap.

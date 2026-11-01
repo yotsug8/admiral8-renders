@@ -29,7 +29,11 @@
 
 Контрольная первичная документация Blender: [переход на Slotted Actions](https://developer.blender.org/docs/release_notes/4.4/upgrading/slotted_actions/) объясняет channelbags и удаление legacy API в 5.0; [ActionKeyframeStrip](https://docs.blender.org/api/current/bpy.types.ActionKeyframeStrip.html) описывает `channelbag(slot)`. Фактическое исполнение на конкретном build Blender 5.2 остаётся обязательной следующей проверкой. Статический поиск не является полным аудитом безопасности или лицензий всех заимствованных компонентов.
 
-## Будущий smoke-test: 2 секунды, одна копия Пуджа
+## Первоначальный план smoke-test: 2 секунды, одна копия Пуджа
+
+План ниже сохранён для сопоставления. Фактические API-ограничения,
+изоляция и результаты: [SMOKE](RETARGET_SMOKE.md),
+[CHARACTER](RETARGET_CHARACTER.md), [PROPORTIONS](RETARGET_PROPORTIONS.md).
 
 Предварительная проверка дополнительного компьютера: Blender 5.2.0 LTS,
 build `fbe6228777e7`, `--factory-startup`; `find_spec` обнаружил
@@ -40,7 +44,7 @@ build `fbe6228777e7`, `--factory-startup`; `find_spec` обнаружил
 
 **Ещё не выполнялся.** Следующий шаг — изолированная проба по закреплённому пакету, без установки в рабочий профиль и без изменений производственной сцены:
 
-1. Отдельный процесс Blender **5.2 с записанным build hash**, временный профиль/каталоги CONFIG, SCRIPTS и EXTENSIONS; исходящие соединения запрещены на уровне среды, обновления extension выключены. Auto Run Python Scripts выключен (это не блокирует код включённого аддона). Только проверенный asset/hash. До включения проверить наличие `io_scene_fbx`; при отсутствии — остановка и запись зависимости, без pip/доустановок/патча наугад. Rigify для этой пробы не нужен.
+1. Отдельный процесс Blender **5.2 с записанным build hash**, временный профиль/каталоги CONFIG, SCRIPTS и EXTENSIONS; в фактическом harness Python audit hook блокирует socket/subprocess, но не является системной сетевой песочницей; обновления extension не запускаются. Auto Run Python Scripts выключен (это не блокирует код включённого аддона). Только проверенный asset/hash. До включения проверить наличие `io_scene_fbx`; при отсутствии — остановка и запись зависимости, без pip/доустановок/патча наугад. Rigify для этой пробы не нужен.
 2. Открыть **копию** `_game/study/foundations/reach_witness/point_A.blend` в `_game/study/retarget_smoke/`; оригинал защитить и сверить SHA256 до/после. Состав исходника описан в [CHARACTER_OVERLAP.md](CHARACTER_OVERLAP.md): Пудж, одежда, крюк; цепочка `root → spine1 → spine2 → spine3 → neck1 → head`. Отделить actions/armature/mesh data копии, заморозить прежние action/NLA в позе кадра 0; связи одежды/крюка сохранить. Не использовать актуальную сцену калибровки глаз.
 3. Донор — отдельная голая armature из этих шести костей, с теми же rest-матрицами и иерархией, но именами `SRC_*`; никаких скачанных mocap/пресетов. Единственный новый OBJECT-slot. 30 fps, кадры **1–60** (2 с): ключи 1/16/31/46/60; `spine2` — 0/+4°/0/−4°/0 вокруг явно записанной локальной оси наклона, `neck1` — 0/−3°/0/+3°/0 вокруг локальной оси поворота головы; линейная интерполяция. Root, ноги и лицо неподвижны. Это намеренно узкий тест переноса верхней части тела с известным ожидаемым движением.
 4. Вручную сопоставить шесть костей через поля mapping, без исполнения `.py`-presets. Выбрать копию Пуджа, последним активным — **донор** (`Bind To`). `Bind to Active Armature`: Copy Rotation on, Copy Location/Scale off, No Root; Fit height None, Apply rotation/центрирование/Match Object Transform off; исключить IK/FK-конверсию, Fix Foot, floating bones и автоподгонку. Начальная rest-ориентация одинакова. Записать список новых helper bones/constraints и настройки; проверить, что изменились только назначенные цепочки.

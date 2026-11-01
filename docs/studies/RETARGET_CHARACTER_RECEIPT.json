@@ -1,0 +1,140 @@
+{
+  "scope": "Frozen Pudge, matched rest, small upper body motion; not general motion capture",
+  "build": {
+    "source_sha256": "287c698f6a3061355960a68120f2b66d7b383b65074497f135f10702a9ddb8b0",
+    "package_sha256": "521ec8ff5c2373893ea8022b3f71d27ed191fb73f3a5634cac31585e0dcb7af3",
+    "blender_version": "5.2.3 LTS",
+    "frozen_surface_error": 1.52587890625e-05,
+    "removed_layout_translation": [
+      -107.9502182006836,
+      -81.78816223144531,
+      0.0
+    ],
+    "donor_rest_error": 1.1920928955078125e-07,
+    "prebind_initial_pose": {
+      "samples": 237,
+      "bone_matrices": 1422,
+      "max_translation_m": 2.4755668231600746e-07,
+      "max_rotation_deg": 9.449702726728657e-06,
+      "max_matrix_element": 2.384185791015625e-07,
+      "passed": true
+    },
+    "binding_options": {
+      "src_preset": "--Current--",
+      "trg_preset": "--Current--",
+      "same_bone_names": false,
+      "bind_by_name": false,
+      "loc_constraints": false,
+      "rot_constraints": true,
+      "scal_constraints": false,
+      "bind_floating": false,
+      "fit_target_scale": "--",
+      "match_transform": "None",
+      "match_object_transform": false,
+      "center": false,
+      "apply_rotation": false,
+      "adjust_location": false,
+      "advance_setting": false,
+      "hand_fk_ik": false,
+      "foot_fk_ik": false,
+      "hand_ik_fk": false,
+      "foot_ik_fk": false,
+      "align_rest_pose": false,
+      "align_leg": false,
+      "math_look_at": false,
+      "copy_IK_roll_hands": false,
+      "copy_IK_roll_feet": false,
+      "fix_foot": false,
+      "constrain_root": "Default",
+      "constraint_policy": "nothing",
+      "play": false,
+      "action_range": false,
+      "transfer_pose": false,
+      "force_dialog": false
+    },
+    "bind_result": [
+      "FINISHED"
+    ],
+    "donor_to_live": {
+      "samples": 237,
+      "bone_matrices": 1422,
+      "max_translation_m": 7.592284204278586e-07,
+      "max_rotation_deg": 2.1312962359746866e-05,
+      "max_matrix_element": 7.152557373046875e-07,
+      "passed": true
+    },
+    "static_negative_control": "caught",
+    "live_to_baked": {
+      "samples": 237,
+      "bone_matrices": 1422,
+      "max_translation_m": 1.7226154824040443e-06,
+      "max_rotation_deg": 2.0547183829018863e-05,
+      "max_matrix_element": 1.6689300537109375e-06,
+      "passed": true
+    },
+    "initial_surface_error": 1.430511474609375e-06,
+    "source_unchanged": true
+  },
+  "audit": {
+    "reopen": {
+      "samples": 237,
+      "bone_matrices": 1422,
+      "max_translation_m": 1.7226154824040443e-06,
+      "max_rotation_deg": 2.0547183829018863e-05,
+      "max_matrix_element": 1.6689300537109375e-06,
+      "passed": true
+    },
+    "protected_bone_error": 5.401670932769775e-07,
+    "max_edge_ratio": 1.225008792775059,
+    "max_sole_drift": 2.9950963321688443e-07,
+    "meshes": {
+      "models\\heroes\\pudge\\pudge.vmdl_c.head": 1.225008792775059,
+      "models\\heroes\\pudge\\pudge.vmdl_c.upper_body": 1.1689487134382717,
+      "models\\heroes\\pudge\\pudge.vmdl_c.lower_body": 1.0000115046984543,
+      "models\\heroes\\pudge\\pudge.vmdl_c.hitbox_fix": 1.0000166390362326,
+      "models\\heroes\\pudge\\back.vmdl_c.back_model": 1.0962677946497124,
+      "models\\heroes\\pudge\\belt.vmdl_c.belt_model": 1.0000051537840824,
+      "models\\heroes\\pudge\\bracer.vmdl_c.bracer_model": 1.0000115916200079,
+      "models\\heroes\\pudge\\hair.vmdl_c.hair_model": 1.000079992696937,
+      "models\\heroes\\pudge\\leftarm.vmdl_c.leftarm_model": 1.0600208262747233,
+      "models\\heroes\\pudge\\righthook.vmdl_c.righthook_model": 1.0000082825533352
+    },
+    "weapon_crossings": {
+      "baseline": {
+        "models\\heroes\\pudge\\pudge.vmdl_c.head": 0,
+        "models\\heroes\\pudge\\pudge.vmdl_c.upper_body": 0,
+        "models\\heroes\\pudge\\pudge.vmdl_c.lower_body": 0,
+        "models\\heroes\\pudge\\leftarm.vmdl_c.leftarm_model": 0
+      },
+      "max_new": 0
+    },
+    "technical_pass": true,
+    "source_unchanged": true,
+    "limits": "Edge deformation, selected lowest sole band, hook/skin triangle crossings excluding weighted grip. Not containment, cloth simulation or valid grasp certification; visual QA required."
+  },
+  "media": {
+    "file": "retarget_character.mp4",
+    "sha256": "7a4ddeb6387080fb895bbebfb9cbcdc7b63685ffe4812b20ef9764a737a9d03f",
+    "frames": 60,
+    "fps": 30.0,
+    "size": [
+      1280,
+      640
+    ],
+    "silent": true
+  },
+  "visual_review": {
+    "views": [
+      "front",
+      "side"
+    ],
+    "frames_each": 60,
+    "large_keys": [
+      1,
+      16,
+      46
+    ],
+    "method": "all frames on contact sheets plus full-size key poses",
+    "limits": "Occluded areas, hidden cleaver, complete containment and dynamic cloth not certified"
+  }
+}

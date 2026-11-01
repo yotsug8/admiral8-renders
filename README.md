@@ -48,3 +48,5 @@
 
 - [Двуручный поворот коробки — ¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_prop_turn_three_quarter.mp4) и [профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_prop_turn_profile.mp4) — манекен с плоскими ладонями, по 4 с/30fps, без звука; удержание поверхности без пальцев и физики масс.
 - [Учебные контакты: прыжок и двуручный поворот](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/learning_contacts_2026_11_01.mp4) — сводка, 15 с/30fps; два упражнения с двух сторон, с ограничениями результата.
+
+- [Перекат стопы — профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_foot_roll_profile.mp4) и [¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_foot_roll_three_quarter.mp4) — по4с/30fps, без звука; пятка → подошва → носок. Жёсткий манекен, не естественная походка героя или баланс. Повторная проверка и границы — docs/studies/FOOT_ROLL.md в main.

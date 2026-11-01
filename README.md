@@ -27,3 +27,4 @@
 - [Два направления кисти Пуджа](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_reach_directions.mp4) — техническая проба 2,8 с/30 fps, без звука; ограничения в docs/studies/REACH_ATTENTION.md основной ветки.
 
 - [Перенос двух направлений на Снайпера](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_reach_sniper.mp4) — техническая проба 2,8 с/30 fps, без звука; ограничения в docs/studies/REACH_ATTENTION.md основной ветки.
+`n- [Погоня v6](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v6_30fps.mp4) — 12,8 с, 360×640/30 fps; новый первый ракурс погони, согласованная панорама шагов. Предпросмотр, не финальный 1080p.

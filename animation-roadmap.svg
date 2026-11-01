@@ -108,7 +108,7 @@
 <rect x="64" y="581" width="650" height="46" rx="5" fill="#c0cada"/>
 <text x="86" y="590" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" font-weight="700" fill="#101b25">ЕЩЁ ПРЕДСТОИТ</text>
 <text x="66" y="670" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700" fill="#efae69">12 НАПРАВЛЕНИЙ</text>
-<text x="66" y="710" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400" fill="#a9b9bf">01.11.2026  /  ВЕРСИЯ 03</text>
+<text x="66" y="710" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400" fill="#a9b9bf">01.11.2026  /  ВЕРСИЯ 04</text>
 <rect x="830" y="744" width="706" height="37" rx="3" fill="#101b25"/>
 <text x="850" y="752" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#a9b9bf">КАДР ИЗ НАШЕЙ СЦЕНКИ · BLENDER</text>
 <path d="M64,799 L1536,799" stroke="#efae69" stroke-width="3"/>
@@ -251,8 +251,8 @@
 <rect x="1070" y="2642" width="456" height="132" rx="4" fill="#153e30"/>
 <rect x="1070" y="2642" width="6" height="132" rx="2" fill="#54e698"/>
 <text x="1088" y="2653" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#54e698">ГОТОВО В ПРОБАХ</text>
-<text x="1088" y="2686" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Есть принятый вид сценки; небо, карта и</text>
-<text x="1088" y="2714" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">дальнее окружение.</text>
+<text x="1088" y="2686" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Игровой вид; тень прыжка удержана на</text>
+<text x="1088" y="2714" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">земле в проверенной сценке.</text>
 <rect x="1070" y="2786" width="456" height="132" rx="4" fill="#303c50"/>
 <rect x="1070" y="2786" width="6" height="132" rx="2" fill="#c0cada"/>
 <text x="1088" y="2797" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#c0cada">ЕЩЁ НЕ ГОТОВО</text>
@@ -267,8 +267,8 @@
 <rect x="74" y="3122" width="456" height="132" rx="4" fill="#153e30"/>
 <rect x="74" y="3122" width="6" height="132" rx="2" fill="#54e698"/>
 <text x="92" y="3133" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#54e698">ГОТОВО В ПРОБАХ</text>
-<text x="92" y="3166" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Подключены голоса и события; есть</text>
-<text x="92" y="3194" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">технические проверки сведения.</text>
+<text x="92" y="3166" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Голоса и события; разделение эффектов и</text>
+<text x="92" y="3194" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">тишина пауз проверены в AAC.</text>
 <rect x="74" y="3266" width="456" height="132" rx="4" fill="#303c50"/>
 <rect x="74" y="3266" width="6" height="132" rx="2" fill="#c0cada"/>
 <text x="92" y="3277" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#c0cada">ЕЩЁ НЕ ГОТОВО</text>
@@ -280,8 +280,8 @@
 <rect x="572" y="3122" width="456" height="132" rx="4" fill="#153e30"/>
 <rect x="572" y="3122" width="6" height="132" rx="2" fill="#54e698"/>
 <text x="590" y="3133" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#54e698">ГОТОВО В ПРОБАХ</text>
-<text x="590" y="3166" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Пробы 30 кадров/с, единая постобработка</text>
-<text x="590" y="3194" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">и проверка готового файла.</text>
+<text x="590" y="3166" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">Единый цвет и отделение фона проверены</text>
+<text x="590" y="3194" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400" fill="#f7efe2">на 10-секундной пробе.</text>
 <rect x="572" y="3266" width="456" height="132" rx="4" fill="#303c50"/>
 <rect x="572" y="3266" width="6" height="132" rx="2" fill="#c0cada"/>
 <text x="590" y="3277" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700" fill="#c0cada">ЕЩЁ НЕ ГОТОВО</text>

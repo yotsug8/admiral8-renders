@@ -13,6 +13,7 @@ parser.add_argument('--out',type=Path,default=ROOT/'_game/skits/chase')
 parser.add_argument('--full',action='store_true')
 parser.add_argument('--preview',action='store_true')
 parser.add_argument('--grounded-run',type=Path,help='Optional experimental Hoodwink action library; keeps the original build as default')
+parser.add_argument('--forest-depth',action='store_true',help='Add native scenery around the revised chase corridor')
 args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
 if args.grounded_run:
  args.grounded_run=args.grounded_run.resolve()
@@ -95,9 +96,14 @@ for who,A in ACTORS.items():
 bpy.ops.wm.save_as_mainfile(filepath=str(P/'actors_cache.blend'))
 
 # Runners move down the open corridor. Read the audited route when available.
-X=-83.;Y=78.5;SPEED=5.0
+X=-83.;Y=78.5;SPEED=float(spec.get('chase_speed_mps',5.0))
+if not math.isfinite(SPEED) or SPEED<=0:raise ValueError('Chase speed must be positive and finite')
 def root_at(who,t):
- progress=min(FRONT_END-PANIC_END,max(0,t-PANIC_END))*SPEED
+ # Each chase shot stages its own safe forest corridor. The camera cut hides
+ # relocation; never interpolate the actor across that cut into scenery.
+ shot_start=SIDE_END if t>=SIDE_END else PANIC_END
+ shot_end=FRONT_END if t>=SIDE_END else SIDE_END
+ progress=min(shot_end-shot_start,max(0,t-shot_start))*SPEED
  return Vector((X,Y+(3.5 if who=='hoodwink' else 0)+progress,3.25119+(.00885 if who=='kunkka' else 0 if args.grounded_run else .0185)))
 for who,A in ACTORS.items():
  root=A['root']
@@ -110,7 +116,7 @@ for who,A in ACTORS.items():
   for st in a.strips:
    for bag in st.channelbags:
     for fc in bag.fcurves:
-     for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' else 'LINEAR'
+     for k in fc.keyframe_points:k.interpolation='CONSTANT' if fc.data_path=='rotation_euler' or round(k.co.x)+1==round(SIDE_END*FPS) else 'LINEAR'
 A=ACTORS['hoodwink'];run=A['acts'].get('mouse_run_squirrel') or A['acts']['mouse_run_squirrel_anim']
 from chase_performance import make_seamless_run,apply_panic
 if args.grounded_run:
@@ -177,6 +183,7 @@ FIT_FACTORS={}
 SHOT_FIT={}
 
 def place(f, forced=None):
+ if f%60==0:print('CHASE_CAMERA',f,'bake' if forced is not None else 'fit',flush=True)
  sc.frame_set(f);t=f/FPS;k=root_at('kunkka',t);h=root_at('hoodwink',t)
  kvis=t<SEARCH_END or FOUND_END<=t<REVEAL_END or PANIC_END<=t<CLOSE_END
  hvis=SEARCH_END<=t<FOUND_END or REVEAL_END<=t<FRONT_END
@@ -191,7 +198,7 @@ def place(f, forced=None):
  elif t<PANIC_END:
   target=head_at('hoodwink')+Vector((0,0,-.05));pos=target+Vector((.9,-5.2,.3));lens=46;aperture=3.2
  elif t<SIDE_END:
-  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-12,3,1));lens=29;fit=['kunkka','hoodwink'];aperture=5.6
+  target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-9,1.5));lens=29;fit=['kunkka','hoodwink'];aperture=5.6
  elif t<FRONT_END:
   u=min(1,max(0,(t-(FRONT_END-.35))/.35));u=u*u*(3-2*u)
   target=(h+Vector((0,-1.6,1.7))).lerp(head_at('kunkka'),u)
@@ -230,6 +237,12 @@ for owner in (camera,camera.data):
      for k in fc.keyframe_points:
       cuts={round(x['start']*FPS) for x in spec['shots'][1:]}
       k.interpolation='CONSTANT' if round(k.co.x)+1 in cuts else 'LINEAR'
+if args.forest_depth:
+ from chase_environment import extend_chase_forest
+ route_length=max(SIDE_END-PANIC_END,FRONT_END-SIDE_END)*SPEED
+ depth=extend_chase_forest(sc,x=X,y=Y,length=route_length,
+                          ground_end_y=Y+route_length+3.5)
+ (P/'forest_depth.json').write_text(json.dumps(depth,indent=2))
 # Remove only map objects that obstruct a required face from the baked cameras.
 actor_objects={o for A in ACTORS.values() for o in A['objs']}
 removed=[]
@@ -251,7 +264,7 @@ for f in range(END+1):
     if length<=.02:break
    if blocker is None:break
    if blocker.type!='MESH' or 'tree' not in blocker.name.lower():
-    raise ValueError('Camera crosses solid scenery; change camera instead of hiding terrain: '+blocker.name)
+    raise ValueError(f'Camera crosses solid scenery at frame {f}; change camera instead of hiding terrain: '+blocker.name)
    parts={blocker}
    for old,new in (('_model.','_inspector.'),('_inspector.','_model.')):
     if old in blocker.name:

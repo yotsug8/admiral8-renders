@@ -2,7 +2,7 @@
   "title": "Тихий капитан",
   "format": "vertical_animation",
   "fps": 30,
-  "duration": 9.6,
+  "duration": 12.8,
   "resolution": [
     1080,
     1920
@@ -40,27 +40,28 @@
     },
     {
       "start": 4.8,
-      "end": 6.4,
+      "end": 8.0,
       "kind": "side_chase",
       "action": "Белка бежит, капитан скользит за ней без движения тела"
     },
     {
-      "start": 6.4,
-      "end": 8.0,
+      "start": 8.0,
+      "end": 11.2,
       "kind": "front_chase",
       "action": "Погоня приближается к камере"
     },
     {
-      "start": 8.0,
-      "end": 9.3,
+      "start": 11.2,
+      "end": 12.5,
       "kind": "loom",
       "action": "Белка выбегает из показа; капитан застывает перед камерой"
     },
     {
-      "start": 9.3,
-      "end": 9.6,
+      "start": 12.5,
+      "end": 12.8,
       "kind": "black",
       "action": "Резкая тишина и чёрный конец"
     }
-  ]
+  ],
+  "chase_speed_mps": 7.5
 }

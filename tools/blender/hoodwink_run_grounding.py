@@ -17,6 +17,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--metadata',type=Path,required=True)
 parser.add_argument('--output',type=Path,required=True)
 parser.add_argument('--step',type=float,default=.0625)
+parser.add_argument('--stabilize-recovery',action='store_true',help='Experimental world-space wrist transition during swing only')
 args=parser.parse_args(sys.argv[sys.argv.index('--')+1:])
 args.metadata=args.metadata.resolve();args.output=args.output.resolve()
 if not 1/64<=args.step<=.25:raise ValueError('Sample step must be between 1/64 and 1/4 frame')
@@ -65,6 +66,24 @@ for n,selections in paw_sets.items():
   finally:ev.to_mesh_clear()
  _,o,i,point=min(choices,key=lambda v:v[0]);anchors[n]=(o,i,point-root.matrix_world.translation)
 def smooth(x):x=min(1,max(0,x));return x*x*(3-2*x)
+
+recovery={}
+if args.stabilize_recovery:
+ for n in ('hand_L','hand_R'):
+  for start,end in ((4.,8.),(16.,20.)):
+   rotations=[]
+   for f in (start,end):
+    sc.frame_set(int(f));bpy.context.view_layer.update()
+    rotations.append(mat(n).to_quaternion())
+   recovery[n,start,end]=rotations
+
+def stabilize_recovery(f):
+ # The native wrist turn is spread through its airborne recovery. Position,
+ # segment lengths and the rest of the skeleton remain source-driven.
+ for (n,start,end),(a,b) in recovery.items():
+  if start<=f<=end:
+   position,rotation,scale=mat(n).decompose()
+   put(n,Matrix.LocRotScale(position,a.slerp(b,smooth((f-start)/(end-start))),scale))
 def correct_floor(f):
  for n,selections in paw_sets.items():
   u=(f-(0 if n.startswith('hand') else 6))%12
@@ -92,6 +111,7 @@ frames=np.unique(np.r_[np.arange(0,24,args.step),24.])
 for f in frames:
  sc.frame_set(math.floor(f),subframe=float(f%1));bpy.context.view_layer.update()
  lengths={(a,b):(mat(a).translation-mat(b).translation).length for a,b in chains}
+ stabilize_recovery(float(f))
  correct_floor(float(f))
  max_length_error=max(max_length_error,max(abs((mat(a).translation-mat(b).translation).length-lengths[a,b]) for a,b in chains))
  samples.append(dict(frame=float(f),basis={b.name:b.matrix_basis.copy() for b in bones}))
@@ -101,6 +121,7 @@ action.use_fake_user=True
 args.output.parent.mkdir(parents=True,exist_ok=True)
 bpy.data.libraries.write(str(args.output),{action},fake_user=True)
 report=dict(action=action.name,source_action=native.name,samples=len(samples),step=args.step,
+ stabilize_recovery=args.stabilize_recovery,
  source_speed_mps=10.31508565,scene_rate_at_5_mps=5/10.31508565,
  max_segment_length_error_m=max_length_error,
  limits='Experimental flat-floor contact correction. Baked playback, transitions, clothing, weapon and final camera require independent verification.')

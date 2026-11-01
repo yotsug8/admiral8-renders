@@ -12,8 +12,9 @@ apply_panic(ACTORS, scene=None, FPS=None, who='hoodwink', start=4.2, end=4.8,
             native_flail=None, strength=.75) adds a REPLACE upper-body strip.
 Times are seconds, absolute frames=time*FPS. Install after the source idle/run
 strips so zero-weight endpoints match the actual underlying transition.
-Only descendants of spine_0 are keyed: native flail rotations, bounded per
-joint, with sin^2 attack/release. Pelvis, lower limbs, actor/object transforms,
+Only descendants of spine_0 are keyed: one native flail pose, bounded per
+joint, with sin^2 attack/release. Do not compress a full shaking cycle into
+the short reaction window. Pelvis, lower limbs, actor/object transforms,
 root trajectory, source actions, meshes and facial morphs are untouched.
 No baked face-expression claims: Hoodwink's native bone ears/head are used.
 Source feet are preserved, not planted by this helper. Dense keys and midpoint
@@ -180,7 +181,7 @@ def make_seamless_run(arm,native_run,*,scene=None,name='chase_hoodwink_run'):
 
 
 def apply_panic(ACTORS,*,scene=None,FPS=None,who='hoodwink',start=4.2,end=4.8,native_flail=None,strength=.75):
-    """Install native upper-body flail overlay; return JSON-safe diagnostics."""
+    """Install a single upper-body recoil; return JSON-safe diagnostics."""
     scene=scene or bpy.context.scene;fps=_positive(FPS or scene.render.fps,'FPS')
     if not isinstance(start,(int,float)) or not math.isfinite(start) or start<0:raise ValueError('invalid panic start')
     if not isinstance(end,(int,float)) or not math.isfinite(end) or end<=start:raise ValueError('invalid panic end')
@@ -220,9 +221,10 @@ def apply_panic(ACTORS,*,scene=None,FPS=None,who='hoodwink',start=4.2,end=4.8,na
             witnesses[frame]={name:evaluated.matrix_world @ evaluated.pose.bones[name].matrix for name in feet}
             if frame in frames:baseposes[frame]={b.name:evaluated.pose.bones[b.name].matrix_basis.copy() for b in bones}
         proxy=_proxy(arm,native_flail,scene);a,b=map(float,native_flail.frame_range);samples=[]
+        native=_read(proxy,scene,(a+b)/2,[bone.name for bone in bones])
         for frame in frames:
             u=(frame-f0)/(f1-f0);weight=math.sin(math.pi*u)**2*strength
-            native=_read(proxy,scene,a+(b-a)*u,[bone.name for bone in bones]);basis={}
+            basis={}
             for bone in bones:
                 loc,q,scale=baseposes[frame][bone.name].decompose();_,target,_=native[bone.name].decompose()
                 if q.dot(target)<0:target.negate()
@@ -246,6 +248,7 @@ def apply_panic(ACTORS,*,scene=None,FPS=None,who='hoodwink',start=4.2,end=4.8,na
                 if not math.isfinite(difference) or difference>1e-5:raise ValueError('panic modified native lower-body/feet')
                 error=max(error,difference)
         return dict(action=action.name,track=track.name,source=native_flail.name,seconds=[start,end],
+                    reaction='single_pose_recoil',source_pose_frame=(a+b)/2,
                     keyed_bones=[bone.name for bone in bones],ear_bones=[bone.name for bone in bones if bone.name.startswith('ear_')],
                     max_foot_matrix_error=error,independent_midpoints=len(checks)-len(frames),
                     root_pelvis_keys_added=False,facial_morphs_used=False)

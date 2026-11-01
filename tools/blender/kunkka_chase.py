@@ -181,8 +181,10 @@ def head_at(who):
 
 FIT_FACTORS={}
 SHOT_FIT={}
+PANIC_HEAD=None
 
 def place(f, forced=None):
+ global PANIC_HEAD
  if f%60==0:print('CHASE_CAMERA',f,'bake' if forced is not None else 'fit',flush=True)
  sc.frame_set(f);t=f/FPS;k=root_at('kunkka',t);h=root_at('hoodwink',t)
  kvis=t<SEARCH_END or FOUND_END<=t<REVEAL_END or PANIC_END<=t<CLOSE_END
@@ -196,7 +198,9 @@ def place(f, forced=None):
  elif t<REVEAL_END:
   target=k+Vector((0,0,2));pos=target+Vector((0,14,.5));lens=32;fit=['kunkka'];aperture=5.6
  elif t<PANIC_END:
-  target=head_at('hoodwink')+Vector((0,0,-.05));pos=target+Vector((.9,-5.2,.3));lens=46;aperture=3.2
+  if PANIC_HEAD is None:
+   sc.frame_set(round(REVEAL_END*FPS));PANIC_HEAD=head_at('hoodwink').copy();sc.frame_set(f)
+  target=PANIC_HEAD+Vector((0,0,-.05));pos=target+Vector((.9,-5.2,.3));lens=46;aperture=3.2
  elif t<SIDE_END:
   target=(k+h)/2+Vector((0,0,1.8));pos=target+Vector((-10,-9,1.5));lens=29;fit=['kunkka','hoodwink'];aperture=5.6
  elif t<FRONT_END:

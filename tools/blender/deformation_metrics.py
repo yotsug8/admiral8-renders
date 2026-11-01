@@ -82,7 +82,7 @@ def snapshot(path, args):
 
 def compare(base, candidate, frame, args):
     if (len(base['points']) != len(candidate['points']) or
-            any(base[key] != candidate[key] for key in ('edges', 'triangles', 'polygons'))):
+            any(base[key] != candidate[key] for key in ('edges', 'polygons'))):
         raise ValueError(f"evaluated topology differs at frame {frame}")
     p, q = base['points'], candidate['points']
     edges = []
@@ -99,6 +99,9 @@ def compare(base, candidate, frame, args):
         if ratio is None:
             zero_edges.append(index)
     triangles = []
+    # Tessellation diagonals of an unchanged polygon can change under deformation
+    # (or floating-point rotation). Compare a fixed reference triangulation so
+    # both areas use the same vertices; actual edge/polygon topology stays strict.
     for index, ids in enumerate(base['triangles']):
         a, b, c = ids
         n = (p[b] - p[a]).cross(p[c] - p[a])
@@ -117,6 +120,7 @@ def compare(base, candidate, frame, args):
     normals = sorted([t for t in triangles if t['normal_rotation_deg'] is not None],
                      key=lambda t: t['normal_rotation_deg'], reverse=True)
     return dict(frame=frame, threshold_exceeded=bool(stretch or contraction),
+                evaluated_tessellation_changed=base['triangles'] != candidate['triangles'],
                 vertex_count=len(p), edge_count=len(edges), triangle_count=len(triangles),
                 max_edge_ratio=max((e['ratio'] for e in valid_edges), default=None),
                 max_growth_m=max((e['growth_m'] for e in edges), default=None),
@@ -161,6 +165,7 @@ def main():
         'These metrics do not infer physical contact or collisions.',
         'World transforms and scene scale_length are applied; rigid pose rotations affect normals.',
         'Matching topology does not prove matching vertex semantics; degenerate ratios are null.',
+        'Areas use fixed reference triangles; changed tessellation of identical polygons is reported, not treated as changed topology.',
         'Threshold pass is not proof of visually correct deformation.'])
     try:
         if (args.top < 1 or not all(math.isfinite(v) for v in

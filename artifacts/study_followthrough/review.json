@@ -1,0 +1,55 @@
+{
+  "samples_per_actor": 2145,
+  "foot_matrix_error": 0.0,
+  "length_error": 1.2612021967617348e-06,
+  "joint_error": 0.0001473658033935661,
+  "min_floor": 0.0,
+  "min_clearance": 0.04492624044983212,
+  "min_margin": 0.09792119264602661,
+  "max_point_step": 0.002172356021978437,
+  "primary_pair_error": 0.0,
+  "hard_poststop_motion": 0.0,
+  "settled_error": 0.0,
+  "followthrough": {
+    "body": {
+      "residual_at_stop": -0.16070815346503406,
+      "overshoot": 0.011504426887682813,
+      "peak_seconds": 1.9,
+      "sign_changes_after_stop": 2
+    },
+    "head": {
+      "residual_at_stop": -0.27442437081738785,
+      "overshoot": 0.01967080342371828,
+      "peak_seconds": 1.9666666666666666,
+      "sign_changes_after_stop": 2
+    },
+    "L_hand": {
+      "residual_at_stop": -0.06588566303253174,
+      "overshoot": 0.004750609397888184,
+      "peak_seconds": 2.0375,
+      "sign_changes_after_stop": 1
+    },
+    "R_hand": {
+      "residual_at_stop": -0.08348530530929565,
+      "overshoot": 0.006064772605895996,
+      "peak_seconds": 2.1458333333333335,
+      "sign_changes_after_stop": 1
+    }
+  },
+  "blender_version": "5.2.0 LTS",
+  "engine": "CYCLES",
+  "negative_tests": [
+    "L_foot",
+    "R_forearm",
+    "head"
+  ],
+  "movie": {
+    "sha256": "7e3e39a8744c313ddaee51ffd8c4bb20e5ae0b74413e3c2ed3288cc66d3ff350",
+    "bytes": 76919,
+    "frames": 135,
+    "fps": 30,
+    "duration": 4.5,
+    "max_encoding_error": 1.6634490740740742
+  },
+  "elapsed_seconds": 5.45603330002632
+}

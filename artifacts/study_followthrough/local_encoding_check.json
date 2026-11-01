@@ -1,0 +1,13 @@
+{
+  "decoded_frames": 135,
+  "patch_size": [
+    32,
+    24
+  ],
+  "worst_patch_mae": 4.672309027777778,
+  "worst_frame": 49,
+  "worst_patch_xy": [
+    416,
+    48
+  ]
+}

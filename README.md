@@ -37,3 +37,5 @@
 
 - [Опора на колено и ладонь, подъём](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_recovery.mp4) — учебный манекен, два ракурса, 5,2 с, 960×540/30fps, без звука. Контролируемое опускание, не симуляция падения.
 - [Жёсткая остановка и запаздывание](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_followthrough.mp4) — два варианта рядом, 4,5 с, 640×360/30fps, без звука. Корпус и голова заметно доводят движение; различие задержек кистей слабее. Исходники и проверки обоих упражнений — docs/LEARNING.md в main.
+
+- [Указание влево](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_pointing_left.mp4) и [вправо](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_pointing_right.mp4) — внимание, поворот корпуса, жест, удержание и возврат; по 3,5 с, 640×360/30fps, без звука. Учебный манекен. Для правого жеста исправлен ракурс, движение сохранено; код и границы проверки — docs/studies/POINTING.md в main.

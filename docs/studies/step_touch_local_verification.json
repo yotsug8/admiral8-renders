@@ -1,0 +1,40 @@
+{
+  "samples": 1905,
+  "support_surface_drift": 0.0,
+  "landed_surface_drift": 0.0,
+  "length_error": 3.123770060398101e-07,
+  "joint_error": 5.506336959658678e-06,
+  "min_floor": 0.0,
+  "min_body_plane_gap": 0.009999892711639403,
+  "min_arm_clearance": 0.044995038661849174,
+  "palm_penetration": 0.0,
+  "hold_face_gap": 0.0,
+  "hold_surface_speed": 0.0,
+  "contact_area_margin": 0.12999999523162842,
+  "release_gap": 0.7399999499320984,
+  "wrist_plane_gap": 0.04999995231628418,
+  "target_drift": 0.0,
+  "max_point_step": 0.005393609652539897,
+  "max_swing_height": 0.14000000059604645,
+  "step_distance": 0.3399999961256981,
+  "backwards_foot_step": 0.0,
+  "min_margin": {
+    "profile": 0.06491649895906448,
+    "three_quarter": 0.04239386320114136
+  },
+  "airborne_intervals": 1,
+  "palm_face_vertices": 4,
+  "sole_vertices": {
+    "L": 4,
+    "R": 4
+  },
+  "blender_version": "5.2.3 LTS",
+  "engine": "CYCLES",
+  "negative_tests": [
+    "sliding_support_surface",
+    "palm_gap",
+    "palm_penetration",
+    "stretched_forearm"
+  ],
+  "elapsed_seconds": 10.875033300020732
+}

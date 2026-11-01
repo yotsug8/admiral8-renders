@@ -1,6 +1,10 @@
 # Ролики Admiral 8
 
-Нажми на ссылку, чтобы скачать. Обновлено: 28.10.2026
+Нажми на ссылку, чтобы скачать. Обновлено: 01.11.2026
+
+- [Цельная погоня Кунки и Худвинк](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_grounded_draft.mp4) — рабочий вариант, 9,6 с, 540×960, 15 fps, лес и стереозвук; не финальный рендер.
+- [Бег Худвинк с двух сторон](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/hoodwink_grounded_run_two_views.mp4) — техническая проверка сохранённой анимации, 30 fps, без карты и звука.
+- [Звуковая дорожка погони](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_grounded_audio.wav) — WAV, стерео, обновлённые события шагов.
 
 - [probe13_gest.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/probe13_gest.mp4) — проба 13: жесты по словам (ты, я, ладно, вопрос), хлопнуть по плечу, толкнуть; сбоку, без карты
 - [probe12_tide.mp4](https://github.com/yotsug8/admiral8-renders/raw/renders/probe12_tide.mp4) — проба 12: Тайдхантер — шаг, поворот спиной, замах якорем; спереди и сбоку, без карты

@@ -51,3 +51,31 @@ py -3.11 tools/skit/assemble_study.py skits/chase_v6_assembly.json --assets _gam
 Это обновлённый предпросмотр, не финальный 1080p. На склейке в 8 с герой
 становится мельче и меняется участок леса: монтаж требует художественной оценки.
 Естественность прежнего бега и скрытые поверхности заново не сертифицированы.
+
+
+## Второй ракурс, v7
+
+Для заметной смены угла вместо близких фронтальных планов второй диапазон
+240–335 снят с offset 7/4/2,6 и постоянным объективом 10 мм.
+
+```powershell
+& $env:BLENDER -b _game/skits/chase_v2/lively_fix/scene.blend --disable-autoexec --python-exit-code 2 -P tools/blender/study_chase_camera.py -- --actors _game/skits/chase_finish/actors_cache.json --out _game/skits/chase_v2/second_angle_frames --start 240 --end 335 --offset 7 4 2.6 --shot
+py -3.11 tools/skit/chase_camera_audio.py --blender $env:BLENDER --second-shot _game/skits/chase_v2/second_angle_frames/camera_candidate.blend --out _game/skits/chase_v2/two_angle_audio
+py -3.11 tools/skit/assemble_study.py skits/chase_v7_assembly.json --assets _game/skits/chase_v2 --out _game/skits/chase_v2/two_angle_delivery
+```
+
+Сначала та же команда камеры без `--shot` даёт три парные пробы.
+Второй camera_candidate.blend действителен только на 240–335.
+Просмотрены все 96 новых кадров, склейки 239/240 и 335/336 и изображение
+каждую секунду готового MP4. 381 четвертькадровая проверка поз точна,
+279 остальных PNG совпали с v6. Выход: 384 кадра, 12,8 с/360×640/30fps.
+Декодер не нашёл повторов в движущихся планах или неожиданных тёмных кадров.
+
+Пересчитана панорама всех 30 шагов двух планов. Вне 4,8–11,2 с PCM точен
+относительно исходной смеси; последние 10 мс окна переходят к прежнему звуку.
+−13,98 LUFS/−1,41 dBTP, без клиппинга и звука в конечной паузе.
+SHA256 MP4: `5d1a7a13deea5377200d2fcff1cec33a24e058ec4992ffd8d7eb30c2c2140eda`.
+
+Ограничения прежние: звук не прослушан, это не финальный 1080p и не новая
+сертификация походки. Смена участка леса сохраняется; теперь есть явная
+смена ракурса. Дальнейшая художественная оценка относится к целому ролику.

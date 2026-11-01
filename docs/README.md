@@ -49,6 +49,8 @@
 | [ci_followup.md](audit/2026-11-02/ci_followup.md) | Выбор выпусков и сохранность публикаций |
 | [render_lifecycle.md](audit/2026-11-02/render_lifecycle.md) | Закрытие ресурсов рендера и дополнительные дубли |
 | [qa_and_segments.md](audit/2026-11-02/qa_and_segments.md) | Покрытие QA, пустые проверки и скрытие старых планов |
+| [dom_safe_area.md](audit/2026-11-02/dom_safe_area.md) | Точные границы кадра и видимость DOM |
+| [media_timing.md](audit/2026-11-02/media_timing.md) | Экранный текст запасного голоса, старт и повтор звука клипов |
 | [blender_output_safety.md](audit/2026-11-02/blender_output_safety.md) | Защита исходников от перезаписи отчётом |
 | [code_cleanup.md](audit/2026-11-02/code_cleanup.md) | Уборка кода: изменения, проверки и ограничения |
 | [animation.md](audit/2026-11-01/animation.md) | Срез Blender до исправлений |

@@ -381,7 +381,7 @@ const SCN = (() => {
       while (fs > 20 && widest() > it.w - (it.pad || 0) * 2) { fs -= 2; box.style.fontSize = fs + "px"; }
     });
     // Старт клипа и Lottie: поле start, иначе время появления
-    const start = it => when(g, it.start ?? (typeof it.in === "object" ? it.in.at : null) ?? it.at ?? 0);
+    const start = it => when(g, it.start ?? (it.in && typeof it.in === "object" ? it.in.at : null) ?? it.at ?? 0);
     g.sc.vids.forEach(v => { v.cv.width = v.it.w; v.cv.height = v.it.h; v.t0 = start(v.it); });
     g.sc.models.forEach(o => { o.t0 = start(o.it); });
     g.sc.lots.forEach(o => {
@@ -423,8 +423,9 @@ const SCN = (() => {
     g.sc.vids.forEach(v => {
       const n = v.imgs.length; if (!n) return;
       const raw = Math.floor((lt - v.t0) * v.it.clip.fps);
-      const i = v.it.loop ? ((raw % n) + n) % n : Math.max(0, Math.min(n - 1, raw));   // до старта — первый кадр, после конца — последний
-      if (v.it.hold === false) v.cv.parentNode.style.visibility = raw < 0 || raw >= n ? "hidden" : "visible";   // врезка (мем): только пока идёт
+      const i = v.it.loop ? Math.max(0, raw) % n : Math.max(0, Math.min(n - 1, raw));   // до старта — первый кадр, после конца — последний или повтор
+      const hidden = lt < 0 || lt >= g.s.dur || (v.it.hold === false && (raw < 0 || (!v.it.loop && raw >= n)));
+      v.cv.parentNode.style.visibility = hidden ? "hidden" : "visible";   // hold не обрывает loop; сегмент ограничивает любой клип
       v.cv.getContext("2d").drawImage(v.imgs[i], 0, 0, v.cv.width, v.cv.height);
     });
     g.sc.lots.forEach(o => {

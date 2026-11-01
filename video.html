@@ -238,7 +238,7 @@ body.tb .pg i { background: var(--acc); }
 .pcard b { display: block; font: 900 58px/1 Unbounded; }
 .pcard small { display: block; font: 800 34px/1.2 Manrope; margin-top: 8px; }
 /* «Патчноут»: номер патча, лист со смайликами, расшифровка */
-.ver { position: absolute; left: 60px; top: 480px; padding: 8px 30px 14px; border-radius: 24px; background: var(--acc); color: var(--dark);
+.ver { position: absolute; left: 80px; top: 480px; padding: 8px 30px 14px; border-radius: 24px; background: var(--acc); color: var(--dark);
   border: 6px solid var(--dark); box-shadow: 12px 12px 0 var(--ink); font: 900 110px/1 Unbounded; transform: rotate(-3deg); }
 .paper { position: absolute; left: 60px; top: 670px; width: 880px; height: 400px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
   box-shadow: 14px 14px 0 var(--acc); padding: 30px 40px; color: var(--dark); }
@@ -842,11 +842,11 @@ async function init(data) {
   // Раскладка героев по реальным пропорциям картинок
   SEGS.forEach(g => {
     const P = g.parts, s = g.s;
-    if (s.layout === "duo") { placeHero(P.heroes[0], 290, 1200, 460, 640); placeHero(P.heroes[1], 720, 1200, 420, 600); }
+    if (s.layout === "duo") { placeHero(P.heroes[0], 300, 1200, 440, 640); placeHero(P.heroes[1], 720, 1200, 420, 600); }
     // Верх героя не выше нижней строки заголовка (+20px)
     const hd = g.el.querySelector(".head");                // в финале «follow» заголовка нет
     const headBottom = hd ? hd.getBoundingClientRect().bottom + 20 : 0;
-    if (s.layout === "block") placeHero(P.hero, 600, 1080, 760, 1080 - headBottom - 60);   // запас под наезд камеры
+    if (s.layout === "block") placeHero(P.hero, 540, 1080, 740, 1080 - headBottom - 60);   // запас под наезд камеры
     if (s.layout === "grid" && P.hero) placeHero(P.hero, 270, 1380, 420, 380);
     if (s.layout === "gauge") placeHero(P.hero, 590, 960, 680, 960 - headBottom);
     if (s.layout === "mosaic") MOS.push(buildMosaic(g));
@@ -1337,16 +1337,30 @@ function audit() {
   const seg = SEGS.find(g => g.el.style.visibility === "visible");
   if (!seg) return bad;
   const R = e => e.getBoundingClientRect();
-  const vis = e => +getComputedStyle(e).opacity > 0.95;
-  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx .ln > span, .chip, .stamp2, .num, .card2, .pic, .vidbox, .lotbox"), ...document.querySelectorAll("#subs span")];
+  // Keep the settled-opacity policy, but include opacity/display of every ancestor.
+  // visibility is inherited and can be overridden by a child, so inspect its computed value.
+  const vis = e => {
+    if (!e.isConnected || !e.getClientRects().length || getComputedStyle(e).visibility !== "visible") return false;
+    let opacity = 1;
+    for (let node = e; node; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.display === "none" || (node !== e && style.contentVisibility === "hidden")) return false;
+      opacity *= Number(style.opacity);
+      if (opacity <= .95) return false;
+    }
+    return true;
+  };
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx .ln > span, .chip, .stamp2, .num, .card2, .pic, .vidbox, .lotbox, .modelbox, .animbox, img.hero"), ...document.querySelectorAll("#subs span")];
+  // A stage canvas may deliberately fill the frame; its 3D actors need a geometry audit.
+  const stages = new Set((seg.sc?.stages || []).map(s => s.box));
   items.filter(vis).forEach(e => {
     const r = R(e);
-    if (r.width && (r.left < 40 || r.right > 960 || r.top < 140 || r.bottom > 1580))
+    if (!stages.has(e) && r.width && r.height && (r.left < 60 - .01 || r.right > 940 + .01 || r.top < 150 - .01 || r.bottom > 1560 + .01))
       bad.push(`за зоной: «${e.textContent.trim().slice(0, 20) || e.className}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
   });
   const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc, .sx .ln > span, .chip, .num")].filter(vis);   // текст сцены — по строкам, а не по рамке
   // Субтитры: прямоугольник по видимым словам
-  const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim());
+  const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim() && vis(e));
   if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({
     left: Math.min(...rs.map(r => r.left)), right: Math.max(...rs.map(r => r.right)), top: Math.min(...rs.map(r => r.top)), bottom: Math.max(...rs.map(r => r.bottom)) }) }); }
   for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) {

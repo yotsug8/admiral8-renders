@@ -332,7 +332,8 @@ def speak(text, path_mp3, voice_file=None, voice=None):
     elif not FISH_KEY:
         print("  ВНИМАНИЕ: нет FISH_API_KEY, озвучка запасным голосом edge-tts")
     import re
-    return tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", say_text(text).replace("||", " ")).replace("\u0301", "").strip(), path_mp3)
+    words = tts(re.sub(r"\s*\[[^\]]*\]\s*", " ", say_text(text).replace("||", " ")).replace("\u0301", "").strip(), path_mp3)
+    return align_to_script(text.replace("\u0301", ""), words)
 
 
 def mp3_to_pcm(path):
@@ -552,6 +553,22 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
         return [resolve_scene(x, heroes, items) for x in node]
     if not isinstance(node, dict):
         return node
+    if node.get("type") in ("row", "col", "panel"):
+        # Те же shallow defaults и размеры, что в scene.js; применить до извлечения медиа.
+        node = dict(node)
+        defaults = node.pop("child", None) or {}
+        kids = [dict(defaults, **c) for c in node.get("items", [])]
+        gap = node.get("gap") if node.get("gap") is not None else 14
+        for k, c in enumerate(kids):
+            if node["type"] == "row":
+                w = (node["w"] - gap * (len(kids) - 1)) / len(kids)
+                c.update(x=k * (w + gap), y=0, w=w,
+                         h=c.get("h") if c.get("h") is not None else node.get("h"))
+            elif node["type"] == "col":
+                h = (node["h"] - gap * (len(kids) - 1)) / len(kids)
+                c.update(x=0, y=k * (h + gap), h=h,
+                         w=c.get("w") if c.get("w") is not None else node.get("w"))
+        node["items"] = kids
     if node.get("type") == "meme":
         node = meme(node)
     if node.get("type") == "video" and isinstance(node.get("src"), str):
@@ -973,11 +990,31 @@ def mix_audio(segs, total, wav_path):
         sc = s.get("scene") or {}
         for it in clips(sc.get("items")):                 # звук клипа с момента его старта
             i_ = it.get("in")
-            t0 = scene_at(sc, it.get("start", (i_.get("at") if isinstance(i_, dict) else None) or it.get("at") or 0))
-            if t0 is not None:
-                with wave.open(it["clip"]["wav"]) as w_:
-                    snd = np.frombuffer(w_.readframes(w_.getnframes()), np.int16).astype(np.float32) / 32768
-                add(s["start"] + t0, snd, float(it.get("audio", 0)))
+            at = next((v for v in (it.get("start"), i_.get("at") if isinstance(i_, dict) else None,
+                                   it.get("at"), 0) if v is not None))
+            t0 = scene_at(sc, at)
+            clip, gain = it["clip"], float(it.get("audio", 0))
+            period = round(len(clip["frames"]) / clip["fps"] * SR)
+            if t0 is None or period <= 0 or gain <= 0:
+                continue
+            origin = round((s["start"] + t0) * SR)
+            begin = max(0, round(s["start"] * SR), origin)
+            end = min(n, round(total * SR), round((s["start"] + s["dur"]) * SR))
+            if not it.get("loop"):
+                end = min(end, origin + period)
+            if begin >= end:
+                continue
+            with wave.open(clip["wav"]) as w_:
+                snd = np.frombuffer(w_.readframes(w_.getnframes()), np.int16).astype(np.float32) / 32768
+            # Период задаёт картинка: лишний PCM обрезать, короткую дорожку дополнить тишиной.
+            cycle = np.zeros(period, np.float32)
+            length = min(period, len(snd))
+            cycle[:length] = snd[:length] * gain
+            while begin < end:
+                offset = (begin - origin) % period
+                length = min(period - offset, end - begin)
+                mix[begin:begin + length] += cycle[offset:offset + length]
+                begin += length
         for e in sc.get("sounds", []):
             at = scene_at(sc, e.get("at", 0))
             if at is None:

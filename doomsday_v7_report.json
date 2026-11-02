@@ -1,0 +1,23 @@
+{
+  "video": "doomsday_v7_draft.mp4",
+  "sha256": "8c52df19635ce699b252cdc577fc49dff6e6fc4716cd125919b83c8a2ecddcfd",
+  "duration_s": 14,
+  "width": 540,
+  "height": 960,
+  "fps": 15,
+  "frames": 210,
+  "source_revision": "681949e",
+  "status": "draft_not_artistically_accepted",
+  "audio_meter": {
+    "lufs": -14.01,
+    "true_peak_dbtp": -2.22
+  },
+  "audio": "AAC byte-identical to v6; no new synthesis or ASR. No listening assessment.",
+  "verified": "210 source hashes match the manifest; 210 output frames decoded and inspected on seven sheets; key pose pairs compared against v6. No new obvious broken arm or grip observed.",
+  "limits": [
+    "Sharp left elbow fold remains.",
+    "Composition remains restrained in some shots.",
+    "Frame-by-frame review does not establish uninterrupted perceptual timing approval."
+  ],
+  "method": "docs/productions/DOOMSDAY_PERFORMANCE.md in main"
+}

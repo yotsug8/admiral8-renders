@@ -2,6 +2,7 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 01.11.2026
 
+- [Поворот с тремя шагами](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_step_turn.mp4) — техническая проба, 4,8 с, 480×480/30 fps, без звука. Смена опор проверена; естественный ритм, работа рук и перенос на персонажа ещё открыты.
 - [Целая сценка: новая погоня и лес](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_chase_v5_30fps.mp4) — 12,8 с, 360×640/30 fps, голос, шаги, единая постобработка. Монтажная версия для оценки, не финальный 1080p.
 - [База: тайминг, дуги и затухание](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_timing_arcs.mp4) — техническая проба, 4 с, 640×360/30 fps, без звука; два варианта упругости.
 - [Погоня: дальний лес, живой взгляд и постобработка](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/kunkka_hoodwink_pursuit_test_v2.mp4) — проба, 6,4 с, 360×640, 30 fps, без звука. Передний план крупнее, плавный взгляд и моргания Худвинк, единая цветокоррекция.

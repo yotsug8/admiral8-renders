@@ -27,7 +27,17 @@ def _pcm(path):
 
 def _fish(text, voice, out):
     import video
-    video.tts_fish(text, out, voice=voice, align=False)
+    key = fish_key()
+    if not key:
+        raise RuntimeError('Fish API key is unavailable')
+    # video caches its environment at import time; registry-only keys must reach
+    # the actual backend, including recursive synthesis of split phrases.
+    previous = video.FISH_KEY
+    try:
+        video.FISH_KEY = key
+        video.tts_fish(text, out, voice=voice, align=False)
+    finally:
+        video.FISH_KEY = previous
 
 
 def _sapi(text, voice, out):
@@ -68,7 +78,8 @@ def fish_key():
     if not k and os.name == "nt":
         import winreg
         try:
-            k = winreg.QueryValueEx(winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment"), "FISH_API_KEY")[0]
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as handle:
+                k = winreg.QueryValueEx(handle, "FISH_API_KEY")[0]
         except OSError:
             k = None
     return (k or "").strip() or None
@@ -97,7 +108,7 @@ def _fake(text, voice, out):
 def engine():
     if os.environ.get("SKIT_FAKE"):
         return "fake"
-    if os.environ.get("FISH_API_KEY"):
+    if fish_key():
         return "fish"
     return "sapi" if os.name == "nt" else "edge"
 
@@ -125,7 +136,10 @@ def make(folder, lines):
     """lines — [{name, who, text, voice}]; voice — словарь {fish|sapi|edge: имя} или строка. Возвращает voices.json."""
     os.makedirs(folder, exist_ok=True)
     db_path = os.path.join(folder, "voices.json")
-    db = json.load(open(db_path, encoding="utf-8")) if os.path.exists(db_path) else {}
+    db = {}
+    if os.path.exists(db_path):
+        with open(db_path, encoding='utf-8') as source:
+            db = json.load(source)
     eng0 = engine()
     for ln in lines:
         v = ln.get("voice") or {}
@@ -152,6 +166,8 @@ def make(folder, lines):
         key = hashlib.md5(f"{eng}|{v}|{say}|{pitch if eng != 'game' else 0}{'|' + refv if refv else ''}".encode()).hexdigest()[:12]
         wav = os.path.join(folder, ln["name"] + ".wav")
         if db.get(ln["name"], {}).get("key") == key and os.path.exists(wav):
+            db[ln["name"]].update(text=video.show_text(ln["text"]), say=say,
+                                  who=ln["who"], voice=f"{eng}:{v}")
             continue
         raw = os.path.join(folder, ln["name"] + (".raw.wav" if eng in ("sapi", "fake") else ".raw.mp3"))
         print(f"  голос {ln['name']} ({ln['who']}, {eng}{' ' + v if v else ''}): {say}")
@@ -177,7 +193,8 @@ def make(folder, lines):
             print(f"    распознано: «{h[0]}» — совпадение {h[1]:.0%}" + ("  ⚠ ГОЛОС НЕ СОВПАЛ С ТЕКСТОМ" if h[1] < 0.6 else ""))
         db[ln["name"]] = {"text": video.show_text(ln["text"]), "say": say, "env": [round(float(x), 3) for x in env],
                           "dur": round(len(a) / SR, 3), "who": ln["who"], "voice": f"{eng}:{v}", "key": key}
-    json.dump(db, open(db_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    with open(db_path, "w", encoding="utf-8") as output:
+        json.dump(db, output, ensure_ascii=False, indent=1)
     return db
 
 

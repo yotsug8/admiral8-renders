@@ -11,6 +11,7 @@ import subprocess
 
 import imageio_ffmpeg
 from PIL import Image, ImageDraw, ImageFont
+from grade import video_timing
 
 
 def main():
@@ -32,14 +33,10 @@ def main():
         source.relative_to(assets)
         if not source.is_file() or item['frames'] <= 0:
             raise ValueError('Missing clip or invalid frame count')
-        reader = imageio_ffmpeg.read_frames(str(source), pix_fmt='rgb24')
-        try:
-            meta = next(reader)
-            if abs(meta['fps']-30) > .001:
-                raise ValueError('Retiming is not allowed')
-            count = sum(1 for _ in reader)
-        finally:
-            reader.close()
+        timing = video_timing(source)
+        if timing['fps'] != 30:
+            raise ValueError('Retiming is not allowed')
+        count = timing['count']
         if count != item['frames']:
             raise ValueError(f'Frame count differs: {item["file"]}: {count}')
         sources.append(source)
@@ -75,6 +72,9 @@ def main():
     movie = out/'learning_progress.mp4'
     subprocess.run([ff, '-v', 'error', '-f', 'concat', '-safe', '1', '-i', str(out/'parts.txt'),
                     '-map', '0:v:0', '-an', '-c', 'copy', '-movflags', '+faststart', str(movie)], check=True)
+    timing = video_timing(movie)
+    if timing['fps'] != 30 or timing['count'] != total:
+        raise ValueError('Concatenation changed the frame timeline')
     selected = set(range(0, total, 30)) | {total-1} | set(cuts)
     selected.update(f-1 for f in cuts if f)
     thumbnails = []

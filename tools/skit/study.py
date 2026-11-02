@@ -2,7 +2,7 @@
 # насыщенность, контраст, движение в кадре (камера и герои), — плюс лист кадров (кадр каждую секунду, отмечены склейки).
 # py -3.11 tools/skit/study.py <папка или файлы mp4> [--out _game/study]
 # Итог: _game/study/<имя>_sheet.jpg и _game/study/metrics.json; печатает таблицу и средние — это «эталон» для своих проб.
-import glob, json, os, re, sys
+import argparse, glob, json, os, re, sys
 import numpy as np
 import imageio_ffmpeg
 from PIL import Image, ImageDraw
@@ -23,7 +23,7 @@ def frames(path, w=180):
         if len(b) < sz:
             break
         yield fps, np.frombuffer(b, np.uint8).reshape(H, w, 3)
-    p.wait()
+    p.stdout.close(); p.wait()
 
 
 def study(path, out):
@@ -69,13 +69,17 @@ def study(path, out):
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    out = os.path.join(REPO, "_game", "study"); os.makedirs(out, exist_ok=True)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('inputs', nargs='+', help='MP4 files or directories')
+    parser.add_argument('--out', default=os.path.join(REPO, '_game', 'study'))
+    args = parser.parse_args()
+    out = args.out; os.makedirs(out, exist_ok=True)
     files = []
-    for a in args:
+    for a in args.inputs:
         files += sorted(glob.glob(os.path.join(a, "*.mp4"))) if os.path.isdir(a) else [a]
     res = [study(f, out) for f in files]
-    json.dump(res, open(os.path.join(out, "metrics.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    with open(os.path.join(out, "metrics.json"), "w", encoding="utf-8") as output:
+        json.dump(res, output, ensure_ascii=False, indent=1)
     keys = ["dur", "cuts", "shot_mean", "shot_min", "shot_max", "bright", "sat", "contrast", "motion", "motion_p90"]
     print("образец".ljust(28) + "".join(k[:9].rjust(10) for k in keys))
     for m in res:

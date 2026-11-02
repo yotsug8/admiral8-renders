@@ -8,6 +8,7 @@ import sys
 import imageio_ffmpeg
 import numpy as np
 from PIL import Image, ImageDraw
+from grade import video_timing
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / '_game/skits/privet'
@@ -35,7 +36,8 @@ for index in range(count):
         if previous is not None:
             changes.append((index, round(float(np.abs(sample - previous).mean()), 3)))
         previous = sample
-assert len(sizes) == 1 and not dark, (sizes, dark)
+if len(sizes) != 1 or dark:
+    raise ValueError(f'Invalid source size/dark frames: {sizes}, {dark}')
 raw = OUT / 'privet_raw.mp4'
 final = OUT / 'privet_draft.mp4'
 if '--qa-only' not in sys.argv:
@@ -45,6 +47,9 @@ if '--qa-only' not in sys.argv:
     subprocess.run([sys.executable, str(ROOT / 'tools/skit/mix.py'), str(raw), str(final),
                 str(OUT / 'scene.json')], env=dict(os.environ, GRADE='match'), check=True)
 
+timing = video_timing(final)
+if timing['count'] != count or timing['fps'] != fps or timing['size'] not in sizes:
+    raise ValueError('Greeting output frame count/FPS/size differs from source')
 reader = imageio_ffmpeg.read_frames(str(final), pix_fmt='rgb24')
 meta = next(reader)
 size = meta['size']
@@ -54,9 +59,8 @@ for index, raw_frame in enumerate(reader):
     if index % fps == 0 or index == count - 1:
         selected.append((index, Image.frombytes('RGB', size, raw_frame).resize((216, 384))))
     decoded += 1
-# The existing mixer trims to the audio timeline, whose endpoint can fall
-# between two frames. Only that single trailing frame may be omitted.
-assert decoded in (count, count - 1), (decoded, count)
+if decoded != count:
+    raise ValueError(f'Greeting decode lost frames: {decoded} != {count}')
 sheet = Image.new('RGB', (216 * 6, 410 * ((len(selected) + 5) // 6)), (22, 23, 26))
 draw = ImageDraw.Draw(sheet)
 for n, (index, im) in enumerate(selected):
@@ -66,7 +70,7 @@ for n, (index, im) in enumerate(selected):
 sheet.save(OUT / 'review.jpg', quality=92)
 meter = subprocess.run([FF, '-hide_banner', '-i', str(final), '-af',
                         'loudnorm=I=-14:TP=-1:LRA=11:print_format=json',
-                        '-f', 'null', '-'], capture_output=True, text=True)
+                        '-f', 'null', '-'], capture_output=True, text=True, check=True)
 (OUT / 'audio_meter.txt').write_text(meter.stderr, encoding='utf-8')
 report = {'source_frames': count, 'decoded': decoded, 'fps': fps, 'size': list(size),
           'seconds': decoded / fps, 'mux_tail_frames_trimmed': count - decoded, 'dark_frames': dark,

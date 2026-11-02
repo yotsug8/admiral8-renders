@@ -1,15 +1,39 @@
 """Fixed, restrained finishing look; never adapts exposure frame by frame."""
+import hashlib
+from pathlib import Path
 import numpy as np
-from grade import Grade, to_lab, to_rgb
+from grade import Grade, data_hash, to_lab, to_rgb
 
 class ChaseLook:
-    def __init__(self,samples,profile='legacy'):
+    def __init__(self,samples,profile='legacy', *, target_data=None, snapshot=None):
         if profile not in ('legacy', 'daylight'):
             raise ValueError('Unknown chase look: '+str(profile))
         self.profile=profile
-        self.grade=(Grade(samples,strength=.15,color=.25,warm_hue=-2.,contrast=.15)
-                    if profile == 'legacy' else self.daylight)
+        if snapshot is not None:
+            state = snapshot['state']
+            if data_hash(state) != snapshot['sha256']:
+                raise ValueError('Look snapshot hash mismatch')
+            if (state['version'] != 1 or state['profile'] != profile
+                    or state['implementation'] != self.implementation()):
+                raise ValueError('Look snapshot implementation/profile mismatch')
+            self.grade = Grade.from_snapshot(state['grade']) if profile == 'legacy' else self.daylight
+        else:
+            if profile != 'legacy' and target_data is not None:
+                raise ValueError('daylight does not use a grade target')
+            self.grade=(Grade(samples,strength=.15,color=.25,warm_hue=-2.,contrast=.15,
+                              target_data=target_data) if profile == 'legacy' else self.daylight)
         self._masks={}
+
+    @staticmethod
+    def implementation():
+        return dict(numpy=np.__version__, files={name: hashlib.sha256(
+            Path(__file__).with_name(name).read_bytes()).hexdigest()
+            for name in ('grade.py', 'chase_look.py')})
+
+    def snapshot(self):
+        state = dict(version=1, profile=self.profile, implementation=self.implementation(),
+                     grade=self.grade.snapshot() if self.profile == 'legacy' else None)
+        return dict(state=state, sha256=data_hash(state))
 
     @staticmethod
     def daylight(rgb):

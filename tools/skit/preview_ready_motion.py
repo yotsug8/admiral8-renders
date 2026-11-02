@@ -16,6 +16,20 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def forward_axis(pose):
+    direction = np.mean([np.array(pose[s+'ToeBase'][1], dtype=float) - pose[s+'Foot'][0]
+                         for s in ('Left', 'Right')], axis=0)
+    direction[2] = 0
+    length = np.linalg.norm(direction)
+    require(math.isfinite(length) and length > 1e-9, 'Initial foot heading is undefined')
+    return direction / length
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('recipe', type=Path)
@@ -24,27 +38,24 @@ def main():
     parser.add_argument('--font', required=True, type=Path)
     args = parser.parse_args()
     recipe = json.loads(args.recipe.read_text(encoding='utf-8'))
-    assert sha(args.poses) == recipe['poses_sha256'], 'Input coordinates changed'
+    require(sha(args.poses) == recipe['poses_sha256'], 'Input coordinates changed')
     poses = json.loads(args.poses.read_text(encoding='utf-8'))
-    assert len(poses) == recipe['source_samples'] == 180
+    require(len(poses) == recipe['source_samples'] == 180, 'Expected 180 source samples')
     names = list(poses[0])
-    assert len(names) == 31 and all(list(p) == names for p in poses)
-    assert all(math.isfinite(x) for p in poses for ends in p.values()
-               for xyz in ends for x in xyz)
+    require(len(names) == 31 and all(list(p) == names for p in poses), 'Bone lists differ')
+    require(all(np.asarray(ends).shape == (2, 3) and np.isfinite(np.asarray(ends, dtype=float)).all()
+                for p in poses for ends in p.values()), 'Expected finite pairs of 3D endpoints')
     source_fps, fps = recipe['source_fps'], recipe['fps']
-    assert source_fps == 60 and fps == 30
+    require(source_fps == 60 and fps == 30, 'Expected 60 Hz source and 30 fps preview')
     frame_count = int(recipe['duration_seconds'] * fps)
     indices = list(range(0, len(poses), source_fps // fps))
-    assert len(indices) == frame_count == 90
-    assert len(poses) / source_fps == frame_count / fps == 3
+    require(len(indices) == frame_count == 90, 'Expected 90 output frames')
+    require(len(poses) / source_fps == frame_count / fps == 3, 'Expected three seconds')
+    p0 = poses[0]
+    forward = forward_axis(p0)
     args.out.mkdir(parents=True, exist_ok=False)
     frames = args.out / 'frames'
     frames.mkdir()
-    p0 = poses[0]
-    forward = np.mean([np.array(p0[s+'ToeBase'][1]) - p0[s+'Foot'][0]
-                       for s in ('Left', 'Right')], axis=0)
-    forward[2] = 0
-    forward /= np.linalg.norm(forward)
     screen_right = np.cross([0, 0, 1], forward)
     center = np.array(p0['Hips'][0])
     center[2] = 0
@@ -107,7 +118,7 @@ def main():
             initial = project(p0['Hips'][0])
             draw.ellipse((initial[0]-6,initial[1]-6,initial[0]+6,initial[1]+6), outline='#a64186', width=1)
             draw.ellipse((root[0]-4,root[1]-4,root[0]+4,root[1]+4), fill='#a64186')
-        assert projected_inside, 'Skeleton clipped by fixed view'
+        require(projected_inside, 'Skeleton clipped by fixed view')
         lmin = min(pose[n][e][2] for n in ('LeftFoot','LeftToeBase') for e in (0,1))
         rmin = min(pose[n][e][2] for n in ('RightFoot','RightToeBase') for e in (0,1))
         draw.text((24, 617), f'Низ костей стоп: L {1000*lmin:.1f} мм • R {1000*rmin:.1f} мм над Z=0; подошвы отсутствуют', font=fonts[18], fill='#283c4f')
@@ -123,12 +134,12 @@ def main():
     reader = imageio_ffmpeg.read_frames(str(movie), pix_fmt='rgb24')
     metadata = next(reader)
     decoded = [np.frombuffer(raw,np.uint8).reshape((height,width,3)).copy() for raw in reader]
-    assert len(decoded) == frame_count and metadata['fps'] == fps
-    assert abs(metadata['duration']-3) < 1/fps
+    require(len(decoded) == frame_count and metadata['fps'] == fps, 'Decoded cadence/count mismatch')
+    require(abs(metadata['duration']-3) < 1/fps, 'Decoded duration mismatch')
     errors = [float(np.abs(frame.astype(np.int16)-np.array(Image.open(frames/f'f{i:04d}.png')).astype(np.int16)).mean()) for i,frame in enumerate(decoded)]
-    assert max(errors) < 3, 'Unexpected encoded/source frame difference'
+    require(max(errors) < 3, 'Unexpected encoded/source frame difference')
     body_diffs = [float(np.abs(a[180:565].astype(np.int16)-b[180:565].astype(np.int16)).mean()) for a,b in zip(decoded,decoded[1:])]
-    assert min(body_diffs) > 0, 'Repeated body image'
+    require(min(body_diffs) > 0, 'Repeated body image')
     review = args.out/'review'
     review.mkdir()
     for start in range(0,frame_count,15):

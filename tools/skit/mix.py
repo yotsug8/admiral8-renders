@@ -3,7 +3,7 @@
 # Время слов — по громкости реплики: начало и конец речи по звуку, слова распределены по длине.
 #   py -3.11 tools/skit/mix.py <видео> <выход> <scene.json>     GRADE=1 — цветокоррекция по примерам (grade.py)
 # Реплики и их места — из scene.json (voices: {имя: [актёр, сек]}), тексты и громкость — voices.json рядом с ним.
-import json, os, re, subprocess, sys
+import json, math, os, re, subprocess, sys
 import numpy as np
 import imageio_ffmpeg
 from PIL import Image
@@ -15,9 +15,19 @@ if len(sys.argv) < 4:
 TAKE, OUT, SCENE = sys.argv[1:4]
 VO = os.path.dirname(os.path.abspath(SCENE))
 FF = imageio_ffmpeg.get_ffmpeg_exe()
-V = json.load(open(os.path.join(VO, "voices.json"), encoding="utf-8"))
-_D = json.load(open(SCENE, encoding="utf-8"))
+with open(os.path.join(VO, "voices.json"), encoding="utf-8") as source:
+    V = json.load(source)
+with open(SCENE, encoding="utf-8") as source:
+    _D = json.load(source)
 OFFS = {k: float(v[1]) for k, v in _D["voices"].items()}; DUR = float(_D["dur"])
+from grade import video_timing, transcode
+TIMING = video_timing(TAKE)
+VIDEO_FPS = float(TIMING['fps'])
+if not math.isfinite(DUR) or DUR <= 0 or abs(DUR - TIMING['duration']) > 1 / VIDEO_FPS + 1e-6:
+    raise ValueError('Scene duration differs from video by more than one frame')
+# Scene duration is rounded by some callers; picture cadence is authoritative.
+# Do not use -shortest to hide a mismatch or drop the last picture frames.
+DUR = TIMING['duration']
 from footsteps import plan_footsteps
 FOOTSTEPS = plan_footsteps(_D, os.path.join(REPO, "_game", "sfx"))
 
@@ -85,7 +95,7 @@ def overlay(t):
 # ---- звук: голоса по местам, громкость −14 LUFS
 SR = 48000; mix = np.zeros(int(DUR * SR) + SR, np.float32)
 for name, off in OFFS.items():
-    raw = subprocess.run([FF, "-v", "error", "-i", os.path.join(VO, f"{name}.wav"), "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True).stdout
+    raw = subprocess.run([FF, "-v", "error", "-i", os.path.join(VO, f"{name}.wav"), "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True, check=True).stdout
     a = np.frombuffer(raw, np.int16).astype(np.float32) / 32768; i = int(off * SR)
     mix[i:i + len(a)] += a[:len(mix) - i]
 
@@ -99,7 +109,7 @@ def sfx(name, t, gain, length=None):
     p = os.path.join(SFX, name)
     if not os.path.exists(p):
         print("  звука нет:", name); return
-    raw = subprocess.run([FF, "-v", "error", "-i", p, "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True).stdout
+    raw = subprocess.run([FF, "-v", "error", "-i", p, "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"], capture_output=True, check=True).stdout
     a = np.frombuffer(raw, np.int16).astype(np.float32) / 32768 * gain; i = max(0, int(t * SR))
     if length:
         a = a[:int(length * SR)].copy(); k = min(len(a), int(0.08 * SR)); a[len(a) - k:] *= np.linspace(1, 0, k)
@@ -119,7 +129,7 @@ for t0, fxname, at, _z, dur, *rest in _D.get("fx", []):
     print(f"  звук крюка: бросок {t0:.2f} с, попадание {hit / FPS_:.2f} с, возврат {back / FPS_:.2f} с")
 for name, at, gain in FOOTSTEPS:
     sfx(name, at, gain)
-mix = mix[:int(DUR * SR)]
+mix = mix[:round(DUR * SR)]
 wav = os.path.join(VO, "mix.wav")
 raw_wav = os.path.join(VO, "mix_raw.wav")             # громкость к −14 LUFS в два прохода (video.loudnorm): без «качания»
 subprocess.run([FF, "-y", "-v", "error", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", "-", "-c:a", "pcm_f32le", raw_wav], input=mix.tobytes(), check=True)
@@ -128,22 +138,19 @@ from video import loudnorm
 subprocess.run([FF, "-y", "-v", "error", "-i", raw_wav, "-af", loudnorm(raw_wav), "-ar", str(SR), wav], check=True)
 
 # ---- кадры с субтитрами → mp4 со звуком
-r = imageio_ffmpeg.read_frames(TAKE); meta = next(r); W, H = meta["size"]
-enc = subprocess.Popen([FF, "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", "30", "-i", "-", "-i", wav,
-                        "-c:v", "libx264", "-crf", "15", "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-shortest", OUT],
-                       stdin=subprocess.PIPE)
 MATCH = None
 if os.environ.get("GRADE"):                        # цветокоррекция по образцу — tools/skit/grade.py (skit.py --all ставит сам)
     import grade as _g
     MATCH = _g.Grade(_g.sample(TAKE)); print("цвет:", MATCH.info)
-n = 0
-for k, b in enumerate(r):
-    img = Image.frombytes("RGB", (W, H), b)
+def picture(frame, seconds):
+    img = Image.fromarray(frame)
     if MATCH:
         img = Image.fromarray(MATCH(np.asarray(img)))
-    ov = overlay(k / 30)
+    ov = overlay(seconds)
     if ov is not None:
         img.paste(ov, (0, 1400), ov)
-    enc.stdin.write(img.tobytes()); n += 1
-enc.stdin.close(); enc.wait()
-print(f"готово: {OUT} ({n} кадров, {n / 30:.1f} с)")
+    return np.asarray(img)
+
+
+transcode(TAKE, OUT, picture, timing=TIMING, audio=wav)
+print(f"готово: {OUT} ({TIMING['count']} кадров, {DUR:.3f} с, {TIMING['fps']} fps)")

@@ -46,14 +46,17 @@ class Poster:
         self.svg.append(f'<polygon points="{coords}" fill="{color}"/>')
 
     def picture(self, path, x, y, w, h, top=False, contain=False):
-        source=Image.open(path).convert('RGB')
+        with Image.open(path) as opened:
+            mime = Image.MIME.get(opened.format)
+            source = opened.convert('RGB')
+        if mime is None:
+            raise ValueError('Unknown artwork MIME type: '+str(path))
         if contain:
             placed=ImageOps.pad(source,(w*SCALE,h*SCALE),Image.Resampling.LANCZOS,color=PANEL)
         else:
             placed=ImageOps.fit(source,(w*SCALE,h*SCALE),Image.Resampling.LANCZOS,
                                 centering=(.5,0 if top else .5))
         self.image.paste(placed,(x*SCALE,y*SCALE))
-        mime='image/png' if path.suffix.lower()=='.png' else 'image/jpeg'
         encoded=base64.b64encode(path.read_bytes()).decode()
         align='xMidYMin' if top else 'xMidYMid'
         fit='meet' if contain else 'slice'
@@ -64,7 +67,8 @@ class Poster:
         if x+font.getlength(value)/SCALE>W-32:
             raise ValueError('Text exceeds poster width: '+value)
         self.draw.text((x*SCALE,y*SCALE),value,font=font,fill=color,anchor='lt')
-        self.svg.append(f'<text x="{x}" y="{y}" dominant-baseline="text-before-edge" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="{size}" font-weight="{700 if bold else 400}" fill="{color}">{html.escape(value)}</text>')
+        family = html.escape(font.getname()[0], quote=True)
+        self.svg.append(f'<text x="{x}" y="{y}" dominant-baseline="text-before-edge" font-family="{family},sans-serif" font-size="{size}" font-weight="{700 if bold else 400}" fill="{color}">{html.escape(value)}</text>')
 
     def paragraph(self, x, y, value, width, size=23, color=WHITE, lines=2, bold=False):
         font=ImageFont.truetype(str(self.fonts[int(bold)]),size*SCALE)
@@ -145,6 +149,15 @@ def render(data, regular, bold, assets):
     return p
 
 
+def check_outputs(outputs, inputs):
+    """Keep generated files distinct from one another and from their inputs."""
+    def same(a, b):
+        return a.resolve() == b.resolve() or (a.exists() and b.exists() and a.samefile(b))
+    for i, output in enumerate(outputs):
+        if any(same(output, other) for other in outputs[:i] + inputs):
+            raise ValueError('Roadmap outputs must not overwrite inputs or each other')
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--data',type=Path,default=ROOT/'docs/animation_roadmap.json')
@@ -156,6 +169,7 @@ def main():
     parser.add_argument('--bold-font',type=Path,default=Path(os.environ.get('ROADMAP_BOLD_FONT',str(fontroot/'segoeuib.ttf'))))
     args=parser.parse_args()
     data=json.loads(args.data.read_text(encoding='utf-8'))
+    inputs = [args.data, args.font, args.bold_font]
     if [b['id'] for b in data['blocks']]!=[f'{i:02d}' for i in range(1,13)]:
         raise ValueError('Expected twelve unique, ordered blocks')
     for block in data['blocks']:
@@ -163,6 +177,7 @@ def main():
         for link in block['evidence']:
             path=(args.data.parent/link).resolve()
             if not path.is_relative_to(ROOT/'docs') or not path.is_file():raise ValueError('Missing evidence: '+link)
+            inputs.append(path)
     covered=[key for item in data['poster']['milestones'] for key in item['blocks']]
     if sorted(covered)!=[b['id'] for b in data['blocks']]:
         raise ValueError('Poster milestones must cover each direction exactly once')
@@ -173,6 +188,8 @@ def main():
     for name in [data['artwork']]+[item['file'] for item in data['previews']]:
         path=(args.assets/name).resolve()
         if not path.is_relative_to(args.assets.resolve()) or not path.is_file():raise ValueError('Missing artwork: '+name)
+        inputs.append(path)
+    check_outputs([args.svg, args.png, args.png.with_suffix('.json')], inputs)
     p=render(data,args.font,args.bold_font,args.assets)
     args.svg.parent.mkdir(parents=True,exist_ok=True);args.png.parent.mkdir(parents=True,exist_ok=True)
     args.svg.write_text('\n'.join(p.svg)+'\n',encoding='utf-8')

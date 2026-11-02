@@ -72,7 +72,9 @@ def run(out, expected, command, reserve_mb=2048, timeout=None):
             raise RuntimeError(f'Command failed with exit code {code}')
         evidence = []
         for p in artifacts:
-            if not p.resolve().is_relative_to(out) or not p.is_file() or p.stat().st_size == 0:
+            reserved = [out / name for name in ('process.log', 'run.json', 'run.json.tmp')]
+            if (not p.resolve().is_relative_to(out) or not p.is_file() or p.stat().st_size == 0
+                    or any(log.exists() and p.samefile(log) for log in reserved)):
                 raise RuntimeError(f'Missing, empty or redirected artifact: {p.name}')
             h = hashlib.sha256()
             with p.open('rb') as stream:

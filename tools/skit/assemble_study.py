@@ -15,6 +15,7 @@ import numpy as np
 from PIL import Image
 
 from chase_look import ChaseLook
+from grade import checked_target
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -104,6 +105,26 @@ def main():
     for path in paths + look_paths:
         with Image.open(path) as im:
             im.verify()
+    snapshot = recipe.get('look_snapshot')
+    if isinstance(snapshot, str):
+        snapshot = json.loads(asset(root, snapshot).read_text(encoding='utf-8'))
+    target_data = None
+    target_file_sha256 = None
+    if recipe.get('look_target') is not None:
+        if snapshot is not None:
+            raise ValueError('Choose look_target or look_snapshot, not both')
+        target_bytes = asset(root, recipe['look_target']).read_bytes()
+        target_file_sha256 = hashlib.sha256(target_bytes).hexdigest()
+        if recipe.get('look_target_sha256', target_file_sha256) != target_file_sha256:
+            raise ValueError('Explicit grade target hash mismatch')
+        target_data = checked_target(json.loads(target_bytes))
+    elif recipe.get('look_target_sha256') is not None:
+        raise ValueError('look_target_sha256 requires look_target')
+    profile = recipe.get('look_profile', 'legacy')
+    if profile not in ('legacy', 'daylight') or (profile == 'daylight' and target_data is not None):
+        raise ValueError('Invalid look profile/target combination')
+    if snapshot is not None:
+        ChaseLook(None, profile=profile, snapshot=snapshot)  # Validate before output creation.
     if args.validate_only:
         print(f'Validated {count} source images and explicit WAV path; no render or assembly.')
         return
@@ -117,7 +138,15 @@ def main():
     for path in look_paths:
         with Image.open(path) as im:
             samples.append(np.asarray(im.convert('RGB').resize((270, 480))))
-    look = ChaseLook(np.stack(samples), profile=recipe.get('look_profile', 'legacy'))
+    look = ChaseLook(np.stack(samples), profile=profile, target_data=target_data, snapshot=snapshot)
+    pinned = look.snapshot()
+    # Embed the target and evaluated LUT, not an absolute path to a mutable local file.
+    # The frozen recipe keeps the original --assets-relative image/audio paths.
+    frozen = dict(recipe, look_snapshot=pinned)
+    frozen.pop('look_target', None)
+    frozen.pop('look_target_sha256', None)
+    (out/'look_snapshot.json').write_text(json.dumps(pinned, indent=2, allow_nan=False), encoding='utf-8')
+    (out/'recipe_frozen.json').write_text(json.dumps(frozen, indent=2, allow_nan=False), encoding='utf-8')
     hashes = []
     for frame, path in enumerate(paths):
         hashes.append(dict(frame=frame, source=path.relative_to(root).as_posix(),
@@ -132,12 +161,15 @@ def main():
                     '--black-start', str(count/fps), '--duration', str(recipe['duration'])], check=True)
     report = decoded_qa(out/'kunkka_hoodwink_chase.mp4', recipe)
     report['recipe'] = recipe
+    report['look_snapshot'] = pinned
+    report['look_snapshot_sha256'] = pinned['sha256']
+    report['look_target_file_sha256'] = target_file_sha256
     report['source_frames'] = hashes
     report['audio_sha256'] = hashlib.sha256(audio.read_bytes()).hexdigest()
     report['look_references'] = [dict(source=p.relative_to(root).as_posix(),
                                     sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in look_paths]
     (out/'assembly_report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
-    print(json.dumps({k: v for k, v in report.items() if k not in ('recipe', 'source_frames')}))
+    print(json.dumps({k: v for k, v in report.items() if k not in ('recipe', 'source_frames', 'look_snapshot')}))
 
 
 if __name__ == '__main__':

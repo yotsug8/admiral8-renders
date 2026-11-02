@@ -11,6 +11,8 @@ from pathlib import Path
 import imageio_ffmpeg
 import numpy as np
 from PIL import Image, ImageDraw
+from fractions import Fraction
+from grade import video_timing
 
 
 def levels(rgb):
@@ -35,11 +37,14 @@ def main():
     count, fps = recipe['picture_frames'], recipe['fps']
     if count <= 0 or fps <= 0:
         raise ValueError('Positive frame count and fps required')
+    timing = video_timing(args.video)
+    if timing['fps'] != Fraction(str(fps)) or count > timing['count']:
+        raise ValueError('Recipe FPS/picture count differs from encoded video')
     args.out.mkdir(parents=True, exist_ok=False)
     width, height = recipe['size']
     cmd = [imageio_ffmpeg.get_ffmpeg_exe(), '-v', 'error', '-i', str(args.video),
            '-frames:v', str(count), '-vf', f'scale={width}:{height}', '-an',
-           '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-']
+           '-fps_mode', 'passthrough', '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-']
     raw = subprocess.run(cmd, capture_output=True, check=True).stdout
     if len(raw) != count * width * height * 3:
         raise ValueError('Missing decoded picture frames')

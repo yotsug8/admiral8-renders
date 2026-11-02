@@ -24,6 +24,11 @@
    py -3.11 -m playwright install chromium
    npm.cmd ci
    ```
+   Для обычного сведения `tools/skit/mix.py`, цветокоррекции и проверки тайминга нужен также `ffprobe`: пакет `imageio-ffmpeg` предоставляет FFmpeg, но не ffprobe. Уже установленный `ffprobe.exe` должен быть в PATH либо указан полным путём в переменной `FFPROBE`. Проверка в PowerShell:
+   ```powershell
+   if ($env:FFPROBE) { & $env:FFPROBE -version } else { ffprobe -version }
+   ```
+   При необходимости задать путь: `$env:FFPROBE = 'C:\tools\ffmpeg\bin\ffprobe.exe'` (подставить существующий файл). Команда выше должна завершиться успешно и вывести версию; сама она ничего не устанавливает.
 5. Проверить пути в `tools/paths.py`. Другие пути к программам задавать пользовательскими переменными `BLENDER`, `S2V`, `DOTA_ROOT`. Ключ `FISH_API_KEY` добавить локально в переменные окружения; значение не записывать в git и сообщения.
 6. Открыть проект в Codex и выполнить проверку:
    ```powershell

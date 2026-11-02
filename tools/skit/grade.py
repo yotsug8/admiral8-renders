@@ -3,7 +3,9 @@
 # (без мигания): строится по кадрам ролика, применяется к каждому кадру.
 #   py -3.11 tools/skit/grade.py target                     цель из примеров → _game/study/grade_target.json
 #   py -3.11 tools/skit/grade.py <видео> <выход.mp4>        прогнать ролик (для проверки; в сведении — GRADE=match в mix.py)
-import glob, json, math, os, subprocess, sys
+import glob, hashlib, json, math, os, shutil, subprocess, sys, tempfile
+from fractions import Fraction
+from pathlib import Path
 import numpy as np
 import imageio_ffmpeg
 
@@ -33,7 +35,9 @@ def to_rgb(lab):
 
 def sample(path, w=270, h=480, fps=2):
     raw = subprocess.run([FF, "-v", "error", "-i", path, "-vf", f"fps={fps},scale={w}:{h}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
-                         capture_output=True).stdout
+                         capture_output=True, check=True).stdout
+    if not raw or len(raw) % (h * w * 3):
+        raise ValueError('No complete frames for grading')
     return np.frombuffer(raw, np.uint8).reshape(-1, h, w, 3)
 
 
@@ -50,18 +54,41 @@ def target():
     ms = [measure(sample(p)) for p in sorted(glob.glob(os.path.join(REPO, "_game", "study", "examples", "*.mp4")))]
     ms = [m for m in ms if m["L"][5] > 35 and m["C"][1] > 15]       # дневные цветные (сцены дневные); молочность была не от них,
                                                                      # а от низкого контраста и поднятых теней — теперь контраст свой
+    if not ms:
+        raise ValueError('No suitable grade target examples')
     t = {"L": np.median([m["L"] for m in ms], 0).tolist(), "C": np.median([m["C"] for m in ms], 0).tolist(),
          "b_mid": float(np.median([m["b_mid"] for m in ms])), "n": len(ms)}
     json.dump(t, open(TARGET, "w"), indent=1)
     return t
 
 
+def data_hash(data):
+    """Hash the stored numeric meaning, independent of JSON whitespace."""
+    return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':'),
+                                    allow_nan=False).encode('utf-8')).hexdigest()
+
+
+def checked_target(data):
+    data = json.loads(json.dumps(data, allow_nan=False))
+    if (not isinstance(data, dict) or len(data.get('L', [])) != len(PCT)
+            or len(data.get('C', [])) != 3):
+        raise ValueError('Invalid grade target shape')
+    values = np.asarray(data['L'] + data['C'], dtype=float)
+    if not np.isfinite(values).all() or np.any(np.diff(data['L']) < 0):
+        raise ValueError('Invalid grade target values')
+    return data
+
+
 class Grade:
     """Кривая яркости и усиление цвета под цель; strength — доля (1 — точно под примеры)."""
-    def __init__(self, src_frames, strength=0.4, color=1.0, warm_hue=-4.0, contrast=0.8):
+    def __init__(self, src_frames, strength=0.4, color=1.0, warm_hue=-4.0, contrast=0.8,
+                 *, target_data=None):
         # strength — яркость (0,85 давало пересвет); color — цвет отдельно (кожа героев в текстурах
         # доты блёклая, игровой шейдер её досыщает); warm_hue — тёплые оттенки к красному (кожа была бежевой: 44° против 40°)
-        t = json.load(open(TARGET)) if os.path.exists(TARGET) else target()
+        if target_data is None:
+            target_data = json.loads(Path(TARGET).read_text(encoding='utf-8')) if os.path.exists(TARGET) else target()
+        t = self.target = checked_target(target_data)
+        self.parameters = dict(strength=strength, color=color, warm_hue=warm_hue, contrast=contrast)
         s = measure(src_frames)
         xs = np.array([0.0] + s["L"] + [100.0]); ys = np.array([0.0] + t["L"] + [100.0])
         ys = xs + (ys - xs) * strength
@@ -80,6 +107,33 @@ class Grade:
         self.info = f"тени/полутона/света: цвет ×{k[0]:.2f} ×{k[1]:.2f} ×{k[2]:.2f}, теплее на {self.db:.1f}; " \
                     f"яркость {s['L'][3]:.0f}→{np.interp(s['L'][3], xs, ys):.0f} (25%), {s['L'][5]:.0f}→{np.interp(s['L'][5], xs, ys):.0f} (50%), контраст ×{self.kcon:.2f}"
 
+    def snapshot(self):
+        state = dict(target=self.target, target_sha256=data_hash(self.target),
+                     parameters=self.parameters, lut=self.lut.tolist(), kc=list(self.kc),
+                     hue=self.hue, db=self.db, kcon=self.kcon)
+        return dict(state=state, sha256=data_hash(state))
+
+    @classmethod
+    def from_snapshot(cls, snapshot):
+        state = snapshot['state']
+        if data_hash(state) != snapshot['sha256']:
+            raise ValueError('Grade snapshot hash mismatch')
+        t = checked_target(state['target'])
+        if data_hash(t) != state['target_sha256']:
+            raise ValueError('Grade target hash mismatch')
+        lut, kc = np.asarray(state['lut'], dtype=float), np.asarray(state['kc'], dtype=float)
+        if (lut.shape != (401,) or kc.shape != (3,) or not np.isfinite(lut).all()
+                or not np.isfinite(kc).all() or np.any(np.diff(lut) < 0)
+                or lut.min() < 0 or lut.max() > 100 or kc.min() <= 0):
+            raise ValueError('Invalid saved grade LUT or chroma')
+        obj = cls.__new__(cls)
+        obj.target, obj.parameters, obj.lut, obj.kc = t, dict(state['parameters']), lut, kc.tolist()
+        obj.hue, obj.db, obj.kcon = (float(state[k]) for k in ('hue', 'db', 'kcon'))
+        if not all(math.isfinite(v) for v in (obj.hue, obj.db, obj.kcon)):
+            raise ValueError('Invalid saved grade parameters')
+        obj.info = 'Restored pinned grade LUT'
+        return obj
+
     def __call__(self, rgb):
         lab = to_lab(rgb.astype(np.float32)); l = lab[..., 0]
         lab[..., 0] = self.lut[np.clip((l * 4).astype(int), 0, len(self.lut) - 1)]
@@ -96,25 +150,118 @@ class Grade:
         return to_rgb(lab)
 
 
+def video_timing(source):
+    """Read real presentation times; reject VFR instead of silently retiming it.
+
+    ffprobe is already required by finish_chase. FFPROBE may select its path.
+    A container tick of timestamp rounding is allowed (e.g. Matroska milliseconds).
+    """
+    probe = os.environ.get('FFPROBE') or shutil.which('ffprobe')
+    if not probe:
+        raise RuntimeError('ffprobe is required; set FFPROBE or add it to PATH')
+    result = subprocess.run([probe, '-v', 'error', '-select_streams', 'v:0',
+        '-show_streams', '-show_frames', '-show_entries',
+        'stream=width,height,avg_frame_rate,r_frame_rate,time_base:frame=best_effort_timestamp,pkt_duration,duration',
+        '-of', 'json', str(source)], capture_output=True, text=True, check=True)
+    if result.stderr.strip():
+        raise ValueError('Video probing reported decode errors: ' + result.stderr.strip())
+    data = json.loads(result.stdout)
+    if len(data.get('streams', [])) != 1 or not data.get('frames'):
+        raise ValueError('No decoded video frames')
+    stream, frames = data['streams'][0], data['frames']
+    fps = Fraction(stream['avg_frame_rate'])
+    if fps <= 0:
+        fps = Fraction(stream['r_frame_rate'])
+    tick = Fraction(stream['time_base'])
+    if fps <= 0 or tick <= 0:
+        raise ValueError('Invalid video cadence')
+    pts = [int(f['best_effort_timestamp']) * tick for f in frames]
+    tolerance = tick + Fraction(1, 1000000)
+    if abs(pts[0]) > tolerance:
+        raise ValueError('Nonzero video start is unsupported by this raw-frame pipeline')
+    if any(b <= a for a, b in zip(pts, pts[1:])) or any(
+            abs(t - pts[0] - i / fps) > tolerance for i, t in enumerate(pts)):
+        raise ValueError('Variable video timestamps are unsupported; no implicit FPS conversion')
+    last_duration = frames[-1].get('duration', frames[-1].get('pkt_duration'))
+    if last_duration is not None and abs(int(last_duration) * tick - 1 / fps) > tolerance:
+        raise ValueError('Nonuniform final frame duration')
+    return dict(fps=fps, count=len(frames), duration=float(len(frames) / fps),
+                size=(int(stream['width']), int(stream['height'])))
+
+
+def transcode(source, output, transform, *, timing=None, audio=None, preset='slow'):
+    """Checked decode/encode shared by grade and mix; output replaces only on success."""
+    source, output = Path(source), Path(output)
+    if source.resolve() == output.resolve() or (output.exists() and source.samefile(output)):
+        raise ValueError('Output must not overwrite the source')
+    timing = timing or video_timing(source)
+    w, h = timing['size']; size = w * h * 3
+    if w % 2 or h % 2:
+        raise ValueError('H.264 yuv420p output requires even dimensions')
+    # Temporary files also prevent a failed codec from destroying an older result.
+    with tempfile.TemporaryDirectory(prefix='.grade-', dir=output.resolve().parent) as tmp:
+        staged = Path(tmp) / output.name
+        with tempfile.TemporaryFile() as errors:
+            dec = subprocess.Popen([FF, '-v', 'error', '-xerror', '-noautorotate', '-i', str(source),
+                '-map', '0:v:0', '-an', '-fps_mode', 'passthrough', '-f', 'rawvideo',
+                '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE, stderr=errors)
+            enc = None
+            try:
+                enc = subprocess.Popen([FF, '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
+                    '-s', f'{w}x{h}', '-r', str(timing['fps']), '-i', '-', '-i', str(audio or source),
+                    '-map', '0:v:0', '-map', '1:a:0' if audio else '1:a?',
+                    '-c:v', 'libx264', '-crf', '15', '-preset', preset, '-pix_fmt', 'yuv420p',
+                    *(['-c:a', 'aac', '-b:a', '192k'] if audio else ['-c:a', 'copy']),
+                    '-t', format(timing['duration'], '.12g'), str(staged)], stdin=subprocess.PIPE)
+                count = 0
+                while True:
+                    raw = dec.stdout.read(size)
+                    if not raw:
+                        break
+                    if len(raw) != size:
+                        raise ValueError('Truncated decoded frame')
+                    frame = transform(np.frombuffer(raw, np.uint8).reshape(h, w, 3), count / float(timing['fps']))
+                    if frame.shape != (h, w, 3) or frame.dtype != np.uint8:
+                        raise ValueError('Transform changed frame shape or pixel format')
+                    enc.stdin.write(frame.tobytes()); count += 1
+                code = dec.wait(timeout=60)
+                if code:
+                    errors.seek(0)
+                    raise subprocess.CalledProcessError(code, dec.args, stderr=errors.read())
+                if count != timing['count']:
+                    raise ValueError('Decoded frame count changed since probe')
+                enc.stdin.close()
+                code = enc.wait(timeout=60)
+                if code:
+                    raise subprocess.CalledProcessError(code, enc.args)
+            finally:
+                for process in (dec, enc):
+                    if process is not None and process.poll() is None:
+                        process.kill()
+                dec.stdout.close()
+                if enc is not None:
+                    try:
+                        if not enc.stdin.closed:
+                            enc.stdin.close()
+                    except BrokenPipeError:
+                        pass
+                    enc.wait()
+                dec.wait()
+        actual = video_timing(staged)
+        if actual['count'] != timing['count'] or actual['fps'] != timing['fps']:
+            raise ValueError('Encoded video cadence/count mismatch')
+        os.replace(staged, output)
+    return timing
+
+
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     if sys.argv[1:] == ["target"]:
         print(target()); return
     src, out = sys.argv[1:3]
+    timing = video_timing(src)
     g = Grade(sample(src)); print(g.info)
-    info = subprocess.run([FF, "-i", src], capture_output=True, text=True, errors="replace").stderr
-    import re
-    w, h = map(int, re.search(r", (\d{3,5})x(\d{3,5})", info).groups())
-    dec = subprocess.Popen([FF, "-v", "error", "-i", src, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
-    enc = subprocess.Popen([FF, "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}", "-r", "30", "-i", "-",
-                            "-i", src, "-map", "0:v", "-map", "1:a?", "-c:v", "libx264", "-crf", "15", "-pix_fmt", "yuv420p", "-c:a", "copy", out],
-                           stdin=subprocess.PIPE)
-    while True:
-        b = dec.stdout.read(w * h * 3)
-        if len(b) < w * h * 3:
-            break
-        enc.stdin.write(g(np.frombuffer(b, np.uint8).reshape(h, w, 3)).tobytes())
-    enc.stdin.close(); enc.wait()
+    transcode(src, out, lambda frame, seconds: g(frame), timing=timing)
     print("готово:", out)
 
 

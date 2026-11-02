@@ -45,6 +45,7 @@
 |---|---|
 | [PROJECT_HISTORY_2026_11_01.md](PROJECT_HISTORY_2026_11_01.md) | Архив состояния; прежние назначения |
 | [README.md](audit/2026-11-02/README.md) | Уборка файлов и веток: квитанция и границы |
+| [closure_result.md](audit/2026-11-02/closure_result.md) | Завершение аудита: исправления, доказательства и оставшиеся ограничения |
 | [docs_cleanup.md](audit/2026-11-02/docs_cleanup.md) | Уборка документации: изменения и покрытие |
 | [ci_followup.md](audit/2026-11-02/ci_followup.md) | Выбор выпусков и сохранность публикаций |
 | [render_lifecycle.md](audit/2026-11-02/render_lifecycle.md) | Закрытие ресурсов рендера и дополнительные дубли |

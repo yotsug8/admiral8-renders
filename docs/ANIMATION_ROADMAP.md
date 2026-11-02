@@ -61,8 +61,10 @@
 отрендеренного в Blender. Генеративной иллюстрации в текущей карте нет.
 Источник, время кадра и хеш записаны в
 [ROADMAP_ART.json](studies/ROADMAP_ART.json).
-В редакции 17 показаны реальные кадры `rain_intent_study.mp4`
-(кадр 64, намерение) и `rain_push_study.mp4` (кадр 132, вес и опора).
+В редакции 18 показаны реальные кадры `rain_intent_study.mp4`
+(кадр 64, намерение) и две проверочные позы сцены `rain_effort_scene.mp4`
+(кадр 150 в рабочем ракурсе и 239 сбоку, усилие и реакция).
+Вторая пара воспроизводится через `study_rain_push.py --story --frames 150,239`.
 Персонаж: **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**,
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 Постановка, позы, свет и камера изменены. Полный исходный кадр

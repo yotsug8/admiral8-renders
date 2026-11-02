@@ -10,7 +10,8 @@ parser.add_argument('--out',required=True)
 parser.add_argument('--render',action='store_true')
 parser.add_argument('--story',action='store_true',help='Authored confidence, setback and effort scene')
 parser.add_argument('--check-only',action='store_true')
-parser.add_argument('--frames',default='0,35,57,69,78,96,132,179')
+parser.add_argument('--overview',action='store_true',help='Also render a fixed 320px overview for motion review')
+parser.add_argument('--frames',help='Explicit frames for a pose probe or partial rerender')
 args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
 OUT=Path(args.out).resolve()
 study_root=Path(os.environ.get('A8_STUDY_ROOT',str(ROOT/'_game/study'))).resolve()
@@ -26,7 +27,9 @@ for k,v in {'ik_arm_left':1,'ik_arm_right':1,'ik_leg_left':1,'ik_leg_right':1,'i
 r.update_tag();bpy.context.view_layer.update()
 names=['MSTR-Pelvis','MSTR-Foot.L','MSTR-Foot.R','FK-Spine','FK-Chest','FK-Head','FK-Scarf1',
  'IK-Hand.L','IK-Hand.R','IK-Pole-Forearm.L','IK-Pole-Forearm.R','TGT-Eye.L','TGT-Eye.R']
-if args.story:names+=['MSTR-Eyebrow.L','MSTR-Eyebrow.R','MSTR-Jaw']
+if args.story:
+ names+=['MSTR-Eyebrow.L','MSTR-Eyebrow.R','MSTR-Jaw']+[f'FK-Hair_Ponytail{i}' for i in range(1,5)]
+ names+=[f'ACT-Lips_Corner.{side}' for side in ('L','R')]
 basis={n:p[n].matrix_basis.copy() for n in names}
 rest={n:b.matrix.copy() for n,b in p.items()}
 def update():bpy.context.view_layer.update()
@@ -68,6 +71,10 @@ def story_beats(t):
  fatigue=ease(t,6.25,7.15)
  return glance,effort,fatigue
 
+def head_yaw(t):
+ glance,_,fatigue=story_beats(t)
+ return 70*glance+15*fatigue
+
 def pose(t):
  story_time=t
  if args.story:t=t if t<1.5 else (1.5 if t<2.7 else t-1.2)
@@ -76,8 +83,12 @@ def pose(t):
  lower,lean,hip_y,hip_x,step,shift,lift=values(t)
  if args.story:
   glance,effort,fatigue=story_beats(story_time)
-  lean+=22*effort
-  hip_y+=.10*effort
+  attempt=ease(story_time,.08,.65)*(1-ease(story_time,.85,1.35))
+  lean+=22*effort+17*attempt-6*glance
+  hip_y+=.10*effort+.07*attempt
+  lower+=.015*attempt-.025*glance+.015*fatigue
+  hip_x+=.015*glance+.01*fatigue
+  release=ease(story_time,6.55,7.25)
  # A step has continuous forward travel through the top of its arc.
  u=max(0,min(1,(t-2.0)/.6));u=u*u*u*(10+u*(-15+6*u))
  step=.18*u;lift=.07*math.sin(math.pi*u)
@@ -87,14 +98,31 @@ def pose(t):
  rot('FK-Head',(1,0,0),-lean*.65);rot('FK-Scarf1',(1,0,0),-lean*.65)
  if args.story:
   glance,effort,fatigue=story_beats(story_time)
-  rot('FK-Head',(0,0,1),70*glance+15*fatigue)
+  rot('FK-Head',(0,0,1),head_yaw(story_time))
   rot('FK-Head',(1,0,0),-8*(1-ease(story_time,.3,1.1))+24*fatigue-12*effort)
   move('MSTR-Eyebrow.L',(0,0,.012*(1-ease(story_time,.4,1.0))+.013*glance-.008*effort+.006*fatigue))
   move('MSTR-Eyebrow.R',(0,0,-.004*glance-.008*effort+.003*fatigue))
   rot('MSTR-Jaw',(1,0,0),4*effort+5*fatigue)
+  for side in ('L','R'):
+   p[f'ACT-Lips_Corner.{side}'].location.y+=.003*glance-.008*fatigue
+  update()
+  # Authored drag follows the head turn, with progressively delayed tips.
+  head_delta=p['FK-Head'].matrix.to_quaternion()@rest['FK-Head'].to_quaternion().inverted()
+  for i,droop in enumerate((10,25,20,10),1):
+   delay=.045*i
+   lag=(head_yaw(story_time-delay)-head_yaw(story_time))*.30
+   rot(f'FK-Hair_Ponytail{i}',head_delta@Vector((1,0,0)),-droop)
+   rot(f'FK-Hair_Ponytail{i}',(0,0,1),lag)
  targets={}
  for side,sign in [('L',1),('R',-1)]:
-  m=hands[side].copy();m.translation=Vector((sign*.20,-.4565-shift,1.0));p['IK-Hand.'+side].matrix=m;update()
+  m=hands[side].copy();m.translation=Vector((sign*.20,-.4565-shift,1.0))
+  if args.story and side=='L':
+   # Peel away from the surface before lowering; the other hand stays planted.
+   peel=ease(story_time,6.55,6.85)
+   m.translation+=Vector((.20*release,.10*peel+.23*release,-.15*release))
+   q=Quaternion(Vector((0,1,0)),math.radians(140*release))@m.to_quaternion()
+   m=Matrix.LocRotScale(m.translation,q,Vector((1,1,1)))
+  p['IK-Hand.'+side].matrix=m;update()
   pole=p['IK-Pole-Forearm.'+side].matrix.copy();pole.translation=Vector((sign*.55,.05,.98));p['IK-Pole-Forearm.'+side].matrix=pole;update()
   targets[side]=m.translation.copy()
   gaze=p['TGT-Eye.'+side].matrix.copy();gaze.translation=Vector((0,-.8-shift,1.15))
@@ -107,6 +135,7 @@ def pose(t):
   'native_positions':{n:list(p[n].matrix.translation) for n in ('IK-Hand.L','IK-Hand_Loc.L','FK-Hand.L','IK-Upperarm.L','IK-Forearm.L')},
   'feet':{side:list(p['IK-Foot.'+side].matrix.translation) for side in targets},
   'ankle_error_m':{side:(p['IK-Shin.'+side].tail-p['IK-Foot.'+side].matrix.translation).length for side in targets},
+  'contact_sides':['R'] if args.story and release>0 else ['L','R'],
   'controls':{n:[list(row) for row in p[n].matrix] for n in names},'hips':list(p['MSTR-Pelvis'].matrix.translation),'box_y':crate.location.y,'foot_lift_m':lift,'body_bounds':{}}
  dg=bpy.context.evaluated_depsgraph_get()
  for n in ('GEO-rain-shoes','GEO-rain-top','GEO-rain-body','GEO-rain-jeans','GEO-rain-head'):
@@ -153,7 +182,8 @@ s.world=bpy.data.worlds.new('world');s.world.use_nodes=True;s.world.node_tree.no
 s.render.engine='BLENDER_EEVEE';s.render.resolution_x=640;s.render.resolution_y=640;s.render.resolution_percentage=100;s.render.image_settings.file_format='PNG';s.view_settings.view_transform='AgX';s.render.fps=30
 report={}
 total=240 if args.story else 180
-frames=list(range(total)) if args.render or args.check_only else [int(f) for f in args.frames.split(',')]
+frames=[int(f) for f in args.frames.split(',')] if args.frames else (list(range(total)) if args.render or args.check_only else ([0,18,40,60,100,150,210,239] if args.story else [0,35,57,69,78,96,132,179]))
+if not frames or len(set(frames))!=len(frames) or any(f<0 or f>=total for f in frames):raise ValueError('Frames must be unique and inside the scene')
 cached={}; previous=None
 for f in frames:
  report[f]=pose(f/30)
@@ -161,7 +191,7 @@ for f in frames:
  if item['head_crate_gap_m']<.005:raise RuntimeError(f'Head too close to crate at {f}: {item["head_crate_gap_m"]}')
  if max(item['wrist_error_m'].values())>.002 or max(item['ankle_error_m'].values())>.002:
   (OUT/'failed.json').write_text(json.dumps({'frame':f,'data':item},indent=2));raise RuntimeError(f'Unreachable contact at {f}')
- if min(item['hand_surface_gap_m'].values())<-.001 or max(item['hand_surface_gap_m'].values())>.003:
+ if min(item['hand_surface_gap_m'].values())<-.001 or max(item['hand_surface_gap_m'][side] for side in item['contact_sides'])>.003:
   raise RuntimeError(f'Hand skin loses contact at {f}: {item["hand_surface_gap_m"]}')
  if abs(item['sole_gap_m']['L'])>.002 or abs(item['sole_gap_m']['R']-item['foot_lift_m'])>.002:
   raise RuntimeError(f'Sole loses expected support at {f}: {item["sole_gap_m"]}')
@@ -177,15 +207,19 @@ for f in frames:
  err=max(abs(p[n].matrix[i][j]-report[f]['controls'][n][i][j]) for n in names for i in range(4) for j in range(4))
  max_cache_error=max(max_cache_error,err)
  if err>1e-5:raise RuntimeError(f'Cached pose mismatch at {f}: {err}')
- for view,location in ([('three_quarter',(4,2,2.3))] if args.render else [('three_quarter',(4,2,2.3)),('side',(5,0,1.9))]):
+ views=[('three_quarter',(4,2,2.3))] if args.render else [('three_quarter',(4,2,2.3)),('side',(5,0,1.9))]
+ if args.render and args.overview:views.append(('overview',(4,1.2,2.2)))
+ for view,location in views:
   target=(0,-.25,.8);cam.data.ortho_scale=2.1
+  s.render.resolution_percentage=50 if view=='overview' else 100
+  if view=='overview':cam.data.ortho_scale=2.25
   if args.story and view=='three_quarter':
    close=48<=f<80 or f>=195
    location=(3,.3,1.9) if close else (4,1.2,2.2)
-   target=(.05,-.35 if f>=195 else -.13,1.27) if close else (0,-.25,.8)
-   cam.data.ortho_scale=.88 if close else 2.25
+   target=((.08,-.25,1.13) if f>=195 else (.05,-.13,1.27)) if close else (0,-.25,.8)
+   cam.data.ortho_scale=(1.25 if f>=195 else .88) if close else 2.25
    if 174<=f<195:
     location=(3,1,1.0);target=(0,-.55,.18);cam.data.ortho_scale=1.05
-  cam.location=location;aim(cam,target);s.render.filepath=str(OUT/(f'{f:04d}.png' if args.render else f'{f:04d}_{view}.png'));bpy.ops.render.render(write_still=True)
+  cam.location=location;aim(cam,target);s.render.filepath=str(OUT/(f'{f:04d}.png' if args.render and view=='three_quarter' else f'{f:04d}_{view}.png'));bpy.ops.render.render(write_still=True)
 (OUT/'complete.json').write_text(json.dumps({'frames':len(frames),'fps':30,'source':'Rain v3.3, CC BY 4.0, Blender Foundation','source_sha256':source_hash,'source_unchanged':hashlib.sha256(source.read_bytes()).hexdigest()==source_hash,'max_cache_error':max_cache_error,'story':args.story,'scope':'Authored scene study, not a universal action preset'},indent=2))
 print('PUSH_STUDY_DONE',len(frames))

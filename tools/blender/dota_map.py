@@ -20,9 +20,9 @@ _img = {}
 def img(name, color=True):
     if not name: return None
     fn = name.replace(".vtex", ".png")
-    key = (fn, color)
+    p = os.path.realpath(os.path.join(TEX, fn))
+    key = (os.path.normcase(p), color)
     if key in _img: return _img[key]
-    p = os.path.join(TEX, fn)
     if not os.path.exists(p):
         log("нет текстуры", fn); _img[key] = None; return None
     im = bpy.data.images.load(p, check_existing=False)
@@ -180,10 +180,27 @@ def load(glb, tex_dir, ground_z=None):
     global TEX
     TEX = tex_dir
     before = set(bpy.data.objects)
+    old_materials = set(bpy.data.materials)
     bpy.ops.import_scene.gltf(filepath=glb, bone_heuristic="BLENDER")
     objs = [o for o in bpy.data.objects if o not in before]
+    # Isolate any reused material before changing it; existing actors/maps keep
+    # their node trees even if an importer shares a datablock with the new map.
+    copies = {}
+    materials = set()
+    for obj in objs:
+        for slot in getattr(obj, "material_slots", []):
+            mat = slot.material
+            if mat is None:
+                continue
+            if mat in old_materials:
+                if mat not in copies:
+                    copies[mat] = mat.copy()
+                slot.link = 'OBJECT'
+                slot.material = copies[mat]
+                mat = slot.material
+            materials.add(mat)
     nmb = 0
-    for mat in list(bpy.data.materials):
+    for mat in sorted(materials, key=lambda m: m.name):
         v = mat.get("vmat")
         v = v.to_dict() if hasattr(v, "to_dict") else (v or {})
         sh = v.get("ShaderName", "")

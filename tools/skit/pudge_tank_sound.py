@@ -18,12 +18,18 @@ def build(out):
         filters=f'aresample={SR},asetrate={round(SR*pitch)},aresample={SR},highpass=f=35,lowpass=f={lowpass}'
         raw=ff(['-v','error','-i',path,'-ac',1,'-af',filters,'-ar',SR,'-f','f32le','pipe:1']).stdout
         a=np.frombuffer(raw,np.float32).astype(float)
+        if len(a)<2 or not np.isfinite(a).all():
+            raise ValueError(f'Invalid or too short cue: {path}')
+        peak=float(np.max(np.abs(a)))
+        if peak==0:
+            raise ValueError(f'Silent cue: {path}')
         # Remove leading encoder silence while preserving the transient's attack.
-        active=np.flatnonzero(np.abs(a)>max(.0005,float(np.max(np.abs(a)))*.012))
+        active=np.flatnonzero(np.abs(a)>max(.0005,peak*.012))
         if len(active):
             a=a[max(0,int(active[0]) - 96):]
         a=a[:round(duration*SR)].copy()
-        assert len(a)>0,path
+        if len(a)<2:
+            raise ValueError(f'Too short cue: {path}')
         a*=rms/max(1e-6,float(np.sqrt(np.mean(a*a))))
         n=min(round(fade*SR),len(a)//2)
         a[:min(240,n)]*=np.linspace(0,1,min(240,n))

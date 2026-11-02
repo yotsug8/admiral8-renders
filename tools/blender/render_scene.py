@@ -5,6 +5,25 @@
 #   half — пробные кадры в половинном размере
 import bpy, sys, os, json, math, re
 from mathutils import Matrix, Vector
+from bpy_extras.anim_utils import action_get_channelbag_for_slot
+
+
+def hold_camera_keys(owner):
+    """Hold baked camera/cut keys, touching only the owner's assigned slot."""
+    ad = getattr(owner, "animation_data", None)
+    if not ad or not ad.action:
+        return
+    action = ad.action
+    if getattr(action, "is_action_layered", False):
+        bag = action_get_channelbag_for_slot(action, ad.action_slot)
+        curves = bag.fcurves if bag else []
+    else:
+        curves = action.fcurves
+    for curve in curves:
+        for key in curve.keyframe_points:
+            key.interpolation = "CONSTANT"
+
+
 R = math.radians
 
 args = sys.argv[sys.argv.index("--") + 1:]
@@ -860,11 +879,7 @@ for idb in [cam, cam_d, SUN] + sorted(hidden if plans else [], key=lambda o: o.n
     if idb is None:
         continue
     for owner in (idb, getattr(idb, "data", None)):
-        ad = getattr(owner, "animation_data", None)
-        act = ad.action if ad else None
-        for fc in (getattr(act, "fcurves", None) or []):
-            for kp in fc.keyframe_points:
-                kp.interpolation = "CONSTANT"          # склейки — без промежуточных кадров
+        hold_camera_keys(owner)
 
 # ---------- проверка движения (эталон: голова всё время плавно движется, без рывков): поворот кости головы за кадр
 # и доля ширины кадра, которую занимает голова, на крупных планах (close, selfie)

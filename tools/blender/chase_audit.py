@@ -18,10 +18,12 @@ def audit():
     names=[b.name for b in arm.pose.bones if b.name.lower().startswith(
         ('arm_upper_', 'arm_lower_', 'hand_', 'spine_'))]
     spec=json.loads((Path(__file__).resolve().parents[2]/'skits/kunkka_chase.json').read_text(encoding='utf-8'))
-    cuts={round(s['start']*scene.render.fps) for s in spec['shots'][1:]}
     fps=scene.render.fps/scene.render.fps_base
+    if not math.isfinite(fps) or fps <= 0:
+        raise ValueError('Invalid effective FPS')
+    cuts={round(s['start']*fps) for s in spec['shots'][1:]}
     previous={};worst=dict(angle_deg=0.,world_angle_deg=0.,head_speed_m_s=0.);samples=0
-    for tick in range(round(2.2*scene.render.fps*4),round(8*scene.render.fps*4)):
+    for tick in range(round(2.2*fps*4),round(8*fps*4)):
         frame=tick/4;scene.frame_set(math.floor(frame),subframe=frame%1)
         ev=arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
         for name in names:
@@ -40,7 +42,7 @@ def audit():
                                world_angle_deg=min(world_angle,360-world_angle),head_speed_m_s=speed)
             previous[name]=(q.copy(),world_q.copy(),head.copy(),frame)
         samples+=1
-    report=dict(samples=samples,maximum_forelimb_spine_rotation_per_quarter_frame=worst,
+    report=dict(samples=samples,fps=fps,maximum_forelimb_spine_rotation_per_quarter_frame=worst,
                 excluded_camera_cuts=sorted(cuts),passed=worst['angle_deg']<=8,
                 limitation='The legacy local-angle fail does not prove a visible defect; parent motion can compensate it. '
                 'World angle (degrees per quarter frame) and world head speed (m/s, scene scale_length and fps/fps_base) '

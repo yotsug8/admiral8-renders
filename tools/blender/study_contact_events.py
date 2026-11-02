@@ -3,12 +3,21 @@
 Run with Blender: -b scene.blend --python-exit-code 1 -P this_script.py --
     --gait side.json --gait front.json --actor-root hoodwink_root --out events.json
 No rendering, scene saving, bone-height inference, or audio synthesis.
+By default reports must hash-match the loaded, unmodified scene. To reproject
+onto a camera revision, explicitly pass --camera-only-source original.blend;
+the hashed original and candidate actor surfaces/poses are compared at <=.25
+frame spacing and event times. This is sampled equivalence, not a proof of
+unchanged motion between samples. The actor root must be actor or actor_root.
 """
 import argparse
+import hashlib
 import json
 import math
 from pathlib import Path
 import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import json_output_path, write_json_report
 
 
 METHOD = ('Evaluated paired paw surface-band entries, separately per continuous '
@@ -32,6 +41,10 @@ def load_gait(path):
     actor = data.get('actor')
     if not isinstance(actor, str) or not actor.strip():
         raise ValueError(f'{path.name}: missing actor')
+    source_hash = data.get('source_sha256')
+    if (not isinstance(source_hash, str) or len(source_hash) != 64 or
+            any(c not in '0123456789abcdef' for c in source_hash)):
+        raise ValueError(f'{path.name}: missing or invalid source_sha256')
     fps = number(data.get('fps'), 'fps')
     if fps <= 0:
         raise ValueError('fps must be positive')
@@ -61,7 +74,119 @@ def load_gait(path):
                     raise ValueError(f'{key}: time outside report frame range')
                 previous = t
             contacts[key] = times
-    return actor, fps, (start, end), contacts
+    return actor, fps, (start, end), contacts, data
+
+
+def file_hash(path):
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def actor_root(scene, name, reports):
+    root = scene.objects.get(name)
+    if root is None or root.type == 'MESH':
+        raise ValueError(f'Actor root not found: {name}')
+    members = {root, *root.children_recursive}
+    for actor, _, _, _, data in reports:
+        if name not in (actor, actor + '_root'):
+            raise ValueError('Gait actor does not match --actor-root')
+        selection = data.get('selection')
+        if not isinstance(selection, dict) or not selection:
+            raise ValueError('Gait report lacks surface selection provenance')
+        for paw in ('hand_L', 'hand_R', 'ankle_L', 'ankle_R'):
+            rows = selection.get(paw)
+            if not isinstance(rows, list) or not rows:
+                raise ValueError(f'No surface selection for {paw}')
+            for row in rows:
+                obj = scene.objects.get(row.get('mesh', ''))
+                if obj not in members or obj.type != 'MESH':
+                    raise ValueError(f'Gait surface is outside actor hierarchy: {row}')
+    return root
+
+
+def motion_signature(root_name, reports):
+    """Bounded evaluated actor comparison; camera data deliberately excluded."""
+    import bpy
+    from contact_metrics import visible_meshes
+    sc = bpy.context.scene
+    root = actor_root(sc, root_name, reports)
+    objects = sorted([root, *root.children_recursive], key=lambda o: o.name)
+    frames = set()
+    for _, _, (start, end), contacts, _ in reports:
+        count = math.ceil((end-start)*4)
+        if count > 20000:
+            raise ValueError('Camera-only motion comparison exceeds sampling budget')
+        frames.update(min(start+i/4, end) for i in range(count+1))
+        frames.update(t*reports[0][1] for times in contacts.values() for t in times)
+    if len(frames) > 20000:
+        raise ValueError('Camera-only motion comparison exceeds sampling budget')
+    digest = hashlib.sha256()
+    def add(value):
+        digest.update(json.dumps(value, separators=(',', ':'), allow_nan=False).encode())
+        digest.update(b'\n')
+    def vector(value):
+        return [round(float(v), 6) for v in value]
+    add([sc.render.fps/sc.render.fps_base, sc.unit_settings.scale_length])
+    saved = sc.frame_current, sc.frame_subframe
+    try:
+        for frame in sorted(frames):
+            sc.frame_set(math.floor(frame), subframe=frame % 1)
+            dg = bpy.context.evaluated_depsgraph_get()
+            visible = visible_meshes(sc)
+            for obj in objects:
+                if obj.type == 'CAMERA':
+                    continue
+                ev = obj.evaluated_get(dg)
+                add([frame, obj.name, obj.type, ev.hide_render, obj in visible,
+                     [vector(row) for row in ev.matrix_world]])
+                if obj.type == 'ARMATURE':
+                    add([[b.name, [vector(row) for row in b.matrix]] for b in ev.pose.bones])
+                if obj.type == 'MESH':
+                    if any(m.show_render != m.show_viewport for m in obj.modifiers):
+                        raise ValueError(f'Render/viewport modifier mismatch: {obj.name}')
+                    mesh = ev.to_mesh()
+                    try:
+                        add([vector(ev.matrix_world @ v.co) for v in mesh.vertices])
+                        add([list(p.vertices) for p in mesh.polygons])
+                    finally:
+                        ev.to_mesh_clear()
+    finally:
+        sc.frame_set(saved[0], subframe=saved[1])
+    return dict(sha256=digest.hexdigest(), samples=len(frames),
+                max_step_frames=.25, decimal_places=6)
+
+
+def verify_sources(candidate, source, root_name, reports):
+    """Hash-bind reports; camera-only reuse requires a verified source blend."""
+    import bpy
+    expected = {data['source_sha256'] for *_, data in reports}
+    candidate_hash = file_hash(candidate)
+    if source is None:
+        if expected != {candidate_hash}:
+            raise ValueError('Gait source hash differs from scene; regenerate reports or use --camera-only-source')
+        return dict(mode='exact_scene', scene_sha256=candidate_hash)
+    source_hash = file_hash(source)
+    if expected != {source_hash}:
+        raise ValueError('Gait reports do not match --camera-only-source hash')
+    current = motion_signature(root_name, reports)
+    sc = bpy.context.scene
+    saved = sc.name, sc.frame_current, sc.frame_subframe, sc.camera.name if sc.camera else None
+    try:
+        bpy.ops.wm.open_mainfile(filepath=str(source), load_ui=False, use_scripts=False)
+        baseline = motion_signature(root_name, reports)
+    finally:
+        bpy.ops.wm.open_mainfile(filepath=str(candidate), load_ui=False, use_scripts=False)
+        sc = bpy.data.scenes[saved[0]]
+        bpy.context.window.scene = sc
+        sc.frame_set(saved[1], subframe=saved[2])
+        sc.camera = sc.objects.get(saved[3]) if saved[3] else None
+    if file_hash(source) != source_hash or file_hash(candidate) != candidate_hash:
+        raise ValueError('Scene file changed during camera-only comparison')
+    if current != baseline:
+        raise ValueError('Camera-only reuse refused: sampled actor motion/geometry differs')
+    return dict(mode='camera_only_sampled', scene_sha256=candidate_hash,
+                source_sha256=source_hash, motion=current,
+                limitation='Actor samples only; excludes camera, other actors, environment and between-sample motion.')
 
 
 def paired_entries(contacts):
@@ -84,6 +209,8 @@ def main(argv=None):
     parser.add_argument('--gait', type=Path, action='append', required=True,
                         help='One gait_metrics JSON per continuous shot; repeat in shot order')
     parser.add_argument('--actor-root', required=True)
+    parser.add_argument('--camera-only-source', type=Path,
+                        help='Explicit camera revision: original hashed blend; verify sampled actor equivalence')
     parser.add_argument('--out', type=Path, required=True, help='Output JSON file')
     args = parser.parse_args(argv)
 
@@ -92,19 +219,20 @@ def main(argv=None):
 
     if not bpy.data.filepath:
         raise ValueError('Load the scene first with blender -b scene.blend')
+    if bpy.data.is_dirty:
+        raise ValueError('Scene has unsaved changes; save and reload before deriving events')
+    candidate = Path(bpy.data.filepath).resolve()
     inputs = [p.resolve() for p in args.gait]
     if len(set(inputs)) != len(inputs):
         raise ValueError('Duplicate gait input')
-    if args.out.resolve() in {*inputs, Path(bpy.data.filepath).resolve(), Path(__file__).resolve()}:
-        raise ValueError('Output must not overwrite an input or the script')
+    protected = [*inputs, candidate, Path(__file__), args.camera_only_source]
+    output = json_output_path(args.out, protected)
     reports = [load_gait(p) for p in args.gait]
     sc = bpy.context.scene
-    root = sc.objects.get(args.actor_root)
-    if root is None:
-        raise ValueError(f'Actor root not found in active scene: {args.actor_root}')
+    root = actor_root(sc, args.actor_root, reports)
     fps = sc.render.fps / sc.render.fps_base
     previous_end = -math.inf
-    for actor, report_fps, (start, end), _ in reports:
+    for actor, report_fps, (start, end), _, _ in reports:
         if actor != reports[0][0]:
             raise ValueError('Gait reports must describe the same actor')
         if not math.isclose(report_fps, fps, rel_tol=0, abs_tol=1e-9):
@@ -112,11 +240,15 @@ def main(argv=None):
         if start <= previous_end:
             raise ValueError('Shot ranges must be ordered and nonoverlapping')
         previous_end = end
+    provenance = verify_sources(candidate, args.camera_only_source, args.actor_root, reports)
+    # Camera-only validation reopens files; reacquire RNA objects afterwards.
+    sc = bpy.context.scene
+    root = actor_root(sc, args.actor_root, reports)
 
     events = []
     saved_frame, saved_subframe, saved_camera = sc.frame_current, sc.frame_subframe, sc.camera
     try:
-        for actor, _, _, contacts in reports:
+        for actor, _, _, contacts, _ in reports:
             for foot, at in paired_entries(contacts):
                 # Absolute timeline seconds, with no frame_start offset.
                 f = at * fps
@@ -138,9 +270,11 @@ def main(argv=None):
         sc.camera = saved_camera
         bpy.context.view_layer.update()
     report = dict(footsteps=sorted(events, key=lambda e: e['at']), method=METHOD,
-                  sources=[p.name for p in args.gait])
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(report, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+                  sources=[p.name for p in args.gait], actor_root=args.actor_root,
+                  provenance=provenance)
+    if file_hash(candidate) != provenance['scene_sha256']:
+        raise ValueError('Scene file changed while projecting events')
+    write_json_report(output, json.dumps(report, indent=2, allow_nan=False) + '\n', protected)
     print('FOOT_EVENTS', len(events), flush=True)
 
 

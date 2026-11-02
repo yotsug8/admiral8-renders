@@ -146,12 +146,21 @@ def compare(reference, actual):
     for before, after in zip(reference, actual):
         for name in BONES:
             a, b = Matrix(before[name]), Matrix(after[name])
-            result['max_translation_m'] = max(result['max_translation_m'], (a.translation-b.translation).length)
+            # Validate after conversion too: finite Python doubles may overflow
+            # mathutils' floats. max(0, NaN) otherwise silently retains zero.
+            for matrix in (a, b):
+                if (len(matrix) != 4 or any(len(row) != 4 for row in matrix)
+                        or not all(math.isfinite(v) for row in matrix for v in row)):
+                    raise ValueError(f'Invalid/nonfinite 4x4 matrix: {name}')
+            translation = (a.translation-b.translation).length
             q = a.to_quaternion().rotation_difference(b.to_quaternion())
             angle = math.degrees(2*math.atan2(math.sqrt(q.x*q.x+q.y*q.y+q.z*q.z), abs(q.w)))
+            element = max(abs(a[i][j]-b[i][j]) for i in range(4) for j in range(4))
+            if not all(math.isfinite(v) for v in (translation, angle, element)):
+                raise ValueError(f'Nonfinite matrix comparison: {name}')
+            result['max_translation_m'] = max(result['max_translation_m'], translation)
             result['max_rotation_deg'] = max(result['max_rotation_deg'], angle)
-            result['max_matrix_element'] = max(result['max_matrix_element'],
-                max(abs(a[i][j]-b[i][j]) for i in range(4) for j in range(4)))
+            result['max_matrix_element'] = max(result['max_matrix_element'], element)
     result['passed'] = result['max_translation_m'] <= .0001 and result['max_rotation_deg'] <= .05
     if not result['passed']:
         raise ValueError('World matrix mismatch: '+json.dumps(result))

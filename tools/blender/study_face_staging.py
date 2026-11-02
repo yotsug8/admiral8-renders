@@ -360,13 +360,15 @@ def stage(variant):
 def verify():
     """Reopen both local copies; compare original actor, without any render."""
     import bpy
+    missing = [variant for variant in ('a', 'b')
+               if not (OUT/variant/'face_staging.blend').is_file()]
+    if missing:
+        raise ValueError('Both staging variants are required; missing: '+', '.join(missing))
     source_hash = digest(SOURCE)
     baseline = witness()
     result = {}
     for variant in ('a','b'):
         path = OUT/variant/'face_staging.blend'
-        if not path.exists():
-            continue
         bpy.ops.wm.open_mainfile(filepath=str(path))
         assert witness() == baseline
         checks = []

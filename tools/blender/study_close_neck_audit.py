@@ -11,6 +11,9 @@ import bmesh
 import bpy
 from mathutils import Vector
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from json_output import json_output_path, write_json_report
+
 EXPECTED = '3ebd652e2dd38bdc133290c421691520e9592e9c184d20b5dbc2feff93bbd659'
 
 
@@ -125,6 +128,9 @@ def main():
     parser.add_argument('--source', type=Path, default=Path('tools/blender/render_scene.py'))
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
+    protected = (args.source, bpy.data.filepath, __file__)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out = json_output_path(args.out, protected)
     source = args.source.read_text(encoding='utf-8')
     node = next(n for n in ast.parse(source).body
                 if isinstance(n, ast.FunctionDef) and n.name == 'close_neck')
@@ -137,8 +143,7 @@ def main():
     report = dict(blender=bpy.app.version_string, build=bpy.app.build_hash.decode(),
                   function_sha256=digest, cases=results, assertions_passed=True,
                   scope='Four synthetic meshes; no real character, render, or production change')
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+    write_json_report(args.out, json.dumps(report, indent=2) + '\n', protected)
     print(json.dumps(report, indent=2))
 
 

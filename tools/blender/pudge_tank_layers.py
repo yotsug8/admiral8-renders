@@ -8,6 +8,11 @@ out=Path(bpy.data.filepath).parent
 data=json.loads((out/'build.json').read_text(encoding='utf-8'))
 roots=[bpy.data.objects[n] for n in ('pudge_root','detailed_tank','heavy_launcher','enemy_ancient')]
 moving={o for root in roots for o in (root,*root.children_recursive)}
+# ground_actor_shadow deliberately detaches this animated object from the hero.
+# Keep it out of static plates and preserve it for the finishing pass.
+blob=bpy.data.objects.get('pudge_blob')
+if blob is not None:
+    moving.add(blob)
 moving.update(o for o in scene.objects if o.name.startswith('blast volume'))
 scene.render.image_settings.color_mode='RGBA'
 scene.render.film_transparent=False

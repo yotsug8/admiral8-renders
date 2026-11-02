@@ -8,8 +8,17 @@
 #               ~0,3 с на кадр вместо 2,2; картинка грубая, для показа и цвета — без него
 #   A8_JERK=1   без кадров: рывки кистей, головы и оружия (скачок ускорения на кадре — стыки анимаций)
 #   A8_CLIP=1   без кадров: на каждом кадре — проходит ли оружие сквозь тело (пересечение сеток, кроме кистей)
+#   A8_CLIP_STRICT=0 — только отчёт; по умолчанию пересечение/неполная проверка дают exit 1/3
 import bpy, sys, os, math, json, shutil, re
 from mathutils import Matrix, Vector
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from contact_metrics import visible_meshes
+
+
+def diagnostic_environment():
+    """The assembly must return to diagnostics, never save a blend and exit."""
+    for key in ('A8_VIEWS', 'A8_BLEND'):
+        os.environ.pop(key, None)
 
 FAST = bool(os.environ.get("A8_FAST"))
 if FAST:
@@ -23,12 +32,13 @@ if FAST:
 
 SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "render_scene.py")
 code = open(SRC, encoding="utf-8").read().replace("bpy.ops.render.render(", "_noop(")
-os.environ.pop("A8_VIEWS", None)
+diagnostic_environment()
 g = {"__file__": SRC, "__name__": "__main__", "_noop": lambda **k: None}
 exec(compile(code, SRC, "exec"), g)
 
 R = math.radians
 sc, ACTORS, HERO_OBJS, PICK, OUT = g["sc"], g["ACTORS"], g["HERO_OBJS"], g["PICK"], g["OUT"]
+PICK = list(range(g['N'])) if PICK is None else PICK
 if FAST:
     sc.render.resolution_percentage = int(os.environ.get("A8_PCT", 25))
 WHEAD = bool(os.environ.get("A8_WHEAD"))                  # крупно голова: камера ведёт голову (мимика), углы — от взгляда на 1-м кадре
@@ -49,14 +59,18 @@ def clip_check(who, fr):
     кроме треугольников, у каждой вершины которых ≥80 % веса приходится на кисть/пальцы.
     Без весов исключений нет: близость к запястью не доказывает хват. Печатает кадры и пары сеток."""
     from mathutils.bvhtree import BVHTree
-    objs = [o for o in HERO_OBJS_OF(who) if o.type == "MESH"]
+    fr = list(fr)
+    objs = [o for o in HERO_OBJS_OF(who) if o.type == "MESH"
+            and not re.search(r'physics|collision|blob|shadow', o.name, re.I)]
     WPN = re.compile(r"weapon|hook|sword|blade|axe|staff|gun|bow|cleaver|anchor|hammer|mace|spear|club|dagger|katana", re.I)
     weap = [o for o in objs if WPN.search(o.name)]
-    body = [o for o in objs if not WPN.search(o.name) and ".vmdl_c" in o.name and "physics" not in o.name and o.visible_get()]
+    body = [o for o in objs if not WPN.search(o.name)]
     arm = ACTORS[who]["arm"]
     hit = {}
     face_maps = {}
     missing_weights = set()
+    checked = {f: 0 for f in fr}
+    wall_checked = {f: 0 for f in fr}
     def tree(o, dg, skip_grip=False):
         e = o.evaluated_get(dg)
         m = e.to_mesh(preserve_all_data_layers=True, depsgraph=dg)
@@ -94,13 +108,15 @@ def clip_check(who, fr):
             e.to_mesh_clear()
     for f in fr:
         sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get()
-        bt = [(b, tree(b, dg, skip_grip=True)) for b in body]
-        for w in weap:
+        visible = visible_meshes(sc)
+        bt = [(b, tree(b, dg, skip_grip=True)) for b in body if b in visible]
+        for w in (w for w in weap if w in visible):
             wt = tree(w, dg)
             for b, t in bt:
                 if t and wt:
+                    checked[f] += 1
                     pairs = wt.overlap(t); n = len(pairs)
-                    if n and os.environ.get("A8_CLIP") == "2" and f == fr[0]:   # где: ближайшая кость к месту пересечения
+                    if n and os.environ.get("A8_CLIP") == "2" and f == fr[0] and arm and arm.pose.bones:
                         e = b.evaluated_get(dg); m = e.to_mesh(); M = e.matrix_world
                         near_b = {}
                         for _, pi in pairs[:400]:
@@ -113,21 +129,34 @@ def clip_check(who, fr):
                     if n:
                         hit.setdefault((w.name.split(".vmdl")[0].split("\\")[-1], b.name.split(".")[-1]), []).append((f, n))
     if os.environ.get("A8_WALL"):                         # и в других героев: задевает ли руками, оружием, телом
-        mine = [o for o in objs if "physics" not in o.name and "blob" not in o.name and o.visible_get()]
+        mine = objs
         others = [o for n_, A in ACTORS.items() if n_ != who for o in HERO_OBJS_OF(n_)
-                  if o.type == "MESH" and "physics" not in o.name and "blob" not in o.name and o.visible_get()]   # blob — тень
+                  if o.type == "MESH" and not re.search(r'physics|collision|blob|shadow', o.name, re.I)]
         for f in fr:
             sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get()
-            ot = [(o, tree(o, dg)) for o in others]
-            for m in mine:
+            visible = visible_meshes(sc)
+            ot = [(o, tree(o, dg)) for o in others if o in visible]
+            for m in (m for m in mine if m in visible):
                 mt = tree(m, dg)
                 for o, t in ot:
                     if t and mt:
+                        wall_checked[f] += 1
                         n = len(mt.overlap(t))
                         if n:
                             hit.setdefault((m.name.split(".vmdl")[0].split("\\")[-1], "чужой " + o.name.split(".vmdl")[0].split("\\")[-1]), []).append((f, n))
-    if not hit:
-        print(f"  ПЕРЕСЕЧЕНИЙ НЕТ {who}: оружие не проходит сквозь тело ({len(fr)} кадров)")
+    incomplete = [f for f in fr if not checked[f] or
+                  (os.environ.get('A8_WALL') and not wall_checked[f])]
+    status = 'intersection' if hit else 'inconclusive' if not fr or incomplete else 'no_surface_intersections'
+    report = dict(actor=who, status=status, requested_frames=len(fr),
+                  checked_frames=sum(n > 0 for n in checked.values()),
+                  checked_pairs=sum(checked.values()), wall_pairs=sum(wall_checked.values()),
+                  incomplete_frames=incomplete,
+                  weapon_meshes=[o.name for o in weap], body_meshes=[o.name for o in body])
+    print('CLIP_RESULT', json.dumps(report, ensure_ascii=False), flush=True)
+    if status == 'no_surface_intersections':
+        print(f"  ПЕРЕСЕЧЕНИЙ ПОВЕРХНОСТЕЙ НЕТ {who}: {report['checked_pairs']} пар на {len(fr)} кадрах")
+    elif status == 'inconclusive':
+        print(f"  НЕДОСТАТОЧНО ДАННЫХ {who}: пустая/невидимая геометрия или выборка кадров")
     for (w, b), fs in hit.items():
         # Хват уже исключён по весам. Постоянное пересечение оставшихся
         # поверхностей и даже одна пара треугольников не считаются нормой.
@@ -138,6 +167,7 @@ def clip_check(who, fr):
             else:
                 rng.append([f, f, n])
         print(f"  ⚠ ПЕРЕСЕЧЕНИЕ {who}: {w} в {b} — кадры " + ", ".join(f"{a}–{b_} (до {n} граней)" for a, b_, n in rng))
+    return report
 
 
 def jerk_check(who, fr):
@@ -179,6 +209,7 @@ vd.angle = R(40); vd.clip_start = 0.05; sc.camera = vc
 multi = ";" in os.environ["A8_WVIEWS"]
 CLIP = bool(os.environ.get("A8_CLIP"))                    # только проверка пересечений, без кадров
 JERK = bool(os.environ.get("A8_JERK"))                    # только проверка рывков, без кадров
+clip_results = []
 for spec in os.environ["A8_WVIEWS"].split(";"):
     who, angs = spec.split(":")
     fr = PICK
@@ -186,7 +217,7 @@ for spec in os.environ["A8_WVIEWS"].split(";"):
         who, rng = who.split("@"); f0, f1 = map(int, rng.split("-")); fr = [f for f in PICK if f0 <= f <= f1]
     arm = ACTORS[who]["arm"]
     if CLIP:
-        clip_check(who, fr); continue
+        clip_results.append(clip_check(who, fr)); continue
     if JERK:
         jerk_check(who, fr); continue
     mine = HERO_OBJS_OF(who)
@@ -232,4 +263,10 @@ for spec in os.environ["A8_WVIEWS"].split(";"):
                 vc.rotation_euler = (H - vc.location).to_track_quat("-Z", "Y").to_euler()
             sc.render.filepath = os.path.join(OUT, f"w{f:05d}_{who + '_' if multi else ''}{int(float(a)):03d}.png")
             bpy.ops.render.render(write_still=True)
-print("ГОТОВО", OUT)
+if CLIP and os.environ.get('A8_CLIP_STRICT', '1') != '0':
+    code = (1 if any(r['status'] == 'intersection' for r in clip_results) else
+            3 if not clip_results or any(r['status'] == 'inconclusive' for r in clip_results) else 0)
+    if code:
+        sys.stdout.flush(); sys.stderr.flush()
+        os._exit(code)
+print("ПРОВЕРКА ЗАВЕРШЕНА" if CLIP else "ГОТОВО", OUT)

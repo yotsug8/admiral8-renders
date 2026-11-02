@@ -1,5 +1,4 @@
 """Stage a short tank skit from the audited two-hand pose; render shot probes."""
-import ast
 import json
 import math
 import random
@@ -46,7 +45,6 @@ hero.scale = (.6,) * 3
 hero.location = START
 bpy.context.view_layer.update()
 pelvis, legs, corrected, _ = _rig(arm)
-rest_basis = {b.name: b.matrix_basis.copy() for b in arm.pose.bones}
 world = arm.matrix_world.copy()
 base = {b.name: world @ b.matrix for b in arm.pose.bones}
 shifted = {b.name for b in arm.pose.bones if b.name == pelvis or pelvis in {p.name for p in b.parent_recursive}}

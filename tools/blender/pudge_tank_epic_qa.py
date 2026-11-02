@@ -59,8 +59,8 @@ if 'support_grip' in launcher:
     support=launcher.evaluated_get(dg).matrix_world@Vector(launcher['support_grip'])
     support_hand=(arm.matrix_world@arm.pose.bones['wrist_L'].matrix)@Vector(launcher['support_local_wrist'])
     report['support_reference_error_m']=(support-support_hand).length
-    if (support-support_hand).length>.001: raise ValueError('Support hand left the foregrip')
 (OUT/'saved_qa.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+if report.get('support_reference_error_m',0)>.001: raise ValueError('Support hand left the foregrip')
 if hits: raise ValueError('Actor intersects tank')
 if (actual-reference).length>.001: raise ValueError('Saved attachment changed')
 cam=sc.camera

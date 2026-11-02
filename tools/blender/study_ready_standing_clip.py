@@ -33,9 +33,11 @@ def import_bvh(path):
     bpy.context.scene.render.fps_base=1
     bpy.context.scene.unit_settings.system='METRIC'
     bpy.context.scene.unit_settings.scale_length=1
-    assert bpy.ops.import_anim.bvh(filepath=str(path),target='ARMATURE',global_scale=0.0254/0.45,
+    result = bpy.ops.import_anim.bvh(filepath=str(path),target='ARMATURE',global_scale=0.0254/0.45,
         frame_start=1,use_fps_scale=False,update_scene_fps=False,update_scene_duration=False,
-        rotate_mode='NATIVE',axis_forward='-Z',axis_up='Y')=={'FINISHED'}
+        rotate_mode='NATIVE',axis_forward='-Z',axis_up='Y')
+    if result != {'FINISHED'}:
+        raise RuntimeError(f'BVH import failed: {result}')
     return bpy.context.object
 
 

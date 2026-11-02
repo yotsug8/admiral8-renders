@@ -70,7 +70,6 @@ if not all(.055<=p.x<=.945 and .09<=p.y<=.89 and p.z>0 for p in uv):
     raise ValueError('Actor or launcher leaves the reviewed framing region')
 
 cam = sc.camera
-saved = cam.matrix_world.copy()
 cam.data.dof.use_dof = False
 sc.render.resolution_x = sc.render.resolution_y = 700
 for name, delta in [('native_grip_front',(-1.6,-2.4,.7)), ('native_grip_side',(-2.7,.2,.6))]:

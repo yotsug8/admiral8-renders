@@ -19,7 +19,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from contact_metrics import resolve
+from contact_metrics import resolve, visible_meshes
 from contact_reaction import _basis, _curves
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -419,11 +419,10 @@ def fix_support(folder):
 def surface_audit(folder):
     """Triangle overlaps of the visible hook against skin; explicit weighted grip mask."""
     sc = bpy.context.scene
-    report = {'frames': COUNT, 'cases': {}, 'limits': 'Triangle crossings only; not containment, cloth clearance or proof of valid grip.'}
+    report = {'frames': COUNT, 'cases': {}, 'checked_pairs': 0,
+              'limits': 'Visible view-layer meshes, integer frames, triangle crossings only; not containment, cloth clearance or proof of valid grip.'}
     for case in ('control', 'follow'):
-        meshes = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and o.name.startswith('0_'+case+'.')]
-        weapon = next(o for o in meshes if 'righthook_model' in o.name)
-        body_meshes = [o for o in meshes if any(s in o.name for s in ('upper_body', 'lower_body', '.head', 'leftarm_model'))]
+        meshes = [o for o in sc.objects if o.type == 'MESH' and o.name.startswith('0_'+case+'.')]
         rows = []
         def bvh(ob, exclude_grip=False):
             graph = bpy.context.evaluated_depsgraph_get()
@@ -440,18 +439,28 @@ def surface_audit(folder):
                         if weight > .5:
                             grip.add(v.index)
                 tris = [tuple(t.vertices) for t in mesh.loop_triangles if not all(v in grip for v in t.vertices)]
+                if not tris:
+                    raise ValueError(f'Inconclusive surface audit: no tested triangles in {ob.name} at {sc.frame_current}')
                 return BVHTree.FromPolygons([evaluated.matrix_world @ v.co for v in mesh.vertices], tris, all_triangles=True), len(grip)
             finally:
                 evaluated.to_mesh_clear()
         for frame in range(COUNT):
             sc.frame_set(frame)
             bpy.context.view_layer.update()
+            visible = visible_meshes(sc)
+            weapons = [o for o in meshes if o in visible and 'righthook_model' in o.name]
+            body_meshes = [o for o in meshes if o in visible and any(
+                s in o.name for s in ('upper_body', 'lower_body', '.head', 'leftarm_model'))]
+            if len(weapons) != 1 or not body_meshes:
+                raise ValueError(f'Inconclusive surface audit: {case} frame {frame} needs one visible hook and body surfaces')
+            weapon = weapons[0]
             hook, _ = bvh(weapon)
             row = {'frame': frame, 'pairs': {}, 'excluded_grip_vertices': {}}
             for ob in body_meshes:
                 tree, grip = bvh(ob, True)
                 row['pairs'][ob.name] = len(hook.overlap(tree))
                 row['excluded_grip_vertices'][ob.name] = grip
+                report['checked_pairs'] += 1
             rows.append(row)
         report['cases'][case] = rows
     report['max_non_grip_crossings'] = max(sum(r['pairs'].values()) for rows in report['cases'].values() for r in rows)

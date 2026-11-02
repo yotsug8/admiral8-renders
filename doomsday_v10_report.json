@@ -1,0 +1,57 @@
+{
+  "artifact": "doomsday_v10_movement.mp4",
+  "sha256": "0bf7f18b6450c36563473441f4e2c6dd0b168a1d4092077a32a877260f9a3ad3",
+  "bytes": 544563,
+  "status": "movement draft; artistic approval pending",
+  "frames": 420,
+  "fps": 30,
+  "duration_seconds": 14.0,
+  "dimensions": [
+    640,
+    360
+  ],
+  "decoded_frames": 420,
+  "audio": false,
+  "visual_review": {
+    "whole_sequence_step_frames": 6,
+    "swing_step_frames": 2,
+    "pressure_step_frames": 4,
+    "continuous_playback_claimed": false
+  },
+  "weapon_clearance": {
+    "frames": 240,
+    "range": [
+      180,
+      419
+    ],
+    "frames_with_zero_pairs": 68,
+    "frames_with_four_wrist_boundary_pairs": 172,
+    "boundary_triangles": [
+      160,
+      188
+    ],
+    "other_surface_findings": 0,
+    "contained_samples": 0
+  },
+  "forearm_torso_clearance": {
+    "frames": 240,
+    "max_pairs": 0,
+    "limitations": "Transition faces, upper arms, accessories and containment are not covered."
+  },
+  "contact_invariants": {
+    "frames": 141,
+    "max_contact_drift": 5.2234893560902225e-06,
+    "max_grip_position_drift": 4.4592082772894115e-06,
+    "method": "evaluated baked bone world matrices; fixed blade point and two weapon-relative wrist positions"
+  },
+  "project_check": {
+    "passed": 18,
+    "skipped": 0
+  },
+  "limitations": [
+    "Flight and collision strength are not artistically accepted.",
+    "Surface tests cover sampled frames and selected mesh regions, not continuous collision detection.",
+    "Final lighting, effects and audio are not included."
+  ],
+  "source_commit": "285486ee305f22fb5365b96aea3091f690ddc8fd"
+}

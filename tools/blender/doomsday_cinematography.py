@@ -64,7 +64,7 @@ def apply(scene, axe, rubick, contact, frames=420):
     for start, stop, kind, direction, tracking, lens in (
         (45,120,'detail',(-1,-1.7,.30),0,55),
         (195,243,'attack',(-1,-.28,.08),0,42),
-        (243,277,'attack',(-1,-.27,.02),.65,48),
+        (243,277,'attack',(-1,-.27,.02),.65,36),
         (277,330,'contact',(-1,-.10,.06),0,32),
     ):
         rotation=(-Vector(direction)).to_track_quat('-Z','Y'); inverse=rotation.inverted()

@@ -67,3 +67,5 @@
 - [Старт и остановка: профиль](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_start_stop_profile.mp4) · [ракурс ¾](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_start_stop_three_quarter.mp4) — 4 с/30 fps, два демонстрационных шага с перекатом стопы и остановкой. Это не готовая естественная походка. Метод — docs/studies/START_STOP.md в main.
 
 - [Свен и Рубик: отклонённая постановочная проба](doomsday_sven_rubick_draft.mp4) — 5,33 с, 540×960/15 fps. Художественно сырая версия: подвешенное движение, слабое взаимодействие и композиция. Сохранена для разбора ошибок, не образец достигнутого качества. Причины и следующий подход — docs/productions/DOOMSDAY.md в main.
+
+- [Акс и Рубик: остановка топора, v2](doomsday_v2_draft.mp4) — черновик 3,27 с, 540×960/30 fps, три звуковых события. Художественно не принят; ограничения — docs/productions/DOOMSDAY.md основной ветки. [Технический отчёт](doomsday_v2_report.json).

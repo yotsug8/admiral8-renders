@@ -286,12 +286,31 @@ def stage_arrest(arm,pose,contact,weight):
     if weight<=0:return pose
     result=shift(pose,Vector((0,-.20*weight-.08*math.sin(math.pi*weight),0)))
     weapon=around(pose['axe_1'],contact,-10*weight,'X')
-    for side,final_pole in (('R',Vector((-1,-.5,-1))),('L',Vector((-.1,0,-1)))):
+    for side,final_pole in (('R',Vector((-1,-.5,-1))),('L',Vector((1,0,-.6)))):
         binding=pose['axe_1'].inverted()@pose['wrist_'+side]
         pole=(pose['elbow_'+side].translation-pose['bicep_'+side].translation).normalized()
         pole= pole.lerp(final_pole.normalized(),weight)
         result=solve_arm(arm,result,side,weapon@binding,pole)
     result['axe_1']=weapon
+    return result
+
+
+def pressure_phrase(arm,pose,frame):
+    """A deliberate second effort, followed by looking from weapon to defender."""
+    weight=curve(frame,((0,0),(300,0),(325,1),(338,.75),(358,0),(419,0)))
+    weight=max(0,weight)
+    result=shift(pose,Vector((0,-.20*weight,.08*weight)))
+    branch(arm,result,'spine1',math.radians(16*weight),'X')
+    branch(arm,result,'spine2',math.radians(-10*weight),'Z')
+    branch(arm,result,'head',math.radians(-10*weight),'X')
+    if weight>0:
+        left_pole=Vector((1,0,-.6)).lerp(Vector((1,0,1)),weight)
+        for side,pole in (('R',Vector((-1,-.5,-1))),('L',left_pole)):
+            result=solve_arm(arm,result,side,pose['wrist_'+side],pole)
+        result['axe_1']=pose['axe_1'].copy()
+    if frame>=358:
+        branch(arm,result,'head',math.radians(curve(frame,((358,0),(374,-12),(400,7),(419,5)))),'Z')
+        branch(arm,result,'head',math.radians(curve(frame,((358,0),(373,-7),(398,5),(419,3)))),'X')
     return result
 
 
@@ -307,6 +326,9 @@ def author(scene,axe,rubick,dense=True):
     center=sum(weapon_local,Vector())/len(weapon_local)
     if shaft_axis.dot(center-binds['R'].translation)<0:shaft_axis.negate()
     binds['L'].translation+=shaft_axis*(.38/(grip['axe_1'].to_3x3()@shaft_axis).length)
+    # Live-pose calibration: turn the support palm around the actual handle,
+    # not merely the elbow around a fixed wrist. The latter crossed the shaft.
+    binds['L']=around(binds['L'],Vector((-.0742359,-.0201558,-.0856006)),-95,shaft_axis)
     scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
     bank=native_attack(scene,axe)
     root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
@@ -332,6 +354,8 @@ def author(scene,axe,rubick,dense=True):
                 curve(f,((279,0),(286,-.18),(303,-.06),(329,-.16),(350,-.14),(379,-.08),(419,-.09))),
                 .85*math.sin(math.pi*.72)+curve(f,((279,0),(290,-.10),(309,-.05),(340,-.08),(380,-.13),(419,-.14)))))
         pose=shift(native,root-native['root'].translation)
+        if f<195:
+            branch(axe,pose,'head',math.radians(curve(f,((0,-3),(74,-3),(112,3),(145,-7),(170,0),(195,-2)))),'X')
         if 195<f<=HIT:
             branch(axe,pose,'spine1',math.radians(curve(f,((195,0),(226,-7),(242,-10),(258,5),(279,0)))))
             branch(axe,pose,'spine2',math.radians(curve(f,((195,0),(228,-9),(246,-6),(268,5),(279,0)))),'Z')
@@ -395,7 +419,7 @@ def author(scene,axe,rubick,dense=True):
                 if side=='L' and free_weight>0:
                     h,k,w=(pose[n].translation for n in chain)
                     source_pole=(k-h).normalized().lerp((outside+Vector((0,-.6,-.9))).normalized(),free_weight)
-                    pole=source_pole.lerp(Vector((-.55,.83,0)).normalized(),smooth((f-248)/22))
+                    pole=source_pole.lerp(Vector((1,0,-.6)).normalized(),join)
                     pose=solve_arm(axe,pose,side,target,pole)
                 else:pose,poles[side]=solve(axe,pose,chain,target,poles[side])
             except ValueError as exc:raise ValueError(f'Native staging unreachable at {f}/{side}: {exc}') from exc
@@ -410,6 +434,7 @@ def author(scene,axe,rubick,dense=True):
     tip=held.inverted()@contact
     for f,pose in list(enumerate(poses))+list(extra.items()):
         corrected=stage_arrest(axe,pose,pose['axe_1']@tip,smooth((f-260)/19))
+        corrected=pressure_phrase(axe,corrected,f)
         if f==int(f):poses[int(f)]=corrected
         else:extra[f]=corrected
     bake(axe,poses,extra)
@@ -525,7 +550,8 @@ def face(scene):
             if 0<=f-225<len(cry):speak=max(speak,cry[f-225])
             shock=smooth((f-HIT)/8)
             disbelief=smooth((f-363)/34)
-            for name,value in {'jawOpen':.10+.45*speak+.20*shock-.15*disbelief,
+            effort=max(0,curve(f,((0,0),(300,0),(325,1),(338,.75),(358,0),(419,0))))
+            for name,value in {'jawOpen':max(0,.08+.45*speak+.14*shock+.22*effort-.20*disbelief),
                                'browLowerer':.6*(1-shock)+.25*disbelief,
                                'innerBrowRaiser':.45*shock+.2*disbelief,'upperLidRaiser':.5*shock-.2*disbelief,
                                'eyeClosed':.9*max(0,1-abs(f-385)/2)}.items():

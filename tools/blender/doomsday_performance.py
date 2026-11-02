@@ -14,7 +14,7 @@ import numpy as np
 from mathutils import Matrix, Vector, Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v9')))
+OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v10')))
 SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from contact_reaction import _basis, _solve_leg
@@ -277,6 +277,24 @@ def native_attack(scene, arm):
     return poses
 
 
+def stage_arrest(arm,pose,contact,weight):
+    """Pose correction checked in the live scene from front, side and rear.
+
+    Lower the two-handed grip as a whole while preserving the blade contact;
+    changing elbow poles alone forced a forearm through the handle.
+    """
+    if weight<=0:return pose
+    result=shift(pose,Vector((0,-.20*weight-.08*math.sin(math.pi*weight),0)))
+    weapon=around(pose['axe_1'],contact,-10*weight,'X')
+    for side,final_pole in (('R',Vector((-1,-.5,-1))),('L',Vector((-.1,0,-1)))):
+        binding=pose['axe_1'].inverted()@pose['wrist_'+side]
+        pole=(pose['elbow_'+side].translation-pose['bicep_'+side].translation).normalized()
+        pole= pole.lerp(final_pole.normalized(),weight)
+        result=solve_arm(arm,result,side,weapon@binding,pole)
+    result['axe_1']=weapon
+    return result
+
+
 def author(scene,axe,rubick,dense=True):
     scene.frame_set(0);bpy.context.view_layer.update();base=snapshot(axe);idle=snapshot(rubick)
     scene.frame_set(60);bpy.context.view_layer.update();grip=snapshot(axe)
@@ -288,77 +306,67 @@ def author(scene,axe,rubick,dense=True):
     shaft_axis=Vector(axes[:,-1].tolist())
     center=sum(weapon_local,Vector())/len(weapon_local)
     if shaft_axis.dot(center-binds['R'].translation)<0:shaft_axis.negate()
+    binds['L'].translation+=shaft_axis*(.38/(grip['axe_1'].to_3x3()@shaft_axis).length)
     scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
     bank=native_attack(scene,axe)
     root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
     stance=shift(bank[0],root0-bank[0]['root'].translation)
-    landing_native=mix(axe,bank[11],bank[12],.6)
     poses=[];extra={};held=None;contact=None;poles={'L':None,'R':None}
     times=sorted(set(range(N))|({q/8 for q in range(250*8,(N-1)*8+1)} if dense else set()))
     for f in times:
-        t=curve(f,((0,0),(180,0),(201,1.5),(220,4),(239,8),(252,10),(266,10.4),(279,11.6),(419,11.6)))
+        t=curve(f,((0,0),(195,0),(210,4),(228,8),(238,9.3),(250,9.6),(262,10),(270,10.5),(279,11.6),(419,11.6)))
         t=max(0,min(12,t));i=int(t);part=t-i
         native=mix(axe,bank[i],bank[min(14,i+1)],part)
-        recovery=smooth((f-311)/64)
-        native=mix(axe,native,bank[0],recovery)
         u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
         if f<LIFT:
             root=root0+Vector((curve(f,((0,0),(200,.07),(233,.13),(252,0))),
                 curve(f,((0,0),(205,.08),(237,.14),(252,-.18))),
-                curve(f,((0,0),(215,-.03),(240,-.30),(252,0)))))
+                curve(f,((0,0),(215,-.06),(244,-.43),(252,0)))))
         elif f<=HIT:
             root=(root0+Vector((0,-.18,0))).lerp(end,u)
             root.z+=.85*math.sin(math.pi*.72*u)
         else:
-            root=end+Vector((0,curve(f,((279,0),(286,-.10),(309,-.055),(419,-.055))),
-                .85*math.sin(math.pi*.72)*(1-smooth((f-286)/24))-
-                .08*math.sin(math.pi*max(0,min(1,(f-310)/26)))))
+            # The arrested weapon suspends the attacker. Momentum carries his
+            # torso forward, then one deliberate pressure attempt fails.
+            root=end+Vector((curve(f,((279,0),(288,.04),(306,-.03),(337,.04),(365,0),(419,-.02))),
+                curve(f,((279,0),(286,-.18),(303,-.06),(329,-.16),(350,-.14),(379,-.08),(419,-.09))),
+                .85*math.sin(math.pi*.72)+curve(f,((279,0),(290,-.10),(309,-.05),(340,-.08),(380,-.13),(419,-.14)))))
         pose=shift(native,root-native['root'].translation)
+        if 195<f<=HIT:
+            branch(axe,pose,'spine1',math.radians(curve(f,((195,0),(226,-7),(242,-10),(258,5),(279,0)))))
+            branch(axe,pose,'spine2',math.radians(curve(f,((195,0),(228,-9),(246,-6),(268,5),(279,0)))),'Z')
         if f>HIT:
-            branch(axe,pose,'spine1',math.radians(curve(f,((279,0),(286,5),(310,-4),(375,0),(419,0)))))
-            branch(axe,pose,'spine2',math.radians(4*smooth((f-286)/38)*(1-recovery)),'Z')
-            branch(axe,pose,'head',math.radians(curve(f,((279,0),(285,-8),(311,-3),(375,0),(419,0)))))
+            branch(axe,pose,'spine1',math.radians(curve(f,((279,0),(286,8),(304,-3),(331,6),(350,5),(382,1),(419,2)))))
+            branch(axe,pose,'spine2',math.radians(curve(f,((279,0),(293,5),(312,-3),(342,4),(377,0),(419,1)))),'Z')
+            branch(axe,pose,'head',math.radians(curve(f,((279,0),(285,-9),(307,-3),(339,-6),(366,2),(395,7),(419,6)))))
         for side in ('L','R'):
             chain=tuple(n+'_'+side for n in ('thigh','knee','ankle'))
             foot=stance[chain[-1]].copy()
             if f>=LIFT:
-                fold=curve(f,((252,0),(269,.9),(279,.7),(309,.35),(365,.22),(419,.22)))
+                fold=curve(f,((252,0),(269,.9),(279,.7),(294,.45),(322,.62),(354,.52),(391,.38),(419,.40)))
                 foot.translation+=root-(root0+Vector((0,-.18,0)))+Vector(((-.15 if side=='L' else .12)*fold,
                     (-.25 if side=='L' else .50)*fold,(.32 if side=='L' else .46)*fold))
                 if f>HIT:foot.translation.y+=.12*math.sin(math.pi*max(0,min(1,(f-HIT)/45)))
-                ground=stance[chain[-1]].copy();ground.translation+=end-root0
-                hip_ground=landing_native[chain[0]].translation-landing_native['root'].translation+end
-                ground.translation.x=hip_ground.x+(.18 if side=='L' else -.18)
-                ground.translation.y=hip_ground.y-.10
-                foot=foot.lerp(ground,smooth((f-286)/24))
-                if f<310:
-                    h,k,w=(pose[n].translation for n in chain)
-                    axis=foot.translation-h;reach=.99*((k-h).length+(w-k).length)
-                    if axis.length>reach:foot.translation=h+axis.normalized()*reach
+                h,k,w=(pose[n].translation for n in chain)
+                axis=foot.translation-h;reach=.99*((k-h).length+(w-k).length)
+                if axis.length>reach:foot.translation=h+axis.normalized()*reach
             try:pose,_=solve(axe,pose,chain,foot,None)
             except ValueError as exc:raise ValueError(f'Leg unreachable at {f}/{side}: {exc}') from exc
         weapon_pose=pose['axe_1'].copy()
         weapon_pose.translation+=pose['wrist_R'].translation-(weapon_pose@binds['R']).translation
-        join=smooth((f-254)/16)*(1-smooth((f-315)/25))
+        join=smooth((f-230)/18)
         frame_binds={side:binds[side].copy() for side in ('L','R')}
-        grip_center=binds['R'].translation
-        blade=max(weapon_local,key=lambda p:(p-grip_center).length)
-        slide_axis=shaft_axis
-        slide_scale=(weapon_pose.to_3x3()@slide_axis).length
-        frame_binds['R'].translation+=slide_axis*(.95*recovery/slide_scale)
         free_left=pose['wrist_L'].copy()
-        free_weight=smooth((f-195)/25)
+        free_weight=smooth((f-195)/12)
         outside=pose['bicep_L'].translation-pose['spine3'].translation
         outside.z=0;outside.normalize()
         free_left.translation=free_left.translation.lerp(
             pose['bicep_L'].translation+outside*.48+Vector((0,-.25,-.35)),free_weight)
-        free_left.translation=free_left.translation.lerp(
-            pose['bicep_L'].translation+outside*.42+Vector((0,-.10,-.72)),recovery)
         lh,lk,lw=(pose[n+'_L'].translation for n in ('bicep','elbow','wrist'))
         free_axis=free_left.translation-lh;free_reach=.90*((lk-lh).length+(lw-lk).length)
         if free_axis.length>free_reach:free_left.translation=lh+free_axis.normalized()*free_reach
-        reach_arc=Vector((.10,.10,.18))*math.sin(math.pi*join)
-        if 254<f<=HIT:
+        reach_arc=(outside*.25+Vector((0,-.50,.15)))*math.sin(math.pi*join)
+        if 230<f<=HIT:
             # Restage the one-handed source near the chest/head for a genuine
             # two-handed strike. Move the prop, never stretch either arm.
             for _ in range(24):
@@ -376,65 +384,19 @@ def author(scene,axe,rubick,dense=True):
             held=weapon_pose.copy();contact=min((held@p for p in weapon_local),key=lambda p:p.y)
         if f>HIT:
             weapon_pose=around(held,contact,-2.5*smooth((f-HIT)/10))
-            release=smooth((f-290)/18)
-            weapon_pose.translation+=(root-end-Vector((0,0,.85*math.sin(math.pi*.72))))*release
-            weapon_pose.translation+=Vector((0,.10,0))*smooth((f-301)/32)
-            if recovery>0:
-                # Release the support hand and lower the axe beside the body.
-                # Orient the actual weapon length, not an assumed bone axis.
-                direction=held.to_3x3()@slide_axis
-                turn=direction.rotation_difference(Vector((0,0,-1)))
-                guard=turn.to_matrix().to_4x4()@held
-                guard=Matrix.Rotation(math.pi,4,'Z')@guard
-                right=pose['bicep_R'].translation+Vector((-.50,-.20,-.60))
-                guard.translation+=right-(guard@frame_binds['R']).translation
-                guard.translation.z+=.03-min((guard@p).z for p in weapon_local)
-                right_path=(weapon_pose@frame_binds['R']).translation.lerp(
-                    (guard@frame_binds['R']).translation,recovery)
-                right_path+=Vector((-.50,-.30,0))*math.sin(math.pi*recovery)
-                weapon_pose=weapon_pose.lerp(guard,recovery)
-                weapon_pose.translation+=right_path-(weapon_pose@frame_binds['R']).translation
-                for _ in range(24):
-                    correction=Vector()
-                    for side in ('R',):
-                        h,k,w=(pose[n+'_'+side].translation for n in ('bicep','elbow','wrist'))
-                        axis=(weapon_pose@frame_binds[side]).translation-h
-                        radius=.94*((k-h).length+(w-k).length)
-                        if axis.length>radius:correction-=axis.normalized()*min(.06,axis.length-radius)
-                    weapon_pose.translation+=correction
-                    if correction.length<1e-6:break
-        if f>315:
-            shaft=weapon_pose.to_3x3()@shaft_axis;shaft.normalize()
-            radial=(weapon_pose@binds['L']).translation-weapon_pose@center
-            radial-=shaft*radial.dot(shaft);radial.normalize()
-            depart=smooth((f-321)/4)
-            reach_arc=(radial*.65+outside*.20).lerp(
-                outside*.65+Vector((0,-.35,.12)),depart)*math.sin(math.pi*join)
-            reach_arc+=Vector((0,-.25,.35))*math.sin(math.pi*depart)*math.sin(math.pi*join)
         # The left hand joins the shaft before the actual swing. During the
         # preparatory reach it retains the source action's free-arm gesture.
         for side in ('R','L'):
             target=weapon_pose@frame_binds[side]
             if side=='L':
                 target=free_left.lerp(target,join);target.translation+=reach_arc
-                if f>315:
-                    position=target.translation.copy()
-                    orientation_join=(1-smooth((f-322)/18))*(1-depart)+join*depart
-                    target=free_left.lerp(weapon_pose@binds['L'],orientation_join)
-                    target.translation=position
-                    h,k,w=(pose[n+'_L'].translation for n in ('bicep','elbow','wrist'))
-                    axis=target.translation-h;radius=.94*((k-h).length+(w-k).length)
-                    if axis.length>radius:target.translation=h+axis.normalized()*radius
             chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
             try:
                 if side=='L' and free_weight>0:
                     h,k,w=(pose[n].translation for n in chain)
-                    source_pole=(k-h).normalized().lerp((outside+Vector((0,0,-1))).normalized(),free_weight)
-                    pole=source_pole.lerp(Vector((-.55,.83,0)).normalized(),join)
+                    source_pole=(k-h).normalized().lerp((outside+Vector((0,-.6,-.9))).normalized(),free_weight)
+                    pole=source_pole.lerp(Vector((-.55,.83,0)).normalized(),smooth((f-248)/22))
                     pose=solve_arm(axe,pose,side,target,pole)
-                elif recovery>0:
-                    h,k,w=(pose[n].translation for n in chain)
-                    pose=solve_arm(axe,pose,side,target,(k-h).normalized().lerp(Vector((-1,-.4,-.7)).normalized(),recovery))
                 else:pose,poles[side]=solve(axe,pose,chain,target,poles[side])
             except ValueError as exc:raise ValueError(f'Native staging unreachable at {f}/{side}: {exc}') from exc
             if side=='R' or join>0:
@@ -445,6 +407,11 @@ def author(scene,axe,rubick,dense=True):
         pose['axe_1']=weapon_pose
         if f==int(f):poses.append(pose)
         else:extra[f]=pose
+    tip=held.inverted()@contact
+    for f,pose in list(enumerate(poses))+list(extra.items()):
+        corrected=stage_arrest(axe,pose,pose['axe_1']@tip,smooth((f-260)/19))
+        if f==int(f):poses[int(f)]=corrected
+        else:extra[f]=corrected
     bake(axe,poses,extra)
     delta=contact-cast['index_1_R'].translation
     (OUT/'contact_probe.json').write_text(json.dumps({'contact':list(contact),'cast_finger':list(cast['index_1_R'].translation),'delta':list(delta)},indent=2))
@@ -453,18 +420,20 @@ def author(scene,axe,rubick,dense=True):
     cast,_=solve(rubick,cast,('bicep_R','elbow_R','wrist_R'),target,None)
     defender=[]
     for f in range(N):
-        pose=mix(rubick,idle,cast,smooth((f-260)/19)*(1-smooth((f-302)/36)))
-        branch(rubick,pose,'Head_0',math.radians(-5*smooth((f-330)/30)),'Z')
+        pose=mix(rubick,idle,cast,smooth((f-263)/16))
+        branch(rubick,pose,'Head_0',math.radians(curve(f,((0,0),(279,0),(294,-2),(328,0),(354,-6),(382,-4),(419,-4)))),'Z')
         defender.append(pose)
     bake(rubick,defender)
     (OUT/'staging.json').write_text(json.dumps({'frames':N,'fps':30,'hit':HIT,'takeoff':LIFT,
         'contact':list(contact),'source_upper_body':'attack_alt_anim, restaged timing and hands',
-        'held_by_magic':False,'release':290,'landing':310},indent=2))
+        'held_by_magic':True,'release':None,'landing':None,
+        'phrase':'gather, attack, arrest, inertia, pressure, realization'},indent=2))
     return poses,defender,contact
 
 
 def cameras(scene,axe,rubick,contact):
     cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
+    cam.data.sensor_fit='HORIZONTAL'
     face_targets={}
     for frame in (145,390):
         scene.frame_set(frame);bpy.context.view_layer.update()
@@ -482,28 +451,56 @@ def cameras(scene,axe,rubick,contact):
             target=center+Vector((0,0,.7));pos=target+Vector((-1.5,-2.8,.25));lens=45
         elif f<195:
             target=face_targets[145]+Vector((0,0,-.08));pos=target+Vector((-1.8,-3.2,.15));lens=56
-        elif f<LIFT:
-            target=Vector((-.2,2.2,2.5));pos=Vector((-5,-5,2.1));lens=38
+        elif f<225:
+            target=Vector((-.2,1.2,2.3));pos=Vector((-9,-2.0,3.0));lens=32
         elif f<273:
-            target=ahead+Vector((.20,-.10,.45))
-            sweep=smooth((f-262)/10)
-            tip=axe.matrix_world@axe.pose.bones['axe_1'].matrix@tip_local
-            target=target.lerp(ahead.lerp(tip,.35)+Vector((0,0,.15)),sweep)
-            pos=Vector((-4.8,-3.6,3.1));lens=48-4*sweep
-        elif f<HIT:
-            target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
-        elif f<316:
-            target=contact+Vector((0,.55,-.15));pos=target+Vector((4.5,-4,.2));lens=32
-        elif f<324:
-            target=contact;pos=target+Vector((3.5,-.8,.5));lens=65
-        elif f<363:
-            target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
+            target=Vector((-.2,1.0,3.0));pos=Vector((-8.5,-3.0,3.5));lens=34
+        elif f<330:
+            target=contact.lerp(ahead,.5)+Vector((0,0,-.35));pos=target+Vector((-7.0,-.7,.35));lens=38
+        elif f<360:
+            target=rhead.lerp(contact,.28);pos=target+Vector((-3.0,2.5,.15));lens=48
         else:
             target=face_targets[390]+Vector((0,0,-.13));pos=target+Vector((-2.3,-2.5,.25));lens=48
         cam.location=pos;cam.rotation_euler=(target-pos).to_track_quat('-Z','Y').to_euler();cam.data.lens=lens
         cam.data.dof.focus_distance=(target-pos).length;cam.data.dof.aperture_fstop=4 if f<45 or 195<=f<316 else 2.5
         for key in ('location','rotation_euler'):cam.keyframe_insert(key,frame=f)
         for key in ('lens','dof.focus_distance','dof.aperture_fstop'):cam.data.keyframe_insert(key,frame=f)
+    # Fit each uninterrupted action shot once over its complete motion. Never
+    # crop the backswing or make a tracking camera cancel the actor's travel.
+    actors=[o for root in ('axe_root','rubick_root')
+            for o in scene.objects[root].children_recursive if o.type=='MESH']
+    for start,stop in ((195,225),(225,273),(273,330)):
+        scene.frame_set(start)
+        rotation=cam.rotation_euler.to_quaternion();inverse=rotation.inverted()
+        points=[]
+        for frame in range(start,stop,3):
+            scene.frame_set(frame);graph=bpy.context.evaluated_depsgraph_get()
+            for ob in actors:
+                if start==273 and 'axe_weapon' not in ob.name:continue
+                ev=ob.evaluated_get(graph)
+                points.extend(inverse@(ev.matrix_world@Vector(p)) for p in ev.bound_box)
+            if start==273:
+                for arm,names in ((axe,('head','spine1','bicep_L','bicep_R','elbow_L','elbow_R','wrist_L','wrist_R')),
+                                  (rubick,('Head_0','bicep_R','elbow_R','wrist_R'))):
+                    for name in names:
+                        center=arm.matrix_world@arm.pose.bones[name].head
+                        points.extend(inverse@(center+Vector((x,y,z)))
+                                      for x in (-.35,.35) for y in (-.35,.35) for z in (-.35,.35))
+        lo=Vector(tuple(min(p[i] for p in points) for i in range(3)))
+        hi=Vector(tuple(max(p[i] for p in points) for i in range(3)))
+        center=(lo+hi)*.5
+        # Blender uses horizontal sensor fit here; vertical portrait field is
+        # expanded accordingly. Reserve room around all actual actor geometry.
+        lens=32;tanx=cam.data.sensor_width/(2*lens)
+        tany=tanx*(360/640 if 'blocking' in sys.argv else 640/360)
+        distance=max(max(abs(p.x-center.x)/(.85*tanx),
+                         abs(p.y-center.y)/(.88*tany))+p.z-center.z for p in points)
+        location=rotation@(center+Vector((0,0,distance)))
+        for frame in range(start,stop):
+            cam.location=location;cam.rotation_euler=rotation.to_euler();cam.data.lens=lens
+            cam.data.dof.focus_distance=distance
+            for key in ('location','rotation_euler'):cam.keyframe_insert(key,frame=frame)
+            for key in ('lens','dof.focus_distance'):cam.data.keyframe_insert(key,frame=frame)
     for owner in (cam,cam.data):
         for layer in owner.animation_data.action.layers:
             for strip in layer.strips:
@@ -612,7 +609,7 @@ def main():
         scene.display.shading.light='STUDIO';scene.display.shading.color_type='OBJECT'
         scene.display.shading.background_type='WORLD';scene.world.color=(.06,.07,.08)
         scene.display.shading.show_shadows=True;scene.display.shading.show_cavity=True
-        scene.render.resolution_x=360;scene.render.resolution_y=640;scene.render.resolution_percentage=100
+        scene.render.resolution_x=640;scene.render.resolution_y=360;scene.render.resolution_percentage=100
     else:raise ValueError(mode)
     if '--overview' in sys.argv:
         cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()

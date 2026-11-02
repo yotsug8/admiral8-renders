@@ -1,0 +1,213 @@
+{
+  "status": "working_blocking_not_accepted_final",
+  "source": "_game\\study\\face_hold\\face_hold.blend",
+  "source_sha256": "1f780ed8c12e03e46383d3feb1d096af7e78a89539cca65076829fa871bc0101",
+  "core_audit": {
+    "frames": 180,
+    "source_unchanged": true,
+    "native_key_replay_max_error": 0.0,
+    "scene_sha256": "a70f283ace34074b75365823cd0e155ce984acf8a7561dd2347a63fb91fdfefc",
+    "max_joint_rotation_degrees_per_frame": 2.4476266770478072,
+    "max_joint_travel_per_frame": 0.10016836621481823,
+    "lowest_surface": 0.6485050530132562,
+    "meshes": {
+      "models\\heroes\\lina\\lina.vmdl_c.lina_base_lower_lod0": {
+        "max_edge_ratio": 1.3517512639771805,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 102
+      },
+      "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0": {
+        "max_edge_ratio": 1.600092408033993,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 2
+      },
+      "models\\heroes\\lina\\lina_arms.vmdl_c.lina_arms": {
+        "max_edge_ratio": 1.6832195427756496,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 27
+      },
+      "models\\heroes\\lina\\lina_belt.vmdl_c.lina_belt": {
+        "max_edge_ratio": 1.136571954632036,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 150
+      },
+      "models\\heroes\\lina\\lina_head.vmdl_c.lina_head": {
+        "max_edge_ratio": 1.1215707749558135,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 110
+      },
+      "models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": {
+        "max_edge_ratio": 1.0749003227771332,
+        "max_stretched_edges": 0,
+        "max_contracted_triangles": 0,
+        "worst_frame": 75
+      }
+    },
+    "geometry_flags": [],
+    "clipped_frames": [],
+    "new_hair_collar_contact_candidates": {
+      "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0 | models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": {
+        "frame": 75,
+        "count": 27,
+        "polygon_pairs": [
+          [
+            1080,
+            180
+          ],
+          [
+            1081,
+            180
+          ],
+          [
+            1081,
+            181
+          ],
+          [
+            1085,
+            178
+          ],
+          [
+            1085,
+            179
+          ],
+          [
+            1085,
+            180
+          ],
+          [
+            1088,
+            194
+          ],
+          [
+            1094,
+            166
+          ],
+          [
+            1095,
+            159
+          ],
+          [
+            1095,
+            161
+          ],
+          [
+            1097,
+            148
+          ],
+          [
+            1097,
+            159
+          ],
+          [
+            1097,
+            162
+          ],
+          [
+            1099,
+            148
+          ],
+          [
+            1099,
+            159
+          ],
+          [
+            1099,
+            162
+          ],
+          [
+            1134,
+            224
+          ],
+          [
+            1134,
+            226
+          ],
+          [
+            1135,
+            224
+          ],
+          [
+            1139,
+            224
+          ],
+          [
+            1139,
+            226
+          ],
+          [
+            1148,
+            166
+          ],
+          [
+            1148,
+            246
+          ],
+          [
+            1149,
+            207
+          ],
+          [
+            1149,
+            209
+          ],
+          [
+            1151,
+            207
+          ],
+          [
+            1153,
+            207
+          ]
+        ]
+      },
+      "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0 | models\\heroes\\lina\\lina_head.vmdl_c.lina_head": {
+        "frame": 73,
+        "count": 3,
+        "polygon_pairs": [
+          [
+            936,
+            217
+          ],
+          [
+            936,
+            219
+          ],
+          [
+            937,
+            217
+          ]
+        ]
+      }
+    },
+    "passed": true,
+    "limits": "Pass covers surface deformation, framing and continuity. Hair/collar BVH contacts are separate candidates needing inspection, not a full self-intersection or artistic quality verdict."
+  },
+  "video_export": {
+    "frames": 180,
+    "fps": 30.0,
+    "size": [
+      360,
+      480
+    ],
+    "max_mean_error_255": 1.262662037037037,
+    "min_mean_255": 106.90796296296297,
+    "sha256": "28f965ca3665c4741ea1884c7593c6753196985a42e2f88c6865127d934968df",
+    "passed": true,
+    "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
+  },
+  "visual_review": {
+    "sequence_stride_frames": 6,
+    "turn_every_frame": [
+      135,
+      149
+    ],
+    "other_views": "extreme poses and facial closeups",
+    "continuous_realtime_review": false
+  },
+  "next": "Stronger prepared/protective pose contrast, attention and reaction timing; resolve hair/collar contact candidates before acceptance."
+}

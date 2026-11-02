@@ -17,6 +17,7 @@ from chase_audio import SR, ff, encode, loudness
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'_game/skits/doomsday/v2'
 if '--v3' in sys.argv:OUT=OUT.parent/'v3'
+if '--v4' in sys.argv:OUT=OUT.parent/'v4'
 
 
 def sound(directory,sources,fps):

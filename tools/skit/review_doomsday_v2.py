@@ -16,13 +16,14 @@ from chase_audio import SR, ff, encode, loudness
 
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'_game/skits/doomsday/v2'
+if '--v3' in sys.argv:OUT=OUT.parent/'v3'
 
 
 def sound(directory,sources,fps):
     duration=len(sources)/fps
     at_frame=lambda frame: bisect_left(sources,frame)/fps
     mix=np.zeros((round(SR*duration),2),dtype=float);occupancy=np.zeros(len(mix),dtype=np.uint8)
-    audio_sources=OUT/'audio_sources/sounds/weapons/hero/axe'
+    audio_sources=OUT.parent/'v2/audio_sources/sounds/weapons/hero/axe'
     charge,swing,hit=(at_frame(f) for f in (8,38,44))
     cues=[(OUT.parent/'audio_sources/sounds/weapons/hero/sven/storm_bolt.wav',charge,.6,.08),
           (audio_sources/'preattack01.wav',swing,hit-swing,.11),
@@ -65,7 +66,7 @@ def delivery():
     frames=[frames[i] for i in selected];sources=[sources[i] for i in selected];count=len(sources)
     destination=OUT/'delivery';destination.mkdir(exist_ok=True)
     audio,audio_report=sound(destination,sources,fps)
-    video=destination/'doomsday_v2_draft.mp4'
+    video=destination/f'doomsday_{OUT.name}_draft.mp4'
     command=[imageio_ffmpeg.get_ffmpeg_exe(),'-hide_banner','-loglevel','error','-y',
         '-f','rawvideo','-pix_fmt','rgb24','-s','540x960','-r',str(fps),'-i','pipe:0',
         '-i',str(audio),'-c:v','libx264','-crf','18','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-shortest','-movflags','+faststart',str(video)]

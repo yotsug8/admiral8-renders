@@ -12,6 +12,8 @@ import bpy
 
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'_game/skits/doomsday/v2'
+if '--out' in sys.argv:OUT=Path(sys.argv[sys.argv.index('--out')+1]).resolve()
+OUT.mkdir(parents=True,exist_ok=True)
 scene=bpy.context.scene
 arm=next(o for o in scene.objects if o.type=='ARMATURE' and o.parent and o.parent.name=='axe_root')
 meshes=[]

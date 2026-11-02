@@ -2,6 +2,8 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 02.11.2026
 
+- [Rain: попытка, усилие и реакция](rain_effort_scene.mp4) — связный учебный этюд, 8 с, 640×640/30 fps, без звука. Оглядывание, усиленный упор, небольшой сдвиг ящика и усталая остановка; начало сдержанно, волосы пока неподвижны. Метод и границы — docs/studies/RAIN_PUSH.md в main. **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены постановка, анимация, камера, свет и окружение.
+
 - [Акс и Рубик: версия 6](doomsday_v6_draft.mp4) — черновик, 14 с, 540×960/15 fps, русская реплика и звуки действий. Исправлена видимая связь правой руки; выразительность и сильный сгиб левого локтя остаются ограничениями. Художественная приёмка открыта. [Отчёт](doomsday_v6_report.json).
 
 - [Rain: подъём с сиденья](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_rise_study.mp4) — ограниченный учебный этюд, 4 с, 640×640/30 fps, без звука. Перенос опоры на стопы, освобождение кистей и выпрямление. Метод — docs/studies/RAIN_RISE.md в main. **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены постановка, анимация, свет и камера.

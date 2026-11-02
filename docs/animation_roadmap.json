@@ -65,6 +65,7 @@
         "studies/PROP_TURN.md",
         "studies/LIFT_WEIGHT.md",
         "studies/SETDOWN.md",
+        "productions/DOOMSDAY_PERFORMANCE.md",
         "ANIMATION_BACKLOG.md"
       ]
     },
@@ -120,6 +121,7 @@
       "evidence": [
         "ANIMATION.md",
         "studies/CHASE_CAMERA.md",
+        "productions/DOOMSDAY_REFERENCE_TIMING.md",
         "productions/PUDGE_TANK.md"
       ]
     },
@@ -149,6 +151,7 @@
       "evidence": [
         "ANIMATION.md",
         "ANIMATION_BACKLOG.md",
+        "productions/DOOMSDAY_PERFORMANCE.md",
         "productions/PUDGE_TANK.md"
       ]
     },

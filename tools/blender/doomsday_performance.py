@@ -1,0 +1,373 @@
+"""Fourteen-second staging with a compact two-handed authored leap.
+
+Blender --background --python-exit-code 1 --python this.py -- probe|motion|draft
+Uses the accepted material sources, not the native culling-blade jump.
+"""
+import hashlib
+import json
+import math
+import os
+import sys
+from pathlib import Path
+import bpy
+from mathutils import Matrix, Vector, Quaternion
+
+ROOT=Path(__file__).resolve().parents[2]
+OUT=ROOT/'_game/skits/doomsday/v6'
+SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from contact_reaction import _basis, _solve_leg
+from doomsday_refine import gpu, smooth
+from doomsday_atmosphere import environment, glow, filament
+
+N=420
+LIFT=231
+HIT=279
+
+
+def snapshot(arm):
+    return {b.name:arm.matrix_world@b.matrix for b in arm.pose.bones}
+
+
+def shift(pose,delta):
+    t=Matrix.Translation(delta)
+    return {n:t@m for n,m in pose.items()}
+
+
+def mix(arm,a,b,t):
+    result={}
+    def visit(bone):
+        n=bone.name
+        if n in result:return result[n]
+        m,m1=a[n],b[n]
+        if bone.parent:
+            m=a[bone.parent.name].inverted()@m
+            m1=b[bone.parent.name].inverted()@m1
+        p,q,s=m.decompose();p1,q1,s1=m1.decompose()
+        position=p.lerp(p1,t)
+        if n in ('knee_L','knee_R','ankle_L','ankle_R') and position.length>1e-8:
+            position=position.normalized()*p.length
+        local=Matrix.LocRotScale(position,q.slerp(q1,t),s.lerp(s1,t))
+        result[n]=visit(bone.parent)@local if bone.parent else local
+        return result[n]
+    for bone in arm.pose.bones:visit(bone)
+    return result
+
+
+def branch(arm,pose,name,angle,axis='X'):
+    pivot=pose[name].translation
+    t=Matrix.Translation(pivot)@Matrix.Rotation(angle,4,axis)@Matrix.Translation(-pivot)
+    for bone in [arm.pose.bones[name],*arm.pose.bones[name].children_recursive]:pose[bone.name]=t@pose[bone.name]
+
+
+def solve(arm,pose,chain,target,pole):
+    result={n:m.copy() for n,m in pose.items()}
+    pole=_solve_leg(pose,result,chain,Vector(),pole,Vector((0,-1,0)),target)
+    delta=target@pose[chain[-1]].inverted()
+    for bone in arm.pose.bones[chain[-1]].children_recursive:result[bone.name]=delta@pose[bone.name]
+    # Off-chain helpers (including Axe's shoulder armour) must inherit their
+    # solved ancestor; leaving their world pose unchanged detaches the silhouette.
+    for bone in arm.pose.bones[chain[0]].children_recursive:
+        if bone.name in chain:continue
+        ancestor=next((p for p in bone.parent_recursive if p.name in chain),None)
+        if ancestor:result[bone.name]=result[ancestor.name]@pose[ancestor.name].inverted()@pose[bone.name]
+    return result,pole
+
+
+def solve_arm(arm,pose,side,target):
+    """Two-bone solve with an authored elbow plane in front of the chest."""
+    chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
+    h,k,w=(pose[n].translation.copy() for n in chain)
+    upper,lower=(k-h).length,(w-k).length
+    axis=target.translation-h;distance=axis.length;direction=axis.normalized()
+    if distance>upper+lower or distance<abs(upper-lower):raise ValueError('Unreachable arm target')
+    pole=Vector((1,-.8,-.4)) if side=='L' else Vector((-1,-.65,-1.3))
+    pole-=direction*pole.dot(direction);pole.normalize()
+    along=(upper*upper-lower*lower+distance*distance)/(2*distance)
+    joint=h+direction*along+pole*math.sqrt(max(0,upper*upper-along*along))
+    result={n:m.copy() for n,m in pose.items()}
+    q=(k-h).rotation_difference(joint-h)
+    result[chain[0]]=q.to_matrix().to_4x4()@pose[chain[0]];result[chain[0]].translation=h
+    lower_rotation=(q@(w-k)).rotation_difference(target.translation-joint)
+    result[chain[1]]=lower_rotation.to_matrix().to_4x4()@q.to_matrix().to_4x4()@pose[chain[1]]
+    result[chain[1]].translation=joint;result[chain[2]]=target.copy()
+    for bone in arm.pose.bones[chain[0]].children_recursive:
+        if bone.name in chain:continue
+        ancestor=next(p for p in bone.parent_recursive if p.name in chain)
+        result[bone.name]=result[ancestor.name]@pose[ancestor.name].inverted()@pose[bone.name]
+    return result
+
+
+def bake(arm,poses,extra=None):
+    arm.animation_data_clear()
+    inverse=arm.matrix_world.inverted();previous={}
+    times=dict(enumerate(poses));times.update(extra or {})
+    for f,pose in sorted(times.items()):
+        for bone in arm.pose.bones:
+            m=_basis(bone,inverse@pose[bone.name],inverse@pose[bone.parent.name] if bone.parent else None)
+            p,q,s=m.decompose()
+            if bone.name in previous and q.dot(previous[bone.name])<0:q.negate()
+            previous[bone.name]=q.copy()
+            bone.location=p;bone.rotation_mode='QUATERNION';bone.rotation_quaternion=q;bone.scale=s
+            for key in ('location','rotation_quaternion','scale'):bone.keyframe_insert(key,frame=f)
+    for layer in arm.animation_data.action.layers:
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                for curve in bag.fcurves:
+                    for key in curve.keyframe_points:key.interpolation='LINEAR'
+
+
+def author(scene,axe,rubick):
+    scene.frame_set(0);bpy.context.view_layer.update();base=snapshot(axe);idle=snapshot(rubick)
+    scene.frame_set(60);bpy.context.view_layer.update();grip=snapshot(axe)
+    scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
+    point=Vector(json.loads((SOURCE.parent.parent/'v2/staging.json').read_text())['contact'])
+    direction=(point-grip['wrist_R'].translation).normalized()
+    left=grip['wrist_L'].copy();left.translation+=direction*.12
+    left_relative=grip['wrist_R'].inverted()@left
+    weapon_relative=grip['wrist_R'].inverted()@grip['axe_1']
+    weapon_relative.translation*=.8
+    weapon_relative=weapon_relative@Matrix.Diagonal((.8,.8,.8,1))
+    poses=[];extra={};root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
+    poles={'L':Vector((1,0,-1)),'R':Vector((-1,0,-1))};held=None
+    times=sorted(set(range(N))|{q/8 for q in range(230*8,287*8)})
+    for f in times:
+        u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
+        if f<LIFT:
+            crouch=.20*math.sin(math.pi*max(0,(f-195)/(LIFT-195))) if f>=195 else 0
+            root=root0+Vector((0,0,-crouch))
+        elif f<=HIT:
+            root=root0.lerp(end,u**1.35);root.z+=.85*math.sin(math.pi*.72*u)
+        else:
+            settle=smooth((f-HIT)/7)
+            root=end+Vector((0,-.14*settle,.85*math.sin(math.pi*.72)-.20*settle))
+            strain=.035*math.sin(math.pi*max(0,min(1,(f-303)/44)))
+            root.y-=strain
+        if f<LIFT:root.z+=.012*math.sin(f/30*2.1)
+        pose=shift(base,root-root0)
+        lean=math.radians(14)*smooth((f-195)/36)
+        flight=math.sin(math.pi*u) if LIFT<=f<=HIT else 0
+        lean+=math.radians(14)*flight
+        branch(axe,pose,'spine1',lean)
+        if flight:branch(axe,pose,'head',-math.radians(8)*flight)
+        reaction=smooth((f-363)/30)
+        if reaction:
+            branch(axe,pose,'head',math.radians(5)*reaction)
+            branch(axe,pose,'head',math.radians(7)*reaction,'Z')
+        # Feet stay planted during compression. In flight the knees fold behind
+        # the body; the arrest leaves the attacker briefly held by magic.
+        for side in ('L','R'):
+            chain=tuple(n+'_'+side for n in ('thigh','knee','ankle'))
+            foot=base[chain[-1]].copy()
+            if f>=LIFT:
+                foot.translation+=root-root0
+                fold=math.sin(math.pi*min(.8,u))
+                foot.translation+=Vector(((-.30 if side=='L' else .30)*fold,
+                                          (-.15 if side=='L' else .60)*fold,
+                                          (.40 if side=='L' else .25)*fold))
+                pivot=foot.translation.copy()
+                foot=Matrix.Translation(pivot)@Matrix.Rotation(math.radians(18)*fold,4,'X')@Matrix.Translation(-pivot)@foot
+            pose,_=solve(axe,pose,chain,foot,None)
+        lift=smooth((f-180)/(LIFT-180))
+        swing=smooth((u-.68)/.32) if f>=LIFT else 0
+        rest=pose['spine3'].translation+Vector((.00,-.38,-.32))
+        raised=pose['head'].translation+Vector((.25,.05,-.15))
+        stop=pose['spine3'].translation+Vector((-.10,-.47,-.30))
+        wrist_position=rest.lerp(raised,lift).lerp(stop,swing)
+        up=Vector((.5,-.12,.858)).lerp(Vector((.5,.20,.843)),lift).normalized()
+        axis=up.lerp(Vector((0,-.97,.243)),swing).normalized()
+        rotation=direction.rotation_difference(axis).to_matrix().to_4x4()
+        right=rotation@grip['wrist_R'];right.translation=wrist_position
+        if f==HIT:held=right.copy()
+        if f>HIT:right=held.copy()
+        left=right@left_relative
+        for side,target in (('R',right),('L',left)):
+            chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
+            try:
+                if side=='R':pose=solve_arm(axe,pose,side,target)
+                else:pose,poles[side]=solve(axe,pose,chain,target,poles[side])
+            except ValueError as exc:raise ValueError(f'Grip unreachable at {f}/{side}: {exc}') from exc
+            hand_delta=target@grip['wrist_'+side].inverted()
+            for bone in axe.pose.bones['wrist_'+side].children_recursive:
+                pose[bone.name]=hand_delta@grip[bone.name]
+        pose['axe_1']=right@weapon_relative
+        if f==int(f):poses.append(pose)
+        else:extra[f]=pose
+    bake(axe,poses,extra)
+    scene.frame_set(HIT);bpy.context.view_layer.update()
+    weapon=next(o for o in scene.objects if o.type=='MESH' and 'axe_weapon' in o.name)
+    ev=weapon.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    points=[ev.matrix_world@v.co for v in ev.data.vertices]
+    contact=min(points,key=lambda p:p.y)
+    delta=contact-cast['index_1_R'].translation
+    offset=Vector((delta.x,delta.y,0))
+    cast=shift(cast,offset);idle=shift(idle,offset)
+    target=cast['wrist_R'].copy();target.translation.z+=delta.z
+    cast,_=solve(rubick,cast,('bicep_R','elbow_R','wrist_R'),target,None)
+    defender=[]
+    for f in range(N):
+        defender.append(mix(rubick,idle,cast,smooth((f-(HIT-18))/18)))
+    bake(rubick,defender)
+    (OUT/'staging.json').write_text(json.dumps({'frames':N,'fps':30,'hit':HIT,'takeoff':LIFT,
+        'contact':list(contact),'weapon_scale':.8,'two_hand_separation':(left_relative.translation).length,
+        'held_by_magic':True,'landing':None},indent=2))
+    return poses,defender,contact
+
+
+def cameras(scene,axe,rubick,contact):
+    cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
+    scene.frame_set(HIT);bpy.context.view_layer.update()
+    tip_local=(axe.matrix_world@axe.pose.bones['axe_1'].matrix).inverted()@contact
+    for f in range(N):
+        scene.frame_set(f);bpy.context.view_layer.update()
+        ahead=axe.matrix_world@axe.pose.bones['head'].head
+        rhead=rubick.matrix_world@rubick.pose.bones['Head_0'].head
+        if f<45:
+            pos=Vector((-6,-8,2.3));target=Vector((-.5,-.1,2.0));lens=33
+        elif f<120:
+            center=axe.matrix_world@axe.pose.bones['axe_1'].head
+            target=center+Vector((0,0,.7));pos=target+Vector((-1.5,-2.8,.25));lens=45
+        elif f<195:
+            target=ahead+Vector((0,0,-.08));pos=target+Vector((-1.8,-3.2,.15));lens=60
+        elif f<LIFT:
+            target=Vector((-.2,2.2,2.5));pos=Vector((-5,-5,2.1));lens=38
+        elif f<273:
+            target=ahead+Vector((.20,-.10,.45))
+            sweep=smooth((f-262)/10)
+            tip=axe.matrix_world@axe.pose.bones['axe_1'].matrix@tip_local
+            target=target.lerp(ahead.lerp(tip,.35)+Vector((0,0,.15)),sweep)
+            pos=Vector((-4.8,-3.6,3.1));lens=48-4*sweep
+        elif f<HIT:
+            target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
+        elif f<303:
+            target=contact+Vector((0,.4,0));pos=target+Vector((4.5,-4,.2));lens=38
+        elif f<324:
+            target=contact;pos=target+Vector((3.5,-.8,.5));lens=65
+        elif f<363:
+            target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
+        else:
+            target=ahead+Vector((0,0,-.05));pos=target+Vector((-2.3,-2.5,.25));lens=58
+        cam.location=pos;cam.rotation_euler=(target-pos).to_track_quat('-Z','Y').to_euler();cam.data.lens=lens
+        cam.data.dof.focus_distance=(target-pos).length;cam.data.dof.aperture_fstop=4 if f<45 or 195<=f<303 else 2.5
+        for key in ('location','rotation_euler'):cam.keyframe_insert(key,frame=f)
+        for key in ('lens','dof.focus_distance','dof.aperture_fstop'):cam.data.keyframe_insert(key,frame=f)
+    for owner in (cam,cam.data):
+        for layer in owner.animation_data.action.layers:
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for curve in bag.fcurves:
+                        for key in curve.keyframe_points:key.interpolation='CONSTANT'
+
+
+def face(scene):
+    data=OUT/'voice/voices.json'
+    native=OUT/'audio/native_dialogue_envelope.json'
+    battle=OUT/'audio/battle_cry_envelope.json'
+    env=json.loads(data.read_text())['threat']['env'] if data.exists() else json.loads(native.read_text())['env'] if native.exists() else []
+    cry=json.loads(battle.read_text())['env'] if battle.exists() else []
+    for ob in scene.objects:
+        if ob.type!='MESH' or not ob.data.shape_keys or 'axe_model' not in ob.data.name:continue
+        keys=ob.data.shape_keys;keys.animation_data_clear()
+        for f in range(N):
+            index=math.floor(f-74.4)
+            speak=env[index] if 0<=index<len(env) else 0
+            if 0<=f-225<len(cry):speak=max(speak,cry[f-225])
+            shock=smooth((f-HIT)/8)
+            disbelief=smooth((f-363)/34)
+            for name,value in {'jawOpen':.10+.45*speak+.20*shock-.15*disbelief,
+                               'browLowerer':.6*(1-shock)+.25*disbelief,
+                               'innerBrowRaiser':.45*shock+.2*disbelief,'upperLidRaiser':.5*shock-.2*disbelief,
+                               'eyeClosed':.9*max(0,1-abs(f-385)/2)}.items():
+                if name in keys.key_blocks:
+                    keys.key_blocks[name].value=value;keys.key_blocks[name].keyframe_insert('value',frame=f)
+
+
+def main():
+    mode=sys.argv[sys.argv.index('--')+1]
+    OUT.mkdir(exist_ok=True)
+    bpy.ops.wm.open_mainfile(filepath=str(SOURCE));scene=bpy.context.scene;gpu(scene)
+    prefs=bpy.context.preferences.addons['cycles'].preferences
+    prefs.compute_device_type='OPTIX';prefs.get_devices()
+    for device in prefs.devices:device.use=device.type=='OPTIX'
+    scene.cycles.device='GPU'
+    scene.frame_start=0;scene.frame_end=N-1
+    axe=next(o for o in scene.objects if o.type=='ARMATURE' and o.parent and o.parent.name=='axe_root')
+    rubick=next(o for o in scene.objects if o.type=='ARMATURE' and o.parent and o.parent.name=='rubick_root')
+    for ob in list(scene.objects):
+        if ob.name.startswith(('Charge ','Contact spark ')) or ob.name in ('Weapon charge light','Arrest light'):
+            bpy.data.objects.remove(ob,do_unlink=True)
+    poses,defender,contact=author(scene,axe,rubick)
+    environment(scene);glow(scene);cameras(scene,axe,rubick,contact);face(scene)
+    # Pale masonry is too prominent from the new reverse angles; preserve its
+    # native maps while toning it down into the surrounding stone palette.
+    for ob in scene.objects:
+        if ob.type!='MESH' or 'statue' not in ob.name.lower():continue
+        for slot in ob.material_slots:
+            if not slot.material or not slot.material.use_nodes:continue
+            slot.material=slot.material.copy();nt=slot.material.node_tree
+            p=next((n for n in nt.nodes if n.type=='BSDF_PRINCIPLED'),None)
+            if not p:continue
+            color=p.inputs['Base Color'];h=nt.nodes.new('ShaderNodeHueSaturation')
+            h.inputs['Value'].default_value=.25;h.inputs['Saturation'].default_value=.45
+            if color.is_linked:nt.links.new(color.links[0].from_socket,h.inputs['Color'])
+            else:h.inputs['Color'].default_value=color.default_value
+            nt.links.new(h.outputs[0],color)
+    from doomsday_performance_fx import apply
+    fx=apply(scene,axe,rubick,contact)
+    (OUT/'fx.json').write_text(json.dumps(fx,indent=2))
+    if '--audit' in sys.argv:
+        from doomsday_performance_qa import audit
+        audit(scene,axe,rubick,contact,poses,defender)
+    scene.render.use_persistent_data=True
+    scene.render.use_motion_blur=False
+    if mode=='probe':
+        selected=[0,60,120,220,247,270,279,310,340,380];folder=OUT/'probe';scene.cycles.samples=32
+    elif mode in ('motion','patch'):
+        selected=list(range(0,N,2));folder=OUT/'motion';scene.cycles.samples=24
+        if mode=='patch':selected=[f for f in selected if 232<=f<=272 or 280<=f<=302 or f>=364]
+        if mode=='patch' and '--arm-update' in sys.argv:
+            selected=[f for f in range(0,N,2) if not (274<=f<=278 or 324<=f<=362)]
+    elif mode=='draft':
+        selected=list(range(N));folder=OUT/'frames';scene.cycles.samples=48
+    else:raise ValueError(mode)
+    if '--frames' in sys.argv:
+        selected=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')]
+    if os.environ.get('DOOMSDAY_FRAME_DIR'):folder=Path(os.environ['DOOMSDAY_FRAME_DIR'])
+    folder.mkdir(exist_ok=True,parents=True);manifest=folder/'manifest.json'
+    baseline=None
+    if mode=='patch':
+        baseline=json.loads(manifest.read_text())
+        if baseline['source_frames']!=list(range(0,N,2)):raise ValueError('Patch requires complete motion manifest')
+        for f,digest in zip(baseline['source_frames'],baseline['frame_sha256']):
+            if f not in selected and hashlib.sha256((folder/f'{f:04d}.png').read_bytes()).hexdigest()!=digest:
+                raise ValueError(f'Untouched frame changed: {f}')
+        receipt=OUT/'motion_before_patch.json'
+        if not receipt.exists():receipt.write_text(json.dumps(baseline,indent=2))
+    else:manifest.unlink(missing_ok=True)
+    hashes=[]
+    for f in selected:
+        scene.frame_set(f);scene.render.filepath=str(folder/f'{f:04d}.png')
+        bpy.ops.render.render(write_still=True)
+        hashes.append(hashlib.sha256(Path(scene.render.filepath).read_bytes()).hexdigest())
+        if '--inspect-arms' in sys.argv:
+            original=scene.camera;cam=original.copy();cam.data=original.data.copy()
+            cam.animation_data_clear();cam.data.animation_data_clear()
+            scene.collection.objects.link(cam);scene.camera=cam
+            target=axe.matrix_world@axe.pose.bones['spine3'].head
+            for label,offset in (('left',Vector((-4.3,0,.3))),('right',Vector((4.3,0,.3)))):
+                cam.location=target+offset;cam.rotation_euler=(-offset).to_track_quat('-Z','Y').to_euler()
+                cam.data.lens=44;cam.data.dof.focus_distance=offset.length
+                scene.render.filepath=str(folder/f'{f:04d}_{label}.png');bpy.ops.render.render(write_still=True)
+            scene.camera=original;bpy.data.objects.remove(cam,do_unlink=True)
+    result={'source_frames':selected,'fps':15 if mode in ('motion','patch') else 30,
+        'frame_sha256':hashes,'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+    if baseline:
+        merged=dict(zip(baseline['source_frames'],baseline['frame_sha256']))
+        merged.update(zip(selected,hashes))
+        result.update(source_frames=baseline['source_frames'],frame_sha256=[merged[f] for f in baseline['source_frames']],
+                      patch_frames=selected,baseline_script_sha256=baseline['script_sha256'],
+                      patch_kind='arm_update' if '--arm-update' in sys.argv else 'motion_update')
+    manifest.write_text(json.dumps(result,indent=2))
+
+
+if __name__=='__main__':main()

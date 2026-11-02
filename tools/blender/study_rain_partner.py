@@ -1,6 +1,6 @@
-"""Two independent Rain actors: an offered high-five becomes a quieter greeting.
+"""Two independent Rain actors: greeting or a light baton handoff.
 
-A specific silent acting study, not a general gesture library. See RAIN_PARTNER.md.
+Specific silent studies, not a gesture library. See RAIN_PARTNER/RAIN_HANDOFF.md.
 """
 import argparse
 import hashlib
@@ -12,10 +12,16 @@ import sys
 
 import bpy
 from mathutils import Matrix, Quaternion, Vector
+from mathutils.bvhtree import BVHTree
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / '_game/external/rain_v33/Rain v3.3/rain_v3.2.blend'
 FPS, COUNT = 30, 180
+# Authored for this 36 mm shaft on Rain, verified against evaluated skin.
+# Per-finger lengths differ; one identical curl penetrates with the pinky.
+BATON_GRIP = {f:tuple(a*s for a in (35,60,40)) for f,s in
+              (('index',1.12),('middle',1.18),('ring',1.1125),('pinky',1.03))}
+BATON_GRIP['thumb']=(-30.,47.5,-15.)
 
 
 def ease(t, start, duration):
@@ -27,6 +33,31 @@ def ease(t, start, duration):
 
 def update():
     bpy.context.view_layer.update()
+
+
+def baton_center(t):
+    offer = ease(t,.35,1.05)
+    take = ease(t,3.90,1.0)
+    return Vector((-.20+.20*offer+.20*take, -.23, 1.05+.10*ease(t,4.45,.65)))
+
+
+def skin_regions(ob, dg):
+    """Disjoint weighted regions; upper arms/shoulder seams are not certified."""
+    ev=ob.evaluated_get(dg);mesh=ev.to_mesh();mesh.calc_loop_triangles()
+    points=[ev.matrix_world@v.co for v in mesh.vertices]
+    triangles=[tuple(t.vertices) for t in mesh.loop_triangles]
+    def tree(predicate=None):
+        if predicate is None:faces=triangles
+        else:
+            groups={g.index for g in ob.vertex_groups if predicate(g.name)}
+            vertices={v.index for v in mesh.vertices if sum(g.weight for g in v.groups if g.group in groups)>.7}
+            faces=[t for t in triangles if all(i in vertices for i in t)]
+        return BVHTree.FromPolygons(points,faces,all_triangles=True) if faces else None
+    result={'full':tree(), 'torso':tree(lambda n:any(k in n for k in ('Spine','Chest','Pelvis')))}
+    for side in ('L','R'):
+        result[side]=tree(lambda n:n.endswith('.'+side) and any(k in n for k in ('Forearm','Hand','Index','Middle','Ring','Pinky','Thumb')))
+    ev.to_mesh_clear()
+    return result
 
 
 class Performer:
@@ -130,14 +161,67 @@ class Performer:
     def snapshot(self):
         return {n:self.p[n].matrix.copy() for n in self.tracked}
 
+    def handoff_pose(self, t, giver, partner, grip_module):
+        for n,m in self.basis.items(): self.p[n].matrix_basis = m
+        update()
+        offer = ease(t,.35,1.05)
+        arrival = ease(t,1.45,.80)
+        take = ease(t,3.90,1.0)
+        withdraw = ease(t,3.65,.85)
+        lean = 6*offer*(1-withdraw) if giver else 8*arrival*(1-take)
+        self.move('MSTR-Pelvis',delta=(.015*offer if giver else -.015*arrival,-.025*lean/8,-.018-.012*lean/8))
+        self.move('MSTR-Foot.L',delta=(.025,0,0));self.move('MSTR-Foot.R',delta=(-.025,0,0))
+        self.rotate('FK-Spine',(1,0,0),lean*.4);self.rotate('FK-Chest',(1,0,0),lean*.6)
+        self.rotate('FK-Scarf1',(1,0,0),-max(0,lean)*.6)
+        nod = math.sin(math.pi*ease(t,4.9,.7)) if giver else math.sin(math.pi*ease(t,5.15,.65))
+        self.rotate('FK-Head',(1,0,0),12+5*nod)
+        self.rotate('FK-Head',(0,0,1),(15 if giver else -15)*ease(t,.20,.65))
+        self.move('MSTR-Eyebrow.L',delta=(0,0,.003*offer));self.move('MSTR-Eyebrow.R',delta=(0,0,.002*offer))
+        head_delta=self.p['FK-Head'].matrix.to_quaternion()@self.rest['FK-Head'].to_quaternion().inverted()
+        for i,droop in enumerate((10,25,20,10),1):self.rotate(f'FK-Hair_Ponytail{i}',head_delta@Vector((1,0,0)),-droop)
+        active_side='R' if giver else 'L'
+        sign=-1 if giver else 1
+        inverse=self.rig.matrix_world.inverted()
+        orient_inverse=self.rig.matrix_world.to_quaternion().inverted()
+        for side,s in (('L',1),('R',-1)):
+            neutral=Vector((s*.23,-.10,.86));hand=neutral.copy();q=self.hands[side]
+            if side==active_side:
+                contact_world=baton_center(t)+Vector((sign*.046,.049,.08 if giver else -.04))
+                contact=inverse@contact_world
+                # Rain's positive-rest-Z hand normal is dorsal; curl faces
+                # the opposite direction, toward the shaft.
+                hold_q=self.hand_q(side,orient_inverse@Vector((0,-1,0)),orient_inverse@Vector((sign,0,0)))
+                if giver:
+                    hand=contact.lerp(neutral,withdraw)
+                    # Release outward before going down, away from the shaft.
+                    hand+=orient_inverse@Vector((-.09,0,0))*math.sin(math.pi*withdraw)
+                    q=hold_q.slerp(q,withdraw)
+                else:
+                    hand=neutral.lerp(contact,arrival)
+                    hand+=orient_inverse@Vector((.08,.015,0))*math.sin(math.pi*arrival)
+                    q=q.slerp(hold_q,arrival)
+            self.p['IK-Hand.'+side].matrix=Matrix.LocRotScale(hand,q,Vector((1,1,1)));update()
+            self.move('IK-Pole-Forearm.'+side,target=(s*.60,-.07,1.0))
+        # apply() already eases the curl. Applying smootherstep here as well
+        # compresses most rotation into the middle and jerks distal phalanges.
+        progress=min(1.,max(0.,(t-(3.05 if giver else 2.25))/.55))
+        grip=1-progress if giver else progress
+        grip_module.apply(self.rig,self.grip,grip,angles=BATON_GRIP)
+        update()
+        target=baton_center(t)
+        partner_face=partner.rig.matrix_world@Vector((0,-.05,1.38))
+        target=target.lerp(partner_face,ease(t,4.90,.65))
+        for side in ('L','R'):self.move('TGT-Eye.'+side,target=inverse@target)
+
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out',required=True)
     parser.add_argument('--render',action='store_true')
-    parser.add_argument('--check-only',action='store_true',help='Evaluate controls without rendering; --render checks the whole clip')
+    parser.add_argument('--handoff',action='store_true',help='Transfer a light vertical baton with overlapping hand support')
+    parser.add_argument('--check-only',action='store_true',help='Evaluate controls and skin without rendering; --render checks the whole clip')
     parser.add_argument('--frames',default='0,36,65,100,145,179')
-    parser.add_argument('--view',choices=('front','reverse'),default='front')
+    parser.add_argument('--view',choices=('front','reverse','contact'),default='front')
     args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
     out=Path(args.out).resolve()
     if not out.is_relative_to(ROOT/'_game/study'): raise ValueError('Output outside study folder')
@@ -161,7 +245,22 @@ def main():
         for modifier in ob.modifiers:
             if modifier.type=='ARMATURE' and modifier.object!=second:
                 raise RuntimeError('Duplicate still bound to first rig')
-    a=Performer(first,-.62,50); b=Performer(second,.62,-50)
+    a=Performer(first,-.31 if args.handoff else -.62,65 if args.handoff else 50)
+    b=Performer(second,.31 if args.handoff else .62,-65 if args.handoff else -50)
+    if args.handoff:
+        sys.path.insert(0,str(Path(__file__).resolve().parent))
+        import rain_grip
+        for actor,side in ((a,'R'),(b,'L')):
+            actor.grip=rain_grip.capture(actor.rig,side)
+            actor.names+=actor.grip['names']
+            actor.basis.update(actor.grip['basis'])
+            actor.tracked+=actor.grip['names']
+        bpy.ops.mesh.primitive_cylinder_add(vertices=32,radius=.018,depth=.34,location=baton_center(0))
+        baton=bpy.context.object;baton.name='Light baton'
+        metal=bpy.data.materials.new('Warm brass');metal.diffuse_color=(.6,.25,.045,1);metal.use_nodes=True
+        bsdf=metal.node_tree.nodes['Principled BSDF'];bsdf.inputs['Base Color'].default_value=metal.diffuse_color;bsdf.inputs['Metallic'].default_value=.55;bsdf.inputs['Roughness'].default_value=.3
+        baton.data.materials.append(metal)
+        bevel=baton.modifiers.new('Soft ends','BEVEL');bevel.width=.003;bevel.segments=3
     # Readable actor identity without changing skin or face materials.
     top=next(ob for ob in copies if ob.name.startswith('GEO-rain-top'))
     mat=bpy.data.materials.new('Listener teal shirt');mat.diffuse_color=(.06,.23,.22,1);mat.use_nodes=True
@@ -170,8 +269,9 @@ def main():
     def aim(ob,target): ob.rotation_euler=(Vector(target)-ob.location).to_track_quat('-Z','Y').to_euler()
     for ob in list(scene.objects):
         if ob.type in ('LIGHT','CAMERA'): bpy.data.objects.remove(ob,do_unlink=True)
-    bpy.ops.object.camera_add(location=(0,-6,2.3) if args.view=='front' else (0,6,2.3))
-    scene.camera=bpy.context.object;scene.camera.data.type='ORTHO';scene.camera.data.ortho_scale=2.8;aim(scene.camera,(0,0,.88))
+    bpy.ops.object.camera_add(location={'front':(0,-6,2.3),'reverse':(0,6,2.3),'contact':(.7,-4,1.55)}[args.view])
+    scene.camera=bpy.context.object;scene.camera.data.type='ORTHO';scene.camera.data.ortho_scale=.72 if args.view=='contact' else (2.25 if args.handoff else 2.8)
+    aim(scene.camera,(0,-.23,1.05) if args.view=='contact' else (0,0,.88))
     for location,power,size in [((-3,-4,5),650,4),((3,-2,3),350,3),((0,3,4),600,3)]:
         bpy.ops.object.light_add(type='AREA',location=location);light=bpy.context.object;light.data.energy=power;light.data.shape='DISK';light.data.size=size;aim(light,(0,0,1))
     bpy.ops.mesh.primitive_plane_add(size=200,location=(0,0,.00115))
@@ -186,18 +286,26 @@ def main():
             'max_step_m':0.,'max_angle_deg':0.,'source_unchanged':False,
             'known_invalid_driver':'Source Spine3 driver references absent STR-Spine4; not repaired',
             'scope':'Controller continuity and native IK, not a full mesh-collision or artistic certificate','rendered':[]}
+    if args.handoff:
+        report['shaft_contact_samples']=[]
+        report['surface_intersections']=[]
+        report['max_closed_wrist_to_shaft_error_m']=0.
+        report['dual_support_frames']=[]
     mesh_flags={ob:ob.hide_viewport for ob in scene.objects if ob.type=='MESH'}
     for ob in mesh_flags:ob.hide_viewport=True
     update();cache={};checks={};previous=None;previous_frame=None
     report['checked_frames']=len(check_frames)
     for f in check_frames:
-        a.pose(f/FPS,True,b);b.pose(f/FPS,False,a)
+        if args.handoff:
+            a.handoff_pose(f/FPS,True,b,rain_grip);b.handoff_pose(f/FPS,False,a,rain_grip)
+        else:
+            a.pose(f/FPS,True,b);b.pose(f/FPS,False,a)
         current=[actor.snapshot() for actor in (a,b)]
         for actor in (a,b):
             for side in ('L','R'):
                 error=(actor.p['FK-Hand.'+side].matrix.translation-actor.p['IK-Hand.'+side].matrix.translation).length
                 report['max_wrist_error_m']=max(report['max_wrist_error_m'],error)
-                if error>.002: raise RuntimeError(f'Unreachable hand at {f}: {error}')
+                if error>.002: raise RuntimeError(f'Unreachable hand at {f}: {actor.rig.name} {side}, {error}')
                 ankle=(actor.p['IK-Shin.'+side].tail-actor.p['IK-Foot.'+side].matrix.translation).length
                 report['max_ankle_error_m']=max(report['max_ankle_error_m'],ankle)
                 if ankle>.002:raise RuntimeError(f'Unreachable foot at {f}: {ankle}')
@@ -213,15 +321,65 @@ def main():
     for ob,flag in mesh_flags.items():ob.hide_viewport=flag
     update()
     (out/'preflight.json').write_text(json.dumps(report,indent=2))
-    for f in ([] if args.check_only else frames):
+    for f in frames:
         for actor,basis in zip((a,b),cache[f]):
             for n,m in basis.items():actor.p[n].matrix_basis=m
         update()
+        if args.handoff:
+            baton.location=baton_center(f/FPS)
+            update()
         for actor,expected in zip((a,b),checks[f]):
             for n,m in expected.items():
                 error=max(abs(actor.p[n].matrix[i][j]-m[i][j]) for i in range(4) for j in range(4))
                 if error>1e-5:raise RuntimeError(f'Cache differs at {f}: {n}')
         dg=bpy.context.evaluated_depsgraph_get()
+        if args.handoff:
+            center=baton_center(f/FPS)
+            giver_closed=f/FPS<=3.05;receiver_closed=f/FPS>=2.80
+            if not (giver_closed or receiver_closed):raise RuntimeError('Object has no supporting hand')
+            if giver_closed and receiver_closed:report['dual_support_frames'].append(f)
+            for actor,side,sign,height,closed in ((a,'R',-1,.08,giver_closed),(b,'L',1,-.04,receiver_closed)):
+                if closed:
+                    actual=actor.rig.matrix_world@actor.p['FK-Hand.'+side].matrix.translation
+                    error=(actual-center-Vector((sign*.046,.049,height))).length
+                    report['max_closed_wrist_to_shaft_error_m']=max(report['max_closed_wrist_to_shaft_error_m'],error)
+                    if error>.002:raise RuntimeError(f'Holding hand slides against shaft at {f}: {error}')
+            surfaces=[skin_regions(next(ob for ob in objects if ob.name.startswith('GEO-rain-body')),dg) for objects in (originals,copies)]
+            shaft=skin_regions(baton,dg)['full']
+            tops=[skin_regions(next(ob for ob in objects if ob.name.startswith('GEO-rain-top')),dg)['full'] for objects in (originals,copies)]
+            intersections={}
+            for i,skin in enumerate(surfaces):
+                for name,tree in (('shaft',shaft),):
+                    intersections[f'{i}_{name}_body']=len(tree.overlap(skin['full']))
+                for side in ('L','R'):
+                    arm=skin[side]
+                    if not arm or not skin['torso']:raise RuntimeError('Missing weighted arm/torso region')
+                    intersections[f'{i}_{side}_torso']=len(arm.overlap(skin['torso']))
+                    intersections[f'{i}_{side}_shirt']=len(arm.overlap(tops[i]))
+                    intersections[f'{i}_{side}_partner']=len(arm.overlap(surfaces[1-i]['full']))
+            report['surface_intersections'].append({'frame':f,'pairs':intersections})
+            for objects,side,label,closed in ((originals,'R','giver',giver_closed),(copies,'L','receiver',receiver_closed)):
+                body=next(ob for ob in objects if ob.name.startswith('GEO-rain-body'))
+                groups={g.index for g in body.vertex_groups if g.name.endswith('.'+side) and any(k in g.name for k in ('Hand','Index','Middle','Ring','Pinky','Thumb'))}
+                ev=body.evaluated_get(dg);mesh=ev.to_mesh()
+                vertices=[v for v in mesh.vertices if sum(g.weight for g in v.groups if g.group in groups)>.65]
+                points=[ev.matrix_world@v.co for v in vertices]
+                labels=[body.vertex_groups[max(v.groups,key=lambda g:g.weight).group].name for v in vertices]
+                radial=[]
+                for p in points:
+                    dr=math.hypot(p.x-center.x,p.y-center.y)-.018
+                    dz=abs(p.z-center.z)-.17
+                    radial.append(math.hypot(max(dr,0),max(dz,0))+min(max(dr,dz),0))
+                ev.to_mesh_clear()
+                if not radial:raise RuntimeError('No weighted hand vertices')
+                minimum=min(radial)
+                nearest=radial.index(minimum)
+                report['shaft_contact_samples'].append({'frame':f,'actor':label,'closed':closed,'minimum_vertex_clearance_m':minimum,'sample_count':len(radial),'nearest_group':labels[nearest], 'nearest_offset_m':list(points[nearest]-center)})
+                if args.view=='contact' and not args.render:
+                    (out/f'hand_{label}_{f:04d}.json').write_text(json.dumps([{'offset':list(p-center),'group':g} for p,g in zip(points,labels)]))
+                if args.render and (minimum<-.003 or (closed and minimum>.008)):
+                    (out/'contact_failed.json').write_text(json.dumps(report['shaft_contact_samples'][-1],indent=2))
+                    raise RuntimeError(f'Hand/shaft contact failed at {f}: {label}, {minimum}')
         for objects in (originals,copies):
             shoe=next(ob for ob in objects if ob.name.startswith('GEO-rain-shoes'))
             ev=shoe.evaluated_get(dg);mesh=ev.to_mesh()
@@ -231,10 +389,22 @@ def main():
                 error=abs(sole-.00115);report['max_sole_error_m']=max(report['max_sole_error_m'],error)
                 if error>.002:raise RuntimeError(f'Sole support at {f}: {side}, {error}')
             ev.to_mesh_clear()
+    if args.handoff:
+        failures=[r for r in report['surface_intersections'] if any(r['pairs'].values())]
+        if failures:
+            (out/'geometry_failed.json').write_text(json.dumps(report,indent=2))
+            if args.render:raise RuntimeError(f'Surface intersections at {len(failures)} frames; see geometry_failed.json')
+    # Complete all requested geometry checks before spending time on images.
+    for f in ([] if args.check_only else frames):
+        for actor,basis in zip((a,b),cache[f]):
+            for n,m in basis.items():actor.p[n].matrix_basis=m
+        if args.handoff:baton.location=baton_center(f/FPS)
+        update()
         scene.render.filepath=str(out/f'{f:04d}.png');bpy.ops.render.render(write_still=True);report['rendered'].append(f)
     report['source_unchanged']=hashlib.sha256(SOURCE.read_bytes()).hexdigest()==source_hash
+    report['geometry_checked_frames']=len(frames)
     (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
-    print('PARTNER_DONE',len(frames),flush=True)
+    print('PARTNER_DONE',len(report['rendered']),'rendered;',len(frames),'geometry checked',flush=True)
 
 
 if __name__=='__main__': main()

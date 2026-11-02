@@ -142,6 +142,9 @@ def audit(scene, axe, rubick, contact, poses, defender):
                 'axe_wrist_R': _matrix(a, 'wrist_R').copy(),
                 'rubick_wrist_R': _matrix(r, 'wrist_R').copy(),
                 'rubick_index_1_R': _matrix(r, 'index_1_R').copy()}
+        weapon_contact_local=held['weapon'].inverted()@contact
+        report['weapon_contact_local']=list(weapon_contact_local)
+        report['held_transform_measurement']='Descriptive motion relative to impact; v7 permits weapon rotation about the contact point.'
         finger = r.pose.bones['index_1_R']
         head, tail = r.matrix_world @ finger.head, r.matrix_world @ finger.tail
         report['contact_convention'] = {
@@ -173,6 +176,8 @@ def audit(scene, axe, rubick, contact, poses, defender):
                     _diff_metrics(metrics, 'held.' + name, current[name], baseline, time)
                 _maximum(metrics, 'contact.index_head_distance',
                          (current['rubick_index_1_R'].translation-contact).length, time)
+                _maximum(metrics, 'contact.weapon_point_distance',
+                         (weapon@weapon_contact_local-contact).length,time)
             for label, title, names in chains:
                 points = [_matrix(arms[label], name).translation for name in names]
                 for segment in range(2):
@@ -188,7 +193,7 @@ def audit(scene, axe, rubick, contact, poses, defender):
                                       _matrix(arms[label], name), authored[integer][name], time)
             camera = scene.camera.evaluated_get(graph)
             markers = []
-            if time < 45 or 120 <= time < 273 or 279 <= time < 303 or time >= 363:
+            if time < 45 or 120 <= time < 273 or 279 <= time < 316 or time >= 363:
                 markers.append(('axe_head', _matrix(a, 'head').translation))
             if time < 45 or 273 <= time < 279 or 324 <= time < 363:
                 markers.append(('rubick_head', _matrix(r, 'Head_0').translation))

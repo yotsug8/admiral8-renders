@@ -13,7 +13,7 @@ import bpy
 from mathutils import Matrix, Vector, Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=ROOT/'_game/skits/doomsday/v6'
+OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v7')))
 SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from contact_reaction import _basis, _solve_leg
@@ -58,6 +58,22 @@ def branch(arm,pose,name,angle,axis='X'):
     pivot=pose[name].translation
     t=Matrix.Translation(pivot)@Matrix.Rotation(angle,4,axis)@Matrix.Translation(-pivot)
     for bone in [arm.pose.bones[name],*arm.pose.bones[name].children_recursive]:pose[bone.name]=t@pose[bone.name]
+
+
+def curve(frame, keys):
+    """Authored continuous phrases; internal poses do not stop every channel."""
+    if frame<=keys[0][0]:return keys[0][1]
+    if frame>=keys[-1][0]:return keys[-1][1]
+    for i,((a,va),(b,vb)) in enumerate(zip(keys,keys[1:])):
+        if frame<=b:
+            t=(frame-a)/(b-a)
+            ma=0 if i==0 else (vb-keys[i-1][1])/(b-keys[i-1][0])
+            mb=0 if i+2==len(keys) else (keys[i+2][1]-va)/(keys[i+2][0]-a)
+            return (2*t**3-3*t*t+1)*va+(t**3-2*t*t+t)*(b-a)*ma+(-2*t**3+3*t*t)*vb+(t**3-t*t)*(b-a)*mb
+
+
+def around(matrix, pivot, angle, axis='X'):
+    return Matrix.Translation(pivot)@Matrix.Rotation(math.radians(angle),4,axis)@Matrix.Translation(-pivot)@matrix
 
 
 def solve(arm,pose,chain,target,pole):
@@ -120,6 +136,9 @@ def bake(arm,poses,extra=None):
 def author(scene,axe,rubick):
     scene.frame_set(0);bpy.context.view_layer.update();base=snapshot(axe);idle=snapshot(rubick)
     scene.frame_set(60);bpy.context.view_layer.update();grip=snapshot(axe)
+    weapon=next(o for o in scene.objects if o.type=='MESH' and 'axe_weapon' in o.name)
+    ev=weapon.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    weapon_local=[grip['axe_1'].inverted()@ev.matrix_world@v.co for v in ev.data.vertices]
     scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
     point=Vector(json.loads((SOURCE.parent.parent/'v2/staging.json').read_text())['contact'])
     direction=(point-grip['wrist_R'].translation).normalized()
@@ -129,31 +148,35 @@ def author(scene,axe,rubick):
     weapon_relative.translation*=.8
     weapon_relative=weapon_relative@Matrix.Diagonal((.8,.8,.8,1))
     poses=[];extra={};root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
-    poles={'L':Vector((1,0,-1)),'R':Vector((-1,0,-1))};held=None
-    times=sorted(set(range(N))|{q/8 for q in range(230*8,287*8)})
+    poles={'L':Vector((1,0,-1)),'R':Vector((-1,0,-1))};held=None;contact=None
+    times=sorted(set(range(N))|{q/8 for q in range(230*8,(N-1)*8+1)})
     for f in times:
         u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
         if f<LIFT:
-            crouch=.20*math.sin(math.pi*max(0,(f-195)/(LIFT-195))) if f>=195 else 0
-            root=root0+Vector((0,0,-crouch))
+            root=root0+Vector((curve(f,((0,0),(42,.08),(100,-.055),(172,.035),(195,0),(216,.05),(231,0))),
+                curve(f,((0,0),(60,.07),(128,-.045),(182,0),(216,.13),(231,-.10))),
+                curve(f,((0,0),(80,-.025),(150,-.045),(195,-.01),(216,-.34),(231,0)))))
         elif f<=HIT:
-            root=root0.lerp(end,u**1.35);root.z+=.85*math.sin(math.pi*.72*u)
+            root=(root0+Vector((0,-.10,0))).lerp(end,.8*u+.2*u*u)
+            root.z+=.85*math.sin(math.pi*.72*u)
         else:
-            settle=smooth((f-HIT)/7)
-            root=end+Vector((0,-.14*settle,.85*math.sin(math.pi*.72)-.20*settle))
-            strain=.035*math.sin(math.pi*max(0,min(1,(f-303)/44)))
-            root.y-=strain
-        if f<LIFT:root.z+=.012*math.sin(f/30*2.1)
+            # Impact -> recoil -> second pressure -> let the effort go. The
+            # suspended pelvis changes direction; it does not simply sink.
+            root=end+Vector((curve(f,((279,0),(289,-.06),(303,.05),(317,-.035),(350,.08),(398,.06),(419,.06))),
+                curve(f,((279,0),(286,-.16),(299,.08),(313,-.12),(334,.03),(375,-.02),(405,-.03),(419,-.03))),
+                .85*math.sin(math.pi*.72)+curve(f,((279,0),(289,-.045),(302,.025),(316,-.025),(352,-.10),(395,-.12),(419,-.12)))))
         pose=shift(base,root-root0)
-        lean=math.radians(14)*smooth((f-195)/36)
-        flight=math.sin(math.pi*u) if LIFT<=f<=HIT else 0
-        lean+=math.radians(14)*flight
-        branch(axe,pose,'spine1',lean)
-        if flight:branch(axe,pose,'head',-math.radians(8)*flight)
-        reaction=smooth((f-363)/30)
-        if reaction:
-            branch(axe,pose,'head',math.radians(5)*reaction)
-            branch(axe,pose,'head',math.radians(7)*reaction,'Z')
+        lean=curve(f,((0,0),(75,4),(120,1),(153,7),(180,2),(195,0),(216,28),(231,10),
+                      (250,31),(268,22),(279,14),(287,26),(300,7),(314,25),(336,14),(370,10),(402,12),(419,12)))
+        twist=curve(f,((0,0),(60,-4),(125,3),(180,0),(216,-9),(249,-5),(279,0),
+                       (289,5),(304,-4),(317,3),(360,0),(402,-3),(419,-3)))
+        branch(axe,pose,'spine1',math.radians(lean))
+        branch(axe,pose,'spine2',math.radians(twist),'Z')
+        nod=curve(f,((0,0),(70,-3),(115,0),(132,-8),(147,2),(164,-5),(190,0),(216,-10),
+                     (247,-12),(279,0),(285,-10),(300,4),(316,-8),(350,-4),(374,-12),(396,7),(405,7),(419,7)))
+        branch(axe,pose,'head',math.radians(nod))
+        branch(axe,pose,'head',math.radians(curve(f,((0,0),(150,0),(178,3),(211,0),
+                     (360,0),(378,-12),(401,10),(405,10),(419,10)))),'Z')
         # Feet stay planted during compression. In flight the knees fold behind
         # the body; the arrest leaves the attacker briefly held by magic.
         for side in ('L','R'):
@@ -161,10 +184,14 @@ def author(scene,axe,rubick):
             foot=base[chain[-1]].copy()
             if f>=LIFT:
                 foot.translation+=root-root0
-                fold=math.sin(math.pi*min(.8,u))
+                fold=curve(f,((231,0),(245,.8),(258,1),(279,.6),(291,.23),(305,.62),
+                               (319,.46),(355,.28),(398,.2),(419,.2)))
                 foot.translation+=Vector(((-.30 if side=='L' else .30)*fold,
                                           (-.15 if side=='L' else .60)*fold,
                                           (.40 if side=='L' else .25)*fold))
+                if f>HIT:
+                    follow=curve(f,((279,0),(291,-.22),(307,.15),(327,-.10),(359,.05),(402,0),(419,0)))
+                    foot.translation.y+=follow*(1 if side=='L' else .65)
                 pivot=foot.translation.copy()
                 foot=Matrix.Translation(pivot)@Matrix.Rotation(math.radians(18)*fold,4,'X')@Matrix.Translation(-pivot)@foot
             pose,_=solve(axe,pose,chain,foot,None)
@@ -178,8 +205,15 @@ def author(scene,axe,rubick):
         axis=up.lerp(Vector((0,-.97,.243)),swing).normalized()
         rotation=direction.rotation_difference(axis).to_matrix().to_4x4()
         right=rotation@grip['wrist_R'];right.translation=wrist_position
-        if f==HIT:held=right.copy()
-        if f>HIT:right=held.copy()
+        if f<LIFT:
+            accent=curve(f,((0,0),(44,0),(65,10),(92,3),(119,0),(155,-5),(180,0),(231,0)))
+            right=around(right,pose['spine3'].translation,accent)
+        if f==HIT:
+            held=right.copy()
+            contact=min((right@weapon_relative@p for p in weapon_local),key=lambda p:p.y)
+        if f>HIT:
+            recoil=curve(f,((279,0),(286,-7),(300,3),(314,-3),(337,1.5),(363,0),(403,0),(419,0)))
+            right=around(held,contact,recoil)
         left=right@left_relative
         for side,target in (('R',right),('L',left)):
             chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
@@ -198,7 +232,9 @@ def author(scene,axe,rubick):
     weapon=next(o for o in scene.objects if o.type=='MESH' and 'axe_weapon' in o.name)
     ev=weapon.evaluated_get(bpy.context.evaluated_depsgraph_get())
     points=[ev.matrix_world@v.co for v in ev.data.vertices]
-    contact=min(points,key=lambda p:p.y)
+    evaluated_contact=min(points,key=lambda p:p.y)
+    if (contact-evaluated_contact).length>.0001:
+        raise ValueError('Rigid weapon contact prediction differs from evaluated mesh')
     delta=contact-cast['index_1_R'].translation
     offset=Vector((delta.x,delta.y,0))
     cast=shift(cast,offset);idle=shift(idle,offset)
@@ -206,7 +242,17 @@ def author(scene,axe,rubick):
     cast,_=solve(rubick,cast,('bicep_R','elbow_R','wrist_R'),target,None)
     defender=[]
     for f in range(N):
-        defender.append(mix(rubick,idle,cast,smooth((f-(HIT-18))/18)))
+        pose=mix(rubick,idle,cast,smooth((f-(HIT-25))/25))
+        head=curve(f,((0,0),(75,-4),(150,1),(230,-3),(264,0),(283,-6),(301,0),(330,4),(348,-5),(376,-2),(409,0),(419,0)))
+        branch(rubick,pose,'Head_0',math.radians(head),'Z')
+        if f>=HIT:
+            # Quiet defender: absorbs a little load through his shoulder, then
+            # deliberately releases it while the index contact remains planted.
+            spine=next((n for n in ('spine3','spine2','Spine2') if n in pose),None)
+            if spine:
+                branch(rubick,pose,spine,math.radians(curve(f,((279,0),(288,-4),(310,1),(350,0),(419,0)))))
+                pose,_=solve(rubick,pose,('bicep_R','elbow_R','wrist_R'),cast['wrist_R'],None)
+        defender.append(pose)
     bake(rubick,defender)
     (OUT/'staging.json').write_text(json.dumps({'frames':N,'fps':30,'hit':HIT,'takeoff':LIFT,
         'contact':list(contact),'weapon_scale':.8,'two_hand_separation':(left_relative.translation).length,
@@ -216,6 +262,10 @@ def author(scene,axe,rubick):
 
 def cameras(scene,axe,rubick,contact):
     cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
+    face_targets={}
+    for frame in (145,390):
+        scene.frame_set(frame);bpy.context.view_layer.update()
+        face_targets[frame]=axe.matrix_world@axe.pose.bones['head'].head
     scene.frame_set(HIT);bpy.context.view_layer.update()
     tip_local=(axe.matrix_world@axe.pose.bones['axe_1'].matrix).inverted()@contact
     for f in range(N):
@@ -228,7 +278,7 @@ def cameras(scene,axe,rubick,contact):
             center=axe.matrix_world@axe.pose.bones['axe_1'].head
             target=center+Vector((0,0,.7));pos=target+Vector((-1.5,-2.8,.25));lens=45
         elif f<195:
-            target=ahead+Vector((0,0,-.08));pos=target+Vector((-1.8,-3.2,.15));lens=60
+            target=face_targets[145]+Vector((0,0,-.08));pos=target+Vector((-1.8,-3.2,.15));lens=56
         elif f<LIFT:
             target=Vector((-.2,2.2,2.5));pos=Vector((-5,-5,2.1));lens=38
         elif f<273:
@@ -239,16 +289,16 @@ def cameras(scene,axe,rubick,contact):
             pos=Vector((-4.8,-3.6,3.1));lens=48-4*sweep
         elif f<HIT:
             target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
-        elif f<303:
-            target=contact+Vector((0,.4,0));pos=target+Vector((4.5,-4,.2));lens=38
+        elif f<316:
+            target=contact+Vector((0,.55,-.15));pos=target+Vector((4.5,-4,.2));lens=32
         elif f<324:
             target=contact;pos=target+Vector((3.5,-.8,.5));lens=65
         elif f<363:
             target=rhead;pos=target+Vector((.6,2.8,.08));lens=60
         else:
-            target=ahead+Vector((0,0,-.05));pos=target+Vector((-2.3,-2.5,.25));lens=58
+            target=face_targets[390]+Vector((0,0,-.13));pos=target+Vector((-2.3,-2.5,.25));lens=48
         cam.location=pos;cam.rotation_euler=(target-pos).to_track_quat('-Z','Y').to_euler();cam.data.lens=lens
-        cam.data.dof.focus_distance=(target-pos).length;cam.data.dof.aperture_fstop=4 if f<45 or 195<=f<303 else 2.5
+        cam.data.dof.focus_distance=(target-pos).length;cam.data.dof.aperture_fstop=4 if f<45 or 195<=f<316 else 2.5
         for key in ('location','rotation_euler'):cam.keyframe_insert(key,frame=f)
         for key in ('lens','dof.focus_distance','dof.aperture_fstop'):cam.data.keyframe_insert(key,frame=f)
     for owner in (cam,cam.data):
@@ -260,9 +310,10 @@ def cameras(scene,axe,rubick,contact):
 
 
 def face(scene):
-    data=OUT/'voice/voices.json'
-    native=OUT/'audio/native_dialogue_envelope.json'
-    battle=OUT/'audio/battle_cry_envelope.json'
+    audio_source=ROOT/'_game/skits/doomsday/v6'
+    data=audio_source/'voice/voices.json'
+    native=audio_source/'audio/native_dialogue_envelope.json'
+    battle=audio_source/'audio/battle_cry_envelope.json'
     env=json.loads(data.read_text())['threat']['env'] if data.exists() else json.loads(native.read_text())['env'] if native.exists() else []
     cry=json.loads(battle.read_text())['env'] if battle.exists() else []
     for ob in scene.objects:
@@ -284,7 +335,7 @@ def face(scene):
 
 def main():
     mode=sys.argv[sys.argv.index('--')+1]
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(exist_ok=True,parents=True)
     bpy.ops.wm.open_mainfile(filepath=str(SOURCE));scene=bpy.context.scene;gpu(scene)
     prefs=bpy.context.preferences.addons['cycles'].preferences
     prefs.compute_device_type='OPTIX';prefs.get_devices()
@@ -316,8 +367,10 @@ def main():
     fx=apply(scene,axe,rubick,contact)
     (OUT/'fx.json').write_text(json.dumps(fx,indent=2))
     if '--audit' in sys.argv:
-        from doomsday_performance_qa import audit
-        audit(scene,axe,rubick,contact,poses,defender)
+        import doomsday_performance_qa as qa
+        qa.OUT=OUT
+        qa.audit(scene,axe,rubick,contact,poses,defender)
+    if '--no-render' in sys.argv:return
     scene.render.use_persistent_data=True
     scene.render.use_motion_blur=False
     if mode=='probe':
@@ -329,7 +382,18 @@ def main():
             selected=[f for f in range(0,N,2) if not (274<=f<=278 or 324<=f<=362)]
     elif mode=='draft':
         selected=list(range(N));folder=OUT/'frames';scene.cycles.samples=48
+    elif mode=='blocking':
+        selected=list(range(N));folder=OUT/'blocking'
+        scene.render.engine='BLENDER_WORKBENCH'
+        scene.display.shading.light='STUDIO';scene.display.shading.color_type='MATERIAL'
+        scene.display.shading.show_shadows=True;scene.display.shading.show_cavity=True
+        scene.render.resolution_x=360;scene.render.resolution_y=640;scene.render.resolution_percentage=100
     else:raise ValueError(mode)
+    if '--overview' in sys.argv:
+        cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
+        scene.render.resolution_x=640;scene.render.resolution_y=360;scene.render.resolution_percentage=100
+        target=Vector((0,-.4,2.0));cam.location=Vector((-8.0,0,3.1))
+        cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.lens=24
     if '--frames' in sys.argv:
         selected=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')]
     if os.environ.get('DOOMSDAY_FRAME_DIR'):folder=Path(os.environ['DOOMSDAY_FRAME_DIR'])
@@ -368,6 +432,14 @@ def main():
                       patch_frames=selected,baseline_script_sha256=baseline['script_sha256'],
                       patch_kind='arm_update' if '--arm-update' in sys.argv else 'motion_update')
     manifest.write_text(json.dumps(result,indent=2))
+    if '--cycles-probes' in sys.argv:
+        scene.render.engine='CYCLES';scene.cycles.samples=32
+        scene.render.resolution_x=540;scene.render.resolution_y=960;scene.render.resolution_percentage=100
+        cameras(scene,axe,rubick,contact)
+        probe=OUT/'probe';probe.mkdir(exist_ok=True)
+        for f in (120,216,250,279,287,300,314,375,405):
+            scene.frame_set(f);scene.render.filepath=str(probe/f'{f:04d}.png')
+            bpy.ops.render.render(write_still=True)
 
 
 if __name__=='__main__':main()

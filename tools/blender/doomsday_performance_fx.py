@@ -215,8 +215,13 @@ def apply(scene, axe, rubick, contact):
                 jitter = Vector(tuple(rng.uniform(-.018,.018) for _ in range(3)))
                 side=-1 if strand%2 else 1
                 points.append(origin.lerp(endpoint,t)+normal*(side*.07)+jitter*math.sin(math.pi*t))
-            ob = filament(scene, PREFIX+f'arrest {event} {strand}', points,
+            # HIT surface points are stored in the controlling bone's local
+            # frame. Recoil rotates the blade about contact; leaving these
+            # endpoints in world space would detach them from its surface.
+            ob = filament(scene, PREFIX+f'arrest {event} {strand}',
+                          [inverse @ p for p in points],
                           (.10,1,.24), .003 if residual else .005, 3 if residual else 12)
+            ob.parent = anchor
             # An Emission surface at strength zero is opaque black. Hide the
             # strand on that endpoint; its last visible frame still emits light.
             _window(ob,start,end-1)
@@ -264,8 +269,10 @@ def apply(scene, axe, rubick, contact):
                 jag=burst_rng.uniform(-.035,.035)*math.sin(math.pi*t)
                 points.append(origin.lerp(destination,t)+lateral*jag+
                               outward*(.035*math.sin(math.pi*t)))
-            ob=filament(scene,PREFIX+f'impact burst {side} {index}',points,
+            ob=filament(scene,PREFIX+f'impact burst {side} {index}',
+                        [inverse @ p for p in points],
                         (.09,1,.23),.0065,30)
+            ob.parent=anchor
             _window(ob,279,303)
             _power(ob,((278,0),(279,26),(281,42),(285,16),(287,28),
                        (292,8),(296,15),(301,5),(303,2),(304,0)))
@@ -277,8 +284,10 @@ def apply(scene, axe, rubick, contact):
                 t=step/8
                 branch.append(fork_start.lerp(fork_end,t)+
                               lateral*burst_rng.uniform(-.018,.018)*math.sin(math.pi*t))
-            fork=filament(scene,PREFIX+f'impact branch {side} {index}',branch,
+            fork=filament(scene,PREFIX+f'impact branch {side} {index}',
+                          [inverse @ p for p in branch],
                           (.12,1,.28),.0035,18)
+            fork.parent=anchor
             _window(fork,279,303)
             _power(fork,((278,0),(279,16),(281,28),(285,10),(287,19),
                          (292,5),(296,9),(301,3),(303,1),(304,0)))
@@ -288,6 +297,8 @@ def apply(scene, axe, rubick, contact):
     impact_report={'frame_extent':[279,303], 'zero_or_hidden_outside_extent':True,
                    'unchanged_frame_ranges':[[0,278],[304,419]],
                    'main_arcs':6,'branches':6,'normal_offset_m':.11,
+                   'endpoint_transform':'HIT world endpoints converted by inverse axe_1 matrix; follow framewise evaluated controlling-bone anchor',
+                   'hit_world_positions_preserved':True,
                    'endpoint_distances_m':[(p-contact).length for p in endpoints],
                    'minimum_endpoint_plane_separation_m':minimum_separation,
                    'additional_light_peak_watts':26}
@@ -299,6 +310,9 @@ def apply(scene, axe, rubick, contact):
             'anchor': anchor.name, 'anchor_source_bone': 'axe_1',
             'contact': list(contact), 'charge_frames': [24,HIT-1],
             'arrest_frames': [HIT,316], 'held_through': N-1,
+            'arrest_endpoint_transform':'HIT-local coordinates parented to weapon anchor; follows blade recoil',
+            'contact_core_and_lights':'Fixed in world space at contact; not parented to weapon',
+            'surface_tracking_limit':'Rigid controlling-bone transform; no per-frame projection onto a deforming mesh',
             'surface_projected_charge_strands':surface_strands,
             'impact_reinforcement':impact_report,
             'maximum_light_watts': {'charge_per_side':14, 'arrest':38},

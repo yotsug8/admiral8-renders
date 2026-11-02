@@ -124,8 +124,17 @@ def compare(meshes, baseline, current, foot_ids, sole_ids, height):
         if p.shape != q.shape or not np.isfinite(q).all():
             raise ValueError('Topology or finite-point check failed')
         edges = np.array([tuple(e.vertices) for e in ob.data.edges], dtype=int)
+        # Imported triangle soups may have faces but no explicit edge table.
+        # They still need deformation checks; skipping them hides cloth/arm faults.
         if not len(edges):
-            continue
+            ob.data.calc_loop_triangles()
+            edges = np.array(sorted({tuple(sorted(pair))
+                for tri in ob.data.loop_triangles
+                for pair in ((tri.vertices[0],tri.vertices[1]),
+                             (tri.vertices[1],tri.vertices[2]),
+                             (tri.vertices[2],tri.vertices[0]))}),dtype=int)
+        if not len(edges):
+            raise ValueError(f'No testable surface: {ob.name}')
         before = np.linalg.norm(p[edges[:, 0]]-p[edges[:, 1]], axis=1)
         after = np.linalg.norm(q[edges[:, 0]]-q[edges[:, 1]], axis=1)
         ratio = after/np.maximum(before, 1e-10)

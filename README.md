@@ -2,6 +2,8 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 02.11.2026
 
+- [Rain: упор и смена опоры](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_push_study.mp4) — учебный этюд, 6 с, 640×640/30 fps, без звука. Первая попытка, шаг назад и толчок ящика; ограниченная проверка контактов и веса. Метод — docs/studies/RAIN_PUSH.md в main. **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены позы, анимация, камера и освещение.
+
 - [Rain: отказ и перемена решения](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_intent_study.mp4) — учебный этюд, 6 с, 640×720/30 fps, без звука. Внимание, отказ, пауза и движение к цели. Корпус, пальцы и вторичное движение требуют дальнейшей практики; весь навык не закрыт. Постановка и проверка — docs/studies/ACTING_RIG_CANDIDATES.md в main. Персонаж: **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены позы, анимация, камера и освещение.
 
 - [Независимый поворот головы Пуджа](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_character_head.mp4) — ограниченная проверка кожи, 4,8 с, 960×480/30 fps, общий и крупный планы, без звука. Исправлено смятие за ухом в этой последовательности; проверены стык и три выражения. Другие модели, сильные гримасы и законченная актёрская игра не заявляются. Метод — docs/studies/NECK_CORRECTIVE.md в main.

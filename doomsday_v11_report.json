@@ -1,0 +1,124 @@
+{
+  "artifact": "doomsday_v11.mp4",
+  "status": "complete rendered release; audience artistic feedback pending",
+  "sha256": "c0a7c1f38a57c0b23d62536de7a39c5e7c41a28d26df384a5ac0162cccb17a0a",
+  "bytes": 5028302,
+  "source_commit": "ac2498bf545f26b30af5654f7faef3e61818b7f8",
+  "duration_seconds": 14,
+  "frames": 420,
+  "fps": 30,
+  "dimensions": [
+    1280,
+    720
+  ],
+  "camera_cuts": [
+    0,
+    45,
+    120,
+    195,
+    243,
+    277,
+    330,
+    360
+  ],
+  "changes": [
+    "Purposeful shot sizes and clear final face angle.",
+    "Asymmetric airborne leg follow-through.",
+    "Textured environment, lighting, bounded weapon effects and prepared soundtrack."
+  ],
+  "decoded_frames": 420,
+  "dark_frames": [],
+  "nearly_uniform_frames": [],
+  "visual_review": {
+    "whole_sequence_step_frames": 6,
+    "attack_step_frames": 2,
+    "pressure_step_frames": 4,
+    "all_cuts_checked": true,
+    "continuous_playback_claimed": false
+  },
+  "geometry": {
+    "checked_frames": 240,
+    "weapon_surface_pair_distribution": {
+      "0": 68,
+      "4": 172
+    },
+    "contained_samples": 0,
+    "inconclusive_containment_samples": 3,
+    "boundary_triangles": [
+      160,
+      188
+    ],
+    "forearm_torso_max_pairs": 0
+  },
+  "audio": {
+    "lufs": -14.01,
+    "true_peak_dbtp": -2.22,
+    "lag_samples_vs_wav": 0,
+    "passed": true,
+    "quiet_after_seconds": 10.6,
+    "spoken_line_language": "Russian",
+    "battle_cry_language": "English",
+    "listened": false
+  },
+  "render": {
+    "engine": "Cycles OPTIX",
+    "motion_blur_shutter": 0.25,
+    "motion_blur_disabled_at_cuts": true,
+    "flight_camera_patch": {
+      "base_blend_sha256": "bf78a9af774662dae22a2631a965749130e1405c590f3e7ea23f14f2d09618cc",
+      "patch_blend_sha256": "89f534ed57ffd5ab2151ac02048cb620c8ad13a3167408505c0c48f7c11840fe",
+      "frames": [
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276
+      ],
+      "untouched_frame_hashes_verified": 386,
+      "max_unchanged_camera_parameter_delta": 0.0
+    },
+    "sample_count_distribution": {
+      "48": 29,
+      "24": 391
+    }
+  },
+  "project_check": {
+    "passed": 18,
+    "skipped": 0
+  },
+  "limitations": [
+    "Surface audits cover selected regions at integer frames, not continuous collisions.",
+    "Sparse frame-sheet visual review and numerical audio checks do not establish continuous playback or subjective listening.",
+    "Artistic quality is not established by technical checks alone.",
+    "The attack cut changes screen position noticeably; pressure acting remains restrained and the rocky background has limited scale."
+  ]
+}

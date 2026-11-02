@@ -99,7 +99,7 @@ def render(data, regular, bold, assets):
     p.text(72,164,'ОТ ПОЗЫ',112,paper,True)
     p.text(72,298,'ДО ИСТОРИИ',105,pale_green,True)
     p.text(79,461,'Дорожная карта',46,paper)
-    p.text(79,532,'12 направлений · один готовый ролик',28,'#c4cfc4')
+    p.text(79,532,'24 направления · 12 учебных блоков',28,'#c4cfc4')
     p.line(79,610,755,610,'#576962',2)
     p.text(79,643,data['updated'],28,paper)
     p.text(455,643,f"РЕДАКЦИЯ {data['revision']:02d}",28,'#c4cfc4')

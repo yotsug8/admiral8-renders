@@ -18,6 +18,7 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'_game/skits/doomsday/v2'
 if '--v3' in sys.argv:OUT=OUT.parent/'v3'
 if '--v4' in sys.argv:OUT=OUT.parent/'v4'
+if '--v5' in sys.argv:OUT=OUT.parent/'v5'
 
 
 def sound(directory,sources,fps):
@@ -51,6 +52,9 @@ def sound(directory,sources,fps):
 def grade(image):
     values=np.asarray(image.convert('RGB'),dtype=float)/255
     values=np.clip((values-.025)*1.045,0,1)
+    if OUT.name=='v5':
+        # v5 already blooms only the linear emission pass in Blender.
+        return Image.fromarray(np.uint8(values*255))
     glow=np.maximum(values-.8,0)
     halo=Image.fromarray(np.uint8(glow*255)).filter(ImageFilter.GaussianBlur(6))
     values+=np.asarray(halo,dtype=float)/255*.65

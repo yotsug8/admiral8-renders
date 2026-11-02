@@ -13,7 +13,7 @@ import bpy
 from mathutils import Matrix, Vector, Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v7')))
+OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v8')))
 SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from contact_reaction import _basis, _solve_leg
@@ -21,7 +21,7 @@ from doomsday_refine import gpu, smooth
 from doomsday_atmosphere import environment, glow, filament
 
 N=420
-LIFT=231
+LIFT=252
 HIT=279
 
 
@@ -90,14 +90,14 @@ def solve(arm,pose,chain,target,pole):
     return result,pole
 
 
-def solve_arm(arm,pose,side,target):
+def solve_arm(arm,pose,side,target,elbow_pole=None):
     """Two-bone solve with an authored elbow plane in front of the chest."""
     chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
     h,k,w=(pose[n].translation.copy() for n in chain)
     upper,lower=(k-h).length,(w-k).length
     axis=target.translation-h;distance=axis.length;direction=axis.normalized()
     if distance>upper+lower or distance<abs(upper-lower):raise ValueError('Unreachable arm target')
-    pole=Vector((1,-.8,-.4)) if side=='L' else Vector((-1,-.65,-1.3))
+    pole=Vector(elbow_pole) if elbow_pole is not None else Vector((1,-.8,-.4)) if side=='L' else Vector((-1,-.65,-1.3))
     pole-=direction*pole.dot(direction);pole.normalize()
     along=(upper*upper-lower*lower+distance*distance)/(2*distance)
     joint=h+direction*along+pole*math.sqrt(max(0,upper*upper-along*along))
@@ -133,7 +133,7 @@ def bake(arm,poses,extra=None):
                     for key in curve.keyframe_points:key.interpolation='LINEAR'
 
 
-def author(scene,axe,rubick):
+def author_legacy_v7(scene,axe,rubick,dense=True):
     scene.frame_set(0);bpy.context.view_layer.update();base=snapshot(axe);idle=snapshot(rubick)
     scene.frame_set(60);bpy.context.view_layer.update();grip=snapshot(axe)
     weapon=next(o for o in scene.objects if o.type=='MESH' and 'axe_weapon' in o.name)
@@ -149,7 +149,7 @@ def author(scene,axe,rubick):
     weapon_relative=weapon_relative@Matrix.Diagonal((.8,.8,.8,1))
     poses=[];extra={};root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
     poles={'L':Vector((1,0,-1)),'R':Vector((-1,0,-1))};held=None;contact=None
-    times=sorted(set(range(N))|{q/8 for q in range(230*8,(N-1)*8+1)})
+    times=sorted(set(range(N))|({q/8 for q in range(230*8,(N-1)*8+1)} if dense else set()))
     for f in times:
         u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
         if f<LIFT:
@@ -260,6 +260,145 @@ def author(scene,axe,rubick):
     return poses,defender,contact
 
 
+def native_attack(scene, arm):
+    """Take full articulated poses as a starting point, discarding native travel."""
+    objects=set(bpy.data.objects);actions=set(bpy.data.actions)
+    bpy.ops.import_scene.gltf(filepath=str(ROOT/'_game/models/render/models_heroes_axe_axe.glb'),bone_heuristic='BLENDER')
+    imported=set(bpy.data.objects)-objects
+    source=next(o for o in imported if o.type=='ARMATURE')
+    action=next(a for a in set(bpy.data.actions)-actions if a.name.split('.')[0]=='attack_alt_anim')
+    source.animation_data.action=action;source.animation_data.action_slot=action.slots[0]
+    poses=[]
+    for f in range(15):
+        scene.frame_set(f);bpy.context.view_layer.update()
+        poses.append({b.name:arm.matrix_world@b.matrix for b in source.pose.bones if b.name in arm.pose.bones})
+    for ob in imported:bpy.data.objects.remove(ob,do_unlink=True)
+    return poses
+
+
+def author(scene,axe,rubick,dense=True):
+    scene.frame_set(0);bpy.context.view_layer.update();base=snapshot(axe);idle=snapshot(rubick)
+    scene.frame_set(60);bpy.context.view_layer.update();grip=snapshot(axe)
+    weapon=next(o for o in scene.objects if o.type=='MESH' and 'axe_weapon' in o.name)
+    ev=weapon.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    weapon_local=[grip['axe_1'].inverted()@ev.matrix_world@v.co for v in ev.data.vertices]
+    binds={s:grip['axe_1'].inverted()@grip['wrist_'+s] for s in ('L','R')}
+    scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
+    bank=native_attack(scene,axe)
+    root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
+    stance=shift(bank[0],root0-bank[0]['root'].translation)
+    poses=[];extra={};held=None;contact=None;poles={'L':None,'R':None}
+    times=sorted(set(range(N))|({q/8 for q in range(250*8,(N-1)*8+1)} if dense else set()))
+    for f in times:
+        t=curve(f,((0,0),(180,0),(201,1.5),(220,4),(239,8),(252,10),(266,10.4),(279,11.6),(419,11.6)))
+        t=max(0,min(12,t));i=int(t);part=t-i
+        native=mix(axe,bank[i],bank[min(14,i+1)],part)
+        u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
+        if f<LIFT:
+            root=root0+Vector((curve(f,((0,0),(200,.07),(233,.13),(252,0))),
+                curve(f,((0,0),(205,.08),(237,.14),(252,-.18))),
+                curve(f,((0,0),(215,-.03),(240,-.30),(252,0)))))
+        elif f<=HIT:
+            root=(root0+Vector((0,-.18,0))).lerp(end,u)
+            root.z+=.85*math.sin(math.pi*.72*u)
+        else:
+            root=end+Vector((0,curve(f,((279,0),(286,-.10),(309,-.055),(419,-.055))),
+                .85*math.sin(math.pi*.72)*(1-smooth((f-286)/24))-
+                .08*math.sin(math.pi*max(0,min(1,(f-310)/26)))))
+        pose=shift(native,root-native['root'].translation)
+        if f>HIT:
+            branch(axe,pose,'spine1',math.radians(curve(f,((279,0),(286,5),(310,-4),(360,-6),(419,-6)))))
+            branch(axe,pose,'spine2',math.radians(4*smooth((f-286)/38)),'Z')
+            branch(axe,pose,'head',math.radians(curve(f,((279,0),(285,-8),(311,-3),(366,-8),(398,4),(409,4),(419,4)))))
+            branch(axe,pose,'head',math.radians(12*smooth((f-367)/34)),'Z')
+        for side in ('L','R'):
+            chain=tuple(n+'_'+side for n in ('thigh','knee','ankle'))
+            foot=stance[chain[-1]].copy()
+            if f>=LIFT:
+                fold=curve(f,((252,0),(269,.9),(279,.7),(309,.35),(365,.22),(419,.22)))
+                foot.translation+=root-(root0+Vector((0,-.18,0)))+Vector(((-.15 if side=='L' else .12)*fold,
+                    (-.25 if side=='L' else .50)*fold,(.32 if side=='L' else .46)*fold))
+                if f>HIT:foot.translation.y+=.12*math.sin(math.pi*max(0,min(1,(f-HIT)/45)))
+                ground=stance[chain[-1]].copy();ground.translation+=end-root0
+                hip_ground=native[chain[0]].translation-native['root'].translation+end
+                ground.translation.x=hip_ground.x+(.18 if side=='L' else -.18)
+                ground.translation.y=hip_ground.y-.10
+                foot=foot.lerp(ground,smooth((f-286)/24))
+                if f<310:
+                    h,k,w=(pose[n].translation for n in chain)
+                    axis=foot.translation-h;reach=.99*((k-h).length+(w-k).length)
+                    if axis.length>reach:foot.translation=h+axis.normalized()*reach
+            try:pose,_=solve(axe,pose,chain,foot,None)
+            except ValueError as exc:raise ValueError(f'Leg unreachable at {f}/{side}: {exc}') from exc
+        weapon_pose=pose['axe_1'].copy()
+        weapon_pose.translation+=pose['wrist_R'].translation-(weapon_pose@binds['R']).translation
+        join=smooth((f-254)/16)
+        free_left=pose['wrist_L'].copy()
+        free_weight=smooth((f-195)/25)
+        free_left.translation=free_left.translation.lerp(pose['spine1'].translation+Vector((.48,-.22,.05)),free_weight)
+        lh,lk,lw=(pose[n+'_L'].translation for n in ('bicep','elbow','wrist'))
+        free_axis=free_left.translation-lh;free_reach=.90*((lk-lh).length+(lw-lk).length)
+        if free_axis.length>free_reach:free_left.translation=lh+free_axis.normalized()*free_reach
+        reach_arc=Vector((.10,.10,.18))*math.sin(math.pi*join)
+        if 254<f<=HIT:
+            # Restage the one-handed source near the chest/head for a genuine
+            # two-handed strike. Move the prop, never stretch either arm.
+            for _ in range(24):
+                correction=Vector()
+                for side in ('R','L'):
+                    h,k,w=(pose[n+'_'+side].translation for n in ('bicep','elbow','wrist'))
+                    target=(weapon_pose@binds[side]).translation
+                    if side=='L':target=free_left.translation.lerp(target,join)+reach_arc
+                    axis=target-h;radius=(1-.08*join)*((k-h).length+(w-k).length)
+                    if axis.length>radius:
+                        correction-=axis.normalized()*min(.08,(axis.length-radius)/(join if side=='L' else 1))
+                weapon_pose.translation+=correction
+                if correction.length<1e-6:break
+        if f==HIT:
+            held=weapon_pose.copy();contact=min((held@p for p in weapon_local),key=lambda p:p.y)
+        if f>HIT:
+            weapon_pose=around(held,contact,-2.5*smooth((f-HIT)/10))
+            release=smooth((f-290)/18)
+            weapon_pose.translation+=(root-end-Vector((0,0,.85*math.sin(math.pi*.72))))*release
+            weapon_pose.translation+=Vector((0,.10,0))*smooth((f-301)/32)
+        # The left hand joins the shaft before the actual swing. During the
+        # preparatory reach it retains the source action's free-arm gesture.
+        for side in ('R','L'):
+            target=weapon_pose@binds[side]
+            if side=='L':
+                target=free_left.lerp(target,join);target.translation+=reach_arc
+            chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
+            try:
+                if side=='L' and free_weight>0:
+                    h,k,w=(pose[n].translation for n in chain)
+                    source_pole=(k-h).normalized().lerp(Vector((1,0,-1)).normalized(),free_weight)
+                    pose=solve_arm(axe,pose,side,target,source_pole.lerp(Vector((-.55,.83,0)).normalized(),join))
+                else:pose,poles[side]=solve(axe,pose,chain,target,poles[side])
+            except ValueError as exc:raise ValueError(f'Native staging unreachable at {f}/{side}: {exc}') from exc
+            if side=='R' or join>=1:
+                delta=target@grip['wrist_'+side].inverted()
+                for bone in axe.pose.bones['wrist_'+side].children_recursive:pose[bone.name]=delta@grip[bone.name]
+        pose['axe_1']=weapon_pose
+        if f==int(f):poses.append(pose)
+        else:extra[f]=pose
+    bake(axe,poses,extra)
+    delta=contact-cast['index_1_R'].translation
+    (OUT/'contact_probe.json').write_text(json.dumps({'contact':list(contact),'cast_finger':list(cast['index_1_R'].translation),'delta':list(delta)},indent=2))
+    cast=shift(cast,Vector((delta.x,delta.y,0)));idle=shift(idle,Vector((delta.x,delta.y,0)))
+    target=cast['wrist_R'].copy();target.translation.z+=delta.z
+    cast,_=solve(rubick,cast,('bicep_R','elbow_R','wrist_R'),target,None)
+    defender=[]
+    for f in range(N):
+        pose=mix(rubick,idle,cast,smooth((f-260)/19)*(1-smooth((f-302)/36)))
+        branch(rubick,pose,'Head_0',math.radians(-5*smooth((f-330)/30)),'Z')
+        defender.append(pose)
+    bake(rubick,defender)
+    (OUT/'staging.json').write_text(json.dumps({'frames':N,'fps':30,'hit':HIT,'takeoff':LIFT,
+        'contact':list(contact),'source_upper_body':'attack_alt_anim, restaged timing and hands',
+        'held_by_magic':False,'release':290,'landing':310},indent=2))
+    return poses,defender,contact
+
+
 def cameras(scene,axe,rubick,contact):
     cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
     face_targets={}
@@ -347,12 +486,13 @@ def main():
     for ob in list(scene.objects):
         if ob.name.startswith(('Charge ','Contact spark ')) or ob.name in ('Weapon charge light','Arrest light'):
             bpy.data.objects.remove(ob,do_unlink=True)
-    poses,defender,contact=author(scene,axe,rubick)
-    environment(scene);glow(scene);cameras(scene,axe,rubick,contact);face(scene)
+    poses,defender,contact=author(scene,axe,rubick,dense=mode!='blocking')
+    cameras(scene,axe,rubick,contact);face(scene)
+    if mode!='blocking':environment(scene);glow(scene)
     # Pale masonry is too prominent from the new reverse angles; preserve its
     # native maps while toning it down into the surrounding stone palette.
     for ob in scene.objects:
-        if ob.type!='MESH' or 'statue' not in ob.name.lower():continue
+        if mode=='blocking' or ob.type!='MESH' or 'statue' not in ob.name.lower():continue
         for slot in ob.material_slots:
             if not slot.material or not slot.material.use_nodes:continue
             slot.material=slot.material.copy();nt=slot.material.node_tree
@@ -363,13 +503,18 @@ def main():
             if color.is_linked:nt.links.new(color.links[0].from_socket,h.inputs['Color'])
             else:h.inputs['Color'].default_value=color.default_value
             nt.links.new(h.outputs[0],color)
-    from doomsday_performance_fx import apply
-    fx=apply(scene,axe,rubick,contact)
-    (OUT/'fx.json').write_text(json.dumps(fx,indent=2))
+    if mode!='blocking':
+        from doomsday_performance_fx import apply
+        fx=apply(scene,axe,rubick,contact)
+        (OUT/'fx.json').write_text(json.dumps(fx,indent=2))
     if '--audit' in sys.argv:
         import doomsday_performance_qa as qa
-        qa.OUT=OUT
+        qa.OUT=OUT;qa.LIFT=LIFT
         qa.audit(scene,axe,rubick,contact,poses,defender)
+    if '--weapon-check' in sys.argv:
+        from doomsday_weapon_clearance import audit as weapon_clearance
+        checked=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')] if '--frames' in sys.argv else range(180,N)
+        weapon_clearance(scene,axe,frames=checked,output=OUT/'weapon_clearance.json')
     if '--no-render' in sys.argv:return
     scene.render.use_persistent_data=True
     scene.render.use_motion_blur=False
@@ -384,16 +529,31 @@ def main():
         selected=list(range(N));folder=OUT/'frames';scene.cycles.samples=48
     elif mode=='blocking':
         selected=list(range(N));folder=OUT/'blocking'
+        for ob in scene.objects:
+            ancestry=[];parent=ob
+            while parent:ancestry.append(parent.name);parent=parent.parent
+            actor=next((name for name in ('axe_root','rubick_root') if name in ancestry),None)
+            if not actor:
+                if ob.type!='CAMERA':ob.hide_render=True
+                continue
+            if ob.type=='MESH':
+                ob.color=(.48,.12,.07,1) if actor=='axe_root' else (.14,.24,.19,1)
+                if any(word in ob.name for word in ('weapon','armor','staff','shoulder')):ob.color=(.25,.29,.34,1)
+                if 'belt' in ob.name:ob.color=(.20,.15,.10,1)
+        bpy.ops.mesh.primitive_plane_add(size=80)
+        ground=bpy.context.object;ground.name='Movement review ground';ground.color=(.20,.22,.24,1)
+        scene.use_nodes=False;scene.render.film_transparent=False
         scene.render.engine='BLENDER_WORKBENCH'
-        scene.display.shading.light='STUDIO';scene.display.shading.color_type='MATERIAL'
+        scene.display.shading.light='STUDIO';scene.display.shading.color_type='OBJECT'
+        scene.display.shading.background_type='WORLD';scene.world.color=(.06,.07,.08)
         scene.display.shading.show_shadows=True;scene.display.shading.show_cavity=True
         scene.render.resolution_x=360;scene.render.resolution_y=640;scene.render.resolution_percentage=100
     else:raise ValueError(mode)
     if '--overview' in sys.argv:
         cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
         scene.render.resolution_x=640;scene.render.resolution_y=360;scene.render.resolution_percentage=100
-        target=Vector((0,-.4,2.0));cam.location=Vector((-8.0,0,3.1))
-        cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.lens=24
+        target=Vector((0,.35,2.7));cam.location=Vector((-9.5,.35,4.1))
+        cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.lens=23
     if '--frames' in sys.argv:
         selected=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')]
     if os.environ.get('DOOMSDAY_FRAME_DIR'):folder=Path(os.environ['DOOMSDAY_FRAME_DIR'])

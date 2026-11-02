@@ -134,6 +134,7 @@ class Stage:
         for i in range(n):
             t = i / ck; cm = self.cam_at(t)
             pos = {k: self.keys(k, t, P[k]) for k in names}
+            world = {k: (p[0], p[1], p[2] + self.gz(p[0], p[1])) for k, p in pos.items()}
             vis = {k: pos[k][2] - self.actors[k]["z"] >= self.under for k in names}
             box = {k: cm.box(pos[k][0], pos[k][1], pos[k][2] + self.gz(*pos[k][:2]), *self.actors[k]["box"])
                    for k in names if vis[k]}
@@ -157,7 +158,7 @@ class Stage:
             for x in range(len(names)):
                 for y in range(x + 1, len(names)):
                     a, b = names[x], names[y]
-                    note("касание", (a, b), self.min_gap - math.dist(pos[a][:3], pos[b][:3]), t)   # с высотой: летящий не касается стоящих
+                    note("касание", (a, b), self.min_gap - math.dist(world[a], world[b]), t)   # мировая высота, включая землю
                     if a in box and b in box and not air[a] and not air[b]:   # пролёт перед кем-то — движение, не слипание
                         ha, hb = box[a][3] - box[a][1], box[b][3] - box[b][1]
                         if max(ha, hb) < 2 * min(ha, hb):          # передний план вдвое крупнее заднего — не пятно
@@ -189,7 +190,7 @@ class Stage:
                     a, b = who
                     ca, cb = self._center(a, t), self._center(b, t)
                     dx, dy = ca[0] - cb[0], ca[1] - cb[1]
-                    L = math.hypot(dx, dy) or 1.0
+                    L = math.hypot(dx, dy)
                     if L < 1e-6:
                         dx, dy, L = 1.0, 0.0, 1.0
                     self._shift(a, step * dx / L, step * dy / L)

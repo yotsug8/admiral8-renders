@@ -294,9 +294,14 @@ function A8_Trees()
 	if q then A8_FixTrees(q[1], q[2], q[3], q[4]) else A8_FixTrees(1516, -1660, 3200) end
 end
 
-Convars:RegisterCommand("a8_t", function(_, t) A8_PLAY = nil; A8_FxClear(); for _, a in pairs(A8_ACT) do a.cur = nil end A8_Pose(tonumber(t) or 0) end, "кадр сцены в момент t", 0)
+function A8_Stop()
+	A8_PLAY = nil
+	CustomGameEventManager:Send_ServerToAllClients("a8_camstop", {})
+end
+
+Convars:RegisterCommand("a8_t", function(_, t) A8_Stop(); A8_FxClear(); for _, a in pairs(A8_ACT) do a.cur = nil end A8_Pose(tonumber(t) or 0) end, "кадр сцены в момент t", 0)
 Convars:RegisterCommand("a8_reload", function()
-	A8_PLAY = nil; A8_FxClear()
+	A8_Stop(); A8_FxClear()
 	for _, a in pairs(A8_ACT or {}) do
 		for _, w in ipairs(a.parts or {}) do w:RemoveSelf() end
 		a.ent:RemoveSelf()
@@ -305,6 +310,7 @@ Convars:RegisterCommand("a8_reload", function()
 end, "перечитать сцену", 0)
 Convars:RegisterCommand("a8_time", function(_, v) GameRules:SetTimeOfDay(tonumber(v) or 0.5) print("[a8] day " .. tostring(GameRules:IsDaytime())) end, "время суток", 0)
 Convars:RegisterCommand("a8_play", function()
+	A8_Stop()
 	A8_FxClear()
 	A8_SendCamKeys()
 	PlayerResource:SetCameraTarget(0, nil)   -- иначе серверная цель и интерфейс тянут камеру по очереди
@@ -318,7 +324,7 @@ Convars:RegisterCommand("a8_play", function()
 		A8_Pose(math.min(t, A8_DUR), true)
 		A8_FxStep(prev, math.min(t, A8_DUR)); prev = t
 		if t >= A8_DUR + 2 / 30 then   -- последняя поза держится ещё 2 кадра: запись не захватывает кадр после сцены
-			A8_PLAY = nil
+			A8_Stop()
 			GameRules:GetGameModeEntity():SetContextThink("a8_black", function() A8_Black() print("[a8] play done") return nil end, 0)
 			return nil
 		end
@@ -334,7 +340,7 @@ Convars:RegisterCommand("a8_pos", function()
 	for k, a in pairs(A8_ACT or {}) do print("[a8p] " .. k .. " " .. tostring(a.ent:GetAbsOrigin()) .. " yaw " .. a.ent:GetAnglesAsVector().y) end
 	if A8_CAMT then print("[a8p] camera target " .. tostring(A8_CAMT:GetAbsOrigin())) end
 end, "где актёры", 0)
-Convars:RegisterCommand("a8_black", function() A8_PLAY = nil A8_Black() end, "чёрный кадр-метка", 0)
+Convars:RegisterCommand("a8_black", function() A8_Stop(); A8_Black() end, "чёрный кадр-метка", 0)
 Convars:RegisterCommand("a8_mark", function(_, s) print("[a8] mark " .. tostring(s)) end, "метка в логе", 0)
 Convars:RegisterCommand("a8_where", function()
 	for _, cls in ipairs({ "dota_item_rune_spawner_powerup", "dota_item_rune_spawner_bounty", "ent_dota_fountain",
@@ -344,7 +350,7 @@ Convars:RegisterCommand("a8_where", function()
 	end
 end, "где что на карте", 0)
 Convars:RegisterCommand("a8_cam", function(_, x, y, z, dist, pitch, yaw)
-	A8_PLAY = nil
+	A8_Stop()
 	A8_Cam(tonumber(x), tonumber(y), tonumber(z), tonumber(dist), tonumber(pitch), tonumber(yaw))
 end, "камера вручную: x y z дальность наклон поворот", 0)
 Convars:RegisterCommand("a8_dur", function(_, ...)
@@ -412,7 +418,6 @@ Convars:RegisterCommand("a8_treemodels", function()
 	for n, c in pairs(m) do print("[a8tm] " .. c .. " " .. n) end
 end, "модели деревьев", 0)
 Convars:RegisterCommand("a8_testtree", function(_, model, x, y)
-	PrecacheModelAsync = PrecacheModelAsync
 	local e = SpawnEntityFromTableSynchronous("prop_dynamic", { model = model, origin = Vector(tonumber(x), tonumber(y), 0) })
 	print("[a8tt] " .. model .. " -> " .. tostring(e) .. " " .. tostring(e and e:GetModelName()))
 end, "тест модели дерева", 0)

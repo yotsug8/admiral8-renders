@@ -33,7 +33,8 @@ a=np.asarray(img)>0
 dist=np.zeros(a.shape,int); cur=a.copy(); k=0
 while cur.any():
     k+=1; dist[cur]=k
-    sh=cur.copy(); sh[1:]&=cur[:-1]; sh[:-1]&=cur[1:]; sh[:,1:]&=cur[:,:-1]; sh[:,:-1]&=cur[:,1:]; cur=sh
+    sh=cur.copy(); sh[1:]&=cur[:-1]; sh[:-1]&=cur[1:]; sh[:,1:]&=cur[:,:-1]; sh[:,:-1]&=cur[:,1:]
+    sh[0,:]=False; sh[-1,:]=False; sh[:,0]=False; sh[:,-1]=False; cur=sh
 ys,xs=np.nonzero(dist>=1)
 best=sorted(zip(dist[ys,xs],xs,ys),reverse=True)
 seen=[]

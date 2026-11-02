@@ -63,6 +63,8 @@ def local(name, k):
         q = joints[name][0]["transform"]["orientation"]
     return Matrix.Translation(Vector((p[0], p[1], p[2]))) @ q2m(q)
 NI = len(chans[0]["log"]["layers"][0]["times"])
+if NI < 1:
+    raise ValueError("DMX idle: нет кадров образца")
 def dmx_world(k, loc=local):
     W = {}
     for n in order:
@@ -78,20 +80,45 @@ log("кадров стойки", NI, "костей DMX", len(order), "общих
 import numpy as np
 P = np.array([list(idle_bl[k][n].translation) for k in range(NI) for n in common])
 Q = np.array([list(idle_dmx[k][n].translation) for k in range(NI) for n in common])
+if len(common) < 3 or not np.isfinite(P).all() or not np.isfinite(Q).all():
+    raise ValueError("DMX idle: нужны минимум три общие кости с конечными координатами")
 mp, mq = P.mean(0), Q.mean(0); X, Y = P - mp, Q - mq
+if np.linalg.matrix_rank(X) < 2 or np.linalg.matrix_rank(Y) < 2:
+    raise ValueError("DMX idle: вырожденный образец для определения масштаба и осей")
 U, S, Vt = np.linalg.svd(Y.T @ X / len(P)); D = np.eye(3); D[2, 2] = np.sign(np.linalg.det(U @ Vt))
 Rm = U @ D @ Vt; s = (S * np.diag(D)).sum() / (X ** 2).sum() * len(P); t = mq - s * Rm @ mp
 M = Matrix(((*(s * Rm[0]), t[0]), (*(s * Rm[1]), t[1]), (*(s * Rm[2]), t[2]), (0, 0, 0, 1)))
 err = np.abs((s * (Rm @ X.T)).T - Y).max()
 log("масштаб", round(s, 3), "ошибка положений, дюймов", round(float(err), 3))
+# Численный допуск к записи, не визуальная приёмка кожи/движения.
+# Пределы задаются явно для калибровки другого rig; CLI остаётся прежним.
+MAX_POS = float(os.environ.get("A8_DMX_MAX_POS", "1.0"))       # дюймы
+MAX_ANGLE = float(os.environ.get("A8_DMX_MAX_ANGLE", "0.01"))  # радианы
+if not all(np.isfinite(v) and v > 0 for v in (s, MAX_POS, MAX_ANGLE)):
+    raise ValueError("DMX idle: неверный масштаб или допуски переноса")
+if not np.isfinite(err) or err > MAX_POS:
+    raise ValueError(f"DMX idle: ошибка подобия {err:.6g} > {MAX_POS} дюймов")
 # --- поправки C_b и проверка: стойка, переведённая обратно, должна совпасть с образцом
 Cb = {n: (M @ idle_bl[0][n]).inverted() @ idle_dmx[0][n] for n in common}
-worst = 0.0
-for k in range(0, NI, 5):
+worst_pos = worst_angle = 0.0
+for k in range(NI):
     for n in common:
         A_ = M @ idle_bl[k][n] @ Cb[n]; B_ = idle_dmx[k][n]
-        worst = max(worst, (A_.translation - B_.translation).length, (A_.to_quaternion().rotation_difference(B_.to_quaternion()).angle) * 10)
-log("проверка переноса стойки (дюймы / 0.1 рад):", round(worst, 3))
+        pos_err = (A_.translation - B_.translation).length
+        angle_err = A_.to_quaternion().rotation_difference(B_.to_quaternion()).angle
+        angle_err = min(angle_err, abs(2 * np.pi - angle_err))
+        if not np.isfinite(pos_err) or not np.isfinite(angle_err):
+            raise ValueError("DMX idle: неконечная ошибка переноса")
+        worst_pos = max(worst_pos, pos_err); worst_angle = max(worst_angle, angle_err)
+log("проверка всех кадров стойки: дюймы", round(worst_pos, 6), "радианы", round(worst_angle, 6))
+if worst_pos > MAX_POS or worst_angle > MAX_ANGLE:
+    raise ValueError(f"DMX idle: перенос не допущен ({worst_pos:.6g}/{MAX_POS} дюймов, {worst_angle:.6g}/{MAX_ANGLE} рад)")
+
+def source_idle_frame(k, count, loop):
+    """Повтор без дублированного последнего ключа; без loop — до конца и hold."""
+    if count < 1:
+        raise ValueError("DMX idle: нет кадров образца")
+    return k % max(1, count - 1) if loop else min(k, count - 1)
 
 def write(name, action, nframes, loop_src_idle=True):
     frames = list(range(nframes + 1))
@@ -105,7 +132,7 @@ def write(name, action, nframes, loop_src_idle=True):
         for n in order:
             par = joints[n][1]
             if n in common: Wk[n] = M @ bl[k][n] @ Cb[n]
-            else: Wk[n] = (Wk[par] if par else Matrix.Identity(4)) @ local(n, k % (NI - 1))
+            else: Wk[n] = (Wk[par] if par else Matrix.Identity(4)) @ local(n, source_idle_frame(k, NI, loop_src_idle))
         for n in order:
             par = joints[n][1]
             L.setdefault(n, []).append((Wk[par].inverted() if par else Matrix.Identity(4)) @ Wk[n])

@@ -20,6 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #  THE SOFTWARE.
 
+# Local fixes: bounded EOF reads and lossless UInt8/UInt64 scalar/array roundtrips.
+# Upstream: https://github.com/Artfunkel/BlenderSourceTools/blob/master/io_scene_valvesource/datamodel.py
 import struct, array, io, binascii, collections, uuid
 from struct import unpack,calcsize
 
@@ -73,6 +75,7 @@ def get_byte(file):
 	return int(unpack("B",file.read(1))[0])
 def get_char(file):
 	c = file.read(1)
+	if not c: raise EOFError("Unexpected EOF in DMX header")
 	if isinstance(c, str): return c
 	return unpack("c",c)[0].decode('ASCII')
 def get_int(file):
@@ -92,6 +95,7 @@ def get_str(file):
 	out = b''
 	while True:
 		b = file.read(1)
+		if not b: raise EOFError("Unexpected EOF in DMX string")
 		if b == b'\x00': break
 		out += b
 	return out.decode() if len(out) else None
@@ -155,6 +159,12 @@ class _BoolArray(_Array):
 class _IntArray(_Array):
 	type = int
 	type_str = "i"
+class _UInt8Array(_Array):
+	type = UInt8
+	type_str = "B"
+class _UInt64Array(_Array):
+	type = UInt64
+	type_str = "Q"
 class _FloatArray(_Array):
 	type = float
 	type_str = "f"
@@ -428,7 +438,7 @@ class _ElementArray(_Array):
 	type = Element
 
 _dmxtypes = [Element,int,float,bool,str,Binary,Time,Color,Vector2,Vector3,Vector4,Angle,Quaternion,Matrix,UInt64,UInt8]
-_dmxtypes_array = [_ElementArray,_IntArray,_FloatArray,_BoolArray,_StrArray,_BinaryArray,_TimeArray,_ColorArray,_Vector2Array,_Vector3Array,_Vector4Array,_AngleArray,_QuaternionArray,_MatrixArray,_IntArray,_IntArray]
+_dmxtypes_array = [_ElementArray,_IntArray,_FloatArray,_BoolArray,_StrArray,_BinaryArray,_TimeArray,_ColorArray,_Vector2Array,_Vector3Array,_Vector4Array,_AngleArray,_QuaternionArray,_MatrixArray,_UInt64Array,_UInt8Array]
 _dmxtypes_all = _dmxtypes + _dmxtypes_array
 _dmxtypes_str = ["element","int","float","bool","string","binary","time","color","vector2","vector3","vector4","angle","quaternion","matrix","uint64","uint8"]
 
@@ -459,7 +469,7 @@ def _get_dmx_id_type(encoding,version,id):
 			return attr_list_v2[id]
 		if version in [9]:
 			if id >= 32: # array
-				return eval("_" + attr_list_v3[id-32].__name__.capitalize() + "Array")
+				return _get_array_type(attr_list_v3[id-32])
 			return attr_list_v3[id]
 	if encoding == "keyvalues2":
 		return _dmxtypes[ _dmxtypes_str.index(id) ]
@@ -855,8 +865,9 @@ def load(path = None, in_file = None, element_path = None):
 							return dm.add_element("Missing element",id=uuid.UUID(hex=kv2_value),_is_placeholder=True)
 					
 					elif type_str == 'string': return kv2_value
-					elif type_str in ['int',"uint8"]: return int(kv2_value)
-					elif type_str == "uint64": return int(kv2_value, 0)
+					elif type_str == 'int': return int(kv2_value)
+					elif type_str == "uint8": return UInt8(kv2_value)
+					elif type_str == "uint64": return UInt64(kv2_value, 0)
 					elif type_str == 'float': return float(kv2_value)
 					elif type_str == 'bool': return bool(int(kv2_value))
 					elif type_str == 'time': return Time(kv2_value)
@@ -1013,8 +1024,8 @@ def load(path = None, in_file = None, element_path = None):
 				elif attr_type == float:	return get_float(in_file)
 				elif attr_type == bool:		return get_bool(in_file)
 				
-				elif attr_type == UInt8:		return get_byte(in_file)
-				elif attr_type == UInt64:		return get_long(in_file)
+				elif attr_type == UInt8:		return UInt8(get_byte(in_file))
+				elif attr_type == UInt64:		return UInt64(get_long(in_file))
 				elif attr_type == Vector2:		return Vector2(get_vec(in_file,2))
 				elif attr_type == Vector3:		return Vector3(get_vec(in_file,3))
 				elif attr_type == Angle:		return Angle(get_vec(in_file,3))

@@ -72,11 +72,20 @@ py -3.11 "$HERE/sky_comp.py" "$M" "$SKYOUT" "$REPO/_game/sky/sky_dota_000_psd_ce
 "$FF" -y -loglevel error -framerate 30 -i "$SKYOUT/f%05d.png" -frames:v "$NEED" \
   -vf "crop=810:1440:135:0,scale=1080:1920:flags=lanczos,unsharp=5:5:0.45:5:5:0" -c:v libx264 -crf 14 -preset slow -pix_fmt yuv420p "$OUT/$NAME.mp4"
 py -3.11 -c "
-import subprocess, sys
-d = subprocess.run([sys.argv[1], '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', sys.argv[2]],
-                   capture_output=True, text=True).stdout.strip()
-print('длина ролика:', d, 'с'); assert abs(float(d) - float(sys.argv[3])) < 0.1, 'длина не ' + sys.argv[3] + ' с!'
-" "${FF%ffmpeg.exe}ffprobe.exe" "$OUT/$NAME.mp4" "$DUR" 2>/dev/null || echo "(ffprobe не проверил длину)"
+import math, pathlib, shutil, subprocess, sys
+ff = pathlib.Path(sys.argv[1])
+probe = next((str(p) for p in (ff.with_name('ffprobe.exe'), ff.with_name('ffprobe')) if p.is_file()), None)
+probe = probe or shutil.which('ffprobe')
+if probe is None:
+    print('(ffprobe отсутствует: длина не проверена)')
+    sys.exit(0)
+r = subprocess.run([probe, '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', sys.argv[2]],
+                   capture_output=True, text=True, check=True)
+d = float(r.stdout.strip()); expected = float(sys.argv[3])
+print('длина ролика:', d, 'с')
+if not math.isfinite(d) or not math.isfinite(expected) or abs(d - expected) >= 0.1:
+    sys.exit('неверная длина ролика: ожидалось ' + sys.argv[3] + ' с')
+" "$FF" "$OUT/$NAME.mp4" "$DUR"
 rm -f "$OUT"/sec_*.png
 "$FF" -y -loglevel error -i "$OUT/$NAME.mp4" -vf fps=2 "$OUT/sec_%02d.png"
 py -3.11 - "$OUT" "$NAME" <<'PY'

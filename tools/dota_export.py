@@ -74,16 +74,18 @@ def model(raw, hero, anims=""):
     tmp.mkdir(parents=True)
     done = []
     for f in sorted(src.glob("*.vmdl_c")):
-        if any(w in f.stem for w in ("arcana", "physics", "refit")):     # альтернативные модели не нужны
+        name = f.name[:-len(".vmdl_c")]
+        if any(w in name for w in ("arcana", "physics", "refit")):     # альтернативные модели не нужны
             continue
-        args = ["-i", f, "-o", tmp / f"{f.stem}.glb", "-d", "--gltf_export_format", "glb", "--gltf_export_materials",
+        target = tmp / f"{name}.glb"
+        args = ["-i", f, "-o", target, "-d", "--gltf_export_format", "glb", "--gltf_export_materials",
                 "--gltf_textures_adapt", "--gltf_export_animations", "--game", root / "gameinfo.gi"]
-        if anims and f.stem == hero:
+        if anims and name == hero:
             args += ["--gltf_animation_list", anims]         # только нужные анимации: файл в разы меньше
-        if cli(*args) and (tmp / f"{f.stem}.glb").exists():
-            pack_glb(tmp / f"{f.stem}.glb")
-            shutil.move(tmp / f"{f.stem}.glb", out / f"{f.stem}.glb")
-            done.append(f.stem)
+        if cli(*args) and target.exists():
+            pack_glb(target)
+            shutil.move(target, out / target.name)
+            done.append(name)
     shutil.rmtree(tmp, ignore_errors=True)
     print(f"{hero}: {', '.join(done)} → {out}")
 

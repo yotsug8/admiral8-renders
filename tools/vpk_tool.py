@@ -3,7 +3,7 @@
 # python vpk_tool.py list <regex>            — найти файлы
 # python vpk_tool.py get <regex> <папка>     — извлечь найденные
 # python vpk_tool.py deps <список> <папка>   — извлечь файлы из списка и всё, на что они ссылаются (материалы, текстуры, модели)
-import os, re, struct, sys
+import io, os, re, struct, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import GAME as ROOT                     # папка игры — tools/paths.py (DOTA_ROOT)
@@ -11,16 +11,23 @@ DIR = os.path.join(ROOT, "pak01_dir.vpk")
 
 
 def read_dir():
-    f = open(DIR, "rb")
-    sig, ver, tree = struct.unpack("<III", f.read(12))
-    assert sig == 0x55AA1234, "не VPK"
-    if ver == 2:
-        f.read(16)
+    with open(DIR, "rb") as source:
+        sig, ver, tree = struct.unpack("<III", source.read(12))
+        if sig != 0x55AA1234 or ver not in (1, 2):
+            raise ValueError("неподдержанный VPK")
+        if ver == 2 and len(source.read(16)) != 16:
+            raise EOFError("обрезанный заголовок VPK")
+        tree_data = source.read(tree)
+    if len(tree_data) != tree:
+        raise EOFError("обрезанное дерево VPK")
+    f = io.BytesIO(tree_data)
     hdr = 12 + (16 if ver == 2 else 0)
 
     def cstr():
         b = bytearray()
         while (c := f.read(1)) != b"\0":
+            if not c:
+                raise EOFError("строка VPK без NUL до конца дерева")
             b += c
         return b.decode("utf-8", "replace")
 
@@ -30,6 +37,10 @@ def read_dir():
             while name := cstr():
                 crc, pre, arc, off, ln, term = struct.unpack("<IHHIIH", f.read(18))
                 preload = f.read(pre)
+                if len(preload) != pre:
+                    raise EOFError("обрезанный preload VPK")
+                if term != 0xFFFF:
+                    raise ValueError("неверный терминатор записи VPK")
                 full = (f"{path}/" if path != " " else "") + name + (f".{ext}" if ext != " " else "")
                 entries[full] = (arc, off, ln, preload, hdr + tree)
     return entries

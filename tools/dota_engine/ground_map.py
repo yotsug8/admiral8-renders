@@ -68,8 +68,9 @@ class Ground:
         return (self.R - y) / self.S, (x + self.R) / self.S
 
     def h(self, x, y):
-        """Высота земли (билинейно)."""
+        """Высота билинейно; за сеткой — ближайшая граница, без экстраполяции."""
         i, j = self._ij(x, y)
+        i, j = np.clip(i, 0, self.H.shape[0] - 1), np.clip(j, 0, self.H.shape[1] - 1)
         i0, j0 = int(np.clip(np.floor(i), 0, self.H.shape[0] - 2)), int(np.clip(np.floor(j), 0, self.H.shape[1] - 2))
         a, b = i - i0, j - j0
         H = self.H
@@ -77,6 +78,8 @@ class Ground:
 
     def code(self, x, y):
         i, j = self._ij(x, y)
+        if not (0 <= i <= self.N.shape[0] - 1 and 0 <= j <= self.N.shape[1] - 1):
+            return 1
         i, j = int(round(i)), int(round(j))
         if not (0 <= i < self.N.shape[0] and 0 <= j < self.N.shape[1]):
             return 1

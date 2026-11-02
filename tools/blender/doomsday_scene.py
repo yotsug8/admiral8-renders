@@ -428,7 +428,8 @@ def build():
         for f in range(0,N,2):render(frames/f'{f:04d}.png',f)
 
 
-if MODE == 'probe':
-    probe()
-elif MODE in ('build','draft'):
-    build()
+if __name__ == '__main__':
+    if MODE == 'probe':
+        probe()
+    elif MODE in ('build','draft'):
+        build()

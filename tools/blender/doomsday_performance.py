@@ -10,10 +10,11 @@ import os
 import sys
 from pathlib import Path
 import bpy
+import numpy as np
 from mathutils import Matrix, Vector, Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v8')))
+OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v9')))
 SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from contact_reaction import _basis, _solve_leg
@@ -283,16 +284,23 @@ def author(scene,axe,rubick,dense=True):
     ev=weapon.evaluated_get(bpy.context.evaluated_depsgraph_get())
     weapon_local=[grip['axe_1'].inverted()@ev.matrix_world@v.co for v in ev.data.vertices]
     binds={s:grip['axe_1'].inverted()@grip['wrist_'+s] for s in ('L','R')}
+    _,axes=np.linalg.eigh(np.cov(np.asarray([tuple(p) for p in weapon_local]).T))
+    shaft_axis=Vector(axes[:,-1].tolist())
+    center=sum(weapon_local,Vector())/len(weapon_local)
+    if shaft_axis.dot(center-binds['R'].translation)<0:shaft_axis.negate()
     scene.frame_set(44);bpy.context.view_layer.update();cast=snapshot(rubick)
     bank=native_attack(scene,axe)
     root0=base['root'].translation.copy();end=Vector((-.25,-.30,root0.z))
     stance=shift(bank[0],root0-bank[0]['root'].translation)
+    landing_native=mix(axe,bank[11],bank[12],.6)
     poses=[];extra={};held=None;contact=None;poles={'L':None,'R':None}
     times=sorted(set(range(N))|({q/8 for q in range(250*8,(N-1)*8+1)} if dense else set()))
     for f in times:
         t=curve(f,((0,0),(180,0),(201,1.5),(220,4),(239,8),(252,10),(266,10.4),(279,11.6),(419,11.6)))
         t=max(0,min(12,t));i=int(t);part=t-i
         native=mix(axe,bank[i],bank[min(14,i+1)],part)
+        recovery=smooth((f-311)/64)
+        native=mix(axe,native,bank[0],recovery)
         u=max(0,min(1,(f-LIFT)/(HIT-LIFT)))
         if f<LIFT:
             root=root0+Vector((curve(f,((0,0),(200,.07),(233,.13),(252,0))),
@@ -307,10 +315,9 @@ def author(scene,axe,rubick,dense=True):
                 .08*math.sin(math.pi*max(0,min(1,(f-310)/26)))))
         pose=shift(native,root-native['root'].translation)
         if f>HIT:
-            branch(axe,pose,'spine1',math.radians(curve(f,((279,0),(286,5),(310,-4),(360,-6),(419,-6)))))
-            branch(axe,pose,'spine2',math.radians(4*smooth((f-286)/38)),'Z')
-            branch(axe,pose,'head',math.radians(curve(f,((279,0),(285,-8),(311,-3),(366,-8),(398,4),(409,4),(419,4)))))
-            branch(axe,pose,'head',math.radians(12*smooth((f-367)/34)),'Z')
+            branch(axe,pose,'spine1',math.radians(curve(f,((279,0),(286,5),(310,-4),(375,0),(419,0)))))
+            branch(axe,pose,'spine2',math.radians(4*smooth((f-286)/38)*(1-recovery)),'Z')
+            branch(axe,pose,'head',math.radians(curve(f,((279,0),(285,-8),(311,-3),(375,0),(419,0)))))
         for side in ('L','R'):
             chain=tuple(n+'_'+side for n in ('thigh','knee','ankle'))
             foot=stance[chain[-1]].copy()
@@ -320,7 +327,7 @@ def author(scene,axe,rubick,dense=True):
                     (-.25 if side=='L' else .50)*fold,(.32 if side=='L' else .46)*fold))
                 if f>HIT:foot.translation.y+=.12*math.sin(math.pi*max(0,min(1,(f-HIT)/45)))
                 ground=stance[chain[-1]].copy();ground.translation+=end-root0
-                hip_ground=native[chain[0]].translation-native['root'].translation+end
+                hip_ground=landing_native[chain[0]].translation-landing_native['root'].translation+end
                 ground.translation.x=hip_ground.x+(.18 if side=='L' else -.18)
                 ground.translation.y=hip_ground.y-.10
                 foot=foot.lerp(ground,smooth((f-286)/24))
@@ -332,10 +339,21 @@ def author(scene,axe,rubick,dense=True):
             except ValueError as exc:raise ValueError(f'Leg unreachable at {f}/{side}: {exc}') from exc
         weapon_pose=pose['axe_1'].copy()
         weapon_pose.translation+=pose['wrist_R'].translation-(weapon_pose@binds['R']).translation
-        join=smooth((f-254)/16)
+        join=smooth((f-254)/16)*(1-smooth((f-315)/25))
+        frame_binds={side:binds[side].copy() for side in ('L','R')}
+        grip_center=binds['R'].translation
+        blade=max(weapon_local,key=lambda p:(p-grip_center).length)
+        slide_axis=shaft_axis
+        slide_scale=(weapon_pose.to_3x3()@slide_axis).length
+        frame_binds['R'].translation+=slide_axis*(.95*recovery/slide_scale)
         free_left=pose['wrist_L'].copy()
         free_weight=smooth((f-195)/25)
-        free_left.translation=free_left.translation.lerp(pose['spine1'].translation+Vector((.48,-.22,.05)),free_weight)
+        outside=pose['bicep_L'].translation-pose['spine3'].translation
+        outside.z=0;outside.normalize()
+        free_left.translation=free_left.translation.lerp(
+            pose['bicep_L'].translation+outside*.48+Vector((0,-.25,-.35)),free_weight)
+        free_left.translation=free_left.translation.lerp(
+            pose['bicep_L'].translation+outside*.42+Vector((0,-.10,-.72)),recovery)
         lh,lk,lw=(pose[n+'_L'].translation for n in ('bicep','elbow','wrist'))
         free_axis=free_left.translation-lh;free_reach=.90*((lk-lh).length+(lw-lk).length)
         if free_axis.length>free_reach:free_left.translation=lh+free_axis.normalized()*free_reach
@@ -361,23 +379,69 @@ def author(scene,axe,rubick,dense=True):
             release=smooth((f-290)/18)
             weapon_pose.translation+=(root-end-Vector((0,0,.85*math.sin(math.pi*.72))))*release
             weapon_pose.translation+=Vector((0,.10,0))*smooth((f-301)/32)
+            if recovery>0:
+                # Release the support hand and lower the axe beside the body.
+                # Orient the actual weapon length, not an assumed bone axis.
+                direction=held.to_3x3()@slide_axis
+                turn=direction.rotation_difference(Vector((0,0,-1)))
+                guard=turn.to_matrix().to_4x4()@held
+                guard=Matrix.Rotation(math.pi,4,'Z')@guard
+                right=pose['bicep_R'].translation+Vector((-.50,-.20,-.60))
+                guard.translation+=right-(guard@frame_binds['R']).translation
+                guard.translation.z+=.03-min((guard@p).z for p in weapon_local)
+                right_path=(weapon_pose@frame_binds['R']).translation.lerp(
+                    (guard@frame_binds['R']).translation,recovery)
+                right_path+=Vector((-.50,-.30,0))*math.sin(math.pi*recovery)
+                weapon_pose=weapon_pose.lerp(guard,recovery)
+                weapon_pose.translation+=right_path-(weapon_pose@frame_binds['R']).translation
+                for _ in range(24):
+                    correction=Vector()
+                    for side in ('R',):
+                        h,k,w=(pose[n+'_'+side].translation for n in ('bicep','elbow','wrist'))
+                        axis=(weapon_pose@frame_binds[side]).translation-h
+                        radius=.94*((k-h).length+(w-k).length)
+                        if axis.length>radius:correction-=axis.normalized()*min(.06,axis.length-radius)
+                    weapon_pose.translation+=correction
+                    if correction.length<1e-6:break
+        if f>315:
+            shaft=weapon_pose.to_3x3()@shaft_axis;shaft.normalize()
+            radial=(weapon_pose@binds['L']).translation-weapon_pose@center
+            radial-=shaft*radial.dot(shaft);radial.normalize()
+            depart=smooth((f-321)/4)
+            reach_arc=(radial*.65+outside*.20).lerp(
+                outside*.65+Vector((0,-.35,.12)),depart)*math.sin(math.pi*join)
+            reach_arc+=Vector((0,-.25,.35))*math.sin(math.pi*depart)*math.sin(math.pi*join)
         # The left hand joins the shaft before the actual swing. During the
         # preparatory reach it retains the source action's free-arm gesture.
         for side in ('R','L'):
-            target=weapon_pose@binds[side]
+            target=weapon_pose@frame_binds[side]
             if side=='L':
                 target=free_left.lerp(target,join);target.translation+=reach_arc
+                if f>315:
+                    position=target.translation.copy()
+                    orientation_join=(1-smooth((f-322)/18))*(1-depart)+join*depart
+                    target=free_left.lerp(weapon_pose@binds['L'],orientation_join)
+                    target.translation=position
+                    h,k,w=(pose[n+'_L'].translation for n in ('bicep','elbow','wrist'))
+                    axis=target.translation-h;radius=.94*((k-h).length+(w-k).length)
+                    if axis.length>radius:target.translation=h+axis.normalized()*radius
             chain=tuple(n+'_'+side for n in ('bicep','elbow','wrist'))
             try:
                 if side=='L' and free_weight>0:
                     h,k,w=(pose[n].translation for n in chain)
-                    source_pole=(k-h).normalized().lerp(Vector((1,0,-1)).normalized(),free_weight)
-                    pose=solve_arm(axe,pose,side,target,source_pole.lerp(Vector((-.55,.83,0)).normalized(),join))
+                    source_pole=(k-h).normalized().lerp((outside+Vector((0,0,-1))).normalized(),free_weight)
+                    pole=source_pole.lerp(Vector((-.55,.83,0)).normalized(),join)
+                    pose=solve_arm(axe,pose,side,target,pole)
+                elif recovery>0:
+                    h,k,w=(pose[n].translation for n in chain)
+                    pose=solve_arm(axe,pose,side,target,(k-h).normalized().lerp(Vector((-1,-.4,-.7)).normalized(),recovery))
                 else:pose,poles[side]=solve(axe,pose,chain,target,poles[side])
             except ValueError as exc:raise ValueError(f'Native staging unreachable at {f}/{side}: {exc}') from exc
-            if side=='R' or join>=1:
+            if side=='R' or join>0:
                 delta=target@grip['wrist_'+side].inverted()
-                for bone in axe.pose.bones['wrist_'+side].children_recursive:pose[bone.name]=delta@grip[bone.name]
+                closed={n:m.copy() for n,m in pose.items()}
+                for bone in axe.pose.bones['wrist_'+side].children_recursive:closed[bone.name]=delta@grip[bone.name]
+                pose=mix(axe,pose,closed,1 if side=='R' else join)
         pose['axe_1']=weapon_pose
         if f==int(f):poses.append(pose)
         else:extra[f]=pose
@@ -512,9 +576,10 @@ def main():
         qa.OUT=OUT;qa.LIFT=LIFT
         qa.audit(scene,axe,rubick,contact,poses,defender)
     if '--weapon-check' in sys.argv:
-        from doomsday_weapon_clearance import audit as weapon_clearance
+        from doomsday_weapon_clearance import audit as weapon_clearance, audit_forearms
         checked=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')] if '--frames' in sys.argv else range(180,N)
         weapon_clearance(scene,axe,frames=checked,output=OUT/'weapon_clearance.json')
+        audit_forearms(scene,axe,checked,OUT/'forearm_clearance.json')
     if '--no-render' in sys.argv:return
     scene.render.use_persistent_data=True
     scene.render.use_motion_blur=False
@@ -552,10 +617,32 @@ def main():
     if '--overview' in sys.argv:
         cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
         scene.render.resolution_x=640;scene.render.resolution_y=360;scene.render.resolution_percentage=100
-        target=Vector((0,.35,2.7));cam.location=Vector((-9.5,.35,4.1))
+        target=Vector((0,.35,2.3));cam.location=Vector((-8.5,-4.55,3.7))
+        cam.data.type='ORTHO';cam.data.ortho_scale=10.8
         cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.lens=23
     if '--frames' in sys.argv:
         selected=[int(f) for f in sys.argv[sys.argv.index('--frames')+1].split(',')]
+    if '--overview' in sys.argv:
+        from bpy_extras.object_utils import world_to_camera_view
+        actors=[o for root_name in ('axe_root','rubick_root')
+                for o in scene.objects[root_name].children_recursive
+                if o.type=='MESH' and not o.hide_render]
+        bounds=[float('inf'),-float('inf'),float('inf'),-float('inf')]
+        for f in selected:
+            scene.frame_set(f);graph=bpy.context.evaluated_depsgraph_get()
+            for ob in actors:
+                ev=ob.evaluated_get(graph)
+                for corner in ev.bound_box:
+                    point=world_to_camera_view(scene,cam,ev.matrix_world@Vector(corner))
+                    bounds[0]=min(bounds[0],point.x);bounds[1]=max(bounds[1],point.x)
+                    bounds[2]=min(bounds[2],point.y);bounds[3]=max(bounds[3],point.y)
+        width=cam.data.ortho_scale;height=width*scene.render.resolution_y/scene.render.resolution_x
+        orientation=cam.rotation_euler.to_quaternion()
+        cam.location+=orientation@Vector((((bounds[0]+bounds[1])*.5-.5)*width,
+                                         ((bounds[2]+bounds[3])*.5-.5)*height,0))
+        cam.data.ortho_scale*=max((bounds[1]-bounds[0])/.90,(bounds[3]-bounds[2])/.86)
+        (OUT/'overview_fit.json').write_text(json.dumps({'sampled_frames':len(selected),
+            'before':bounds,'margin':[.05,.07],'ortho_scale':cam.data.ortho_scale},indent=2))
     if os.environ.get('DOOMSDAY_FRAME_DIR'):folder=Path(os.environ['DOOMSDAY_FRAME_DIR'])
     folder.mkdir(exist_ok=True,parents=True);manifest=folder/'manifest.json'
     baseline=None
@@ -573,7 +660,9 @@ def main():
         scene.frame_set(f);scene.render.filepath=str(folder/f'{f:04d}.png')
         bpy.ops.render.render(write_still=True)
         hashes.append(hashlib.sha256(Path(scene.render.filepath).read_bytes()).hexdigest())
-        if '--inspect-arms' in sys.argv:
+        inspect_frames=([int(n) for n in sys.argv[sys.argv.index('--inspect-frames')+1].split(',')]
+                        if '--inspect-frames' in sys.argv else selected)
+        if '--inspect-arms' in sys.argv and f in inspect_frames:
             original=scene.camera;cam=original.copy();cam.data=original.data.copy()
             cam.animation_data_clear();cam.data.animation_data_clear()
             scene.collection.objects.link(cam);scene.camera=cam

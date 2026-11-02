@@ -119,8 +119,46 @@ def _hit_example(weapon, body, pair):
 
 
 def _phase(frame):
-    return ('prepare' if frame < 231 else 'flight' if frame < 279 else
-            'arrest_and_pressure' if frame < 316 else 'hold' if frame < 363 else 'reaction')
+    return ('prepare' if frame < 252 else 'flight' if frame < 279 else
+            'arrest' if frame < 290 else 'landing' if frame < 311 else 'recovery')
+
+
+def audit_forearms(scene, axe, frames, output):
+    """Check nonadjacent forearm/hand skin against torso skin on the same mesh.
+
+    A weapon-only test cannot detect a free arm passing through the chest.
+    Strict vertex-weight regions exclude shoulder seams; unclassified transition
+    faces and clothing still require multi-view visual review.
+    """
+    _, bodies, _ = select_meshes(scene, axe)
+    skins=[o for o in bodies if 'axe_model' in o.data.name.casefold()]
+    if not skins:raise ValueError('Missing Axe skin for self-intersection review')
+    rows=[]
+    for frame in frames:
+        scene.frame_set(math.floor(frame),subframe=frame-math.floor(frame))
+        graph=bpy.context.evaluated_depsgraph_get()
+        findings=[]
+        for ob in skins:
+            surface=_surface(ob,graph,False,False)
+            def region(groups):
+                vertices={i for i,weights in enumerate(surface['weights'])
+                          if sum(w for g,w in weights if groups(surface['names'].get(g,'')))>.65}
+                return [i for i,t in enumerate(surface['triangles']) if all(v in vertices for v in t)]
+            torso=region(lambda n:n.startswith('spine') or n in ('root','pelvis'))
+            tree=BVHTree.FromPolygons(surface['points'],[surface['triangles'][i] for i in torso],all_triangles=True)
+            for side in ('L','R'):
+                arm=region(lambda n:n in ('elbow_'+side,'wrist_'+side) or
+                           (n.endswith('_'+side) and bool(FINGER.fullmatch(n))))
+                limb=BVHTree.FromPolygons(surface['points'],[surface['triangles'][i] for i in arm],all_triangles=True)
+                overlaps=limb.overlap(tree)
+                if overlaps:findings.append({'mesh':ob.name,'side':side,'pairs':len(overlaps),
+                    'examples':[[arm[a],torso[b]] for a,b in overlaps[:12]]})
+        rows.append({'frame':frame,'triangle_pairs':sum(r['pairs'] for r in findings),'findings':findings})
+    result={'method':'Disjoint weighted forearm/hand and torso skin regions, evaluated BVH',
+            'limitations':'Transition faces, upper arms, accessories and containment are not covered.',
+            'frames':rows,'critical_frames':[r['frame'] for r in rows if r['triangle_pairs']]}
+    Path(output).write_text(json.dumps(result,indent=2),encoding='utf8')
+    return result
 
 
 def audit(scene, axe, *, frames=None, output=None, weapon=None, grip_meshes=None,

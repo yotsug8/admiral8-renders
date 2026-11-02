@@ -2,6 +2,8 @@
 
 Нажми на ссылку, чтобы скачать. Обновлено: 02.11.2026
 
+- [Rain: подъём с сиденья](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_rise_study.mp4) — ограниченный учебный этюд, 4 с, 640×640/30 fps, без звука. Перенос опоры на стопы, освобождение кистей и выпрямление. Метод — docs/studies/RAIN_RISE.md в main. **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены постановка, анимация, свет и камера.
+
 - [Rain: упор и смена опоры](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_push_study.mp4) — учебный этюд, 6 с, 640×640/30 fps, без звука. Первая попытка, шаг назад и толчок ящика; ограниченная проверка контактов и веса. Метод — docs/studies/RAIN_PUSH.md в main. **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены позы, анимация, камера и освещение.
 
 - [Rain: отказ и перемена решения](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/rain_intent_study.mp4) — учебный этюд, 6 с, 640×720/30 fps, без звука. Внимание, отказ, пауза и движение к цели. Корпус, пальцы и вторичное движение требуют дальнейшей практики; весь навык не закрыт. Постановка и проверка — docs/studies/ACTING_RIG_CANDIDATES.md в main. Персонаж: **Rain Rig (CC) Blender Foundation | [studio.blender.org](https://studio.blender.org/characters/rain/v3/)**, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Изменены позы, анимация, камера и освещение.
@@ -62,7 +64,7 @@
 
 - [Перекат и перенос движения](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/learning_transfer_2026_11_01.mp4) — 10 с/30fps без звука: перекат стопы манекена с двух сторон и малое движение Пуджа через Retarget. Ограничения подписаны; это технические пробы, не готовая походка/актёрская сцена. [Пудж отдельно](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/foundation_retarget_character.mp4), 2 с, два ракурса. Код и результаты — docs/studies/RETARGET_CHARACTER.md в main.
 
-- [Дорожная карта анимации — постер](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/animation-roadmap.png) — обновляемый обзор проверенных проб и следующих шагов, 12 направлений до готового выпуска. Данные, генератор и обновление — docs/ANIMATION_ROADMAP.md в main. Обложка и превью — реальные кадры Blender. Зелёный: готово в пробах; оранжевый: в работе; серый: предстоит.
+- [Дорожная карта анимации — постер](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/animation-roadmap.png) — только полезные результаты и шесть целей до готового видео; технические упражнения остаются в документации. Данные, генератор и обновление — docs/ANIMATION_ROADMAP.md в main. Обложка и превью — реальные кадры Blender. Зелёный: проверено в пробах; оранжевый: в работе; светлый: предстоит. Превью Rain: Blender Foundation, studio.blender.org, CC BY 4.0; позы, свет и камера изменены.
 
 - [Пудж с танком: звук, тень и постобработка](https://github.com/yotsug8/admiral8-renders/raw/refs/heads/renders/pudge_tank_v2_preview.mp4) — черновик, 10 с, 540×960/30 fps. Исправлена поднимающаяся тень; игровые звуки разделены по событиям, паузы проверены. Новая цветокоррекция и отделение фона. Звук технически измерен, не прослушан; художественная приёмка не получена.
 

@@ -14,7 +14,7 @@ import numpy as np
 from mathutils import Matrix, Vector, Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
-OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v10')))
+OUT=Path(os.environ.get('DOOMSDAY_RUN_DIR',str(ROOT/'_game/skits/doomsday/v11')))
 SOURCE=ROOT/'_game/skits/doomsday/v3/scene.blend'
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from contact_reaction import _basis, _solve_leg
@@ -432,9 +432,11 @@ def author(scene,axe,rubick,dense=True):
         if f==int(f):poses.append(pose)
         else:extra[f]=pose
     tip=held.inverted()@contact
+    from doomsday_cinematography import flight_legs
     for f,pose in list(enumerate(poses))+list(extra.items()):
         corrected=stage_arrest(axe,pose,pose['axe_1']@tip,smooth((f-260)/19))
         corrected=pressure_phrase(axe,corrected,f)
+        corrected=flight_legs(axe,corrected,f,branch,curve)
         if f==int(f):poses[int(f)]=corrected
         else:extra[f]=corrected
     bake(axe,poses,extra)
@@ -457,6 +459,11 @@ def author(scene,axe,rubick,dense=True):
 
 
 def cameras(scene,axe,rubick,contact):
+    from doomsday_cinematography import apply
+    return apply(scene,axe,rubick,contact,N)
+
+
+def cameras_legacy_v10(scene,axe,rubick,contact):
     cam=scene.camera;cam.animation_data_clear();cam.data.animation_data_clear()
     cam.data.sensor_fit='HORIZONTAL'
     face_targets={}
@@ -573,6 +580,9 @@ def main():
     for ob in list(scene.objects):
         if ob.name.startswith(('Charge ','Contact spark ')) or ob.name in ('Weapon charge light','Arrest light'):
             bpy.data.objects.remove(ob,do_unlink=True)
+    scene.render.resolution_x=640 if mode=='blocking' else int(os.environ.get('DOOMSDAY_WIDTH','1280'))
+    scene.render.resolution_y=360 if mode=='blocking' else int(os.environ.get('DOOMSDAY_HEIGHT','720'))
+    scene.render.resolution_percentage=100
     poses,defender,contact=author(scene,axe,rubick,dense=mode!='blocking')
     cameras(scene,axe,rubick,contact);face(scene)
     if mode!='blocking':environment(scene);glow(scene)

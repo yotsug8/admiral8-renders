@@ -1,0 +1,6130 @@
+{
+  "title": "Expected weight and recovery study",
+  "credit": "Rain Rig (CC) Blender Foundation | studio.blender.org | CC BY 4.0",
+  "source_url": "https://studio.blender.org/characters/rain/v3/",
+  "geometry": {
+    "frames": [
+      {
+        "frame": 0,
+        "wrist_error_m": {
+          "L": 6.351602479485543e-06,
+          "R": 1.3681846652598041e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452387552708387,
+          "R": 0.0011538235703483224
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.0
+      },
+      {
+        "frame": 1,
+        "wrist_error_m": {
+          "L": 7.6242450534118575e-06,
+          "R": 1.391868364683771e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453790357336402,
+          "R": 0.0011539201950654387
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0015458575477316611,
+        "max_angle_deg": 0.2167047196568988
+      },
+      {
+        "frame": 2,
+        "wrist_error_m": {
+          "L": 6.077391826796475e-06,
+          "R": 1.380176568037983e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452877661213279,
+          "R": 0.001153835328295827
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004409554411378562,
+        "max_angle_deg": 0.6305580640836677
+      },
+      {
+        "frame": 3,
+        "wrist_error_m": {
+          "L": 4.2611084604498706e-06,
+          "R": 1.3931916343194564e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453015031293035,
+          "R": 0.001153850695118308
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006921681121458326,
+        "max_angle_deg": 1.0009192585342328
+      },
+      {
+        "frame": 4,
+        "wrist_error_m": {
+          "L": 1.2700993620366146e-05,
+          "R": 1.3798992210250812e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452741455286741,
+          "R": 0.001153887715190649
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.009074943799053574,
+        "max_angle_deg": 1.3258670524067515
+      },
+      {
+        "frame": 5,
+        "wrist_error_m": {
+          "L": 1.2738795631004992e-05,
+          "R": 1.3939574361158091e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453710030764341,
+          "R": 0.0011539364932104945
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.010896576049238315,
+        "max_angle_deg": 1.6071381462926395
+      },
+      {
+        "frame": 6,
+        "wrist_error_m": {
+          "L": 9.41720377971284e-06,
+          "R": 1.4058864563199515e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452804319560528,
+          "R": 0.0011539229890331626
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.012364321549251036,
+        "max_angle_deg": 1.845618001770884
+      },
+      {
+        "frame": 7,
+        "wrist_error_m": {
+          "L": 2.1755705549289973e-05,
+          "R": 1.4059061985833557e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145357615314424,
+          "R": 0.0011539708357304335
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013466932830471567,
+        "max_angle_deg": 2.03828009088549
+      },
+      {
+        "frame": 8,
+        "wrist_error_m": {
+          "L": 1.5798762906807857e-05,
+          "R": 1.4160972623534699e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452302569523454,
+          "R": 0.0011538432445377111
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.014251817998555964,
+        "max_angle_deg": 2.1872123295877444
+      },
+      {
+        "frame": 9,
+        "wrist_error_m": {
+          "L": 2.8897352266569716e-05,
+          "R": 1.4773717921158105e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453450424596667,
+          "R": 0.001153989927843213
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.014656021392007952,
+        "max_angle_deg": 2.2900096277388973
+      },
+      {
+        "frame": 10,
+        "wrist_error_m": {
+          "L": 1.4641109845808069e-05,
+          "R": 1.5227353648582973e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453810147941113,
+          "R": 0.0011539082042872906
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.014754658466427656,
+        "max_angle_deg": 2.4441063143658632
+      },
+      {
+        "frame": 11,
+        "wrist_error_m": {
+          "L": 2.9200088879372827e-05,
+          "R": 1.6218632217342303e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452398030087352,
+          "R": 0.0011538707185536623
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.014458959438029157,
+        "max_angle_deg": 2.6907510837186246
+      },
+      {
+        "frame": 12,
+        "wrist_error_m": {
+          "L": 4.050887881995985e-05,
+          "R": 1.6999789106537987e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453117476776242,
+          "R": 0.001153843360953033
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01384777542651539,
+        "max_angle_deg": 2.940138517781386
+      },
+      {
+        "frame": 13,
+        "wrist_error_m": {
+          "L": 1.1759400904938432e-05,
+          "R": 1.7812149016742042e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454308405518532,
+          "R": 0.0011540433624759316
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.012925599789117562,
+        "max_angle_deg": 3.193343285232251
+      },
+      {
+        "frame": 14,
+        "wrist_error_m": {
+          "L": 2.2522347950807675e-05,
+          "R": 1.914502326793084e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145293703302741,
+          "R": 0.0011538851540535688
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013018651319765538,
+        "max_angle_deg": 3.4529284242611444
+      },
+      {
+        "frame": 15,
+        "wrist_error_m": {
+          "L": 3.111807948157007e-05,
+          "R": 2.0603408329778263e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453160550445318,
+          "R": 0.00115391134750098
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.014199817407364644,
+        "max_angle_deg": 3.720505995339377
+      },
+      {
+        "frame": 16,
+        "wrist_error_m": {
+          "L": 3.7619069713470247e-05,
+          "R": 2.2067890253380757e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453236220404506,
+          "R": 0.0011538658291101456
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.015432369869606043,
+        "max_angle_deg": 3.9972147232051083
+      },
+      {
+        "frame": 17,
+        "wrist_error_m": {
+          "L": 4.089676898042719e-05,
+          "R": 2.3420383110778754e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011452697217464447,
+          "R": 0.0011538409162312746
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016745545854722547,
+        "max_angle_deg": 4.284576692949486
+      },
+      {
+        "frame": 18,
+        "wrist_error_m": {
+          "L": 4.2101203947008975e-05,
+          "R": 2.5066822650171227e-05
+        },
+        "sole_z_m": {
+          "L": 0.00114548415876925,
+          "R": 0.0011539686238393188
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01811300994540966,
+        "max_angle_deg": 4.58383600600067
+      },
+      {
+        "frame": 19,
+        "wrist_error_m": {
+          "L": 4.1870875062215374e-05,
+          "R": 2.6855927554738976e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454301420599222,
+          "R": 0.0011539241531863809
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.019466897598881736,
+        "max_angle_deg": 4.883202656906949
+      },
+      {
+        "frame": 20,
+        "wrist_error_m": {
+          "L": 4.1034343197922366e-05,
+          "R": 2.8790971566033555e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453554034233093,
+          "R": 0.0011538820108398795
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020533122469512218,
+        "max_angle_deg": 5.1285969035021814
+      },
+      {
+        "frame": 21,
+        "wrist_error_m": {
+          "L": 4.030018579989595e-05,
+          "R": 3.063009348172285e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455094208940864,
+          "R": 0.0011540536070242524
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02121442645733178,
+        "max_angle_deg": 5.3039120620904345
+      },
+      {
+        "frame": 22,
+        "wrist_error_m": {
+          "L": 3.894158119481987e-05,
+          "R": 3.2051524844713685e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145550631918013,
+          "R": 0.0011540607083588839
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.021485128262718037,
+        "max_angle_deg": 5.407417547039707
+      },
+      {
+        "frame": 23,
+        "wrist_error_m": {
+          "L": 3.770144557576479e-05,
+          "R": 3.3118627763100235e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454190826043487,
+          "R": 0.0011540267150849104
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.021332989504864622,
+        "max_angle_deg": 5.4393234107507125
+      },
+      {
+        "frame": 24,
+        "wrist_error_m": {
+          "L": 3.649340618965187e-05,
+          "R": 3.349152914754315e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455989442765713,
+          "R": 0.0011540917912498116
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020762450748368935,
+        "max_angle_deg": 5.401767552458161
+      },
+      {
+        "frame": 25,
+        "wrist_error_m": {
+          "L": 3.51754598306889e-05,
+          "R": 3.2868732624952875e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455380590632558,
+          "R": 0.0011540823616087437
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.019796528169191977,
+        "max_angle_deg": 5.29948162398996
+      },
+      {
+        "frame": 26,
+        "wrist_error_m": {
+          "L": 3.420578044389873e-05,
+          "R": 3.169922518252365e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456736829131842,
+          "R": 0.001154182362370193
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01847915700501648,
+        "max_angle_deg": 5.13729128961144
+      },
+      {
+        "frame": 27,
+        "wrist_error_m": {
+          "L": 3.328640273205705e-05,
+          "R": 2.8019037390461218e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456601787358522,
+          "R": 0.0011541375424712896
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016192943546627384,
+        "max_angle_deg": 4.927095979770756
+      },
+      {
+        "frame": 28,
+        "wrist_error_m": {
+          "L": 3.296148329178554e-05,
+          "R": 2.1168823712829368e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456577340140939,
+          "R": 0.001154041150584817
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01414523319522494,
+        "max_angle_deg": 4.69020267239632
+      },
+      {
+        "frame": 29,
+        "wrist_error_m": {
+          "L": 3.282021620943318e-05,
+          "R": 1.1190603400355089e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011457618093118072,
+          "R": 0.0011541676940396428
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013928837436710362,
+        "max_angle_deg": 4.427278616526703
+      },
+      {
+        "frame": 30,
+        "wrist_error_m": {
+          "L": 3.3192564006094645e-05,
+          "R": 2.9279670773121938e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455370113253593,
+          "R": 0.0011540335835888982
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01510173351185982,
+        "max_angle_deg": 4.133739418434741
+      },
+      {
+        "frame": 31,
+        "wrist_error_m": {
+          "L": 3.3455033563101196e-05,
+          "R": 1.893385894770168e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456591309979558,
+          "R": 0.0011541078565642238
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016350013444491437,
+        "max_angle_deg": 3.806206879934029
+      },
+      {
+        "frame": 32,
+        "wrist_error_m": {
+          "L": 3.349033264116889e-05,
+          "R": 2.6575919162759725e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145776710473001,
+          "R": 0.0011541590793058276
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016893862883900417,
+        "max_angle_deg": 3.4408920203835858
+      },
+      {
+        "frame": 33,
+        "wrist_error_m": {
+          "L": 3.399791934821554e-05,
+          "R": 1.585444336958357e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145751215517521,
+          "R": 0.0011541495332494378
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016610778037820902,
+        "max_angle_deg": 3.035501869651939
+      },
+      {
+        "frame": 34,
+        "wrist_error_m": {
+          "L": 3.439094466491281e-05,
+          "R": 1.8961632473993575e-05
+        },
+        "sole_z_m": {
+          "L": 0.00114571419544518,
+          "R": 0.0011540851555764675
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.015521970018800612,
+        "max_angle_deg": 2.5872342431313378
+      },
+      {
+        "frame": 35,
+        "wrist_error_m": {
+          "L": 3.377653331493117e-05,
+          "R": 1.122835867337756e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011457992950454354,
+          "R": 0.0011541122803464532
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013566491610219888,
+        "max_angle_deg": 2.0947165959387153
+      },
+      {
+        "frame": 36,
+        "wrist_error_m": {
+          "L": 3.342086820720774e-05,
+          "R": 1.794438888501091e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458277003839612,
+          "R": 0.0011541645508259535
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.010772819886765312,
+        "max_angle_deg": 1.5561668943902105
+      },
+      {
+        "frame": 37,
+        "wrist_error_m": {
+          "L": 3.250899290684013e-05,
+          "R": 1.1733261754957945e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458412045612931,
+          "R": 0.0011541360290721059
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.007093356796183339,
+        "max_angle_deg": 0.9699429939337813
+      },
+      {
+        "frame": 38,
+        "wrist_error_m": {
+          "L": 3.126762555366405e-05,
+          "R": 1.1985721935535509e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011459075612947345,
+          "R": 0.0011541553540155292
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004138161545249816,
+        "max_angle_deg": 0.49574442941077185
+      },
+      {
+        "frame": 39,
+        "wrist_error_m": {
+          "L": 2.981647350131007e-05,
+          "R": 1.366851603444651e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458472581580281,
+          "R": 0.0011541610583662987
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.003844130927160051,
+        "max_angle_deg": 1.9471525249011719
+      },
+      {
+        "frame": 40,
+        "wrist_error_m": {
+          "L": 2.802278258758165e-05,
+          "R": 5.206116849972638e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011458918452262878,
+          "R": 0.0011542064603418112
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0035944627994950883,
+        "max_angle_deg": 5.511253666491945
+      },
+      {
+        "frame": 41,
+        "wrist_error_m": {
+          "L": 2.5418358931897394e-05,
+          "R": 7.792723202561282e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011457802029326558,
+          "R": 0.0011540728155523539
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.003966820198446655,
+        "max_angle_deg": 8.604223691574218
+      },
+      {
+        "frame": 42,
+        "wrist_error_m": {
+          "L": 2.3276362646721272e-05,
+          "R": 9.783925875640126e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011459580855444074,
+          "R": 0.0011542208958417177
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.005144165382552806,
+        "max_angle_deg": 11.228944217582386
+      },
+      {
+        "frame": 43,
+        "wrist_error_m": {
+          "L": 2.120849122272067e-05,
+          "R": 1.159819703131753e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145966351032257,
+          "R": 0.0011541909771040082
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006060939378281403,
+        "max_angle_deg": 13.356227615536284
+      },
+      {
+        "frame": 44,
+        "wrist_error_m": {
+          "L": 1.887752806001113e-05,
+          "R": 1.3443523392229467e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460838140919805,
+          "R": 0.0011542742140591145
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006689856735377249,
+        "max_angle_deg": 14.935687265643212
+      },
+      {
+        "frame": 45,
+        "wrist_error_m": {
+          "L": 1.6176334372917164e-05,
+          "R": 1.5143363256477553e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145981135778129,
+          "R": 0.0011542027350515127
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.007005086794446834,
+        "max_angle_deg": 15.912221618203224
+      },
+      {
+        "frame": 46,
+        "wrist_error_m": {
+          "L": 1.3819921762228666e-05,
+          "R": 1.6470225897759628e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461214162409306,
+          "R": 0.001154295401647687
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006997720102862979,
+        "max_angle_deg": 16.243218834075595
+      },
+      {
+        "frame": 47,
+        "wrist_error_m": {
+          "L": 1.1536109540878761e-05,
+          "R": 1.782649773005811e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460476089268923,
+          "R": 0.001154289348050952
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006685330018469576,
+        "max_angle_deg": 15.912369655238392
+      },
+      {
+        "frame": 48,
+        "wrist_error_m": {
+          "L": 9.515567718635176e-06,
+          "R": 2.422342223544122e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461678659543395,
+          "R": 0.001154369325377047
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006102289495125901,
+        "max_angle_deg": 14.93600257523238
+      },
+      {
+        "frame": 49,
+        "wrist_error_m": {
+          "L": 9.283258983332834e-06,
+          "R": 7.5998843828770935e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460211826488376,
+          "R": 0.0011542120482772589
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.005311374482500795,
+        "max_angle_deg": 13.356580011448997
+      },
+      {
+        "frame": 50,
+        "wrist_error_m": {
+          "L": 8.97888939438177e-06,
+          "R": 1.0335778827194961e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011459592496976256,
+          "R": 0.0011541894637048244
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004336473201729007,
+        "max_angle_deg": 11.22943290404874
+      },
+      {
+        "frame": 51,
+        "wrist_error_m": {
+          "L": 9.13080431350725e-06,
+          "R": 1.3276223831009711e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145948306657374,
+          "R": 0.0011541318381205201
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0038491131283858765,
+        "max_angle_deg": 8.604587885457374
+      },
+      {
+        "frame": 52,
+        "wrist_error_m": {
+          "L": 8.670024745903035e-06,
+          "R": 1.6071660513473742e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460855603218079,
+          "R": 0.001154238940216601
+        },
+        "case_bottom_z_m": 0.49000000953674316,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0042086638415835586,
+        "max_angle_deg": 5.511537799186514
+      },
+      {
+        "frame": 53,
+        "wrist_error_m": {
+          "L": 8.812516525784499e-06,
+          "R": 1.8958353333031054e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460561072453856,
+          "R": 0.0011542551219463348
+        },
+        "case_bottom_z_m": 0.4899999797344208,
+        "attachment_matrix_error": 0.0,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004639624765207451,
+        "max_angle_deg": 1.9471525249011719
+      },
+      {
+        "frame": 54,
+        "wrist_error_m": {
+          "L": 8.887022584976064e-06,
+          "R": 2.206799087201542e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460506357252598,
+          "R": 0.0011541746789589524
+        },
+        "case_bottom_z_m": 0.4899981617927551,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.005145738963379602,
+        "max_angle_deg": 0.5664806121485338
+      },
+      {
+        "frame": 55,
+        "wrist_error_m": {
+          "L": 8.880320102828265e-06,
+          "R": 2.4849222157565004e-05
+        },
+        "sole_z_m": {
+          "L": 0.001146011403761804,
+          "R": 0.001154201803728938
+        },
+        "case_bottom_z_m": 0.4899967312812805,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0055383877866026264,
+        "max_angle_deg": 0.5974142716560948
+      },
+      {
+        "frame": 56,
+        "wrist_error_m": {
+          "L": 9.436230919476377e-06,
+          "R": 9.579488207801967e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460559908300638,
+          "R": 0.0011541914427652955
+        },
+        "case_bottom_z_m": 0.49000632762908936,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.005723260194361535,
+        "max_angle_deg": 0.6103749052449634
+      },
+      {
+        "frame": 57,
+        "wrist_error_m": {
+          "L": 1.1255187095072197e-05,
+          "R": 1.4118439362040703e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460924288257957,
+          "R": 0.0011541555868461728
+        },
+        "case_bottom_z_m": 0.4900035262107849,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00570007596731708,
+        "max_angle_deg": 0.6065157959475658
+      },
+      {
+        "frame": 58,
+        "wrist_error_m": {
+          "L": 1.4840636418728952e-05,
+          "R": 1.819348182015097e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461726389825344,
+          "R": 0.001154243596829474
+        },
+        "case_bottom_z_m": 0.49000081419944763,
+        "attachment_matrix_error": 2.9802322387695312e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006385770562859219,
+        "max_angle_deg": 0.5841661596789901
+      },
+      {
+        "frame": 59,
+        "wrist_error_m": {
+          "L": 1.8278582432425036e-05,
+          "R": 2.1616464900224912e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462126858532429,
+          "R": 0.001154233468696475
+        },
+        "case_bottom_z_m": 0.48999878764152527,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006953242416653267,
+        "max_angle_deg": 0.5439249590664746
+      },
+      {
+        "frame": 60,
+        "wrist_error_m": {
+          "L": 2.1539712907656453e-05,
+          "R": 2.4597967438413568e-05
+        },
+        "sole_z_m": {
+          "L": 0.001146205933764577,
+          "R": 0.0011542337015271187
+        },
+        "case_bottom_z_m": 0.48999738693237305,
+        "attachment_matrix_error": 6.891787052154541e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.007372123053681425,
+        "max_angle_deg": 0.48456677302264645
+      },
+      {
+        "frame": 61,
+        "wrist_error_m": {
+          "L": 2.3989843309930798e-05,
+          "R": 2.6629488239437824e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462640250101686,
+          "R": 0.0011542494175955653
+        },
+        "case_bottom_z_m": 0.4899964928627014,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0077019110357999816,
+        "max_angle_deg": 0.4073435455705108
+      },
+      {
+        "frame": 62,
+        "wrist_error_m": {
+          "L": 2.575852239519394e-05,
+          "R": 2.7639689883396802e-05
+        },
+        "sole_z_m": {
+          "L": 0.001146145979873836,
+          "R": 0.0011541724670678377
+        },
+        "case_bottom_z_m": 0.48999595642089844,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00802584598247975,
+        "max_angle_deg": 0.31403502499694835
+      },
+      {
+        "frame": 63,
+        "wrist_error_m": {
+          "L": 2.63198888424655e-05,
+          "R": 2.8041309047574032e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011463556438684464,
+          "R": 0.0011543455766513944
+        },
+        "case_bottom_z_m": 0.4899960160255432,
+        "attachment_matrix_error": 5.21540641784668e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.008449913570530713,
+        "max_angle_deg": 0.20174111091886765
+      },
+      {
+        "frame": 64,
+        "wrist_error_m": {
+          "L": 2.5867118064189774e-05,
+          "R": 2.7368626519071465e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462768306955695,
+          "R": 0.0011542902793735266
+        },
+        "case_bottom_z_m": 0.48999640345573425,
+        "attachment_matrix_error": 6.705522537231445e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00909132204896359,
+        "max_angle_deg": 0.06852804019207596
+      },
+      {
+        "frame": 65,
+        "wrist_error_m": {
+          "L": 2.5527200780486263e-05,
+          "R": 2.6984468330350545e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461720569059253,
+          "R": 0.0022002726327627897
+        },
+        "case_bottom_z_m": 0.49507996439933777,
+        "attachment_matrix_error": 9.685754776000977e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013989932970454312,
+        "max_angle_deg": 2.136157379610216
+      },
+      {
+        "frame": 66,
+        "wrist_error_m": {
+          "L": 2.7132375402644514e-05,
+          "R": 2.8635395177863166e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461400426924229,
+          "R": 0.0051474072970449924
+        },
+        "case_bottom_z_m": 0.5094144344329834,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.023152187156071244,
+        "max_angle_deg": 6.1884203079829545
+      },
+      {
+        "frame": 67,
+        "wrist_error_m": {
+          "L": 2.9268763144562804e-05,
+          "R": 3.165978852161082e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011460225796326995,
+          "R": 0.009709368459880352
+        },
+        "case_bottom_z_m": 0.5316299200057983,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.03306303422042524,
+        "max_angle_deg": 10.143299922376928
+      },
+      {
+        "frame": 68,
+        "wrist_error_m": {
+          "L": 3.146143343798881e-05,
+          "R": 7.731750045167106e-06
+        },
+        "sole_z_m": {
+          "L": 0.001145826536230743,
+          "R": 0.015599309466779232
+        },
+        "case_bottom_z_m": 0.5603670477867126,
+        "attachment_matrix_error": 4.842877388000488e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.04339682476644785,
+        "max_angle_deg": 14.0162535810497
+      },
+      {
+        "frame": 69,
+        "wrist_error_m": {
+          "L": 3.26088770870172e-05,
+          "R": 1.3625627010407873e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011457226937636733,
+          "R": 0.02253103256225586
+        },
+        "case_bottom_z_m": 0.5942298173904419,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.05277204116943087,
+        "max_angle_deg": 17.380683486485594
+      },
+      {
+        "frame": 70,
+        "wrist_error_m": {
+          "L": 3.165166962184628e-05,
+          "R": 1.8093446204049947e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456201318651438,
+          "R": 0.030217735096812248
+        },
+        "case_bottom_z_m": 0.6318621635437012,
+        "attachment_matrix_error": 1.4901161193847656e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.058658256370908546,
+        "max_angle_deg": 19.42410568058859
+      },
+      {
+        "frame": 71,
+        "wrist_error_m": {
+          "L": 2.820141921840246e-05,
+          "R": 2.012478364834273e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456384090706706,
+          "R": 0.038373421877622604
+        },
+        "case_bottom_z_m": 0.6718927621841431,
+        "attachment_matrix_error": 9.313225746154785e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.05884363625695262,
+        "max_angle_deg": 19.424065192570747
+      },
+      {
+        "frame": 72,
+        "wrist_error_m": {
+          "L": 2.177051012881156e-05,
+          "R": 1.905529940483724e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454379418864846,
+          "R": 0.04671113193035126
+        },
+        "case_bottom_z_m": 0.7129503488540649,
+        "attachment_matrix_error": 2.421438694000244e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.053471894326056604,
+        "max_angle_deg": 17.380638281583828
+      },
+      {
+        "frame": 73,
+        "wrist_error_m": {
+          "L": 1.194646698695171e-05,
+          "R": 1.3829692563805466e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145257381722331,
+          "R": 0.054944511502981186
+        },
+        "case_bottom_z_m": 0.7536619901657104,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.04978521123426064,
+        "max_angle_deg": 14.0162535810497
+      },
+      {
+        "frame": 74,
+        "wrist_error_m": {
+          "L": 8.053985440181429e-06,
+          "R": 3.3108448732766706e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453651823103428,
+          "R": 0.06278716027736664
+        },
+        "case_bottom_z_m": 0.7926620244979858,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.04774677996775567,
+        "max_angle_deg": 10.143454447846638
+      },
+      {
+        "frame": 75,
+        "wrist_error_m": {
+          "L": 3.0781301888562694e-05,
+          "R": 2.419906369790175e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455400381237268,
+          "R": 0.06995262950658798
+        },
+        "case_bottom_z_m": 0.8285688161849976,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0440504238440099,
+        "max_angle_deg": 6.1884203079829545
+      },
+      {
+        "frame": 76,
+        "wrist_error_m": {
+          "L": 1.78350532515247e-05,
+          "R": 1.0734076702880344e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011453599436208606,
+          "R": 0.07615413516759872
+        },
+        "case_bottom_z_m": 0.8600155115127563,
+        "attachment_matrix_error": 1.7508864402770996e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.03868985583277252,
+        "max_angle_deg": 4.050134821787193
+      },
+      {
+        "frame": 77,
+        "wrist_error_m": {
+          "L": 3.22150080447037e-05,
+          "R": 1.8506474333112334e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454395717009902,
+          "R": 0.08117062598466873
+        },
+        "case_bottom_z_m": 0.8859250545501709,
+        "attachment_matrix_error": 4.470348358154297e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.032047173874865366,
+        "max_angle_deg": 3.062714445056185
+      },
+      {
+        "frame": 78,
+        "wrist_error_m": {
+          "L": 2.2383686920581647e-05,
+          "R": 2.6298787586324203e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145554007962346,
+          "R": 0.08504118025302887
+        },
+        "case_bottom_z_m": 0.9063490629196167,
+        "attachment_matrix_error": 1.1920928955078125e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02562387020596442,
+        "max_angle_deg": 2.170688068078633
+      },
+      {
+        "frame": 79,
+        "wrist_error_m": {
+          "L": 1.1406359535556372e-05,
+          "R": 1.105024733205423e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145666465163231,
+          "R": 0.0878705158829689
+        },
+        "case_bottom_z_m": 0.9216192960739136,
+        "attachment_matrix_error": 6.705522537231445e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02059416146689367,
+        "max_angle_deg": 1.4303696652114035
+      },
+      {
+        "frame": 80,
+        "wrist_error_m": {
+          "L": 2.2479537617325393e-05,
+          "R": 1.3100327494299083e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011457508662715554,
+          "R": 0.08976276218891144
+        },
+        "case_bottom_z_m": 0.9320966005325317,
+        "attachment_matrix_error": 2.086162567138672e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02121297567703136,
+        "max_angle_deg": 0.8392955211899727
+      },
+      {
+        "frame": 81,
+        "wrist_error_m": {
+          "L": 1.643598924035282e-05,
+          "R": 8.298937651501065e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011458797380328178,
+          "R": 0.09082251787185669
+        },
+        "case_bottom_z_m": 0.9381128549575806,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02131155500560112,
+        "max_angle_deg": 0.3956470151438925
+      },
+      {
+        "frame": 82,
+        "wrist_error_m": {
+          "L": 1.126582974388964e-05,
+          "R": 4.807213968127531e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011457795044407248,
+          "R": 0.09115415811538696
+        },
+        "case_bottom_z_m": 0.940014123916626,
+        "attachment_matrix_error": 7.031485438346863e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020871889917788593,
+        "max_angle_deg": 0.11190582380822714
+      },
+      {
+        "frame": 83,
+        "wrist_error_m": {
+          "L": 8.294852207849205e-06,
+          "R": 5.0020481488399936e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460597161203623,
+          "R": 0.0886361375451088
+        },
+        "case_bottom_z_m": 0.9365432262420654,
+        "attachment_matrix_error": 1.7881393432617188e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020099328122461783,
+        "max_angle_deg": 1.4898716362802562
+      },
+      {
+        "frame": 84,
+        "wrist_error_m": {
+          "L": 8.210827153685497e-06,
+          "R": 8.930440853028112e-06
+        },
+        "sole_z_m": {
+          "L": 0.001146010123193264,
+          "R": 0.0817972794175148
+        },
+        "case_bottom_z_m": 0.9268511533737183,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01994989093706674,
+        "max_angle_deg": 4.04936159349449
+      },
+      {
+        "frame": 85,
+        "wrist_error_m": {
+          "L": 1.0707757114452764e-05,
+          "R": 1.4708665636851496e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145877642557025,
+          "R": 0.0717177763581276
+        },
+        "case_bottom_z_m": 0.9118927717208862,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02004752712997871,
+        "max_angle_deg": 5.979790788714253
+      },
+      {
+        "frame": 86,
+        "wrist_error_m": {
+          "L": 1.4728167817652741e-05,
+          "R": 1.2487271435722685e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145839225500822,
+          "R": 0.0594775527715683
+        },
+        "case_bottom_z_m": 0.8926199674606323,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01991220195871749,
+        "max_angle_deg": 7.2755306089493414
+      },
+      {
+        "frame": 87,
+        "wrist_error_m": {
+          "L": 1.9025462758224543e-05,
+          "R": 6.111093196616796e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011457400396466255,
+          "R": 0.04615715146064758
+        },
+        "case_bottom_z_m": 0.8699911832809448,
+        "attachment_matrix_error": 3.725290298461914e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.023106853612856203,
+        "max_angle_deg": 7.926969892313995
+      },
+      {
+        "frame": 88,
+        "wrist_error_m": {
+          "L": 2.291027728958884e-05,
+          "R": 1.746917638821069e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145763322710991,
+          "R": 0.032836418598890305
+        },
+        "case_bottom_z_m": 0.844970703125,
+        "attachment_matrix_error": 1.9744038581848145e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02544169408756067,
+        "max_angle_deg": 7.9268710763115005
+      },
+      {
+        "frame": 89,
+        "wrist_error_m": {
+          "L": 6.488099740778679e-06,
+          "R": 2.560510585843819e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456608772277832,
+          "R": 0.020595775917172432
+        },
+        "case_bottom_z_m": 0.8185059428215027,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02687816772667072,
+        "max_angle_deg": 7.2755306089493414
+      },
+      {
+        "frame": 90,
+        "wrist_error_m": {
+          "L": 1.0509714093090854e-05,
+          "R": 1.5581496391274644e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455629719421268,
+          "R": 0.010514779947698116
+        },
+        "case_bottom_z_m": 0.7915505170822144,
+        "attachment_matrix_error": 1.601874828338623e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.027400713688141086,
+        "max_angle_deg": 5.9800526775521465
+      },
+      {
+        "frame": 91,
+        "wrist_error_m": {
+          "L": 1.2469992919358994e-05,
+          "R": 2.277369381639377e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456382926553488,
+          "R": 0.0036743164528161287
+        },
+        "case_bottom_z_m": 0.7650691270828247,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02699254467383427,
+        "max_angle_deg": 4.04936159349449
+      },
+      {
+        "frame": 92,
+        "wrist_error_m": {
+          "L": 1.2352730090263497e-05,
+          "R": 2.732995240737351e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455911444500089,
+          "R": 0.00115427584387362
+        },
+        "case_bottom_z_m": 0.7400134801864624,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02568702477275929,
+        "max_angle_deg": 1.8354115222193426
+      },
+      {
+        "frame": 93,
+        "wrist_error_m": {
+          "L": 1.07371112910818e-05,
+          "R": 2.982368299781191e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455592466518283,
+          "R": 0.0011540718842297792
+        },
+        "case_bottom_z_m": 0.7171648740768433,
+        "attachment_matrix_error": 9.313225746154785e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.024955270273746614,
+        "max_angle_deg": 1.5944253611173915
+      },
+      {
+        "frame": 94,
+        "wrist_error_m": {
+          "L": 8.448905835332981e-06,
+          "R": 3.0747115369325146e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011454889317974448,
+          "R": 0.0011541583808138967
+        },
+        "case_bottom_z_m": 0.6965833902359009,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.026713098614696285,
+        "max_angle_deg": 4.574774983461152
+      },
+      {
+        "frame": 95,
+        "wrist_error_m": {
+          "L": 2.890425831442014e-05,
+          "R": 3.0606810978781455e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011455602943897247,
+          "R": 0.0011541091371327639
+        },
+        "case_bottom_z_m": 0.6781402826309204,
+        "attachment_matrix_error": 9.685754776000977e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.029465938472119358,
+        "max_angle_deg": 7.485019170857068
+      },
+      {
+        "frame": 96,
+        "wrist_error_m": {
+          "L": 2.3760227440449557e-05,
+          "R": 2.9599756764450495e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145516405813396,
+          "R": 0.0011540981940925121
+        },
+        "case_bottom_z_m": 0.661709189414978,
+        "attachment_matrix_error": 2.3469328880310059e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.03347919982939968,
+        "max_angle_deg": 10.377946055997006
+      },
+      {
+        "frame": 97,
+        "wrist_error_m": {
+          "L": 2.1589144625549065e-05,
+          "R": 2.792908547227134e-05
+        },
+        "sole_z_m": {
+          "L": 0.001145607908256352,
+          "R": 0.0011540340492501855
+        },
+        "case_bottom_z_m": 0.6471624374389648,
+        "attachment_matrix_error": 1.2293457984924316e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.03826127936547912,
+        "max_angle_deg": 13.132168077410453
+      },
+      {
+        "frame": 98,
+        "wrist_error_m": {
+          "L": 1.9250385621767225e-05,
+          "R": 2.5584668902796482e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011456573847681284,
+          "R": 0.001154012861661613
+        },
+        "case_bottom_z_m": 0.6343734264373779,
+        "attachment_matrix_error": 1.1920928955078125e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.04321422093304972,
+        "max_angle_deg": 15.409335833501125
+      },
+      {
+        "frame": 99,
+        "wrist_error_m": {
+          "L": 1.6639687083748977e-05,
+          "R": 2.270524799966756e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011457192013040185,
+          "R": 0.0011540382402017713
+        },
+        "case_bottom_z_m": 0.6232138872146606,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.04647675343925495,
+        "max_angle_deg": 16.73233161397819
+      },
+      {
+        "frame": 100,
+        "wrist_error_m": {
+          "L": 1.4131329844416531e-05,
+          "R": 1.9596177101830017e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011459722882136703,
+          "R": 0.0011541261337697506
+        },
+        "case_bottom_z_m": 0.6135562658309937,
+        "attachment_matrix_error": 2.0489096641540527e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.046595220902725054,
+        "max_angle_deg": 16.73233161397819
+      },
+      {
+        "frame": 101,
+        "wrist_error_m": {
+          "L": 1.1815869167949813e-05,
+          "R": 1.6048938003617636e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458061635494232,
+          "R": 0.0011540782870724797
+        },
+        "case_bottom_z_m": 0.6052736043930054,
+        "attachment_matrix_error": 6.705522537231445e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.043351685171465176,
+        "max_angle_deg": 15.409335833501125
+      },
+      {
+        "frame": 102,
+        "wrist_error_m": {
+          "L": 9.730446849804625e-06,
+          "R": 1.2640339816561074e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458133812993765,
+          "R": 0.0011540286941453815
+        },
+        "case_bottom_z_m": 0.5982376337051392,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.03759722385984197,
+        "max_angle_deg": 13.132227808297863
+      },
+      {
+        "frame": 103,
+        "wrist_error_m": {
+          "L": 8.636158201543296e-06,
+          "R": 8.699266765110101e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011459820671007037,
+          "R": 0.001154063269495964
+        },
+        "case_bottom_z_m": 0.5923218727111816,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.030559717410443672,
+        "max_angle_deg": 10.377946055997006
+      },
+      {
+        "frame": 104,
+        "wrist_error_m": {
+          "L": 8.625442906087837e-06,
+          "R": 2.7159535953534556e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011458209482952952,
+          "R": 0.0011539667611941695
+        },
+        "case_bottom_z_m": 0.5873845219612122,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.023153708706064938,
+        "max_angle_deg": 7.485019170857068
+      },
+      {
+        "frame": 105,
+        "wrist_error_m": {
+          "L": 9.690670911569465e-06,
+          "R": 2.359203963579762e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011459753150120378,
+          "R": 0.0011540031991899014
+        },
+        "case_bottom_z_m": 0.5833241939544678,
+        "attachment_matrix_error": 1.043081283569336e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.015751165635576332,
+        "max_angle_deg": 4.574774983461152
+      },
+      {
+        "frame": 106,
+        "wrist_error_m": {
+          "L": 1.1949988054295528e-05,
+          "R": 2.2012359267251747e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.579998791217804,
+        "attachment_matrix_error": 6.705522537231445e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.008345565990884367,
+        "max_angle_deg": 1.5776463973539023
+      },
+      {
+        "frame": 107,
+        "wrist_error_m": {
+          "L": 1.4665021527852373e-05,
+          "R": 2.070519967271607e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5771468877792358,
+        "attachment_matrix_error": 3.725290298461914e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004609210517665234,
+        "max_angle_deg": 0.2502290688861673
+      },
+      {
+        "frame": 108,
+        "wrist_error_m": {
+          "L": 1.6979923853415702e-05,
+          "R": 1.9254260841726747e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5745800733566284,
+        "attachment_matrix_error": 5.587935447692871e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004160687183266581,
+        "max_angle_deg": 0.7165480316620494
+      },
+      {
+        "frame": 109,
+        "wrist_error_m": {
+          "L": 1.8965806702645665e-05,
+          "R": 1.7843112350997285e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5722832679748535,
+        "attachment_matrix_error": 1.5133991837501526e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0037480927802050388,
+        "max_angle_deg": 1.1315821662419376
+      },
+      {
+        "frame": 110,
+        "wrist_error_m": {
+          "L": 2.067626728830148e-05,
+          "R": 1.659618124080991e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5702414512634277,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00337115577576946,
+        "max_angle_deg": 1.5008634417146358
+      },
+      {
+        "frame": 111,
+        "wrist_error_m": {
+          "L": 2.2106333422205594e-05,
+          "R": 1.5403426260025308e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5684396624565125,
+        "attachment_matrix_error": 1.1920928955078125e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0030292415368985528,
+        "max_angle_deg": 1.8195643794029002
+      },
+      {
+        "frame": 112,
+        "wrist_error_m": {
+          "L": 2.3330369814966744e-05,
+          "R": 1.4376122600175655e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5668627023696899,
+        "attachment_matrix_error": 3.725290298461914e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0027214393337354347,
+        "max_angle_deg": 2.0876048595203356
+      },
+      {
+        "frame": 113,
+        "wrist_error_m": {
+          "L": 2.429525461721633e-05,
+          "R": 1.3353211488190508e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5654958486557007,
+        "attachment_matrix_error": 1.043081283569336e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0024464735328125755,
+        "max_angle_deg": 2.3043206784142765
+      },
+      {
+        "frame": 114,
+        "wrist_error_m": {
+          "L": 2.5273972790221098e-05,
+          "R": 1.2465994760998904e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.564323902130127,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.002201922244717678,
+        "max_angle_deg": 2.4689599884378732
+      },
+      {
+        "frame": 115,
+        "wrist_error_m": {
+          "L": 6.412643347193185e-06,
+          "R": 1.167783382049843e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5633318424224854,
+        "attachment_matrix_error": 8.940696716308594e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0019980365572948235,
+        "max_angle_deg": 2.580266382538298
+      },
+      {
+        "frame": 116,
+        "wrist_error_m": {
+          "L": 7.66651348190693e-06,
+          "R": 1.110660426149668e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5625047087669373,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.001792738721370513,
+        "max_angle_deg": 2.63668133567636
+      },
+      {
+        "frame": 117,
+        "wrist_error_m": {
+          "L": 8.756204309071003e-06,
+          "R": 1.0458842576329976e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5618276596069336,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0016202014484029675,
+        "max_angle_deg": 2.6378685476901413
+      },
+      {
+        "frame": 118,
+        "wrist_error_m": {
+          "L": 9.637273441832343e-06,
+          "R": 1.005650654738386e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5612853765487671,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0014625088338960552,
+        "max_angle_deg": 2.5851155777310404
+      },
+      {
+        "frame": 119,
+        "wrist_error_m": {
+          "L": 1.0339473260702688e-05,
+          "R": 9.72346155433643e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5608631372451782,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.001314085835667946,
+        "max_angle_deg": 2.478452741850496
+      },
+      {
+        "frame": 120,
+        "wrist_error_m": {
+          "L": 1.104927884892607e-05,
+          "R": 9.472838230633308e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5605456829071045,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0011694886457435305,
+        "max_angle_deg": 2.3195559813013045
+      },
+      {
+        "frame": 121,
+        "wrist_error_m": {
+          "L": 1.1467854656673053e-05,
+          "R": 9.259474134911627e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5603184103965759,
+        "attachment_matrix_error": 7.82310962677002e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0010235483932171197,
+        "max_angle_deg": 2.110352244653056
+      },
+      {
+        "frame": 122,
+        "wrist_error_m": {
+          "L": 1.1847988136251885e-05,
+          "R": 9.103487565299604e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5601660013198853,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0008708560260919674,
+        "max_angle_deg": 1.8536582794430119
+      },
+      {
+        "frame": 123,
+        "wrist_error_m": {
+          "L": 1.2198618799478025e-05,
+          "R": 9.042156727887449e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5600736141204834,
+        "attachment_matrix_error": 1.1175870895385742e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0007074557470912481,
+        "max_angle_deg": 1.5541537101526974
+      },
+      {
+        "frame": 124,
+        "wrist_error_m": {
+          "L": 1.2362980772334828e-05,
+          "R": 9.045188959280881e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5600261688232422,
+        "attachment_matrix_error": 6.332993507385254e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0005292241597753706,
+        "max_angle_deg": 1.221395130084045
+      },
+      {
+        "frame": 125,
+        "wrist_error_m": {
+          "L": 1.243404357245887e-05,
+          "R": 8.9112557023774e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5600086450576782,
+        "attachment_matrix_error": 5.21540641784668e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00033300817518209326,
+        "max_angle_deg": 0.8775892417713462
+      },
+      {
+        "frame": 126,
+        "wrist_error_m": {
+          "L": 1.2524140101255715e-05,
+          "R": 8.9967974258917e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461821850389242,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5600060820579529,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00011600466611045549,
+        "max_angle_deg": 0.611655864372522
+      },
+      {
+        "frame": 127,
+        "wrist_error_m": {
+          "L": 1.3437014179077878e-05,
+          "R": 9.011987731671585e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460245586931705,
+          "R": 0.0011539540719240904
+        },
+        "case_bottom_z_m": 0.5600060820579529,
+        "attachment_matrix_error": 6.332993507385254e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00215943288338331,
+        "max_angle_deg": 0.6644049209545648
+      },
+      {
+        "frame": 128,
+        "wrist_error_m": {
+          "L": 1.5589328207354926e-05,
+          "R": 8.807985502029765e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460670502856374,
+          "R": 0.0011540644336491823
+        },
+        "case_bottom_z_m": 0.5600062608718872,
+        "attachment_matrix_error": 7.82310962677002e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006254991135908104,
+        "max_angle_deg": 1.4374657014690397
+      },
+      {
+        "frame": 129,
+        "wrist_error_m": {
+          "L": 1.931195089841005e-05,
+          "R": 8.869746440929579e-06
+        },
+        "sole_z_m": {
+          "L": 0.001145956921391189,
+          "R": 0.0011540442937985063
+        },
+        "case_bottom_z_m": 0.560005784034729,
+        "attachment_matrix_error": 1.043081283569336e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0100670481503197,
+        "max_angle_deg": 2.3117815914749364
+      },
+      {
+        "frame": 130,
+        "wrist_error_m": {
+          "L": 2.3309136336748857e-05,
+          "R": 8.450942357399385e-06
+        },
+        "sole_z_m": {
+          "L": 0.001146064605563879,
+          "R": 0.0011540728155523539
+        },
+        "case_bottom_z_m": 0.560006320476532,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01363915487243901,
+        "max_angle_deg": 3.1274593047124988
+      },
+      {
+        "frame": 131,
+        "wrist_error_m": {
+          "L": 2.76528015305037e-05,
+          "R": 8.009897397935771e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461679823696613,
+          "R": 0.0011539729312062263
+        },
+        "case_bottom_z_m": 0.560006856918335,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.016984001778485882,
+        "max_angle_deg": 3.8867996364618786
+      },
+      {
+        "frame": 132,
+        "wrist_error_m": {
+          "L": 3.2306171098212806e-05,
+          "R": 7.744934974089044e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461584363132715,
+          "R": 0.001153968507423997
+        },
+        "case_bottom_z_m": 0.560006856918335,
+        "attachment_matrix_error": 3.585591912269592e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020080502725198755,
+        "max_angle_deg": 4.58366520901482
+      },
+      {
+        "frame": 133,
+        "wrist_error_m": {
+          "L": 1.0327020751972844e-05,
+          "R": 7.334399373333701e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461155954748392,
+          "R": 0.0011539848055690527
+        },
+        "case_bottom_z_m": 0.5600069761276245,
+        "attachment_matrix_error": 7.82310962677002e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0228826339669396,
+        "max_angle_deg": 5.206775192854018
+      },
+      {
+        "frame": 134,
+        "wrist_error_m": {
+          "L": 1.710357982160102e-05,
+          "R": 6.845068615642973e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011462161783128977,
+          "R": 0.0011540455743670464
+        },
+        "case_bottom_z_m": 0.5600075125694275,
+        "attachment_matrix_error": 7.078051567077637e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.025312517197727834,
+        "max_angle_deg": 5.740070550653664
+      },
+      {
+        "frame": 135,
+        "wrist_error_m": {
+          "L": 2.3140826870929666e-05,
+          "R": 6.289084466811596e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011460956884548068,
+          "R": 0.0011539884144440293
+        },
+        "case_bottom_z_m": 0.5600077509880066,
+        "attachment_matrix_error": 6.332993507385254e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.027284240119976315,
+        "max_angle_deg": 6.163823343233417
+      },
+      {
+        "frame": 136,
+        "wrist_error_m": {
+          "L": 2.8874374969145718e-05,
+          "R": 5.529856856778531e-06
+        },
+        "sole_z_m": {
+          "L": 0.0011461316607892513,
+          "R": 0.0011539733968675137
+        },
+        "case_bottom_z_m": 0.5600085258483887,
+        "attachment_matrix_error": 2.9802322387695312e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.028705657692778382,
+        "max_angle_deg": 6.459357736452109
+      },
+      {
+        "frame": 137,
+        "wrist_error_m": {
+          "L": 3.344701311092873e-05,
+          "R": 2.616660877294397e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462506372481585,
+          "R": 0.001153917983174324
+        },
+        "case_bottom_z_m": 0.5599944591522217,
+        "attachment_matrix_error": 8.195638656616211e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.029500229529794638,
+        "max_angle_deg": 6.6112979466481905
+      },
+      {
+        "frame": 138,
+        "wrist_error_m": {
+          "L": 3.722222972748915e-05,
+          "R": 2.308304823376458e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462661204859614,
+          "R": 0.0011539728147909045
+        },
+        "case_bottom_z_m": 0.559996485710144,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.029615998300516446,
+        "max_angle_deg": 6.611416396823253
+      },
+      {
+        "frame": 139,
+        "wrist_error_m": {
+          "L": 4.013249826778404e-05,
+          "R": 2.039239561798226e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011462500551715493,
+          "R": 0.001153926132246852
+        },
+        "case_bottom_z_m": 0.5599982142448425,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.029046982771382318,
+        "max_angle_deg": 6.459478969762584
+      },
+      {
+        "frame": 140,
+        "wrist_error_m": {
+          "L": 8.36617597020696e-06,
+          "R": 1.860923567535601e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011463246773928404,
+          "R": 0.0011539728147909045
+        },
+        "case_bottom_z_m": 0.5599993467330933,
+        "attachment_matrix_error": 9.685754776000977e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02781784957415798,
+        "max_angle_deg": 6.163823343233417
+      },
+      {
+        "frame": 141,
+        "wrist_error_m": {
+          "L": 8.546547492819466e-06,
+          "R": 1.8071564087452326e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011463759001344442,
+          "R": 0.0011539635015651584
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.940696716308594e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02599718558463612,
+        "max_angle_deg": 5.740070550653664
+      },
+      {
+        "frame": 142,
+        "wrist_error_m": {
+          "L": 8.78710069707884e-06,
+          "R": 1.806894063083372e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011464240960776806,
+          "R": 0.0011539002880454063
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 5.960464477539063e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.023661523654824653,
+        "max_angle_deg": 5.207075927487357
+      },
+      {
+        "frame": 143,
+        "wrist_error_m": {
+          "L": 8.851622918038627e-06,
+          "R": 1.780388843744812e-05
+        },
+        "sole_z_m": {
+          "L": 0.00114646356087178,
+          "R": 0.0011539270635694265
+        },
+        "case_bottom_z_m": 0.559999942779541,
+        "attachment_matrix_error": 6.705522537231445e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020894954390577272,
+        "max_angle_deg": 4.58366520901482
+      },
+      {
+        "frame": 144,
+        "wrist_error_m": {
+          "L": 8.954637835470084e-06,
+          "R": 1.77621341390994e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011467407457530499,
+          "R": 0.0011541011044755578
+        },
+        "case_bottom_z_m": 0.559999942779541,
+        "attachment_matrix_error": 7.450580596923828e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0177705437362735,
+        "max_angle_deg": 3.8867996364618786
+      },
+      {
+        "frame": 145,
+        "wrist_error_m": {
+          "L": 8.830350203836972e-06,
+          "R": 1.742508429641316e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011466264259070158,
+          "R": 0.0011538449907675385
+        },
+        "case_bottom_z_m": 0.5600001215934753,
+        "attachment_matrix_error": 1.1175870895385742e-07,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01433809420655194,
+        "max_angle_deg": 3.1277095870696097
+      },
+      {
+        "frame": 146,
+        "wrist_error_m": {
+          "L": 8.803422194508876e-06,
+          "R": 1.7211531392001174e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011466335272416472,
+          "R": 0.0011538738617673516
+        },
+        "case_bottom_z_m": 0.5600003600120544,
+        "attachment_matrix_error": 9.313225746154785e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.010621196027086558,
+        "max_angle_deg": 2.3117815914749364
+      },
+      {
+        "frame": 147,
+        "wrist_error_m": {
+          "L": 8.729849609383859e-06,
+          "R": 1.7266761925435786e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011466877767816186,
+          "R": 0.0011539988918229938
+        },
+        "case_bottom_z_m": 0.5600001811981201,
+        "attachment_matrix_error": 9.685754776000977e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006616935646936899,
+        "max_angle_deg": 1.4380101001108787
+      },
+      {
+        "frame": 148,
+        "wrist_error_m": {
+          "L": 8.883948865964003e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.002287341764733176,
+        "max_angle_deg": 0.4973207297520452
+      },
+      {
+        "frame": 149,
+        "wrist_error_m": {
+          "L": 8.87373923626009e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0014410128571233092,
+        "max_angle_deg": 0.2712418565450303
+      },
+      {
+        "frame": 150,
+        "wrist_error_m": {
+          "L": 8.95109742041311e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.004204919878120022,
+        "max_angle_deg": 0.7853380482663486
+      },
+      {
+        "frame": 151,
+        "wrist_error_m": {
+          "L": 8.961318028420091e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006807058593386401,
+        "max_angle_deg": 1.274701784680444
+      },
+      {
+        "frame": 152,
+        "wrist_error_m": {
+          "L": 8.97897981163311e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.00926354677960146,
+        "max_angle_deg": 1.7372621264220305
+      },
+      {
+        "frame": 153,
+        "wrist_error_m": {
+          "L": 8.952629085270679e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01158272365587401,
+        "max_angle_deg": 2.178247301584607
+      },
+      {
+        "frame": 154,
+        "wrist_error_m": {
+          "L": 8.94385722173339e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.013767256436825734,
+        "max_angle_deg": 2.5968975625601196
+      },
+      {
+        "frame": 155,
+        "wrist_error_m": {
+          "L": 8.837815296651607e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.015813220486017143,
+        "max_angle_deg": 2.992388879231618
+      },
+      {
+        "frame": 156,
+        "wrist_error_m": {
+          "L": 8.624516913567635e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01770897844690392,
+        "max_angle_deg": 3.362420309847265
+      },
+      {
+        "frame": 157,
+        "wrist_error_m": {
+          "L": 8.368047713269244e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.019439129399107937,
+        "max_angle_deg": 3.703635218621964
+      },
+      {
+        "frame": 158,
+        "wrist_error_m": {
+          "L": 3.977060741864671e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020982575084310152,
+        "max_angle_deg": 4.011290901354356
+      },
+      {
+        "frame": 159,
+        "wrist_error_m": {
+          "L": 3.698046725184626e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.022312304773017343,
+        "max_angle_deg": 4.280189242836655
+      },
+      {
+        "frame": 160,
+        "wrist_error_m": {
+          "L": 3.348916551419908e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.023402016330802335,
+        "max_angle_deg": 4.504064718561997
+      },
+      {
+        "frame": 161,
+        "wrist_error_m": {
+          "L": 2.8960620502051827e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.024227331724163904,
+        "max_angle_deg": 4.678001464693355
+      },
+      {
+        "frame": 162,
+        "wrist_error_m": {
+          "L": 2.3420643832075187e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02476695137477538,
+        "max_angle_deg": 4.796660229182758
+      },
+      {
+        "frame": 163,
+        "wrist_error_m": {
+          "L": 1.678968789340959e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02500666168208889,
+        "max_angle_deg": 4.8569987667876875
+      },
+      {
+        "frame": 164,
+        "wrist_error_m": {
+          "L": 8.932857752550613e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0249393619466877,
+        "max_angle_deg": 4.857159957572087
+      },
+      {
+        "frame": 165,
+        "wrist_error_m": {
+          "L": 3.052160873934622e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02457678893673255,
+        "max_angle_deg": 4.796660229182758
+      },
+      {
+        "frame": 166,
+        "wrist_error_m": {
+          "L": 2.4220800467417483e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.02391052702542805,
+        "max_angle_deg": 4.677834104023282
+      },
+      {
+        "frame": 167,
+        "wrist_error_m": {
+          "L": 1.673590802335246e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.022978078618042876,
+        "max_angle_deg": 4.504064718561997
+      },
+      {
+        "frame": 168,
+        "wrist_error_m": {
+          "L": 7.672260467190616e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.021799671161277435,
+        "max_angle_deg": 4.280189242836655
+      },
+      {
+        "frame": 169,
+        "wrist_error_m": {
+          "L": 2.125769072068916e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.020413017024334307,
+        "max_angle_deg": 4.011290901354356
+      },
+      {
+        "frame": 170,
+        "wrist_error_m": {
+          "L": 1.44771587210109e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.018825178519894157,
+        "max_angle_deg": 3.703635218621964
+      },
+      {
+        "frame": 171,
+        "wrist_error_m": {
+          "L": 6.390235760027785e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.017080227187676777,
+        "max_angle_deg": 3.362420309847265
+      },
+      {
+        "frame": 172,
+        "wrist_error_m": {
+          "L": 1.556067269255521e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.015201927214332953,
+        "max_angle_deg": 2.9918656588599837
+      },
+      {
+        "frame": 173,
+        "wrist_error_m": {
+          "L": 1.0059067466018759e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.01318853842153822,
+        "max_angle_deg": 2.596596128087414
+      },
+      {
+        "frame": 174,
+        "wrist_error_m": {
+          "L": 2.01112687231597e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.011070712271865785,
+        "max_angle_deg": 2.177887932964272
+      },
+      {
+        "frame": 175,
+        "wrist_error_m": {
+          "L": 1.1938843453890361e-05,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.008828195959407063,
+        "max_angle_deg": 1.7372621264220305
+      },
+      {
+        "frame": 176,
+        "wrist_error_m": {
+          "L": 9.212738563052188e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.006477261564771156,
+        "max_angle_deg": 1.2740876121949243
+      },
+      {
+        "frame": 177,
+        "wrist_error_m": {
+          "L": 7.115097723199075e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0039962408714774526,
+        "max_angle_deg": 0.7853380482663486
+      },
+      {
+        "frame": 178,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.001368733139206758,
+        "max_angle_deg": 0.2741122220371872
+      },
+      {
+        "frame": 179,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 180,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 181,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 182,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 183,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 184,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 185,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 186,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 187,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 188,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 189,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 190,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 191,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 192,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 193,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 194,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 195,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 196,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 197,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 198,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 199,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 200,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 201,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 202,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 203,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 204,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 205,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 206,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 207,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 208,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      },
+      {
+        "frame": 209,
+        "wrist_error_m": {
+          "L": 6.370050339441977e-06,
+          "R": 1.7454393604424626e-05
+        },
+        "sole_z_m": {
+          "L": 0.0011465857969596982,
+          "R": 0.0011538537219166756
+        },
+        "case_bottom_z_m": 0.5599998831748962,
+        "attachment_matrix_error": 8.568167686462402e-08,
+        "surface_pairs": {
+          "L_torso": 0,
+          "L_shirt": 0,
+          "R_torso": 0,
+          "R_shirt": 0,
+          "Case handle_body": 0,
+          "Case handle_shirt": 0,
+          "Case shell_body": 0,
+          "Case shell_shirt": 0,
+          "Handle support_body": 0,
+          "Handle support_shirt": 0,
+          "Handle support.001_body": 0,
+          "Handle support.001_shirt": 0
+        },
+        "max_step_m": 0.0,
+        "max_angle_deg": 0.05595291023658669
+      }
+    ],
+    "failures": [],
+    "passed": true,
+    "scope": "Weighted forearms/hands against torso and shirt; all case parts against body/shirt; supports and native timeline. Hair, finger self-contact and artistic quality require visual review.",
+    "source_sha256": "831ab6d837c679040285862b15dc9ee5180b018442a88aeaf92aaa7509b80258"
+  },
+  "native": {
+    "authored_playback_matrix_error": 0.0,
+    "pickup_switch_matrix_error": 1.1920928955078125e-07,
+    "hand_modes": {
+      "L": "QUATERNION",
+      "R": "QUATERNION"
+    }
+  },
+  "export": {
+    "frames": 180,
+    "fps": 30.0,
+    "size": [
+      320,
+      360
+    ],
+    "max_mean_error_255": 1.1644444444444444,
+    "min_mean_255": 118.99898148148148,
+    "sha256": "608862a14972b4175c22015e309c35edd3d70aad2f3670e5cfc13eaf06429f5e",
+    "passed": true,
+    "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
+  },
+  "exported_range": [
+    0,
+    179
+  ],
+  "visual_review": "Entire sequence sampled every 6 frames; lift/recovery every 2 frames; key pose seen front and side in separate Blender window. Not continuous real-time viewing.",
+  "limits": "Restricted study of contact, expected weight and recovery; general facial expression and weak concealment of embarrassment. No audio, full dynamics, finger self-contact or universal acting claim."
+}

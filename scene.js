@@ -22,12 +22,15 @@ const SCN = (() => {
       if (S.bg.tex) bg.classList.add("tx-" + S.bg.tex);
     }
     g.parts.lines = [];                       // сцена рисует заголовки сама
-    g.sc = { root, items: {}, anims: [], vids: [], lots: [], models: [], stages: [], list: [] };
+    g.sc = { root, items: Object.create(null), anims: [], vids: [], lots: [], models: [], stages: [], list: [] };
     (S.items || []).forEach((it, k) => add(g, it, root, it.id || "i" + k));
   }
 
   function add(g, it, parent, id) {
+    if (typeof id !== 'string' || Object.hasOwn(g.sc.items, id))
+      throw new Error(`Неверный или повторный id сцены: ${id}`);
     const box = $("div", "si", parent);
+    g.sc.items[id] = box;
     box.dataset.sid = id;
     const css = box.style;
     const set = (k, v, u = "px") => { if (v != null) css[k] = typeof v === "number" ? v + u : v; };
@@ -128,10 +131,12 @@ const SCN = (() => {
   // ---------- время: число, метка из озвучки или «метка+0.3» ----------
   function when(g, at) {
     if (at == null) return 0;
-    if (typeof at === "number") return at;
-    const m = String(at).match(/^([^+\-]+)([+\-][\d.]+)?$/);
-    const base = (g.s.scene.at || {})[m[1]];
-    return (base == null ? 0 : base) + (m[2] ? parseFloat(m[2]) : 0);
+    if (typeof at === "number" && Number.isFinite(at)) return at;
+    const m = typeof at === 'string' && at.match(/^([^+\-]+)([+\-](?:\d+(?:\.\d*)?|\.\d+))?$/);
+    const base = m && (g.s.scene.at || {})[m[1]];
+    if (!m || typeof base !== 'number' || !Number.isFinite(base))
+      throw new Error(`Не разрешена метка времени сцены: ${at}`);
+    return base + (m[2] ? Number(m[2]) : 0);
   }
   // Цели: "id", "id.*" (все дети контейнера), "id em" (CSS внутри элемента), "@all" (вся сцена)
   function pick(g, sel) {
@@ -299,7 +304,11 @@ const SCN = (() => {
     const sky = new THREE.Color(it.sky || "#1d3a3a");
     sc.background = sky; sc.fog = new THREE.Fog(sky, it.fog_near ?? 18, it.fog_far ?? 60);
     sc.add(new THREE.HemisphereLight(0xe6f0ff, 0x2a3020, it.ambient ?? 1.4));
-    const sun = new THREE.DirectionalLight(new THREE.Color(it.sun || "#fff1d6"), it.key ?? 2.6); sun.position.set(6, 10, 6); sc.add(sun);
+    const sunDir = it.sun_dir ?? [6, 10, 6];
+    if (!Array.isArray(sunDir) || sunDir.length !== 3 || !sunDir.every(Number.isFinite)
+        || Math.hypot(...sunDir) === 0) throw new Error(`Площадка ${st.box.dataset.sid}: неверное sun_dir`);
+    const sun = new THREE.DirectionalLight(new THREE.Color(it.sun || "#fff1d6"), it.key ?? 2.6);
+    sun.name = 'stage-sun'; sun.position.fromArray(sunDir).normalize().multiplyScalar(10); sc.add(sun);
     const rim = new THREE.DirectionalLight(new THREE.Color(it.rim || "#5fd4c4"), it.rim_power ?? 1.6); rim.position.set(-6, 4, -6); sc.add(rim);
     const lvl = (it.water && it.water.level) ?? 0;
     let map = null;
@@ -308,7 +317,7 @@ const SCN = (() => {
       const url = D.http + `_game/maps/${it.map}.glb`;
       const gm = await gltf(`Карта ${url}`, (loader, ok, fail) => loader.load(url, ok, undefined, fail));
       sc.add(gm.scene);
-      map = window.T3.prepareDotaMap(THREE, gm.scene, D.http + `_game/maps/${it.map}_tex/`, { water: it.water || {}, sun: it.sun_dir });
+      map = window.T3.prepareDotaMap(THREE, gm.scene, D.http + `_game/maps/${it.map}_tex/`, { water: it.water || {}, sun: sunDir });
       await map.ready;
       // Небо: вертикальный градиент на большой сфере (в игре сверху неба не видно — делаем в тон туману)
       const skyGeo = new THREE.SphereGeometry(900, 32, 16);

@@ -505,12 +505,28 @@ def check_scene(sc, label):
     warn, ids, cues = [], set(), set((sc.get("cues") or {}).keys()) | set((sc.get("at") or {}).keys())
     def at_ok(at, where):
         if isinstance(at, str):
-            key = re.split(r"[+\-]", at)[0]
-            if key not in cues:
+            match = re.fullmatch(r"([^+\-]+)([+\-](?:\d+(?:\.\d*)?|\.\d+))?", at)
+            if not match:
+                warn.append(f"{where}: неверное время «{at}»")
+            elif match[1] not in cues:
+                key = match[1]
                 warn.append(f"{where}: метка «{key}» не объявлена в cues")
+        elif at is not None and (isinstance(at, bool) or not isinstance(at, (int, float)) or not math.isfinite(at)):
+            warn.append(f"{where}: время должно быть конечным числом или меткой")
     def walk(items, prefix=None):
+        if items is not None and not isinstance(items, list):
+            warn.append(f"{prefix or 'scene'}: items должен быть списком")
+            return
         for k, it in enumerate(items or []):
+            if not isinstance(it, dict):
+                warn.append(f"{prefix or 'scene'}[{k}]: элемент должен быть объектом")
+                continue
             iid = it.get("id") or (f"{prefix}.{k}" if prefix else f"i{k}")
+            if not isinstance(iid, str):
+                warn.append(f"{prefix or 'scene'}[{k}]: id должен быть строкой")
+                continue
+            if iid in ids:
+                warn.append(f"повторный id «{iid}»")
             ids.add(iid)
             t = it.get("type", "text")
             if t not in SC_TYPES:
@@ -521,13 +537,18 @@ def check_scene(sc, label):
                 if f not in SC_FRAMES:
                     warn.append(f"{iid}: неизвестная рамка «{f}»")
             i = it.get("in")
+            at_ok(it.get("at"), iid)
+            at_ok(it.get("start"), iid + '.start')
             if i:
                 fx = i if isinstance(i, str) else i.get("fx")
                 if fx not in SC_IN:
                     warn.append(f"{iid}: неизвестное появление «{fx}»")
                 at_ok(it.get("at") if isinstance(i, str) else i.get("at", it.get("at")), iid)
             if t in ("row", "col", "panel"):
-                walk([dict(it.get("child") or {}, **c) for c in it.get("items", [])], iid)
+                children = it.get('items')
+                if isinstance(children, list):
+                    children = [dict(it.get("child") or {}, **c) if isinstance(c, dict) else c for c in children]
+                walk(children, iid)
     walk(sc.get("items"))
     for e in sc.get("fx", []):
         if e.get("fx") not in SC_FX:
@@ -543,6 +564,8 @@ def check_scene(sc, label):
     for k, v in (sc.get("at") or {}).items():
         if v is None:
             warn.append(f"метка «{k}»: слово не найдено в озвучке")
+        elif isinstance(v, bool) or not isinstance(v, (float, int)) or not math.isfinite(v):
+            warn.append(f"метка «{k}»: требуется конечное число секунд")
     for w in warn:
         print(f"    ⚠ {label}: {w}")
     return warn
@@ -749,6 +772,10 @@ def prepare(ep, heroes, items, work_dir=None):
     parts = ep["parts"] + ([dict(ep["outro"], outro=True)] if ep.get("outro") else [])   # финал по желанию
     if ep.get("hook"):                       # короткий хук перед фактами
         parts = [dict(ep["hook"], hook=True)] + parts
+    # Reject structural/timing typos before spending requests on voice synthesis.
+    for i, part in enumerate(parts):
+        if part.get('scene') and check_scene(part['scene'], f'часть {i}'):
+            raise ValueError(f'Неверная сцена в части {i}; исправьте сообщения выше')
     for i, f in enumerate(parts):
         text = f["voice"]
         mp3 = work_dir / f"v{i}.mp3"
@@ -763,7 +790,8 @@ def prepare(ep, heroes, items, work_dir=None):
             if sc.get("cues"):
                 sc["at"] = {k: cue_time(seg["words"], c) for k, c in sc.pop("cues").items()}
                 print("    метки сцены:", {k: (round(t, 2) if t is not None else "НЕ НАЙДЕНО") for k, t in sc["at"].items()})
-            check_scene(sc, "hook" if f.get("hook") else "outro" if f.get("outro") else f"факт {i}")
+            if check_scene(sc, "hook" if f.get("hook") else "outro" if f.get("outro") else f"факт {i}"):
+                raise ValueError(f'Неверная сцена в части {i}; исправьте сообщения выше')
             seg.update(scene=sc, hook=bool(f.get("hook")), outro=bool(f.get("outro")), headline="", sfx=f.get("sfx", []),
                        at=[], watermark=WATERMARK)
         elif f.get("outro"):
@@ -1103,10 +1131,16 @@ def mix_audio(segs, total, wav_path):
     def scene_at(sc, at):
         """Время в сцене: число, метка или «метка+0.3» / «метка-0.3» (как when() в scene.js)."""
         if isinstance(at, str):
-            m = re.match(r"^([^+\-]+)([+\-][\d.]+)?$", at)
+            m = re.fullmatch(r"([^+\-]+)([+\-](?:\d+(?:\.\d*)?|\.\d+))?", at)
             base = (sc.get("at") or {}).get(m[1]) if m else None
-            return None if base is None else base + (float(m[2]) if m[2] else 0)
-        return float(at or 0)
+            if base is None or isinstance(base, bool) or not isinstance(base, (int, float)) or not math.isfinite(base):
+                raise ValueError(f'Не разрешена метка времени сцены: {at}')
+            return base + (float(m[2]) if m[2] else 0)
+        if at is None:
+            return 0.0
+        if isinstance(at, bool) or not isinstance(at, (int, float)) or not math.isfinite(at):
+            raise ValueError(f'Неверное время сцены: {at}')
+        return float(at)
     def clips(items):
         for it in items or []:
             if it.get("type") == "video" and it.get("clip", {}).get("wav"):
@@ -1137,7 +1171,7 @@ def mix_audio(segs, total, wav_path):
             t0 = scene_at(sc, at)
             clip, gain = it["clip"], float(it.get("audio", 0))
             period = round(len(clip["frames"]) / clip["fps"] * SR)
-            if t0 is None or period <= 0 or gain <= 0:
+            if period <= 0 or gain <= 0:
                 continue
             origin = round((s["start"] + t0) * SR)
             begin = max(0, round(s["start"] * SR), origin)
@@ -1159,8 +1193,6 @@ def mix_audio(segs, total, wav_path):
                 begin += length
         for e in sc.get("sounds", []):
             at = scene_at(sc, e.get("at", 0))
-            if at is None:
-                continue
             snd, gain = SND.get(e.get("kind", "pop"), SND["pop"])
             add(s["start"] + at, snd, gain * float(e.get("gain", 1)))
     peak = float(np.abs(mix).max())                # не обрезать пики (хрип): уровень опустить целиком, громкость потом выровняет loudnorm

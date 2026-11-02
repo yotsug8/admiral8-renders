@@ -192,7 +192,6 @@ def head_at(who):
  return (ev.matrix_world@ev.pose.bones['head'].matrix).translation
 
 FIT_FACTORS={}
-SHOT_FIT={}
 PANIC_HEAD=None
 
 def place(f, forced=None):

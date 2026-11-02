@@ -229,6 +229,7 @@ def troupe(hero):
 def timeline(sc, V):
     """События по времени: реплики — по длине озвучки. Возвращает (длина, реплики, крюки)."""
     t, prev, lines, hooks = 0.5, None, [], []
+    hook_positions = {k: tuple(c['at']) for k, c in sc['cast'].items()}
     yaw = lambda a, b: math.degrees(math.atan2(sc["cast"][b]["at"][1] - sc["cast"][a]["at"][1], sc["cast"][b]["at"][0] - sc["cast"][a]["at"][0]))
     cur = {k: yaw(k, listener(sc, k)) for k in sc["cast"]}; free = {k: 0.0 for k in sc["cast"]}   # куда смотрит; когда доповернётся
     for i, ev in enumerate(sc["events"]):
@@ -248,14 +249,18 @@ def timeline(sc, V):
                     cur[k] += ang; free[k] = sum(e["_turn"][:2])
             lines.append(e); t += d; prev = ev["who"]
         else:
-            A, B = sc["cast"][ev["who"]]["at"], sc["cast"][ev["to"]]["at"]
+            A, B = hook_positions[ev["who"]], hook_positions[ev["to"]]
             th = t + 0.3                                 # замах
             rel = th + 0.45                              # крюк вылетел
-            u = ((B[0] - A[0]) / math.dist(A, B), (B[1] - A[1]) / math.dist(A, B))
+            distance = math.dist(A, B)
+            if distance < 1e-6:
+                raise ValueError('крюк: отправитель и цель находятся в одной точке')
+            u = ((B[0] - A[0]) / distance, (B[1] - A[1]) / distance)
             land = (A[0] + u[0] * 200, A[1] + u[1] * 200)   # притянуло — вплотную к Пуджу (касание — ближе 185)
             hit = rel + math.dist(A, B) / HOOK_V
             back = hit + math.dist(B, land) / HOOK_V
             hooks.append(dict(ev, t0=round(th, 2), rel=round(rel, 2), hit=round(hit, 2), back=round(back, 2), land=land))
+            hook_positions[ev['to']] = land
             t, prev = back + 0.6, None
     return round(t + TAIL, 2), lines, hooks
 
@@ -367,6 +372,25 @@ def pick(info, kind):
     if not c:
         print(f"  нет анимации «{kind}» — стойка {info['idle']}")
     return c[0] if c else info["idle"]
+
+
+def hook_position(x, y, z, hooks, t):
+    """Compose sequential pulls; an earlier completed hook must not hide a later one."""
+    for h in sorted(hooks, key=lambda h: h['hit']):
+        if t < h['hit']:
+            break
+        duration = h['back'] - h['hit']
+        k = min(1.0, (t - h['hit']) / duration) if duration > 0 else 1.0
+        x += (h['land'][0] - x) * k
+        y += (h['land'][1] - y) * k
+        z = 45 * math.sin(math.pi * k)
+    return x, y, z
+
+
+def hook_animation(track, hook, flail, stun):
+    """Override only the pull interval; later speech/gestures stay on the track."""
+    return [x for x in track if x[0] < hook['hit'] or x[0] > hook['back']] + [
+        (hook['hit'], flail), (hook['back'], stun)]
 
 
 def build(sc, V, folder):
@@ -495,11 +519,7 @@ def build(sc, V, folder):
             for a, b, dist, fx, fy in ws:                 # шаг: приходит в свою точку из точки dist позади, ровно, разгон 0,3 с
                 k = walk_progress(min(1.0, max(0.0, (t - a) / (b - a))), min(0.45, 0.3 / (b - a)))
                 x, y = x - fx * dist * (1 - k), y - fy * dist * (1 - k)
-            for h in hs:
-                if t >= h["hit"]:
-                    k = min(1.0, (t - h["hit"]) / (h["back"] - h["hit"]))
-                    x, y = x + (h["land"][0] - x) * k, y + (h["land"][1] - y) * k
-                    return (x, y, 45 * math.sin(math.pi * k), 0, yaw, 0)
+            x, y, z = hook_position(x, y, z, hs, t)
             return (x, y, z, 0, yaw, 0)
         return at
 
@@ -551,7 +571,7 @@ def build(sc, V, folder):
         anims[h["who"]] += [(h["t0"], "pudge_meathook_start"), (round(h["t0"] + 0.9, 2), "pudge_meathook_end"),
                             (round(h["t0"] + 1.5, 2), info[h["who"]]["idle"])]
         tgt = info[h["to"]]
-        anims[h["to"]] = [x for x in anims[h["to"]] if x[0] < h["hit"]] + [(h["hit"], pick(tgt, "flail")), (h["back"], pick(tgt, "stun"))]
+        anims[h["to"]] = hook_animation(anims[h["to"]], h, pick(tgt, "flail"), pick(tgt, "stun"))
     idle_phases = {}
     for k in anims:                                       # анимация, начатая позже следующей, — прочь; по порядку
         anims[k] = sorted(dict((round(t, 2), a) for t, a in anims[k]).items())
@@ -614,7 +634,7 @@ def build(sc, V, folder):
             if t < h["rel"]:
                 return (hand[0], hand[1], 110, 0, 0, 0)
             if t < h["hit"]:
-                k = (t - h["rel"]) / (h["hit"] - h["rel"]); B = pos[h["to"]]
+                k = (t - h["rel"]) / (h["hit"] - h["rel"]); B = tm(h["hit"], p)[:2]
                 return (hand[0] + (B[0] - hand[0]) * k, hand[1] + (B[1] - hand[1]) * k, 110, 0, 0, 0)
             x, y, z, *_ = tm(t, p)
             return (x, y, z + 90, 0, 0, 0)

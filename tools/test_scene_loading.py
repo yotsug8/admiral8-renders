@@ -191,6 +191,25 @@ class SceneLoadingTests(unittest.TestCase):
             delta = self.server.requests - before
         self.assertFalse(any('/assets/tex/' in path for path in delta), delta)
 
+    def test_stage_sun_direction_matches_map_material_direction(self):
+        self.page.evaluate('''() => {
+            const original = T3.prepareDotaMap;
+            T3.prepareDotaMap = (...args) => {window.mapSun=args[3].sun; return original(...args);};
+        }''')
+        self.assertEqual(self.outcome('init(arg)', self.stage(map='__test_good', sun_dir=[-3, 4, 0])), {'ok': True})
+        result = self.page.evaluate('''() => ({shader:mapSun,
+            light:SEGS[0].sc.stages[0].sc.getObjectByName('stage-sun').position.clone().normalize().toArray()})''')
+        self.assertEqual(result['shader'], [-3, 4, 0])
+        for actual, expected in zip(result['light'], [-.6, .8, 0]):
+            self.assertAlmostEqual(actual, expected)
+
+    def test_invalid_sun_direction_rejects_scene(self):
+        for direction in ([0, 0, 0], [1, 2], ['x', 1, 2]):
+            self.reload()
+            result = self.outcome('init(arg)', self.stage(sun_dir=direction))
+            self.assertFalse(result['ok'])
+            self.assertIn('sun_dir', result['error'])
+
     def test_procedural_stage_waits_for_both_textures(self):
         self.assertEqual(self.outcome('init(arg)', self.stage()), {'ok': True})
         self.page.evaluate('seek(.5)')

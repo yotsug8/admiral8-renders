@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import video
-import check
+from tools import check
 
 
 class FrameCoverageTests(unittest.TestCase):

@@ -2,7 +2,7 @@
 #   python tools/check.py            все выпуски (быстрая проверка без голоса: ключевые кадры, раскладка, метки) + логика сценок
 #   python tools/check.py demo_layouts        только выбранные выпуски
 # Выпуски без нужных ресурсов пропускаются. Код 1 — ошибки, 2 — неполная проверка/блокировка.
-import glob, os, re, subprocess, sys
+import glob, json, os, re, subprocess, sys
 from contextlib import contextmanager
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -52,8 +52,14 @@ def run(cmd, env):
 
 def needs_game(path):
     with open(path, encoding="utf-8") as source:
-        s = source.read()
-    return bool(re.search(r'"(game:|file:_game/)|"type": "(model|stage)"', s))
+        data = json.load(source)
+    def visit(value):
+        if isinstance(value, dict):
+            return value.get('type') in ('model', 'stage') or any(visit(v) for v in value.values())
+        if isinstance(value, list):
+            return any(visit(v) for v in value)
+        return isinstance(value, str) and value.replace('\\', '/').startswith(('game:', 'file:_game/'))
+    return visit(data)
 
 
 def main():

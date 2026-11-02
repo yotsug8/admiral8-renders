@@ -301,7 +301,7 @@ def speaker(s):
         rb.matrix = MW.inverted() @ (Matrix.Translation(Vector((0, 0, -dz))) @ M); bpy.context.view_layer.update()
     if walk:
         # шаг: бедро вперёд-назад, колено сгибается на выносе, стопа ровно, таз качается, руки в противоход, плечи скручиваются;
-        # частота — от скорости и длины ноги (шаг 0,7 ноги): ступни не скользят по земле
+        # частота — эвристика от скорости и длины ноги (шаг 0,7 ноги); скольжение проверяется отдельно
         B = {b.name.lower(): b.name for b in arm.pose.bones}
         leg = {sd: (B.get(f"thigh_{sd.lower()}") or B.get(f"hip_{sd.lower()}"), B.get(f"knee_{sd.lower()}"), B.get(f"ankle_{sd.lower()}"))
                for sd in ("L", "R")}

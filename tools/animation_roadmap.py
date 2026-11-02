@@ -99,23 +99,23 @@ def render(data, regular, bold, assets):
     p.text(72,164,'ОТ ПОЗЫ',112,paper,True)
     p.text(72,298,'ДО ИСТОРИИ',105,pale_green,True)
     p.text(79,461,'Дорожная карта',46,paper)
-    p.text(79,532,'24 направления · 12 учебных блоков',28,'#c4cfc4')
+    p.text(79,532,'История · движение · законченный кадр',28,'#c4cfc4')
     p.line(79,610,755,610,'#576962',2)
     p.text(79,643,data['updated'],28,paper)
     p.text(455,643,f"РЕДАКЦИЯ {data['revision']:02d}",28,'#c4cfc4')
     # Section colors carry meaning; no miniature legend or repeated status badges.
     p.rect(0,720,W,670,pale_green)
     p.text(72,764,'01',64,green,True)
-    p.text(193,765,'УЖЕ РАБОТАЕТ',64,green,True)
-    p.text(75,855,'Проверено в коротких пробах. Весь навык этим ещё не закрыт.',32,green)
+    p.text(193,765,'ПРОВЕРЕНО В ПРОБАХ',64,green,True)
+    p.text(75,855,'Полезные результаты. Полное освоение навыков ещё впереди.',32,green)
     for i,item in enumerate(data['previews']):
-        x=72+560*i
-        p.rect(x,927,536,286,ink)
-        p.picture(assets/item['file'],x+5,932,526,276,contain=True)
+        x=72+840*i
+        p.rect(x,927,816,286,ink)
+        p.picture(assets/item['file'],x+5,932,806,276,contain=True)
         p.rect(x,927,94,42,green)
         p.text(x+16,934,'ЕСТЬ',24,'#ffffff',True)
         p.text(x,1240,item['poster_title'],36,green,True)
-        p.paragraph(x,1294,item['poster_note'],520,28,ink,2)
+        p.paragraph(x,1294,item['poster_note'],800,28,ink,2)
     # Active work is visually separated from both passed studies and backlog.
     p.rect(0,1390,W,454,orange)
     p.text(72,1431,'02',64,ink,True)
@@ -145,6 +145,7 @@ def render(data, regular, bold, assets):
     p.text(76,3060,'Затем — повторить это качество на новой сцене.',32,'#bfcdc0')
     p.line(76,3121,1724,3121,'#576962',1)
     p.text(76,3146,'Статусы — по проверенным результатам. Без выдуманных процентов и сроков.',25,'#aebfb5')
+    p.text(76,3180,'Rain Rig © Blender Foundation · studio.blender.org · CC BY 4.0 · позы, свет и камера изменены',18,'#aebfb5')
     p.svg.append('</svg>')
     return p
 
@@ -183,8 +184,8 @@ def main():
         raise ValueError('Poster milestones must cover each direction exactly once')
     if len(data['poster']['milestones'])!=6 or len(data['poster']['active_steps'])!=3:
         raise ValueError('Expected six milestones and three active steps')
-    if len(data['previews'])!=3:
-        raise ValueError('Expected three evidence images')
+    if len(data['previews'])!=2:
+        raise ValueError('Expected two useful result images')
     for name in [data['artwork']]+[item['file'] for item in data['previews']]:
         path=(args.assets/name).resolve()
         if not path.is_relative_to(args.assets.resolve()) or not path.is_file():raise ValueError('Missing artwork: '+name)

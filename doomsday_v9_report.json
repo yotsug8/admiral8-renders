@@ -502,5 +502,5 @@
     "doomsday_v9_movement_test_frames.jpg"
   ],
   "video_sha256": "83ffdd71bf76b86f98dfa8d390ac1df05275aa9e807add2842c57a9b38a257d8",
-  "review_status": "All 240 frames decoded. Forearm/hand-versus-torso skin surface check: zero intersections on 240 integer frames. Weapon check: known grip boundary contacts up to 12 pairs, three wrist-boundary pairs on frame 322; no confirmed containment. Full motion reviewed on sheets, critical poses from both sides. Final orthographic view fits evaluated bounds over all 240 frames. Fine finger contacts and artistic acceptance remain open."
+  "review_status": "REJECTED after holistic review of the complete published MP4 and comparison with the reference. Weak whole-body effort and impact, unclear character interaction, distant framing, and an idle recovery that removes the intended conflict. Previous numeric checks remain limited technical evidence and do not establish artistic quality. Retained only for comparison; no replacement approved."
 }

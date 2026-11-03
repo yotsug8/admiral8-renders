@@ -433,6 +433,15 @@ def build():
     strip(giant,native('pudge','pudge_meathook_start'),108,159,blend=7)
     hurt=strip(giant,native('pudge','pudge_stun'),264,295,blend=5)
     hurt.action_frame_end=20;hurt.scale=31/20;hurt.frame_start=264;hurt.frame_end=295
+    # A full game stun rolls the head too far for this close-up. A brief,
+    # eased recoil preserves the neck surface and the response to a small hit.
+    hurt.use_animated_influence=True
+    for frame,weight in ((264,0),(270,.4),(279,.4),(295,0)):
+        hurt.influence=weight;hurt.keyframe_insert('influence',frame=frame)
+    for curve in hurt.fcurves:
+        if curve.data_path=='influence':
+            for key in curve.keyframe_points:
+                key.interpolation='BEZIER';key.handle_left_type='AUTO_CLAMPED';key.handle_right_type='AUTO_CLAMPED'
     slam=strip(giant,native('pudge','pudge_attack1'),290,353,blend=6)
     slam.use_animated_time=True
     # The game swing crosses the ground at source phase 14.93. Pose to pose:

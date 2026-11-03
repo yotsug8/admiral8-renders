@@ -1,0 +1,26 @@
+{
+  "status": "WHOLE_SCENE_MOTION_DRAFT_NOT_FINAL",
+  "file": "doomsday_v12_full_draft.mp4",
+  "sha256": "1cc8f619ece79134c05d3ddd79e17432a267c420c68c568923b7d95b03622c19",
+  "duration_seconds": 14,
+  "frames": 420,
+  "fps": 30,
+  "resolution": [
+    960,
+    540
+  ],
+  "audio": {
+    "language": "Russian threat, original game cry",
+    "lufs": -14.01,
+    "true_peak_dbtp": -2.22,
+    "heard": false,
+    "same_aac_packets_as_reviewed_mix": true
+  },
+  "visual_review": "One-second frames across complete duration, attack at 0.1 s spacing, grasp close-ups from two sides. Real-time playback not confirmed.",
+  "geometry": "All 420 frames checked before final timing change; changed frames 195–278 repeated. No forearm/hand-to-torso surface overlaps found. Finger-closing contacts 221–224 retained. Inconclusive containment samples remain. Not an overall PASS.",
+  "limits": [
+    "Workbench materials; no final environment or effects.",
+    "Opening performance and sustained effort remain restrained.",
+    "Not approved as finished animation."
+  ]
+}

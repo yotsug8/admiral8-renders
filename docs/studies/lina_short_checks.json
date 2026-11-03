@@ -1,0 +1,281 @@
+{
+  "frames": 270,
+  "fps": 30.0,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "duration_s": 9.0,
+  "video_sha256": "b115312c97adef2e4e17b32a3fd93fa4822e4600ccfa797a0cb0f97571d22509",
+  "scene_sha256": "95bbe651b950bc81b1b24e4fa87e4f621451812b5f67122efc2d181fc3dcdee1",
+  "max_mean_frame_error_255": 1.1015046296296296,
+  "min_mean_frame_255": 62.04087962962963,
+  "audio": {
+    "duration_s": 9.002666666666666,
+    "sample_peak_dbfs": -1.3820908414156157,
+    "clipped_samples": 0,
+    "max_channel_difference": 0.49890652298927307,
+    "black_tail_peak_dbfs": null,
+    "black_tail_nonzero_samples": 0,
+    "lufs": -14.84,
+    "true_peak_dbtp": -1.38
+  },
+  "audio_heard": false,
+  "audio_normalization": "FFmpeg loudnorm I=-14 TP=-1.5 LRA=11",
+  "passed": true,
+  "scope": "Export correspondence, format, levels and quiet ending; visual sheets reviewed separately. No auditory acceptance.",
+  "status": "Первая законченная версия; ожидает зрительского разбора",
+  "visual_review": {
+    "whole_clip": "Кадр каждую секунду всего MP4; подробные листы реакции 54–77 и разворота/ухода 130–200, включая 165–179 покадрово.",
+    "intended": "Огонь в руке, приближение угрозы, испуг, решение уйти, уход и тихая поляна.",
+    "observed": "Эти фазы присутствуют; огонь перенесён к видимой кисти, край юбки на развороте помещается в рамку.",
+    "limitations": "Непрерывное воспроизведение не подтверждено; мимика и пальцы сдержанны. Прежние ограничения контактов воротника сохраняются."
+  },
+  "sources": [
+    {
+      "vpk_path": "sounds/weapons/hero/lina/preattack.vsnd_c",
+      "local": "_game/study/lina_threat/final/audio/sources/sounds/weapons/hero/lina/preattack.wav",
+      "sha256": "f7015ec429c168571b2e452a4d8b81de4b833f964a4815c7f4978680b5c65e50",
+      "owner": "Valve, Dota 2"
+    },
+    {
+      "vpk_path": "sounds/physics/movement/hero/lina/idle_loop.vsnd_c",
+      "local": "_game/study/lina_threat/final/audio/sources/sounds/physics/movement/hero/lina/idle_loop.wav",
+      "sha256": "42255008cbc5c05d229cc564c03c0acf55d804539159592c333161826d84b387",
+      "owner": "Valve, Dota 2"
+    },
+    {
+      "vpk_path": "sounds/ambient/soundscapes/snowy_wind_lp.vsnd_c",
+      "local": "_game/study/lina_threat/final/audio/sources/sounds/ambient/soundscapes/snowy_wind_lp.wav",
+      "sha256": "9ea4fde341f102744841a37f9c2b6052ea9237a2e310ab159e124285aba132fa",
+      "owner": "Valve, Dota 2"
+    },
+    {
+      "vpk_path": "sounds/weapons/hero/lina/dragonslave01.vsnd_c",
+      "local": "_game/study/lina_threat/final/audio/sources/sounds/weapons/hero/lina/dragonslave01.wav",
+      "sha256": "71577fbe93cc46bf4751e0c1b09f004fc1502970f1a09ce0ab6b88afd2d0bead",
+      "owner": "Valve, Dota 2"
+    }
+  ],
+  "cues": [
+    {
+      "name": "Возникновение огня",
+      "source": "sounds/weapons/hero/lina/preattack.vsnd_c",
+      "at_s": 0.0,
+      "end_s": 0.72,
+      "source_offset_s": 0.0,
+      "duration_s": 0.72,
+      "pitch": 1.0,
+      "lowpass_hz": 8500,
+      "rms_before_envelope_dbfs": -24,
+      "pan": [
+        [
+          0,
+          0.18
+        ]
+      ],
+      "envelope": [
+        [
+          0,
+          0
+        ],
+        [
+          0.025,
+          1
+        ],
+        [
+          0.48,
+          0.75
+        ],
+        [
+          0.72,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Рост, удержание и угасание огня",
+      "source": "sounds/physics/movement/hero/lina/idle_loop.vsnd_c",
+      "at_s": 0.18,
+      "end_s": 2.3,
+      "source_offset_s": 0.0,
+      "duration_s": 2.12,
+      "pitch": 1.0,
+      "lowpass_hz": 6500,
+      "rms_before_envelope_dbfs": -29,
+      "pan": [
+        [
+          0,
+          0.18
+        ]
+      ],
+      "envelope": [
+        [
+          0,
+          0
+        ],
+        [
+          0.3,
+          0.55
+        ],
+        [
+          1.05,
+          1
+        ],
+        [
+          1.32,
+          0.42
+        ],
+        [
+          1.92,
+          0.35
+        ],
+        [
+          2.12,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Наплыв тени справа — воздушное давление",
+      "source": "sounds/ambient/soundscapes/snowy_wind_lp.vsnd_c",
+      "at_s": 1.5,
+      "end_s": 2.4,
+      "source_offset_s": 2.0,
+      "duration_s": 0.9,
+      "pitch": 1.0,
+      "lowpass_hz": 650,
+      "rms_before_envelope_dbfs": -26,
+      "pan": [
+        [
+          0,
+          0.65
+        ],
+        [
+          0.9,
+          0.25
+        ]
+      ],
+      "envelope": [
+        [
+          0,
+          0
+        ],
+        [
+          0.35,
+          1
+        ],
+        [
+          0.58,
+          0.8
+        ],
+        [
+          0.9,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Воздух при развороте",
+      "source": "sounds/ambient/soundscapes/snowy_wind_lp.vsnd_c",
+      "at_s": 4.12,
+      "end_s": 4.8,
+      "source_offset_s": 4.0,
+      "duration_s": 0.68,
+      "pitch": 1.0,
+      "lowpass_hz": 3200,
+      "rms_before_envelope_dbfs": -35,
+      "pan": [
+        [
+          0,
+          0.05
+        ],
+        [
+          0.68,
+          -0.15
+        ]
+      ],
+      "envelope": [
+        [
+          0,
+          0
+        ],
+        [
+          0.3,
+          1
+        ],
+        [
+          0.68,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Огненный уход влево и остаточный хвост",
+      "source": "sounds/weapons/hero/lina/dragonslave01.vsnd_c",
+      "at_s": 5.0,
+      "end_s": 7.83,
+      "source_offset_s": 0.0,
+      "duration_s": 2.83,
+      "pitch": 0.85,
+      "lowpass_hz": 7500,
+      "rms_before_envelope_dbfs": -22,
+      "pan": [
+        [
+          0,
+          0
+        ],
+        [
+          0.4,
+          -0.2
+        ],
+        [
+          1.4,
+          -0.72
+        ],
+        [
+          2.3,
+          -0.92
+        ],
+        [
+          2.83,
+          -0.92
+        ]
+      ],
+      "envelope": [
+        [
+          0,
+          0
+        ],
+        [
+          0.04,
+          1
+        ],
+        [
+          0.8,
+          0.85
+        ],
+        [
+          1.6,
+          0.55
+        ],
+        [
+          2.3,
+          0.15
+        ],
+        [
+          2.65,
+          0.04
+        ],
+        [
+          2.83,
+          0
+        ]
+      ]
+    }
+  ],
+  "project_checks": {
+    "passed": 18,
+    "skipped": 0
+  }
+}

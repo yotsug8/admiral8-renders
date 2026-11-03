@@ -2,14 +2,13 @@
   "frames": 180,
   "fps": 30,
   "duration": 6,
-  "max_mean_pixel_error": 1.3475231481481482,
-  "scene_sha256": "cbe94fe57b3f0c7f454ba5d28e872aea9ecb163d7ff1002810edb2b6ceaa678e",
-  "video_sha256": "83c79918b7e5eda860ce5e6fdde55bef2457a97e5583af2d2b7d226d902304d2",
+  "max_mean_pixel_error": 1.3355092592592592,
+  "scene_sha256": "d47670fff2fa77275f4aa6610165b2fe7fc272039da4a1a0792347681edb816b",
+  "video_sha256": "65cdae67f024e552c76c47d59a125bd577b78af328917868c7e62d1e9f5c6df0",
   "artistic_accepted": false,
-  "status": "Working preview, not accepted finished animation",
+  "status": "Working defensive reaction v3; v2 rejected; not a finished animation",
   "limits": [
     "No audio",
-    "Eye fixation and full skin/contact assessment remain open",
-    "Frame sheets reviewed; real-time continuous viewing not confirmed"
+    "Precise gaze fixation, all-frame skin/collision QA and real-time acting assessment remain open"
   ]
 }

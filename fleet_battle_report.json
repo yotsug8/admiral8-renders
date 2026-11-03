@@ -1,0 +1,97 @@
+{
+  "file": "fleet_battle.mp4",
+  "sha256": "4b036f698f9b07def66b055cbe1e04d56f61a01c9e71330539dbc3ad598318f0",
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "duration_s": 18.0,
+  "decoded_frames": 540,
+  "black_frames": [],
+  "min_frame_mean": 44.52268600463867,
+  "largest_uncut_changes": [
+    [
+      434,
+      16.06258201599121
+    ],
+    [
+      435,
+      15.920720100402832
+    ],
+    [
+      125,
+      15.758322715759277
+    ],
+    [
+      433,
+      15.647521018981934
+    ],
+    [
+      123,
+      15.531131744384766
+    ],
+    [
+      432,
+      15.391100883483887
+    ],
+    [
+      436,
+      15.025617599487305
+    ],
+    [
+      431,
+      14.99575138092041
+    ]
+  ],
+  "checks": {
+    "resolution": true,
+    "fps": true,
+    "duration": true,
+    "frames": true,
+    "no_black_frames": true
+  },
+  "scope": "Full video decode and image statistics; not a geometry or artistic certificate.",
+  "passed": true,
+  "audio": {
+    "lufs": -14.05,
+    "true_peak_dbtp": -3.21,
+    "decoded_samples": 864256,
+    "checks": {
+      "loudness": true,
+      "true_peak": true,
+      "no_clipping": true,
+      "duration": true,
+      "video_frames": true,
+      "video_fps": true
+    },
+    "passed": true
+  },
+  "audio_heard": false,
+  "video_mode": "stream_copy",
+  "tail_extension_s": 0.0,
+  "placement_continuity": {
+    "scene_sha256": "72e721b01b93b336f37b0fcf2181fcc67d53dcd0f99bd282394559f94dfea5aa",
+    "checked_frames": 540,
+    "actors": 14,
+    "max_angular_step": {
+      "frame": 286,
+      "actor": "Captain06_kunkka_placement",
+      "angle_deg": 18.843786703033377,
+      "distance": 0.11180339970798972
+    },
+    "max_position_step": {
+      "frame": 184,
+      "actor": "Captain03_kunkka_placement",
+      "angle_deg": 0.11869866986216948,
+      "distance": 0.6726086459001595
+    },
+    "failures": [],
+    "passed": true,
+    "scope": "Placement continuity only. Does not cover skin, contacts, framing, sound or acting."
+  },
+  "artistic_acceptance": "pending_user_review",
+  "visual_review": "46 full-resolution stills throughout the film, including cuts",
+  "project_checks": "18/18 passed",
+  "workshop_tests": "5 passed; real-cache integration opt-in skipped"
+}

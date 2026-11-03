@@ -1,11 +1,11 @@
 {
-  "data_sha256": "599a2370dbfcf67bce61bffcd6cde0ca1b285cdf3b0134df01fe85b54628ff77",
-  "svg_sha256": "73078e57148f8d776009a6d8d392510c288b19cf5d11f6a5dc8ba3500b92b675",
-  "png_sha256": "fde8631b3d4284d3802a2f2f14a25632d4b23a0a8e8001b1ede28b6fab2f0eee",
+  "data_sha256": "b723ee116d7c23cd5bd6a41cb0a1fa5111b6484d830446142825560567179bae",
+  "svg_sha256": "ad53a5d54020601cb01e588472514e1ed106fb358186cf2763b35314e56ee59e",
+  "png_sha256": "11d0879c0cfd45debc8bd977fca549b716e1d21f380a806539bf1d09816ecac0",
   "size": [
     1800,
     3200
   ],
   "blocks": 12,
-  "revision": 28
+  "revision": 29
 }

@@ -1,0 +1,21 @@
+{
+  "status": "Light animation preview; not a finished or artistically accepted film.",
+  "frames": 94,
+  "fps": 30,
+  "duration_seconds": 3.1333333333333333,
+  "dimensions": [
+    960,
+    540
+  ],
+  "audio": null,
+  "intent": "A two-handed attack is stopped; Axe makes one unsuccessful effort to free the weapon.",
+  "review_scope": "Action preview, fixed overview through contact, then closer effort shot. No final light, environment, effects or voice.",
+  "source_commit": "680dfdc32a28da8ec616084f9f889160516ade08",
+  "video_sha256": "ff718ca5824848ac188c4d61751121dbcfaaccbfb23c336f39692206232ffa39",
+  "documentation": "docs/productions/DOOMSDAY_PERFORMANCE.md",
+  "limitations": [
+    "The earlier full film remains rejected.",
+    "Integration with the preceding dialogue is not covered by this excerpt.",
+    "Surface and sampled-frame checks do not certify every continuous deformation."
+  ]
+}

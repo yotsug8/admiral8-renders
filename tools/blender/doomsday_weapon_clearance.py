@@ -57,7 +57,9 @@ def _surface(obj, graph, allow_wrist, mask_grip):
         for v in mesh.vertices:
             values = [(g.group, float(g.weight)) for g in v.groups]
             weights.append(values)
-            total = sum(value for _, value in values)
+            # Auxiliary selection/corrective groups are not deform-bone weights.
+            # Including them halves a fully hand-weighted vertex's legal ratio.
+            total = sum(value for index, value in values if index in names)
             legal = sum(value for index, value in values if index in allowed)
             if mask_grip and total > 0 and legal / total >= .8:
                 grip.add(v.index)

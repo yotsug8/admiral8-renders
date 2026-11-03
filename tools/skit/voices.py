@@ -160,9 +160,18 @@ def make(folder, lines):
         import video
         say = video.say_text(ln["text"])                       # {7.33|семь тридцать три} → как произносить
         refv = ""
-        if eng == "fishref" and v in __import__("game_vo").REF_LINES:   # образец голоса сменился — озвучить заново
-            __import__("game_vo").reference(v)          # собрать образец до ключа (иначе ключ сменится на следующем запуске)
-            refv = open(os.path.join(REPO, "_game", "vo", f"ref_{v}.json"), encoding="utf-8").read()
+        if eng == "fishref":
+            # Validate the reference language even when synthesized speech is
+            # cached; a cache hit must not bypass the Russian-voice contract.
+            reference_wav, _ = __import__("game_vo").reference(v)
+            if v in __import__("game_vo").REF_LINES:
+                refv = open(os.path.join(REPO, "_game", "vo", f"ref_{v}.json"), encoding="utf-8").read()
+            else:
+                # A newly verified Russian reference must not inherit speech
+                # synthesized from an older English reference for this hero.
+                # Legacy entries without provenance are deliberately invalidated.
+                with open(reference_wav, "rb") as source:
+                    refv = "audio-sha256:" + hashlib.sha256(source.read()).hexdigest()
         key = hashlib.md5(f"{eng}|{v}|{say}|{pitch if eng != 'game' else 0}{'|' + refv if refv else ''}".encode()).hexdigest()[:12]
         wav = os.path.join(folder, ln["name"] + ".wav")
         if db.get(ln["name"], {}).get("key") == key and os.path.exists(wav):

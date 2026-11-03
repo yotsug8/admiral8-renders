@@ -7,7 +7,7 @@
 #   в сценарии «голос sniper ref=sniper» (tools/skit/voices.py)
 #   py -3.11 tools/skit/game_vo.py clone sniper           свой закрытый голос на Fish из ~минуты спокойной речи героя (нужен баланс API)
 #                                                         (id → _game/vo/fish_voices.json; в сценарии: голос sniper fish=<id>)
-import glob, json, os, subprocess, sys
+import difflib, glob, hashlib, json, os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "tools"))
@@ -15,6 +15,7 @@ from paths import DOTA_ROOT, S2V
 VO = os.path.join(REPO, "_game", "vo")
 PAK = os.path.join(DOTA_ROOT, "game", "dota_russian", "pak01_dir.vpk")
 PREFIX = {"pudge": "pud_", "sniper": "snip_", "tidehunter": "tide_"}
+_REFERENCE_ASR = None
 
 
 def path(name):
@@ -65,15 +66,106 @@ REF_LINES = {
 }
 
 
+def _detect_reference_language(wav):
+    """Inspect the actual cached audio, without forcing Russian or downloading a model."""
+    global _REFERENCE_ASR
+    try:
+        if _REFERENCE_ASR is None:
+            from faster_whisper import WhisperModel
+            _REFERENCE_ASR = WhisperModel("small", device="cpu", compute_type="int8",
+                                          cpu_threads=4, local_files_only=True)
+        segments, info = _REFERENCE_ASR.transcribe(wav, language=None, beam_size=3, vad_filter=False)
+        text = " ".join(segment.text.strip() for segment in segments).strip()
+    except Exception as exc:
+        raise ValueError("Язык голосового образца не подтверждён: нужна локальная проверка "
+                         "faster-whisper small. Автоматическая отправка в Fish остановлена.") from exc
+    return {"language": info.language, "probability": float(info.language_probability), "text": text}
+
+
+def _validated_reference(hero, wav, metadata):
+    """Keep valid legacy caches, but bind language evidence to the exact audio and text."""
+    if not isinstance(metadata, dict) or not isinstance(metadata.get("text"), str) or not metadata["text"].strip():
+        raise ValueError(f"Образец {hero}: отсутствует непустой текст в метаданных.")
+    files = metadata.get("files")
+    if not isinstance(files, list) or not files or any(
+            not isinstance(name, str) or name != os.path.basename(name)
+            or "/" in name or "\\" in name or not name.endswith(".mp3")
+            or os.path.basename(os.path.dirname(path(name[:-4]))) != hero for name in files):
+        raise ValueError(f"Образец {hero}: неверный список исходных реплик героя.")
+    declared = metadata.get("source_language")
+    if declared is not None and not isinstance(declared, str):
+        raise ValueError(f"Образец {hero}: неверное поле source_language.")
+    declared_base = declared.lower().replace("_", "-").split("-")[0] if declared else None
+    if declared_base and declared_base != "ru":
+        raise ValueError(f"Образец {hero}: ожидается русский голос (ru), кэш помечен {declared}. "
+                         "Нужен проверенный русский образец; английский автоматически не подставляется.")
+    with open(wav, "rb") as source:
+        digest = hashlib.sha256(source.read()).hexdigest()
+    text_digest = hashlib.sha256(metadata["text"].encode("utf-8")).hexdigest()
+    evidence = metadata.get("language_verification", {})
+    if not isinstance(evidence, dict):
+        raise ValueError(f"Образец {hero}: неверные метаданные проверки языка.")
+    if evidence.get("audio_sha256") and evidence["audio_sha256"] != digest:
+        raise ValueError(f"Образец {hero}: WAV изменился после проверки языка. "
+                         "Нужно заново проверить образец, а не использовать старое подтверждение.")
+    if (declared_base == "ru" and evidence.get("method") == "faster-whisper:auto-language:small"
+            and evidence.get("hero") == hero and evidence.get("audio_sha256") == digest
+            and evidence.get("text_sha256") == text_digest and evidence.get("language") == "ru"
+            and isinstance(evidence.get("probability"), (int, float)) and evidence["probability"] >= .90
+            and isinstance(evidence.get("text_similarity"), (int, float)) and evidence["text_similarity"] >= .65):
+        return metadata
+    # Missing language is not evidence of Russian. Validate once locally;
+    # known good legacy caches retain their audio and text unchanged.
+    observed = _detect_reference_language(wav)
+    if observed["language"] != "ru" or observed["probability"] < .90:
+        raise ValueError(f"Образец {hero}: ожидается ru, автоматически определён "
+                         f"{observed['language']} ({observed['probability']:.1%}). "
+                         "Язык не подтверждён; отправка образца в Fish остановлена.")
+    normalize = lambda text: "".join(c for c in text.casefold().replace("ё", "е") if c.isalpha())
+    similarity = difflib.SequenceMatcher(None, normalize(metadata["text"]), normalize(observed["text"])).ratio()
+    if similarity < .65:
+        raise ValueError(f"Образец {hero}: текст метаданных не соответствует распознанной речи "
+                         f"({similarity:.1%}). Нужно проверить текст перед клонированием.")
+    verified = dict(metadata)
+    verified.update(source_language="ru", language_verification={
+        "method": "faster-whisper:auto-language:small", "hero": hero,
+        "audio_sha256": digest, "text_sha256": text_digest,
+        "language": observed["language"], "probability": observed["probability"],
+        "transcript": observed["text"], "text_similarity": similarity,
+        "scope": "Automatic language and transcript agreement, not voice ownership or subjective pronunciation."})
+    return verified
+
+
 def reference(hero, seconds=22):
     """Образец голоса героя для мгновенного клонирования Fish: ~22 с спокойной речи из его русской озвучки
     → (_game/vo/ref_<герой>.wav, текст образца). Строится один раз."""
-    import re
     import imageio_ffmpeg
     FF = imageio_ffmpeg.get_ffmpeg_exe()
     wav, txt_path = os.path.join(VO, f"ref_{hero}.wav"), os.path.join(VO, f"ref_{hero}.json")
     if os.path.exists(wav) and os.path.exists(txt_path):
-        return wav, json.load(open(txt_path, encoding="utf-8"))["text"]
+        with open(txt_path, encoding="utf-8") as source:
+            metadata = json.load(source)
+        # Legacy metadata participates in existing synthesized-voice cache
+        # keys. Keep its bytes intact: language migration must not resynthesize
+        # already valid speech. Sidecar evidence is bound to both input hashes.
+        evidence_path = os.path.join(VO, f"ref_{hero}.language.json")
+        combined = dict(metadata) if isinstance(metadata, dict) else metadata
+        if os.path.exists(evidence_path):
+            with open(evidence_path, encoding="utf-8") as source:
+                evidence = json.load(source)
+            if not isinstance(evidence, dict) or not isinstance(combined, dict):
+                raise ValueError(f"Образец {hero}: неверные метаданные проверки языка.")
+            for field in ("source_language", "language_verification"):
+                if field not in combined and field in evidence:
+                    combined[field] = evidence[field]
+        verified = _validated_reference(hero, wav, combined)
+        if verified != combined:
+            proof = {field: verified[field] for field in ("source_language", "language_verification")}
+            temporary = evidence_path + f".{os.getpid()}.tmp"
+            with open(temporary, "w", encoding="utf-8") as destination:
+                json.dump(proof, destination, ensure_ascii=False, indent=1)
+            os.replace(temporary, evidence_path)
+        return wav, verified["text"]
     db = catalog(hero)
     laugh = re.compile(r"(х[еа]-?){2,}|([аоуыэ])\2{2,}|[аоуэ]-[аоуэ]-")
     good = list(REF_LINES[hero].items()) if hero in REF_LINES else \
@@ -88,12 +180,17 @@ def reference(hero, seconds=22):
         files.append(p); texts.append(v); total += float(m[3])
         if total >= seconds:
             break
+    if not files:
+        raise ValueError(f"Не найдены подходящие русские реплики для образца {hero}; "
+                         "английская озвучка автоматически не подставляется.")
     lst = os.path.join(VO, f"ref_{hero}.lst")
     open(lst, "w", encoding="utf-8").write("".join(f"file '{os.path.abspath(f)}'\n" for f in files))
     subprocess.run([FF, "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-ac", "1", "-ar", "44100", wav], check=True)
-    json.dump({"text": " ".join(texts), "files": [os.path.basename(f) for f in files], "seconds": round(total, 1)},
-              open(txt_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    return wav, " ".join(texts)
+    metadata = {"text": " ".join(texts), "files": [os.path.basename(f) for f in files], "seconds": round(total, 1)}
+    verified = _validated_reference(hero, wav, metadata)
+    with open(txt_path, "w", encoding="utf-8") as destination:
+        json.dump(verified, destination, ensure_ascii=False, indent=1)
+    return wav, verified["text"]
 
 
 def clone(hero, seconds=70):

@@ -148,6 +148,12 @@ def cameras(scene,poses,cached):
             cam.data.type='PERSP';cam.data.lens=45 if name=='Weapon' else 42
             if name=='Weapon':weapon_composition(cam)
             cam.keyframe_insert('location',frame=frame);cam.keyframe_insert('rotation_euler',frame=frame)
+        elif name=='Assess':
+            target=r['Head_0'].translation+Vector((0,0,.05))
+            cam.location=target+Vector((-4.5,1.2,.3))
+            cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler()
+            cam.data.type='PERSP';cam.data.lens=48
+            cam.keyframe_insert('location',frame=frame);cam.keyframe_insert('rotation_euler',frame=frame)
         else:
             film.camera(scene,(a,r),frame)
             if name=='Contact':
@@ -199,11 +205,11 @@ def finish_look(scene):
     obj.location=(3,-2,2.2)
     target=Vector((0,1,2.5));obj.rotation_euler=(target-obj.location).to_track_quat('-Z','Y').to_euler()
     for camera in (o for o in scene.objects if o.type=='CAMERA' and o.name.startswith('Assembly ')):
-        if any(n in camera.name for n in ('Threat','Effort','Rubick','Realization')):
+        if any(n in camera.name for n in ('Threat','Effort','Rubick','Assess','Realization')):
             camera.data.dof.use_dof=True;camera.data.dof.aperture_fstop=5.6
             for frame in range(420):
                 scene.frame_set(frame)
-                hero=actors['rubick'] if camera.name.endswith('Rubick') else actors['axe']
+                hero=actors['rubick'] if camera.name.endswith(('Rubick','Assess')) else actors['axe']
                 bone='Head_0' if hero==actors['rubick'] else 'head'
                 point=hero.matrix_world@hero.pose.bones[bone].head
                 camera.data.dof.focus_distance=(point-camera.location).length
@@ -213,7 +219,7 @@ def finish_look(scene):
     return scene
 
 
-def build(material=False):
+def build(material=False, adjust=None):
     clips,cam=cached_attack()
     state=film.prepare()
     scene,actors=state[:2]
@@ -232,6 +238,7 @@ def build(material=False):
             a=ending(state,frame);r=attack.copy_pose(clips['rubick'][-1]);closure=1
             response=film.smooth((frame-330)/22)
             motion.branch(actors['rubick'],r,'Head_0',math.radians(-5*response),'Z')
+        if adjust is not None:a,r=adjust(state,frame,a,r)
         for name,p in (('axe',a),('rubick',r)):poses[name].append(p)
         rows.append({'frame':frame,'closure':closure})
     for name,actor in actors.items():motion.bake(actor,poses[name])

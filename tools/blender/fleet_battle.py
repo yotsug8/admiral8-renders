@@ -344,6 +344,12 @@ def build():
     # Geometry is linked between troops; every skeleton, constraint and action strip is independent.
     actors=[clone_actor(report['kunkka'],f'Captain{i:02d}') for i in range(14)]
     giant=clone_actor(report['pudge'],'Giant')
+    # The source split head contains three neck-boundary vertices weighted only
+    # to head, while the coincident torso uses spine/neck. Restore the junction.
+    from skin_seams import match_skin_seam
+    head=next(o for o in giant['objects'] if o.type=='MESH' and o.name.endswith('.head'))
+    body=next(o for o in giant['objects'] if o.type=='MESH' and o.name.endswith('.upper_body'))
+    neck_seam=match_skin_seam(head,body)
     native=lambda who,name:bpy.data.actions[report[who]['actions'][name]['name']]
     run,speed=inplace_run(bpy.data.objects[report['kunkka']['arm']],native('kunkka','run'))
     boats=[];boat_offsets=BOAT_OFFSETS
@@ -523,7 +529,7 @@ def build():
     glow(sc)
     sc.frame_set(0);bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'scene.blend'))
     dump('staging.json',dict(count=COUNT,fps=FPS,resolution=[1080,1920],troops=14,ships=7,giant_scale=2.8,native_run_speed=speed,routes=routes,
-         cameras=[dict(frame=f,name=c.name) for f,c in cams],textures=textures,attention=attention,
+         cameras=[dict(frame=f,name=c.name) for f,c in cams],textures=textures,attention=attention,neck_seam=neck_seam,
          actors=[dict(root=A['root'].name,arm=A['arm'].name) for A in actors],giant=dict(root=giant['root'].name,arm=giant['arm'].name)))
     print('BATTLE_BUILT')
 

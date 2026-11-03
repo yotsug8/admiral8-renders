@@ -12,7 +12,7 @@ OUT = ROOT / os.environ.get('FLEET_OUTPUT', '_game/skits/fleet_battle/v2')
 
 
 def main():
-    scene_path = OUT / 'scene.blend'
+    scene_path = Path(os.environ.get('FLEET_CHECK_SCENE', str(OUT / 'scene.blend')))
     bpy.ops.wm.open_mainfile(filepath=str(scene_path), use_scripts=False)
     sc = bpy.context.scene
     meta = json.loads((OUT / 'staging.json').read_text())
@@ -20,6 +20,15 @@ def main():
     giant_root = bpy.data.objects[meta['giant']['root']]
     previous_giant = None
     support_steps = []
+    head=next(o for o in sc.objects if o.name.startswith('Giant_') and o.name.endswith('.head'))
+    body=next(o for o in sc.objects if o.name.startswith('Giant_') and o.name.endswith('.upper_body'))
+    from mathutils.kdtree import KDTree
+    tree=KDTree(len(body.data.vertices));matrix=head.matrix_world.inverted()@body.matrix_world
+    for vertex in body.data.vertices:tree.insert(matrix@vertex.co,vertex.index)
+    tree.balance()
+    seam_pairs=[(v.index,tree.find(v.co)[1]) for v in head.data.vertices if tree.find(v.co)[2]<1e-5]
+    if len(seam_pairs)<3:raise RuntimeError('Neck junction missing; cannot validate seam')
+    neck_gaps=[]
     previous = {}
     jumps = []
     failures = []
@@ -29,6 +38,11 @@ def main():
     fall_floor=[]
     for frame in range(meta['count']):
         sc.frame_set(frame)
+        deps=bpy.context.evaluated_depsgraph_get()
+        he=head.evaluated_get(deps);be=body.evaluated_get(deps);hm=he.to_mesh();bm=be.to_mesh()
+        gap=max((he.matrix_world@hm.vertices[i].co-be.matrix_world@bm.vertices[j].co).length for i,j in seam_pairs)
+        he.to_mesh_clear();be.to_mesh_clear();neck_gaps.append(dict(frame=frame,gap=gap))
+        if gap>1e-4:failures.append(dict(frame=frame,issue='open neck junction',gap=gap))
         position = giant_root.matrix_world.translation.copy()
         if previous_giant is not None and frame >= 429:
             support_steps.append(dict(frame=frame, distance=(position-previous_giant).length))
@@ -71,7 +85,8 @@ def main():
         lowest_cleaver=min(weapon_floor,key=lambda x:x['point'][2]),
         lowest_fall_surface=min(fall_floor,key=lambda x:x['point'][2]),
         max_giant_support_step=max(support_steps,key=lambda x:x['distance']),
-        scope='Placement continuity, cleaver/ground during counterattack and evaluated giant meshes/ground during fall. Does not certify self-intersections, actor contacts, framing, sound or acting.',
+        max_neck_gap=max(neck_gaps,key=lambda x:x['gap']),
+        scope='Placement continuity, split neck seam, cleaver/ground during counterattack and evaluated giant meshes/ground during fall. Does not certify self-intersections, actor contacts, framing, sound or acting.',
     )
     destination=Path(os.environ.get('FLEET_CHECK_REPORT',str(OUT/'continuity.json')))
     destination.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')

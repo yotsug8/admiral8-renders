@@ -2,7 +2,15 @@
 
 Инструменты и материалы для создания видео по Dota 2.
 
-Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Единые правила Codex — [AGENTS.md](AGENTS.md), текущее состояние — [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md). Сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
+Ролики собираются кодом: озвучка, субтитры, графика и анимация. Рендер идёт в GitHub Actions, готовые ролики — в ветке [`renders`](../../tree/renders) (ссылки на скачивание в её README). Единые правила работы — [AGENTS.md](AGENTS.md), текущее состояние — [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md). Сценки с говорящими героями — [docs/ANIMATION.md](docs/ANIMATION.md); 3D в движке доты — [docs/DOTA_ENGINE.md](docs/DOTA_ENGINE.md).
+
+## Продолжение с любым инструментом
+
+Проект не требует Codex или истории чата для запуска. Короткая сводка —
+`python tools/project_context.py`; текущая задача —
+`python tools/project_context.py --task "Лина"`. Правила остаются в AGENTS.md,
+решения и проверки — в документах, на которые ссылается сводка.
+[Установка и границы переносимости](docs/SETUP.md) описаны отдельно.
 
 ## Ролик
 

@@ -1,0 +1,28 @@
+{
+  "status": "working_forest_preview_not_final",
+  "scene": {
+    "passed": true,
+    "actor_keys_unchanged": true,
+    "scene_sha256": "b795f76d4aefa4c4c9094ddd3a5176af9465aa379dc37c997b5160ee6468dc44",
+    "scope": "Environment preview only; actor keys identical to checked blocking. Not a full scene collision or artistic acceptance."
+  },
+  "encoding": {
+    "frames": 180,
+    "fps": 30.0,
+    "size": [
+      360,
+      480
+    ],
+    "max_mean_error_255": 1.2612037037037036,
+    "min_mean_255": 64.36576388888889,
+    "sha256": "64e50c533d035453f56c194c03ca2b5796a863cac57e2b9a976af4fb982c0f1a",
+    "passed": true,
+    "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
+  },
+  "limits": [
+    "Silent draft",
+    "No continuous real-time playback confirmed",
+    "Theatrical hand silhouette, not a physical cast shadow",
+    "No whole-scene collision certification"
+  ]
+}

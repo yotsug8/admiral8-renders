@@ -337,6 +337,72 @@ def collar_review():
     # No save: diagnostic visibility/camera changes must not alter the study.
 
 
+def look_preview():
+    """Stage the existing performance in a small native Dota forest clearing."""
+    import dota_map
+    from study_head_target import gpu_guard
+    gpu_guard();sc=bpy.context.scene;folder=OUT/'look';folder.mkdir(exist_ok=True)
+    def actor_keys():
+        owners=list(bpy.data.objects['lina_root'].children_recursive)
+        owners += [o.data.shape_keys for o in owners if o.type=='MESH' and o.data.shape_keys]
+        return [(o.name,[(c.data_path,c.array_index,[(list(k.co),list(k.handle_left),list(k.handle_right)) for k in c.keyframe_points])
+                         for c in _curves(o.animation_data.action)]) for o in owners if o.animation_data and o.animation_data.action]
+    motion=actor_keys()
+    before=set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(ROOT/'_game/maps/radiant_field.glb'))
+    imported=set(bpy.data.objects)-before
+    trunks=[o for o in imported if o.type=='MESH' and 'tree_pine_01_model' in o.name and 'stump' not in o.name]
+    leaves=[o for o in imported if o.type=='MESH' and 'tree_pine_01_inspector' in o.name]
+    if not trunks or not leaves:raise ValueError('Complete native tree pair missing')
+    trunk=sorted(trunks,key=lambda o:o.name)[0]
+    leaf=min(leaves,key=lambda o:(o.matrix_world.translation-trunk.matrix_world.translation).length)
+    sources=[trunk,leaf];worlds=[o.matrix_world.copy() for o in sources]
+    points=[w@Vector(c) for o,w in zip(sources,worlds) for c in o.bound_box]
+    anchor=Vector(((min(p.x for p in points)+max(p.x for p in points))/2,
+                   (min(p.y for p in points)+max(p.y for p in points))/2,min(p.z for p in points)))
+    height=max(p.z for p in points)-anchor.z
+    dota_map.TEX=str(ROOT/'_game/world')
+    for mat in {s.material for o in sources for s in o.material_slots if s.material}:
+        v=mat.get('vmat');v=v.to_dict() if hasattr(v,'to_dict') else (v or {})
+        dota_map.fix_prop(mat,v)
+    for i,(x,y,h) in enumerate([(-7,-7,10),(-10,-5,11),(-8,4,10),(-9,9,12),(-13,-8,13),(-14,0,13),(-14,8,14)]):
+        transform=Matrix.Translation((x,y,0))@Matrix.Rotation(i*.77,4,'Z')@Matrix.Scale(h/height,4)@Matrix.Translation(-anchor)
+        for ob,w in zip(sources,worlds):
+            clone=ob.copy();clone.parent=None;clone.animation_data_clear();sc.collection.objects.link(clone)
+            clone.matrix_world=transform@w;clone.hide_render=clone.hide_viewport=False;clone.hide_set(False)
+    for ob in imported:bpy.data.objects.remove(ob,do_unlink=True)
+    floor=bpy.data.objects['Study ground'];mat=floor.data.materials[0]
+    nodes=mat.node_tree.nodes;links=mat.node_tree.links
+    tex=nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(str(ROOT/'_game/world/stone_path007_color_psd_22aa3f8.png'),check_existing=True)
+    uv=nodes.new('ShaderNodeTexCoord');scale=nodes.new('ShaderNodeVectorMath');scale.operation='SCALE';scale.inputs[3].default_value=40
+    links.new(uv.outputs['UV'],scale.inputs[0]);links.new(scale.outputs[0],tex.inputs['Vector'])
+    bsdf=next(n for n in nodes if n.type=='BSDF_PRINCIPLED');links.new(tex.outputs['Color'],bsdf.inputs['Base Color'])
+    bpy.data.objects['warm key'].data.energy=2200
+    bpy.data.objects['cool rim'].data.energy=2800
+    shade=bpy.data.objects['Looming shadow'].data.materials[0]
+    shade.node_tree.nodes.clear();sn=shade.node_tree.nodes;sl=shade.node_tree.links
+    transparent=sn.new('ShaderNodeBsdfTransparent');dark=sn.new('ShaderNodeEmission');dark.inputs[0].default_value=(0,0,0,1)
+    mix=sn.new('ShaderNodeMixShader');mix.inputs[0].default_value=.72
+    sl.new(transparent.outputs[0],mix.inputs[1]);sl.new(dark.outputs[0],mix.inputs[2])
+    output=sn.new('ShaderNodeOutputMaterial');sl.new(mix.outputs[0],output.inputs[0]);shade.surface_render_method='DITHERED'
+    forest=bpy.data.objects.new('Forest fill',bpy.data.lights.new('Forest fill','AREA'));sc.collection.objects.link(forest)
+    forest.location=(-8,0,11);forest.data.energy=1400;forest.data.size=12;forest.data.color=(.55,.72,1);aimed(forest,(-10,0,3))
+    lamp=bpy.data.objects.new('Palm fire light',bpy.data.lights.new('Palm fire light','POINT'));sc.collection.objects.link(lamp)
+    lamp.data.color=(1,.21,.035);lamp.data.shadow_soft_size=.35
+    fire=bpy.data.objects['Fire in palm']
+    for f in range(COUNT):
+        sc.frame_set(f);lamp.location=fire.location+Vector((0,0,.25));lamp.keyframe_insert('location',frame=f)
+        lamp.data.energy=80*fire.scale.z;lamp.data.keyframe_insert('energy',frame=f)
+    sc.camera=bpy.data.objects['story'];sc.eevee.taa_render_samples=32
+    if actor_keys()!=motion:raise ValueError('Environment changed actor keys')
+    sc.frame_set(0);bpy.ops.wm.save_as_mainfile(filepath=str(folder/'scene.blend'))
+    (folder/'audit.json').write_text(json.dumps(dict(passed=True,actor_keys_unchanged=True,
+        scene_sha256=hashlib.sha256((folder/'scene.blend').read_bytes()).hexdigest(),
+        scope='Environment preview only; actor keys identical to checked blocking. Not a full scene collision or artistic acceptance.'),indent=2))
+    for f in (0,72,150):
+        sc.frame_set(f);sc.render.filepath=str(folder/f'frame_{f:03}.png');bpy.ops.render.render(write_still=True)
+
+
 if __name__=='__main__':
     mode=sys.argv[sys.argv.index('--')+1]
     if mode=='build': build()
@@ -345,6 +411,14 @@ if __name__=='__main__':
         if mode=='keys': keys()
         elif mode=='audit': audit()
         elif mode=='collar': collar_review()
+        elif mode=='look': look_preview()
+        elif mode=='look-render':
+            from study_head_target import gpu_guard
+            folder=OUT/'look';a=json.loads((folder/'audit.json').read_text())
+            if a['scene_sha256']!=hashlib.sha256((folder/'scene.blend').read_bytes()).hexdigest():raise ValueError('Stale look audit')
+            bpy.ops.wm.open_mainfile(filepath=str(folder/'scene.blend'),use_scripts=False)
+            gpu_guard();sc=bpy.context.scene;sc.render.use_overwrite=True;sc.render.use_placeholder=False
+            sc.render.filepath=str(folder/'frames/frame_');bpy.ops.render.render(animation=True)
         elif mode=='render':
             from study_head_target import gpu_guard
             checked=json.loads((OUT/'audit.json').read_text())

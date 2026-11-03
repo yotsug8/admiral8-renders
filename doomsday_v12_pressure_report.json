@@ -1,5 +1,5 @@
 {
-  "status": "Limited contact-pressure motion study; not a finished or artistically accepted 14-second scene",
+  "status": "REJECTED: arm twist, severe shoulder/chest skin deformation and weak body mechanics",
   "duration_seconds": 2.6666666666666665,
   "fps": 30,
   "dimensions": [
@@ -35,5 +35,14 @@
     "Grip has residual local surface contacts.",
     "Full-speed playback and hearing are not claimed.",
     "Workbench preview omits final materials, light, effects and sound."
-  ]
+  ],
+  "rejection": {
+    "cause": "Positional IK and collision checks did not validate anatomical joint roll or transition skin deformation.",
+    "use": "Historical failure only; do not reuse as a finished action segment.",
+    "deformation_example": {
+      "local_frame": 48,
+      "left_shoulder_edge_stretch_vs_source": 4.735,
+      "minimum_sampled_area_ratio_vs_source": 0.0739
+    }
+  }
 }

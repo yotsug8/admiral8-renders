@@ -5,10 +5,11 @@
   "max_mean_pixel_error": 1.3355092592592592,
   "scene_sha256": "d47670fff2fa77275f4aa6610165b2fe7fc272039da4a1a0792347681edb816b",
   "video_sha256": "65cdae67f024e552c76c47d59a125bd577b78af328917868c7e62d1e9f5c6df0",
-  "artistic_accepted": false,
-  "status": "Working defensive reaction v3; v2 rejected; not a finished animation",
+  "artistic_accepted": true,
+  "status": "Reaction-study level accepted; hands restrained; no further revision requested",
   "limits": [
     "No audio",
     "Precise gaze fixation, all-frame skin/collision QA and real-time acting assessment remain open"
-  ]
+  ],
+  "acceptance_scope": "This 6-second silent study only, not a finished production or complete acting skill"
 }

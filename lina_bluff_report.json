@@ -1,0 +1,13 @@
+{
+  "frames": 180,
+  "fps": 30,
+  "resolution": [
+    432,
+    768
+  ],
+  "max_mean_error_255": 1.3253009259259259,
+  "scene_sha256": "c9ca3f06d054970d082261515aa5b5609ff2b4f6c9f0523475a6da2baf829808",
+  "video_sha256": "3280863620eb69e3710f88b75f71b600854c9e7470bd126c313a8391e3596109",
+  "artistic_accepted": false,
+  "scope": "Frame correspondence; poses and sheets reviewed separately; no sound or full skin/collision acceptance"
+}

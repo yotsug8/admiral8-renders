@@ -1,0 +1,44 @@
+{
+  "source": "revision_alive/assembly.blend, frame 286",
+  "corrections": {
+    "thumb_0_L": {
+      "angle_degrees": 5.730103961251688,
+      "axis_wrist_space": [
+        0.07274669408798218,
+        0.8058645129203796,
+        0.5876328945159912
+      ]
+    },
+    "mid_1_L": {
+      "angle_degrees": 7.999955541799461,
+      "axis_wrist_space": [
+        0.08080577850341797,
+        -0.1955842822790146,
+        -0.9773579239845276
+      ]
+    },
+    "index_1_L": {
+      "angle_degrees": 16.000013536436473,
+      "axis_wrist_space": [
+        0.26781320571899414,
+        -0.3915182054042816,
+        -0.8803346157073975
+      ]
+    },
+    "thumb_0_R": {
+      "angle_degrees": 3.999760058619936,
+      "axis_wrist_space": [
+        -0.22861248254776,
+        0.835832417011261,
+        0.499240517616272
+      ]
+    }
+  },
+  "method": "Local phalanx flexion or thumb abduction; no wrist, body or weapon translation.",
+  "surface_tolerance_world_units": 0.002,
+  "isolated_pose_maximum_depth": {
+    "left": 0.00083003455,
+    "right": 0.0
+  },
+  "scope": "Both sides of the isolated grasp reviewed. Right grip checked at237..419; left held grip checked at255..419 and new preheld237..285. Quarter-frame transfer checks at253..255 and285..286. Earlier dialogue integration remains outside this excerpt."
+}

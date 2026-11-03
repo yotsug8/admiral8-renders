@@ -234,6 +234,16 @@ JAW_CAP = {"pudge": 0.55}
 # голова светлее тела на столько: у Пуджа лицо в текстуре темнее груди (без света 32 против 45; в игре одного тона) —
 # замер на ровном свете; автоматический замер по текстуре ошибался (в «тело» попадали тёмные спина и руки)
 HEAD_GAIN = {"pudge": 1.4}                             # раскрытие рта морфом: дальше рот у модели не прорезан — кожа рвётся полосами
+def bone_merge_name(target_names, source_name):
+    """Resolve an accessory joint without silently dropping case-only aliases."""
+    if source_name in target_names:
+        return source_name
+    matches = [name for name in target_names if name.casefold() == source_name.casefold()]
+    if len(matches) > 1:
+        raise ValueError(f'Ambiguous accessory bone {source_name!r}: {matches}')
+    return matches[0] if matches else None
+
+
 ACTORS = {}
 PART_OBJS = {}                                        # герой → часть (righthook, weapon …) → её сетки
 HERO_OBJS = set()                                     # всё, из чего собраны герои: луч камеры сквозь них не проверяется
@@ -261,8 +271,9 @@ for name, a in D["actors"].items():
         # свои кости части (шапка, борода, полы плаща) едут за ними — иначе такие куски отрываются и пропадают
         for pa in [o for o in po if o.type == "ARMATURE"]:
             for pb in pa.pose.bones:
-                if pb.name in arm.pose.bones:
-                    c = pb.constraints.new("COPY_TRANSFORMS"); c.target = arm; c.subtarget = pb.name
+                target_name = bone_merge_name(arm.pose.bones.keys(), pb.name)
+                if target_name:
+                    c = pb.constraints.new("COPY_TRANSFORMS"); c.target = arm; c.subtarget = target_name
             pa.parent = arm.parent; pa.matrix_world = arm.matrix_world.copy()
             PARTS.append(pa)
     for pa in PARTS:

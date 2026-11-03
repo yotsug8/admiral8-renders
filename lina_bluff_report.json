@@ -1,13 +1,28 @@
 {
-  "frames": 180,
-  "fps": 30,
-  "resolution": [
-    432,
-    768
-  ],
-  "max_mean_error_255": 2.3323356722608026,
-  "scene_sha256": "920c23c7cdac5dc38d0267f8daf24f32e5f8719be8641bc9c280272b8f102dbf",
-  "video_sha256": "02140657e7ad4ab25b0efd46594d7c0e0627f268b6f803def27490a740643afb",
   "artistic_accepted": false,
-  "scope": "Frame correspondence only; visual review separate. Silent study; no full skin/collision certification."
+  "version": 3,
+  "story": "Approaching shadow; stop gesture fails; recoil, choose an exit and depart",
+  "encoding": {
+    "frames": 180,
+    "fps": 30.0,
+    "size": [
+      540,
+      960
+    ],
+    "max_mean_error_255": 1.2212268518518519,
+    "min_mean_255": 48.42516203703704,
+    "sha256": "076b2673ae18fc5bc8dffe83de186f4e8ed202c7037ff50fa6eb8c0ae367f10f",
+    "passed": true,
+    "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
+  },
+  "landmarks": {
+    "frames": 180,
+    "max_landmark_step": 0.30439834230353036,
+    "errors": [],
+    "passed": true,
+    "scope": "Finite landmarks and head/hands in camera before intentional departure; not a skin, gaze or acting certificate",
+    "scene_sha256": "5c6e6efdd7a245136a5a8be2bcdb948c4751e19aabe42ac946cb5909784f6757"
+  },
+  "visual_review": "All 180 frames reviewed as contact sheets, working poses and three side views. No claim of realtime continuous playback, full skin/collision coverage or calibrated gaze.",
+  "audio": false
 }

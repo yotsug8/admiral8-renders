@@ -1,0 +1,39 @@
+{
+  "status": "Limited contact-pressure motion study; not a finished or artistically accepted 14-second scene",
+  "duration_seconds": 2.6666666666666665,
+  "fps": 30,
+  "dimensions": [
+    640,
+    360
+  ],
+  "decoded_frames": 80,
+  "audio": null,
+  "source_commit": "fb88f40",
+  "sha256": "96ae5e2116454a5424a25664eb325437295eef0a99076f54c446abfada3c5a23",
+  "scope": "Contact insert and directed pressure excerpt only; approach, jump and complete edit are not included",
+  "validation": {
+    "axe_forearm_torso_and_weapon_body_surface_pairs": 0,
+    "evaluated_integer_frames": 80,
+    "inconclusive_containment_samples": 13,
+    "rubick_tip_sample_frames": [
+      0,
+      39,
+      48,
+      79
+    ],
+    "rubick_tip_inside_samples": 0,
+    "rubick_tip_clearance_world": [
+      0.002,
+      0.0037
+    ],
+    "integration_axe_world_matrix_error": 0,
+    "integration_rubick_world_matrix_error": 5.00679e-06,
+    "project_checks": "18 passed, 0 skipped"
+  },
+  "limitations": [
+    "Sparse surface/containment coverage is not exhaustive collision detection.",
+    "Grip has residual local surface contacts.",
+    "Full-speed playback and hearing are not claimed.",
+    "Workbench preview omits final materials, light, effects and sound."
+  ]
+}

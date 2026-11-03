@@ -2,12 +2,13 @@
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 
 import bpy
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / '_game/skits/fleet_battle'
+OUT = ROOT / os.environ.get('FLEET_OUTPUT', '_game/skits/fleet_battle/v2')
 
 
 def main():
@@ -16,11 +17,37 @@ def main():
     sc = bpy.context.scene
     meta = json.loads((OUT / 'staging.json').read_text())
     roots = [bpy.data.objects[a['root']] for a in meta['actors']]
+    giant_root = bpy.data.objects[meta['giant']['root']]
+    previous_giant = None
+    support_steps = []
     previous = {}
     jumps = []
     failures = []
+    cleaver=next(o for o in sc.objects if o.type=='MESH' and o.name.startswith('Giant_') and 'leftweapon_model' in o.name)
+    weapon_floor=[]
+    giant_meshes=[o for o in sc.objects if o.type=='MESH' and o.name.startswith(('Giant_','Dropped_')) and 'hitbox' not in o.name]
+    fall_floor=[]
     for frame in range(meta['count']):
         sc.frame_set(frame)
+        position = giant_root.matrix_world.translation.copy()
+        if previous_giant is not None and frame >= 429:
+            support_steps.append(dict(frame=frame, distance=(position-previous_giant).length))
+            if support_steps[-1]['distance'] > .35:
+                failures.append(dict(**support_steps[-1], issue='giant placement support jumps'))
+        previous_giant = position
+        if 290<=frame<=353:
+            ev=cleaver.evaluated_get(bpy.context.evaluated_depsgraph_get());mesh=ev.to_mesh()
+            lowest=min((ev.matrix_world@v.co for v in mesh.vertices),key=lambda v:v.z);ev.to_mesh_clear()
+            weapon_floor.append(dict(frame=frame,point=list(lowest)))
+            if lowest.z<-.04:failures.append(dict(frame=frame,issue='cleaver below ground',point=list(lowest)))
+        if frame>=429:
+            deps=bpy.context.evaluated_depsgraph_get()
+            for obj in giant_meshes:
+                if obj.hide_render:continue
+                ev=obj.evaluated_get(deps);mesh=ev.to_mesh()
+                lowest=min((ev.matrix_world@v.co for v in mesh.vertices),key=lambda v:v.z);ev.to_mesh_clear()
+                sample=dict(frame=frame,object=obj.name,point=list(lowest));fall_floor.append(sample)
+                if lowest.z<-.05:failures.append(dict(**sample,issue='fallen giant below ground'))
         for root in roots:
             position = root.matrix_world.translation.copy()
             rotation = root.matrix_world.to_quaternion()
@@ -41,9 +68,13 @@ def main():
         max_angular_step=max(jumps,key=lambda x:x['angle_deg']),
         max_position_step=max(jumps,key=lambda x:x['distance']),
         failures=failures, passed=not failures,
-        scope='Placement continuity only. Does not cover skin, contacts, framing, sound or acting.',
+        lowest_cleaver=min(weapon_floor,key=lambda x:x['point'][2]),
+        lowest_fall_surface=min(fall_floor,key=lambda x:x['point'][2]),
+        max_giant_support_step=max(support_steps,key=lambda x:x['distance']),
+        scope='Placement continuity, cleaver/ground during counterattack and evaluated giant meshes/ground during fall. Does not certify self-intersections, actor contacts, framing, sound or acting.',
     )
-    (OUT/'continuity.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+    destination=Path(os.environ.get('FLEET_CHECK_REPORT',str(OUT/'continuity.json')))
+    destination.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(report))
     if failures:
         raise RuntimeError('Placement continuity failed')

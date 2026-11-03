@@ -4,6 +4,7 @@ Blender -b --factory-startup -P tools/blender/fleet_battle.py -- assets|build|pr
 Final frames stream to FFmpeg to avoid a multi-gigabyte PNG intermediate.
 """
 import json
+import hashlib
 import math
 import os
 from pathlib import Path
@@ -12,16 +13,35 @@ import subprocess
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Matrix, Euler
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'tools/blender'))
 from kunkka_ghostship import helpers, aim, light, surface, linear_keys
 
-OUT=ROOT/'_game/skits/fleet_battle'
+BASE=ROOT/'_game/skits/fleet_battle'
+OUT=ROOT/os.environ.get('FLEET_OUTPUT','_game/skits/fleet_battle/v2')
 MODELS=ROOT/'_game/models/render'
 FPS=30
 COUNT=540
+BOAT_OFFSETS=[(-18,-9),(-9,-4),(0,0),(9,-4),(18,-9),(-27,-15),(27,-15)]
+
+
+def boat_pose(index, frame):
+    x,dy=BOAT_OFFSETS[index]
+    if frame<105:
+        y=-58+frame*.38+dy
+    else:
+        u=max(0,min(1,(frame-105)/70))
+        start=-58+105*.38+dy
+        end=-9 if index in (1,2,3) else -9+dy
+        y=(2*u**3-3*u*u+1)*start+(u**3-2*u*u+u)*70*.38+(-2*u**3+3*u*u)*end
+    return (x,y,-.55+.045*math.sin(frame*.065+index)), (.008*math.sin(frame*.05+index),.010*math.sin(frame*.07+index),math.pi)
+
+
+def deck_point(index, frame, point):
+    location,rotation=boat_pose(index,frame)
+    return Matrix.LocRotScale(Vector(location),Euler(rotation).to_quaternion(),Vector((1.4,)*3))@point
 
 
 def dump(name,data):
@@ -175,12 +195,139 @@ def turn_between(a,b,frame,start,end):
 
 def camera(name,position,target,lens=42):
     data=bpy.data.cameras.new(name);data.lens=lens;data.clip_end=700
+    data.dof.use_dof=True;data.dof.focus_distance=(Vector(target)-Vector(position)).length
+    data.dof.aperture_fstop=4.5 if name.startswith(('05b','06_')) else 7
     obj=bpy.data.objects.new(name,data);bpy.context.scene.collection.objects.link(obj)
     obj.location=position;aim(obj,target);return obj
 
 
+def material_response():
+    # These source materials have no roughness/metallic maps: preserve linked maps if supplied later.
+    presets={'ghostship_cannons':(.34,.8),'ghostship_base':(.72,0),
+             'kunkka2_tidebringer':(.28,.85),'pudge2_chopper':(.34,.8),'pudge2_hook':(.4,.72),
+             'kunkka2_hair':(.82,0),'pudge2_hair':(.85,0),'pudge2_apron':(.8,0),
+             'kunkka2_body':(.72,0),'kunkka2_boots':(.6,0),'kunkka2_hands':(.55,0),
+             'pudge2_body':(.52,0),'pudge2_armleft':(.52,0)}
+    for name,(roughness,metallic) in presets.items():
+        mat=bpy.data.materials.get(name)
+        if not mat or not mat.use_nodes:continue
+        b=mat.node_tree.nodes.get('Principled BSDF')
+        if not b:continue
+        for key,value in (('Roughness',roughness),('Metallic',metallic)):
+            if not b.inputs[key].is_linked:b.inputs[key].default_value=value
+
+
+def grounded_fall(actor, scene):
+    """Authored landing correction: torso/neck support, relaxed arms and soft belly contact.
+
+    The unmodified game death sinks head and belly through the floor. Correct
+    the pose, retaining feet and attached weapons; never hide the geometry.
+    """
+    from contact_reaction import _action, _basis
+    from mathutils import Quaternion
+    arm=actor['arm'];root=actor['root']
+    bones=list(arm.pose.bones)
+    fall_start=429
+    smooth=lambda v:(lambda u:u*u*(3-2*u))(max(0,min(1,v)))
+    for f in range(COUNT):
+        root.location.z=.03+.46*smooth((f-450)/30);root.keyframe_insert('location',frame=f)
+    linear_keys(root.animation_data.action)
+    sampled={}
+    for f in range(fall_start,COUNT):
+        scene.frame_set(f);ev=arm.evaluated_get(bpy.context.evaluated_depsgraph_get())
+        sampled[f]=(ev.matrix_world.copy(),{b.name:b.matrix_basis.copy() for b in ev.pose.bones})
+    frames=[]
+    for f in range(fall_start,COUNT):
+        mw,source=sampled[f];inverse=mw.inverted()
+        if f>=480:
+            # The native post-impact jiggle re-enters the ground. Settle between
+            # two whole-body poses instead of replaying that incompatible tail.
+            u=smooth((f-480)/23);source={}
+            for bone in bones:
+                la,qa,sa=sampled[480][1][bone.name].decompose()
+                lb,qb,sb=sampled[COUNT-1][1][bone.name].decompose()
+                source[bone.name]=Matrix.LocRotScale(la.lerp(lb,u),qa.slerp(qb,u),sa.lerp(sb,u))
+        desired={};local={}
+        for bone in bones:
+            kwargs={}
+            if bone.parent:kwargs=dict(parent_matrix=local[bone.parent.name],parent_matrix_local=bone.parent.bone.matrix_local)
+            local[bone.name]=bone.bone.convert_local_to_pose(source[bone.name],bone.bone.matrix_local,**kwargs)
+            desired[bone.name]=mw@local[bone.name]
+        weight=smooth((f-450)/30);contact=smooth((f-470)/15)
+        for name,degrees in (('spine1',-20),('neck1',-10),('bicep_R',7.2),('bicep_L',-7.5)):
+            pivot=desired[name].translation.copy()
+            transform=Matrix.Translation(pivot)@Quaternion(Vector((1,0,0)),math.radians(degrees)*weight).to_matrix().to_4x4()@Matrix.Translation(-pivot)
+            for child in (arm.pose.bones[name],*arm.pose.bones[name].children_recursive):desired[child.name]=transform@desired[child.name]
+        for name,lift in (('stomach1_0',2.2),('booby_lf',1.4),('booby_rt',1.4)):
+            for child in (arm.pose.bones[name],*arm.pose.bones[name].children_recursive):desired[child.name].translation.z+=lift*contact
+        basis={}
+        for bone in bones:
+            parent=inverse@desired[bone.parent.name] if bone.parent else None
+            basis[bone.name]=_basis(bone,inverse@desired[bone.name],parent)
+        frames.append(dict(frame=f,basis=basis))
+    action=_action(arm,bones,frames,'Fleet_grounded_fall',scene)
+    ad=arm.animation_data_create();track=ad.nla_tracks.new();track.name='Grounded fall pose'
+    s=track.strips.new(action.name,fall_start,action);s.action_slot=action.slots[0]
+    s.action_frame_start=fall_start;s.action_frame_end=COUNT-1;s.frame_start=fall_start;s.frame_end=COUNT-1
+    s.blend_type='REPLACE';s.blend_in=0;s.blend_out=0;s.extrapolation='HOLD_FORWARD'
+    # Ground contact constrains placement after the complete pose is resolved.
+    meshes=[o for o in actor['objects'] if o.type=='MESH' and 'hitbox' not in o.name and not any(p in o.name for p in ('leftweapon_model','righthook_model'))]
+    needed=[]
+    for f in range(fall_start,COUNT):
+        scene.frame_set(f);deps=bpy.context.evaluated_depsgraph_get();low=math.inf
+        for obj in meshes:
+            ev=obj.evaluated_get(deps);mesh=ev.to_mesh()
+            low=min(low,min((ev.matrix_world@v.co).z for v in mesh.vertices));ev.to_mesh_clear()
+        needed.append(max(0,.025-low) if low<.025 else 0)
+    # A three-frame support envelope avoids popping between changing contact vertices.
+    support=[max(needed[max(0,i-1):min(len(needed),i+2)]) for i in range(len(needed))]
+    for i,f in enumerate(range(fall_start,COUNT)):
+        root.location.z=.03+.46*smooth((f-450)/30)+support[i];root.keyframe_insert('location',frame=f)
+    linear_keys(root.animation_data.action)
+    dump('fall_support.json',dict(frames=list(range(fall_start,COUNT)),additional_height=support,
+         scope='Whole-pose floor support. Must also be visually checked for floating and changes in fall speed.'))
+
+
+def release_weapons(actor,scene):
+    """The first ram breaks the grip; weapons land separately rather than lifting the corpse."""
+    import numpy as np
+    from mathutils import Quaternion
+    scene.frame_set(429);deps=bpy.context.evaluated_depsgraph_get();contacts=[]
+    for part,sign in (('righthook_model',-1),('leftweapon_model',1)):
+        source=next(o for o in actor['objects'] if o.type=='MESH' and part in o.name)
+        ev=source.evaluated_get(deps);mesh=bpy.data.meshes.new_from_object(ev,depsgraph=deps)
+        points=[ev.matrix_world@v.co for v in mesh.vertices];center=sum(points,Vector())/len(points)
+        mesh.transform(Matrix.Translation(-center)@ev.matrix_world)
+        points=[v.co.copy() for v in mesh.vertices]
+        _,axes=np.linalg.eigh(np.cov(np.array([tuple(p) for p in points]),rowvar=False))
+        normal=Vector(axes[:,0]);normal=normal if normal.z>=0 else -normal
+        end_rotation=normal.rotation_difference(Vector((0,0,1)))
+        obj=bpy.data.objects.new('Dropped_'+part,mesh);scene.collection.objects.link(obj);obj.rotation_mode='QUATERNION'
+        for f,hidden in ((0,False),(428,False),(429,True),(COUNT-1,True)):
+            source.hide_render=hidden;source.keyframe_insert('hide_render',frame=f)
+        for f,hidden in ((0,True),(428,True),(429,False),(COUNT-1,False)):
+            obj.hide_render=hidden;obj.keyframe_insert('hide_render',frame=f)
+        contact=None
+        for f in range(429,COUNT):
+            t=(f-429)/FPS;u=min(1,t/1.15);u=u*u*(3-2*u)
+            q=Quaternion().slerp(end_rotation,u)
+            low=min((q@p).z for p in points)
+            travel=.9*(1-math.exp(-t/.9))
+            position=center+Vector((sign*4*travel,4*travel,t-4.9*t*t))
+            if position.z<.025-low:
+                position.z=.025-low
+                if contact is None:contact=f
+            obj.location=position;obj.rotation_quaternion=q
+            obj.keyframe_insert('location',frame=f);obj.keyframe_insert('rotation_quaternion',frame=f)
+        linear_keys(obj.animation_data.action)
+        contacts.append(dict(object=obj.name,release=429,ground_contact=contact))
+    dump('weapon_drops.json',contacts)
+
+
 def build():
-    bpy.ops.wm.open_mainfile(filepath=str(OUT/'assets.blend'),use_scripts=False)
+    library=OUT if (OUT/'assets.blend').is_file() else BASE
+    OUT.mkdir(parents=True,exist_ok=True)
+    bpy.ops.wm.open_mainfile(filepath=str(library/'assets.blend'),use_scripts=False)
     bpy.context.preferences.filepaths.save_version=0
     sc=bpy.context.scene;sc.render.engine='BLENDER_EEVEE';sc.render.fps=FPS
     sc.frame_start=0;sc.frame_end=COUNT-1
@@ -188,15 +335,18 @@ def build():
     sc.eevee.taa_render_samples=48;sc.render.film_transparent=False
     sc.render.image_settings.file_format='PNG';sc.render.image_settings.color_mode='RGB'
     sc.view_settings.view_transform='AgX'
-    report=json.loads((OUT/'assets.json').read_text())
+    sc.view_settings.look='AgX - Medium High Contrast'
+    sc.render.use_motion_blur=True;sc.render.motion_blur_shutter=.2
+    report=json.loads((library/'assets.json').read_text())
     from workshop_materials import apply_verified
     textures=apply_verified(ROOT/'_game/models/workshop',['kunkka2','pudge2'])
+    material_response()
     # Geometry is linked between troops; every skeleton, constraint and action strip is independent.
     actors=[clone_actor(report['kunkka'],f'Captain{i:02d}') for i in range(14)]
     giant=clone_actor(report['pudge'],'Giant')
     native=lambda who,name:bpy.data.actions[report[who]['actions'][name]['name']]
     run,speed=inplace_run(bpy.data.objects[report['kunkka']['arm']],native('kunkka','run'))
-    boats=[];boat_offsets=[(-18,-9),(-9,-4),(0,0),(9,-4),(18,-9),(-27,-15),(27,-15)]
+    boats=[];boat_offsets=BOAT_OFFSETS
     for i,(x,dy) in enumerate(boat_offsets):
         root=bpy.data.objects.new(f'FleetShip{i:02d}',None);sc.collection.objects.link(root)
         mapping=clone_objects(report['ship']['objects'],f'Ship{i:02d}')
@@ -204,59 +354,69 @@ def build():
             if obj.parent is None:obj.parent=root
         root.scale=(1.4,)*3
         for f in range(COUNT):
-            y=-58+min(f,150)*.30+dy
-            key_transform(root,f,(x,y,-.55+.07*math.sin(f*.065+i)),(.012*math.sin(f*.05+i),.015*math.sin(f*.07+i),math.pi))
+            position,rotation=boat_pose(i,f)
+            key_transform(root,f,position,rotation)
         linear_keys(root.animation_data.action);boats.append(root)
-    ashore={4:(-2.47,8.66),5:(3.5,7.4),2:(-6.88,10.7),3:(-8,4),6:(7.72,8.62),7:(7,3)}
+    ashore={4:(-3.55,8.4),5:(3.5,7.4),2:(-6.88,10.7),3:(-8,4),6:(7.72,8.62),7:(7,3)}
     routes={}
+    departures={4:161,5:170,2:174,3:181,6:168,7:177}
+    arrivals={4:236,5:244,2:250,3:254,6:241,7:255}
+    retreats={4:282,6:287,2:292,5:296,3:289,7:294}
     for i,A in enumerate(actors):
         root=A['root'];root.scale=(.62,)*3
         strip(A,native('kunkka','idle'),0,COUNT,blend=0,repeat=True,phase=(i*3)%25)
         boat=i//2;x,dy=boat_offsets[boat];localx=(-.9 if i%2==0 else .9)
         deck_y=1.2 if i%2==0 else .15;deck_z=2.02 if i%2==0 else 1.75
-        start=Vector((x+localx,-13+dy+deck_y,deck_z))
-        landing=Vector((x+localx,-5.7,0.04))
+        jump=departures.get(i,165);land=jump+21;arrive=arrivals.get(i,239)
+        retreat_start=retreats.get(i,285);retreat_end=retreat_start+40
+        # Mount passengers on the actual rolling deck, including pitch/roll.
+        deck=Vector((-localx/1.4,-deck_y/1.4,(deck_z+.55)/1.4))
+        start=deck_point(boat,jump,deck)
+        landing=Vector((x+localx,-4.9,0.04))
         finish=Vector((*ashore.get(i,(x,4)),.04))
         if i in ashore:
-            strip(A,native('kunkka','flail'),165,186,blend=3)
-            running=strip(A,run,184,239,blend=4,repeat=True)
+            strip(A,native('kunkka','flail'),jump,land+2,blend=3)
+            running=strip(A,run,land,arrive,blend=4,repeat=True)
             distance=(finish-landing).length
-            running.scale=(speed*.62)/(distance/(55/FPS));running.repeat=(55/(22*running.scale))
-            running.frame_start=184;running.frame_end=239
-            if i in (2,4,5,6):
-                t=241+(i%3)*5;strip(A,native('kunkka','attack1'),t,t+38,blend=5)
-            retreat_run=strip(A,run,285,326,blend=5,repeat=True)
+            length=arrive-land
+            running.scale=(speed*.62)/(distance/(length/FPS));running.repeat=(length/(22*running.scale))
+            running.frame_start=land;running.frame_end=arrive
+            if i in (2,4,6):
+                t={4:246,6:252,2:258}[i];strip(A,native('kunkka','attack1'),t,t+38,blend=5)
+            retreat_run=strip(A,run,retreat_start,retreat_end,blend=5,repeat=True)
             retreat_run.scale=(speed*.62)/(math.sqrt(20)/(40/FPS))
-            retreat_run.repeat=41/(22*retreat_run.scale)
-            retreat_run.frame_start=285;retreat_run.frame_end=326
-            strip(A,native('kunkka','ghostship'),347+(i%3)*4,386+(i%3)*4,blend=5)
-            routes[str(i)]=dict(start=list(start),landing=list(landing),fight=list(finish),run_speed=distance/(55/FPS))
+            retreat_run.repeat=40/(22*retreat_run.scale)
+            retreat_run.frame_start=retreat_start;retreat_run.frame_end=retreat_end
+            # One commander signals. Others cover him instead of copying the same pose.
+            if i==4:strip(A,native('kunkka','ghostship'),347,386,blend=5)
+            routes[str(i)]=dict(start=list(start),landing=list(landing),fight=list(finish),
+                               departure=jump,landing_frame=land,arrival=arrive,run_speed=distance/(length/FPS))
         previous_yaw=math.pi
         for f in range(COUNT):
-            if f<165 or i not in ashore:
-                pos=Vector((x+localx,-58+min(f,150)*.3+dy+deck_y,deck_z+.07*math.sin(f*.065+boat)))
+            if f<jump or i not in ashore:
+                pos=deck_point(boat,f,deck)
                 yaw=math.pi
-            elif f<184:
-                u=(f-165)/19;pos=start.lerp(landing,u);pos.z+=1.45*math.sin(math.pi*u);yaw=math.pi
-            elif f<239:
-                u=(f-184)/55;pos=landing.lerp(finish,u);direction=finish-landing
+            elif f<land:
+                u=(f-jump)/21;pos=start.lerp(landing,u);pos.z+=1.15*math.sin(math.pi*u);yaw=math.pi
+            elif f<arrive:
+                u=(f-land)/(arrive-land);pos=landing.lerp(finish,u);direction=finish-landing
                 run_yaw=math.atan2(direction.x,-direction.y)
-                yaw=turn_between(math.pi,run_yaw,f,181,191)
-                look=Vector((0,12,0))-finish
-                yaw=turn_between(yaw,math.atan2(look.x,-look.y),f,232,239)
+                yaw=turn_between(math.pi,run_yaw,f,land-3,land+7)
+                look=Vector((-3.55 if i==4 else 0,12,0))-finish
+                yaw=turn_between(yaw,math.atan2(look.x,-look.y),f,arrive-7,arrive)
             else:
-                pos=finish.copy();direction=Vector((0,12,0))-pos;yaw=math.atan2(direction.x,-direction.y)
+                pos=finish.copy();direction=Vector((-3.55 if i==4 else 0,12,0))-pos;yaw=math.atan2(direction.x,-direction.y)
                 # Withdraw from the giant's counterattack, then cast from clear flanks.
-                if i in ashore and f>=278:
+                if i in ashore and f>=retreat_start-7:
                     sign=-1 if pos.x<0 else 1
                     away=math.atan2(sign*4,2)
-                    yaw=turn_between(yaw,away,f,278,292)
-                if f>=285:
-                    retreat=min(1,(f-285)/40);sign=-1 if pos.x<0 else 1;pos.x+=sign*retreat*4
+                    yaw=turn_between(yaw,away,f,retreat_start-7,retreat_start+5)
+                if f>=retreat_start:
+                    retreat=min(1,(f-retreat_start)/40);sign=-1 if pos.x<0 else 1;pos.x+=sign*retreat*4
                     pos.y-=retreat*2
-                    if f>=326:
+                    if f>=retreat_end:
                         direction=Vector((0,12,0))-pos;yaw=math.atan2(direction.x,-direction.y)
-                        yaw=turn_between(away,yaw,f,326,341)
+                        yaw=turn_between(away,yaw,f,retreat_end,retreat_end+15)
             # Euler wrapping must not introduce a full revolution between adjacent keys.
             yaw=previous_yaw+math.atan2(math.sin(yaw-previous_yaw),math.cos(yaw-previous_yaw))
             previous_yaw=yaw
@@ -265,11 +425,34 @@ def build():
     giant['root'].location=(0,12,.03);giant['root'].scale=(2.8,)*3
     strip(giant,native('pudge','pudge_idle'),0,COUNT,blend=0,repeat=True)
     strip(giant,native('pudge','pudge_meathook_start'),108,159,blend=7)
-    strip(giant,native('pudge','pudge_attack1'),290,338,blend=6)
-    strip(giant,native('pudge','pudge_flail'),430,468,blend=5)
-    death=strip(giant,native('pudge','pudge_death'),465,535,blend=5);death.blend_out=0;death.extrapolation='HOLD_FORWARD'
+    hurt=strip(giant,native('pudge','pudge_stun'),264,295,blend=5)
+    hurt.action_frame_end=20;hurt.scale=31/20;hurt.frame_start=264;hurt.frame_end=295
+    slam=strip(giant,native('pudge','pudge_attack1'),290,353,blend=6)
+    slam.use_animated_time=True
+    # The game swing crosses the ground at source phase 14.93. Pose to pose:
+    # raise, accelerate into contact, resist briefly, lift and recover; no underground arc.
+    for frame,phase in ((290,0),(299,8),(309,14),(315,14.7),(320,14.925),(324,14.925),(337,14.3),(345,8),(353,0)):
+        slam.strip_time=phase;slam.keyframe_insert('strip_time',frame=frame)
+    for fc in slam.fcurves:
+        for k in fc.keyframe_points:k.interpolation='LINEAR'
+    # Impact flows directly into a losing-balance pose; never blend through idle or flail.
+    death=strip(giant,native('pudge','pudge_death'),429,520,blend=3)
+    death.action_frame_start=12;death.scale=91/(54-12);death.frame_start=429;death.frame_end=520
+    death.blend_out=0;death.extrapolation='HOLD_FORWARD'
+    death.use_animated_time=True
+    for frame,phase in ((429,12),(440,17),(449,22),(458,24),(469,26),(480,28),(487,30),(498,36),(520,54)):
+        death.strip_time=phase;death.keyframe_insert('strip_time',frame=frame)
+    for fc in death.fcurves:
+        for k in fc.keyframe_points:k.interpolation='LINEAR'
+    from look_motion import apply_looks
+    attention=apply_looks(dict(frames=COUNT,fps=FPS,looks=[
+        dict(who='giant',start=0,end=264/FPS,yaw_deg=0,pitch_deg=-15,attack=.5,release=.3),
+        dict(who='giant',start=353/FPS,end=425/FPS,yaw_deg=0,pitch_deg=-12,attack=.4,release=.3),
+    ]),{'giant':giant},sc,FPS)
+    release_weapons(giant,sc)
+    grounded_fall(giant,sc)
     ghost_ships=[]
-    for i,x in enumerate((-3.5,3.5,0)):
+    for i,x in enumerate((-4.5,4.5,0)):
         root=bpy.data.objects.new(f'Barrage{i}',None);sc.collection.objects.link(root)
         mapping=clone_objects(report['ship']['objects'],f'Ghost{i}')
         for obj in mapping.values():
@@ -284,111 +467,65 @@ def build():
                     mix=nt.nodes.new('ShaderNodeMixRGB');mix.blend_type='MULTIPLY';mix.inputs[0].default_value=1;mix.inputs[2].default_value=(.16,.7,.85,1)
                     if source:
                         mono=nt.nodes.new('ShaderNodeRGBToBW');nt.links.new(source,mono.inputs[0]);nt.links.new(mono.outputs[0],mix.inputs[1])
-                    nt.links.new(mix.outputs[0],b.inputs['Base Color']);nt.links.new(mix.outputs[0],b.inputs['Emission Color']);b.inputs['Emission Strength'].default_value=1.4
+                    mix.inputs[2].default_value=(.035,.25,.38,1)
+                    nt.links.new(mix.outputs[0],b.inputs['Base Color'])
+                    b.inputs['Emission Color'].default_value=(.06,.60,1,1)
+                    edge=nt.nodes.new('ShaderNodeLayerWeight');edge.inputs['Blend'].default_value=.35
+                    emission=nt.nodes.new('ShaderNodeMath');emission.operation='MULTIPLY_ADD'
+                    emission.inputs[1].default_value=1.5;emission.inputs[2].default_value=.25
+                    nt.links.new(edge.outputs['Fresnel'],emission.inputs[0]);nt.links.new(emission.outputs[0],b.inputs['Emission Strength'])
                     visibility=nt.nodes.new('ShaderNodeValue');visibility.name='Impact dissolve'
-                    for frame,value in ((0,0),(385+i*7,0),(393+i*7,1),(429+i*7,1),(441+i*7,0),(539,0)):
+                    for frame,value in ((0,0),(385+i*14,0),(393+i*14,1),(429+i*14,1),(440+i*14,0),(539,0)):
                         visibility.outputs[0].default_value=value;visibility.outputs[0].keyframe_insert('default_value',frame=frame)
                     alpha=b.inputs['Alpha'].links[0].from_socket if b.inputs['Alpha'].links else None
                     multiply=nt.nodes.new('ShaderNodeMath');multiply.operation='MULTIPLY'
                     multiply.inputs[0].default_value=b.inputs['Alpha'].default_value
                     if alpha:nt.links.new(alpha,multiply.inputs[0])
-                    nt.links.new(visibility.outputs[0],multiply.inputs[1]);nt.links.new(multiply.outputs[0],b.inputs['Alpha'])
+                    opacity=nt.nodes.new('ShaderNodeMath');opacity.operation='MULTIPLY_ADD'
+                    opacity.inputs[1].default_value=.30;opacity.inputs[2].default_value=.58
+                    nt.links.new(edge.outputs['Fresnel'],opacity.inputs[0])
+                    final=nt.nodes.new('ShaderNodeMath');final.operation='MULTIPLY'
+                    nt.links.new(visibility.outputs[0],multiply.inputs[1]);nt.links.new(multiply.outputs[0],final.inputs[0]);nt.links.new(opacity.outputs[0],final.inputs[1]);nt.links.new(final.outputs[0],b.inputs['Alpha'])
         for f in range(COUNT):
-            t=f-(385+i*7);u=max(0,min(44/50,t/50))
+            t=f-(385+i*14);u=max(0,min(44/50,t/50))
             # Keep physical size at impact: fade magic away, never shrink a ship into a toy.
             key_transform(root,f,(x,-38+u*48,-1.3),(0,0,math.pi),(2,)*3)
         linear_keys(root.animation_data.action);ghost_ships.append(root)
     cams=[]
     c=camera('01_Fleet_leader',(7,-37,11),(0,-56,3),38)
     for f in (0,60):
-        y=-58+f*.30;c.location=(5,y+10,13);aim(c,(0,y+.6,3));c.keyframe_insert('location',frame=f);c.keyframe_insert('rotation_euler',frame=f)
+        y=boat_pose(2,f)[0][1];c.location=(5,y+10,13);aim(c,(0,y+.6,3));c.keyframe_insert('location',frame=f);c.keyframe_insert('rotation_euler',frame=f)
     linear_keys(c.animation_data.action);cams.append((0,c))
-    cams.append((60,camera('02_Fleet_and_giant',(40,-55,40),(0,-18,3),24)))
-    cams.append((105,camera('03_Giant_threat',(15,-11,6),(0,12,6),43)))
-    cams.append((165,camera('04_Landing',(24,-22,12),(-1,-4,2.5),28)))
-    cams.append((240,camera('05_Battle',(-18,-6,6),(0,11,4.2),35)))
-    cams.append((345,camera('06_Command',(0,-5,3),(-6.5,6.3,2.4),38)))
-    cams.append((390,camera('07_Barrage',(25,-24,17),(0,6,5),38)))
-    cams.append((465,camera('08_Fall',(-22,-10,8),(0,10,4),40)))
-    cams.append((510,camera('09_Aftermath',(19,-14,10),(0,10,2.5),40)))
+    cams.append((60,camera('02_Fleet_and_giant',(29,-49,19),(0,-13,3.5),28)))
+    cams.append((105,camera('03_Giant_threat',(8,-7,2.6),(0,12,5.2),34)))
+    cams.append((165,camera('04_Landing',(7,-.5,4.8),(-.9,-6,1.7),32)))
+    cams.append((205,camera('04b_Charge',(-10,-5,3),(0,9,3.5),28)))
+    cams.append((240,camera('05_Leg_strike',(1,4,3.4),(-3.1,10.1,2.3),30)))
+    cams.append((267,camera('05b_Hit_reaction',(8,5,13),(.5,11.8,9.5),40)))
+    cams.append((290,camera('05c_Counterattack',(-13,-6,4.2),(1.5,7,3.2),24)))
+    cams.append((345,camera('06_Command',(-3,0,2.5),(-7.55,6.4,2.1),44)))
+    c=camera('07_Ghost_leader',(-12,-28,8),(-4.5,-38,2.2),32)
+    for f in (390,426):
+        y=-38+min(44/50,(f-385)/50)*48
+        c.location=(-12,y+10,8);aim(c,(-4.5,y,2.2));c.keyframe_insert('location',frame=f);c.keyframe_insert('rotation_euler',frame=f)
+    linear_keys(c.animation_data.action);cams.append((390,c))
+    cams.append((426,camera('07b_Impact',(-17,-1,5),(1,10,5),27)))
+    cams.append((453,camera('08_Fall',(-18,-8,6),(0,5.5,3),27)))
+    cams.append((496,camera('09_Aftermath',(15,-6,8),(0,7,2),28)))
     sc.timeline_markers.clear()
     for f,c in cams:sc.timeline_markers.new(c.name,frame=f).camera=c
     sc.camera=cams[0][1]
-    environment()
+    from fleet_coast import environment as coast_environment
+    coast_environment()
     effects(boats)
     # Existing, verified Blender 5 compositor: emission-only local bloom.
     from doomsday_atmosphere import glow
     glow(sc)
     sc.frame_set(0);bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'scene.blend'))
     dump('staging.json',dict(count=COUNT,fps=FPS,resolution=[1080,1920],troops=14,ships=7,giant_scale=2.8,native_run_speed=speed,routes=routes,
-         cameras=[dict(frame=f,name=c.name) for f,c in cams],textures=textures,
+         cameras=[dict(frame=f,name=c.name) for f,c in cams],textures=textures,attention=attention,
          actors=[dict(root=A['root'].name,arm=A['arm'].name) for A in actors],giant=dict(root=giant['root'].name,arm=giant['arm'].name)))
     print('BATTLE_BUILT')
-
-
-def environment():
-    sc=bpy.context.scene;rng=random.Random(71)
-    sea=surface('Deep moving sea',(.012,.045,.065),.24,.32)
-    nt=sea.node_tree;b=nt.nodes['Principled BSDF']
-    tex=nt.nodes.new('ShaderNodeTexNoise');tex.inputs['Scale'].default_value=1.3;tex.inputs['Detail'].default_value=4
-    coord=nt.nodes.new('ShaderNodeTexCoord');mapping=nt.nodes.new('ShaderNodeMapping')
-    nt.links.new(coord.outputs['Object'],mapping.inputs[0]);nt.links.new(mapping.outputs[0],tex.inputs[0])
-    for f,x in ((0,0),(COUNT-1,6)):
-        mapping.inputs['Location'].default_value=(x,0,0);mapping.inputs['Location'].keyframe_insert('default_value',frame=f)
-    bump=nt.nodes.new('ShaderNodeBump');bump.inputs['Strength'].default_value=.42;bump.inputs['Distance'].default_value=.16
-    nt.links.new(tex.outputs['Fac'],bump.inputs['Height']);nt.links.new(bump.outputs[0],b.inputs['Normal'])
-    verts=[];faces=[];n=160
-    for j in range(n+1):
-        for i in range(n+1):
-            x=-190+i*2.4;y=-250+j*2.4
-            verts.append((x,y,-.7+.12*math.sin(x*.52+y*.19)+.08*math.sin(y*.7)))
-    for j in range(n):
-        for i in range(n):
-            a=j*(n+1)+i;faces.append((a,a+1,a+n+2,a+n+1))
-    mesh=bpy.data.meshes.new('Ocean');mesh.from_pydata(verts,[],faces);mesh.update()
-    water=bpy.data.objects.new('Ocean',mesh);sc.collection.objects.link(water);water.data.materials.append(sea)
-    for p in mesh.polygons:p.use_smooth=True
-    beach=surface('Wet shore',(.11,.105,.075),.72)
-    nt=beach.node_tree;b=nt.nodes['Principled BSDF'];tex=nt.nodes.new('ShaderNodeTexNoise');tex.inputs['Scale'].default_value=3.2
-    ramp=nt.nodes.new('ShaderNodeValToRGB');ramp.color_ramp.elements[0].color=(.045,.043,.03,1);ramp.color_ramp.elements[1].color=(.24,.21,.14,1)
-    coord=nt.nodes.new('ShaderNodeTexCoord');nt.links.new(coord.outputs['Object'],tex.inputs[0]);nt.links.new(tex.outputs['Fac'],ramp.inputs[0]);nt.links.new(ramp.outputs[0],b.inputs['Base Color'])
-    bump=nt.nodes.new('ShaderNodeBump');bump.inputs['Distance'].default_value=.065;nt.links.new(tex.outputs['Fac'],bump.inputs['Height']);nt.links.new(bump.outputs[0],b.inputs['Normal'])
-    verts=[];faces=[];width=90;depth=85
-    for j in range(depth+1):
-        for i in range(width+1):
-            x=-90+i*2;y=-8+j*1.8;z=-.65 if j==0 else 0 if j<20 else .03*(j-20)**1.35
-            verts.append((x,y,z))
-    for j in range(depth):
-        for i in range(width):
-            a=j*(width+1)+i;faces.append((a,a+1,a+width+2,a+width+1))
-    mesh=bpy.data.meshes.new('Shore');mesh.from_pydata(verts,[],faces);mesh.update()
-    shore=bpy.data.objects.new('Shore',mesh);sc.collection.objects.link(shore);shore.data.materials.append(beach)
-    for p in mesh.polygons:p.use_smooth=True
-    imp,fix=helpers();rocks,_=imp(str(MODELS/'models_props_rock_riveredge_rock_wall001a.glb'));fix(rocks)
-    rock=next(o for o in rocks if o.type=='MESH');box=mesh_bounds([rock]);size=Vector(box['max'])-Vector(box['min']);mid=(Vector(box['max'])+Vector(box['min']))*.5
-    rock.data.transform(rock.matrix_world);rock.parent=None;rock.matrix_world.identity()
-    for v in rock.data.vertices:v.co-=mid
-    rock.hide_render=True
-    for i in range(24):
-        obj=rock.copy();sc.collection.objects.link(obj);obj.hide_render=False;obj.name=f'Cliff{i}'
-        obj.location=(-100+i*9,63+rng.uniform(-9,18),9)
-        obj.scale=tuple(a/b for a,b in zip((rng.uniform(13,22),rng.uniform(10,20),rng.uniform(14,28)),size))
-        obj.rotation_euler.z=rng.uniform(-.6,.6)
-    world=bpy.data.worlds.new('Storm dusk');world.use_nodes=True;sc.world=world
-    nt=world.node_tree;nt.nodes.clear();out=nt.nodes.new('ShaderNodeOutputWorld');bg=nt.nodes.new('ShaderNodeBackground');bg.inputs['Strength'].default_value=.32
-    tex=nt.nodes.new('ShaderNodeTexNoise');tex.inputs['Scale'].default_value=3.8;tex.inputs['Detail'].default_value=3
-    coord=nt.nodes.new('ShaderNodeTexCoord');ramp=nt.nodes.new('ShaderNodeValToRGB')
-    ramp.color_ramp.elements[0].color=(.018,.035,.07,1);ramp.color_ramp.elements[1].color=(.28,.37,.46,1)
-    nt.links.new(coord.outputs['Normal'],tex.inputs[0]);nt.links.new(tex.outputs['Fac'],ramp.inputs[0]);nt.links.new(ramp.outputs[0],bg.inputs[0]);nt.links.new(bg.outputs[0],out.inputs['Surface'])
-    sun_data=bpy.data.lights.new('Low warm sun','SUN');sun_data.energy=2.7;sun_data.angle=.17;sun_data.color=(1,.73,.43)
-    sun=bpy.data.objects.new('Low warm sun',sun_data);sc.collection.objects.link(sun);sun.rotation_euler=(.5,-.7,-.8)
-    light('Coastal sky',(0,-15,35),16000,(.35,.65,1),35,(0,10,3))
-    light('Battle rim',(-10,38,20),16000,(1,.42,.14),20,(0,12,5))
-    light('Fleet fill',(0,-45,19),9000,(.4,.65,1),28,(0,-30,3))
-    bpy.ops.mesh.primitive_cube_add(size=1,location=(0,68,15));mist=bpy.context.object;mist.name='Distant haze';mist.scale=(250,85,35)
-    mat=bpy.data.materials.new('Horizon mist');mat.use_nodes=True;nt=mat.node_tree;nt.nodes.clear()
-    v=nt.nodes.new('ShaderNodeVolumePrincipled');v.inputs['Density'].default_value=.016;v.inputs['Color'].default_value=(.38,.47,.58,1)
-    out=nt.nodes.new('ShaderNodeOutputMaterial');nt.links.new(v.outputs[0],out.inputs['Volume']);mist.data.materials.append(mat)
 
 
 def effects(boats):
@@ -397,30 +534,46 @@ def effects(boats):
     foam=surface('Broken sea foam',(.62,.82,.88),.6)
     nt=foam.node_tree;b=nt.nodes['Principled BSDF'];noise=nt.nodes.new('ShaderNodeTexNoise');noise.inputs['Scale'].default_value=7;noise.inputs['Detail'].default_value=3
     ramp=nt.nodes.new('ShaderNodeValToRGB');ramp.color_ramp.elements[0].position=.43;ramp.color_ramp.elements[1].position=.65
-    coord=nt.nodes.new('ShaderNodeTexCoord');nt.links.new(coord.outputs['Object'],noise.inputs[0]);nt.links.new(noise.outputs['Fac'],ramp.inputs[0]);nt.links.new(ramp.outputs[0],b.inputs['Alpha'])
-    for boat in boats:
+    coord=nt.nodes.new('ShaderNodeTexCoord');nt.links.new(coord.outputs['Object'],noise.inputs[0]);nt.links.new(noise.outputs['Fac'],ramp.inputs[0])
+    feather=nt.nodes.new('ShaderNodeAttribute');feather.attribute_name='wake_feather'
+    mul=nt.nodes.new('ShaderNodeMath');mul.operation='MULTIPLY'
+    nt.links.new(ramp.outputs[0],mul.inputs[0]);nt.links.new(feather.outputs['Fac'],mul.inputs[1])
+    strength=nt.nodes.new('ShaderNodeValue')
+    for f,v in ((0,.75),(105,.75),(155,.25),(195,0),(539,0)):
+        strength.outputs[0].default_value=v;strength.outputs[0].keyframe_insert('default_value',frame=f)
+    opacity=nt.nodes.new('ShaderNodeMath');opacity.operation='MULTIPLY'
+    nt.links.new(mul.outputs[0],opacity.inputs[0]);nt.links.new(strength.outputs[0],opacity.inputs[1]);nt.links.new(opacity.outputs[0],b.inputs['Alpha'])
+    for boat_index,boat in enumerate(boats):
         for sign in (-1,1):
-            verts=[];faces=[]
-            for j in range(20):
-                y=4+j*.7;x=sign*(1.35+j*.12)
-                verts.extend([(x-.25,y,.05),(x+.25+j*.025,y,.05)])
-                if j:faces.append((2*j-2,2*j-1,2*j+1,2*j))
+            verts=[];faces=[];feathers=[]
+            for j in range(29):
+                v=j/28;y=2+v*13;x=sign*(1.5+v*2.7)
+                for k in range(7):
+                    u=k/6;verts.append((x+(u-.5)*(.45+v*1.7),y,.025*math.sin(y*.6)))
+                    feathers.append(math.sin(math.pi*u)**1.5*min(1,v*8)*(1-v)**1.3)
+                    if j and k:
+                        a=j*7+k;faces.append((a-8,a-7,a,a-1))
             mesh=bpy.data.meshes.new('Foam ribbon');mesh.from_pydata(verts,[],faces)
-            o=bpy.data.objects.new('Ship wake',mesh);sc.collection.objects.link(o);o.parent=boat;o.data.materials.append(foam)
+            mesh.attributes.new('wake_feather','FLOAT','POINT').data.foreach_set('value',feathers)
+            o=bpy.data.objects.new('Ship wake',mesh);sc.collection.objects.link(o);o.data.materials.append(foam)
+            # Wake stays on water; attaching it to a rolling deck makes the surface levitate.
+            for f in range(196):
+                p,_=boat_pose(boat_index,f);key_transform(o,f,(p[0],p[1],-.635),(0,0,math.pi),(1.4,1.4,1))
+            linear_keys(o.animation_data.action)
     spray=surface('Sea spray',(.48,.82,.93),.3)
     dust=surface('Impact stone',(.20,.16,.10),.8)
     spark=surface('Steel contact',(1,.40,.045),.4);b=spark.node_tree.nodes['Principled BSDF'];b.inputs['Emission Color'].default_value=(1,.2,.015,1);b.inputs['Emission Strength'].default_value=5
     # Coordinates are revised with the contact probes, not inferred from a sound cue.
-    events=[(184,(-.6,-5.8,.15),dust,20,2),(259,(.14,10.25,3.1),spark,14,1.5),
-            (264,(2.8,10.18,2.61),spark,14,1.5),(320,(1,5,.2),dust,34,4),
+    events=[(182,(-.9,-4.9,.15),dust,6,1),(259,(-2.44,10.99,2.42),spark,10,1.5),
+            (274,(4.7,9.8,.3),spark,10,1.5),(320,(3.59,2.57,.1),dust,10,3),
             (429,(-2,9,1.3),spray,60,7),(443,(3,9,1.6),spray,60,7),
-            (510,(0,10,.2),dust,70,7)]
+            (483,(0,2,.2),dust,16,4)]
     for event,(start,origin,material,count,force) in enumerate(events):
         for i in range(count):
             bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1,radius=1)
             obj=bpy.context.object;obj.name=f'Impact_{event}_{i}';obj.data.materials.append(material)
             velocity=Vector((rng.uniform(-1,1),rng.uniform(-1,1),rng.uniform(.5,1.4)))*force
-            lifetime=rng.randint(15,33);radius=rng.uniform(.035,.12)*(2 if material==dust else 1)
+            lifetime=rng.randint(15,33);radius=rng.uniform(.025,.065)
             for frame in sorted({0,start-1,*range(start,start+lifetime+1),COUNT-1}):
                 age=max(0,min(lifetime,frame-start))/FPS
                 pos=Vector(origin)+velocity*age+Vector((0,0,-4.9*age*age))
@@ -430,6 +583,22 @@ def effects(boats):
                 key_transform(obj,frame,pos,None,(scale,scale,scale*(2.6 if material==spray else 1)))
             linear_keys(obj.animation_data.action)
     dump('events.json',dict(fps=FPS,events=[dict(frame=f,name='landing' if n==0 else 'sword' if n in (1,2) else 'giant_swing' if n==3 else 'ship_impact' if n in (4,5) else 'giant_fall',position=list(p)) for n,(f,p,*_) in enumerate(events)]))
+    # Low dust rolling out from the actual ground hit, not a cloud of floating stones.
+    for start,origin,size in ((182,(-.9,-4.9,.05),.6),(320,(3.59,2.57,.1),1.8),(483,(0,2,.1),2.7)):
+        for i in range(4):
+            bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1)
+            o=bpy.context.object;o.name=f'Ground powder {start}-{i}'
+            m=bpy.data.materials.new(o.name);m.use_nodes=True;nt=m.node_tree;nt.nodes.clear()
+            out=nt.nodes.new('ShaderNodeOutputMaterial');vol=nt.nodes.new('ShaderNodeVolumePrincipled')
+            vol.inputs['Color'].default_value=(.26,.23,.18,1)
+            tex=nt.nodes.new('ShaderNodeTexNoise');tex.inputs['Scale'].default_value=3.5
+            density=nt.nodes.new('ShaderNodeMath');density.operation='MULTIPLY'
+            nt.links.new(tex.outputs['Fac'],density.inputs[0]);nt.links.new(density.outputs[0],vol.inputs['Density']);nt.links.new(vol.outputs[0],out.inputs['Volume'])
+            o.data.materials.append(m);direction=Vector((math.cos(i*math.pi/2),math.sin(i*math.pi/2),.08))
+            for f,scale,alpha,offset in ((0,.0001,0,0),(start-1,.0001,0,0),(start+3,.3,.6,.3),(start+17,1,.3,1),(start+38,1.3,0,1.7),(539,1.3,0,1.7)):
+                key_transform(o,f,Vector(origin)+direction*offset*size,None,(size*scale,size*scale,.32*size*scale))
+                density.inputs[1].default_value=alpha;density.inputs[1].keyframe_insert('default_value',frame=f)
+            linear_keys(o.animation_data.action)
 
 
 def preview():
@@ -437,40 +606,55 @@ def preview():
     if shutil.disk_usage(OUT).free<150_000_000:
         raise RuntimeError('Need 150 MB reserve before the 13-still probe (under 20 MB output)')
     bpy.ops.wm.open_mainfile(filepath=str(OUT/'scene.blend'),use_scripts=False)
-    sc=bpy.context.scene;sc.render.resolution_percentage=40;sc.eevee.taa_render_samples=16
+    sc=bpy.context.scene;sc.render.resolution_percentage=40;sc.eevee.taa_render_samples=16;sc.render.use_motion_blur=False
     from study_head_target import gpu_guard
     gpu_guard()
     (OUT/'probes').mkdir(exist_ok=True)
-    for frame in (20,80,126,177,214,263,300,322,368,420,449,487,525):
+    for frame in (20,80,126,177,214,259,270,300,322,368,420,449,487,525):
         sc.frame_set(frame);sc.render.filepath=str(OUT/'probes'/f'frame_{frame:04d}.png');bpy.ops.render.render(write_still=True)
 
 
-def render(percent=100):
+def render(percent=100, frame_range=None):
     """Color-managed PNG stream, one temporary frame; preserves frame-rate and no upscaling."""
     import shutil
+    if frame_range is not None:
+        if percent == 100 or len(frame_range) != 2 or not 0 <= frame_range[0] <= frame_range[1] < COUNT:
+            raise ValueError('A motion patch needs two inclusive frame bounds within the scene')
+    if percent==100:
+        review_path=OUT/'quality_review.json'
+        if not review_path.is_file():
+            raise RuntimeError('Full render blocked: review the entire motion.mp4 and save quality_review.json first')
+        review=json.loads(review_path.read_text(encoding='utf-8'))
+        expected={name:hashlib.sha256((OUT/name).read_bytes()).hexdigest() for name in ('scene.blend','motion.mp4')}
+        if review.get('status')!='ready' or review.get('blockers')!=[] or review.get('sha256')!=expected or not review.get('observations'):
+            raise RuntimeError('Full render blocked: unresolved, missing or stale artistic review; technical checks alone cannot pass this gate')
     bpy.ops.wm.open_mainfile(filepath=str(OUT/'scene.blend'),use_scripts=False)
     sc=bpy.context.scene
     sc.render.resolution_percentage=percent
-    if percent<100:sc.eevee.taa_render_samples=12
+    if percent<100:
+        sc.eevee.taa_render_samples=12;sc.render.use_motion_blur=False
     from study_head_target import gpu_guard
     gpu_guard()
     if shutil.disk_usage(OUT).free<250_000_000:raise RuntimeError('Need 250 MB for final movie and QA stills')
     runtime=OUT/'runtime.json'
     ffmpeg=os.environ.get('FFMPEG') or shutil.which('ffmpeg')
+    if not runtime.is_file():runtime=BASE/'runtime.json'
     if not ffmpeg and runtime.is_file():ffmpeg=json.loads(runtime.read_text())['ffmpeg']
     if not ffmpeg or not Path(ffmpeg).is_file():
         raise RuntimeError('Set FFMPEG to an installed executable, or configure local runtime.json')
     label='motion' if percent<100 else 'fleet_battle_silent'
+    if frame_range is not None:label+=f'_{frame_range[0]:04d}_{frame_range[1]:04d}'
     output=OUT/(label+'.mp4');log=(OUT/(label+'_encode.log')).open('wb')
     proc=subprocess.Popen([ffmpeg,'-y','-v','error','-f','image2pipe','-framerate',str(FPS),'-vcodec','png','-i','-',
          '-an','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(output)],stdin=subprocess.PIPE,stderr=log)
     qa=OUT/('motion_qa' if percent<100 else 'qa_frames');qa.mkdir(exist_ok=True);temp=OUT/'frame_current.png'
     try:
-        for frame in range(COUNT):
+        for frame in (range(frame_range[0],frame_range[1]+1) if frame_range is not None else range(COUNT)):
             sc.frame_set(frame);bpy.ops.render.render()
             bpy.data.images['Render Result'].save_render(str(temp),scene=sc)
             proc.stdin.write(temp.read_bytes())
-            if frame%15==0 or frame in (64,65,104,105,164,165,239,240,344,345,389,390,464,465,509,510,539):
+            cuts={m.frame for m in sc.timeline_markers if m.camera}
+            if frame%15==0 or frame in cuts or frame+1 in cuts or frame==COUNT-1 or (percent<100 and 240<=frame<=353 and frame%3==0):
                 sc.render.image_settings.file_format='JPEG';sc.render.image_settings.quality=94
                 bpy.data.images['Render Result'].save_render(str(qa/f'frame_{frame:04d}.jpg'),scene=sc)
                 sc.render.image_settings.file_format='PNG'
@@ -490,5 +674,7 @@ if __name__=='__main__':
     elif mode=='build':build()
     elif mode=='probe':preview()
     elif mode=='render':render()
-    elif mode=='motion':render(30)
+    elif mode=='motion':
+        bounds=sys.argv[sys.argv.index('--')+2:]
+        render(30,tuple(map(int,bounds)) if bounds else None)
     else:raise ValueError(mode)

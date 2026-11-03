@@ -83,24 +83,27 @@ def default_events():
     cue('ocean', 'waves', 0, -22, duration=18)
     cue('threat_chain', 'chain', 119, -5)
     cue('threat_chain_stop', 'hook_stop', 134, -7)
-    for i, frame in enumerate((184, 185)):
+    for i, frame in enumerate((182, 191)):
         cue(f'landing_step_{i + 1}', f'waterstep{i % 2 + 1}', frame, -9,
             -.25 if i % 2 == 0 else .25)
     for i, frame in enumerate((191, 203, 215, 230)):
         cue(f'shore_step_{i + 1}', f'step{i % 2 + 1}', frame, -12,
             -.25 if i % 2 == 0 else .25)
-    for i, frame in enumerate((259, 264)):
+    for i, frame in enumerate((259, 274)):
         cue(f'swing_{i + 1}', 'swoosh', frame - 4, -8)
         cue(f'sword_{i + 1}', 'sword', frame, -5)
         cue(f'contact_{i + 1}', 'heavy_sword', frame, -4)
-    cue('giant_swing', 'giant_swing', 314, -5)
+    cue('giant_swing', 'giant_swing', 315, -5)
     cue('giant_ground_contact', 'body_impact', 320, -2)
     cue('native_battlecry', 'battlecry', 345, 1)
     cue('summon_bell', 'bell', 384, -7)
     cue('ghost_fleet_pass', 'ghost_ship', 390, -6)
     cue('ram_left', 'ship_crash', 429, -3, -.25)
     cue('ram_right', 'ship_crash', 443, -6, .25)
-    cue('giant_shore_fall', 'body_impact', 510, 1)
+    cue('ram_center', 'ship_crash', 457, -8, 0)
+    cue('dropped_cleaver', 'heavy_sword', 465, -14, .35)
+    cue('dropped_hook', 'chain', 467, -15, -.35)
+    cue('giant_shore_fall', 'body_impact', 483, 1)
     return dict(fps=30, duration=18, status='staged_events_pending_final_picture_review',
                 frame_origin='zero_based; Blender frame 0 is video frame 0',
                 timeline=[{'start': a, 'end': b, 'action': action} for a, b, action in (

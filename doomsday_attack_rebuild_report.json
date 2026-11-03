@@ -1,0 +1,38 @@
+{
+  "status": "SHORT_MOTION_REBUILD_NOT_FINAL_FILM",
+  "file": "doomsday_attack_rebuild.mp4",
+  "sha256": "a3927da61bea96b8979cd609fcd978c4527ac8bef79b4ba420216fbab27db1c0",
+  "duration_seconds": 1.9333333333333333,
+  "frames": 58,
+  "fps": 30,
+  "resolution": [
+    960,
+    640
+  ],
+  "audio": false,
+  "contact_frame": 42,
+  "airborne_seconds": 0.8,
+  "changes": [
+    "Standing-derived preparation and toe push; hand joins before takeoff.",
+    "Overhead swing and continuous two-character camera.",
+    "Weapon stops before body compression; legs follow later."
+  ],
+  "verification": {
+    "decoded_frames": 58,
+    "camera_bounds_all_frames": "inside, minimum margin 6 percent",
+    "forearm_torso_surface_pairs": 0,
+    "weapon_vs_head_body_clothing": "No surface pairs found, except closing left fingers at frame17.",
+    "closing_fingers_surface_pairs_frame17": 110,
+    "confirmed_inside_samples": 0,
+    "inconclusive_samples": 30,
+    "inconclusive_mesh": "ponytail",
+    "weapon_vertex_motion_after_contact_max": 6.87e-06,
+    "project_checks": "18/18"
+  },
+  "limits": [
+    "Limited geometric evidence, not an overall artistic PASS.",
+    "Viewed frame sheets and close-ups; real-time continuous playback not confirmed.",
+    "Workbench preview without final materials, environment, sound or effects.",
+    "Not yet integrated into the fourteen-second film."
+  ]
+}

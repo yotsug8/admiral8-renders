@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-04",
+  "status": "Voice work deferred by request: animation only for now. One prior candidate audition remains unaccepted and outside the production mix. No further research or generation queued.",
+  "listening": {
+    "available_to_agent": false,
+    "scope": "Available tools expose text, images, browser/app controls and shell processing. No tool supplies audio perception to this agent. Playback for a person, waveform analysis and ASR do not constitute an agent listening review.",
+    "consequence": "Do not mark timbre, acting or absence of accent accepted from language detection, WER or loudness. Public voice descriptions below are selection evidence, not a listening verdict."
+  },
+  "confirmed_findings": [
+    {
+      "finding": "The rejected replacement used a calm narrative source and no delivery instruction.",
+      "evidence": ["_game/skits/doomsday/v12/audio_ru_fix/candidate_model.json", "_game/skits/doomsday/v12/audio_ru_fix/synthesis_attempt.json"],
+      "detail": "Source tags include narration, measured and calm. Payload contains the threat text, but no angry/forceful delivery cue. A deep pitch does not establish warrior acting."
+    },
+    {
+      "finding": "The v1 TTS language field does not repair an accent.",
+      "source": "https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech",
+      "detail": "Official API documentation says language is used for text normalization and word alignment, not passed to the speech model and not a voice/accent control. Use genuinely Russian source speech."
+    },
+    {
+      "finding": "The revised scene mixes a Russian replacement threat with original English Axe shouting ATTACK.",
+      "evidence": ["_game/skits/doomsday/v6/axe_voice_audit.json", "_game/skits/doomsday/v12/revision_alive/performance_mix.json"],
+      "detail": "The original axe_attack_01.mp3 was retained at 8.2–9.1015 seconds. Replacing only the threat leaves a second voice identity and a language change inside one character."
+    },
+    {
+      "finding": "Installed Russian game resources do not contain Axe dialogue.",
+      "evidence": ["_game/skits/doomsday/v12/audio_ru_fix/installed_language_audit.json"],
+      "detail": "Existing Sniper, Pudge and Tidehunter Russian references have known character identities. Substituting them merely because they are cached is not an established fit for Axe. No repeated extraction or ASR was needed to confirm the retained audit."
+    }
+  ],
+  "candidate_routes": [
+    {
+      "priority": 1,
+      "name": "Audition one Russian fantasy-character source with explicit performance direction",
+      "reference_id": "6a665f886bfb4ef9a7e4dd0b36e68e3c",
+      "title": "Орк Муж",
+      "public_page": "https://fish.audio/ru/m/6a665f886bfb4ef9a7e4dd0b36e68e3c/",
+      "metadata_read": "https://api.fish.audio/model/6a665f886bfb4ef9a7e4dd0b36e68e3c",
+      "verified_metadata": {"state": "trained", "visibility": "public", "dmca_taken_down": false, "licensed": false, "languages": ["ru", "en", "tr"]},
+      "existing_example": {"task_id": "c4d09a4cc9074accadfb3753aa58a49e", "title": "Default Sample", "language_of_written_example": "ru", "excerpt": "Слушай внимательно, воин.", "audio_link_present_in_public_metadata": true, "downloaded": true, "heard": false, "detected_language": "ru", "language_probability": 0.9677377343, "transcript_similarity": 0.8877805486},
+      "selection_reason": "The published source is a rough fantasy-character voice with an actual Russian warrior-address example, rather than a calm generic narrator. This is a more specific audition direction, not proof of fit.",
+      "identity": "Replacement performance; not the original Axe actor. Underlying voice ownership and commercial reuse rights are not independently verified.",
+      "proposed_model_header": "s2.1-pro-free",
+      "proposed_threat_text": "[angry] Клянусь, ты будешь [emphasis] молить о пощаде!",
+      "proposed_attack_text": "[angry][shouting] В бой!",
+      "other_settings": {"format": "wav", "sample_rate": 44100, "temperature": 0.7, "top_p": 0.7, "latency": "normal", "prosody": {"speed": 1.0, "volume": 0, "normalize_loudness": true}},
+      "next_step": "The single audition is now saved outside the production mix. Do not insert it as a solved voice correction: the cry does not pass text recognition, and the threat's first consonant remains uncertain. Do not generate another batch automatically or manufacture aggression through pitch lowering/time stretching.",
+      "speech_direction_source": "https://docs.fish.audio/developer-guide/core-features/emotions"
+    },
+    {
+      "priority": 2,
+      "name": "Create a purpose-written Russian warrior voice if the existing source does not fit",
+      "status": "Documented alternative only; no local audible candidate exists yet",
+      "endpoint": "https://api.fish.audio/v1/voice-design",
+      "model_header": "voice-design-1",
+      "request_example": {
+        "instruction": "Native Russian male actor, mature adult, portraying a powerful battle-hardened human warrior. Rich chest resonance and a firm low baritone with a light natural rasp. Precise clear consonants, natural Russian vowels and sentence stress. Address an opponent face to face with a deliberate threatening promise: controlled anger on the first words, gathering force toward the final phrase. A physically grounded, proud and confident character performance. Natural human articulation, dry close studio recording, one speaker, conversational speaking speed.",
+        "reference_text": "Клянусь, ты будешь молить о пощаде!",
+        "language": "ru",
+        "n": 1,
+        "speed": 1.0,
+        "num_step": 32,
+        "guidance_scale": 2.0,
+        "seed": 279
+      },
+      "cost_scope": "Official tariff checked 2026-11-04: USD 0.01 per successful request, including 1–4 candidates. Prepared request asks for one candidate. Errors are not billed. Requires prepaid API credit; no subscription, purchase or wallet change made. Minimum checkout top-up is not established by the official sources reviewed.",
+      "privacy_scope": "Official endpoint is stateless: returns base64 WAV directly and does not create batches, samples, voice models or presigned URLs. This is not publication of a reusable public voice. No claim about provider data-retention policy is inferred.",
+      "execution_status": "Deferred by request: animation only for now. No generation made. Prior read-only API-credit preflight found insufficient balance; private account result is kept locally, not in this public report.",
+      "preflight_local": "_game/skits/doomsday/v12/audio_voice_design/preflight.json",
+      "selection_reason": "This route specifies the needed character and acting directly instead of cycling through generic library voices. It still requires an actual listening decision; prompt adherence cannot be assumed.",
+      "sources": ["https://docs.fish.audio/features/voice-design", "https://docs.fish.audio/api-reference/endpoint/openapi-v1/voice-design", "https://docs.fish.audio/developer-guide/models-pricing/pricing-and-rate-limits"]
+    }
+  ],
+  "acceptance_before_final_mix": [
+    "Threat sounds addressed to an opponent and carries anger/intent, without announcer narration or an unintended comic effect.",
+    "Threat and attack cry sound like one character; Russian pronunciation is credible by listening.",
+    "ASR reproduces the required words; no inserted spoken tag, clipping, cut syllable or unexplained silence.",
+    "The complete voice fits the acting and action timing naturally. Change animation timing if appropriate instead of stretching the voice to force an old window.",
+    "Only after the audition passes, replace both old voice events, rebuild the envelopes and mix; preserve other event sources."
+  ],
+  "audition_result": {
+    "folder": "_game/skits/doomsday/v12/audio_orc_candidate",
+    "threat": {"file": "threat.wav", "duration_s": 2.7399546485, "detected_language": "ru", "language_probability": 0.8475692272, "asr": "Хлянусь, ты будешь молить о пощаде.", "text_similarity": 0.9642857143, "peak_dbfs": -5.5666732885, "clipped_samples": 0},
+    "battle_cry": {"file": "battle_cry.wav", "duration_s": 0.9287981859, "required_text": "В бой!", "automatic_asr": "Bye", "automatic_language_probability": 0.4119934738, "asr_with_ru_hint": "Блай!", "peak_dbfs": -8.3465119333, "clipped_samples": 0},
+    "verdict": "Audition not accepted. The short cry fails both automatic and Russian-hinted text checks. The threat is close in text but not established as well pronounced or artistically appropriate. These are ASR findings, not a listening verdict.",
+    "header_repair": "Provider returned streaming WAV headers with placeholder lengths. Original responses retained as *_stream_header.wav; playable WAV headers repaired. Exact PCM bytes compared and unchanged for both files.",
+    "evidence": ["source_language.json", "threat_request.json", "battle_cry_request.json", "threat_audit.json", "battle_cry_audit.json", "battle_cry_ru_check.json", "header_repair.json"]
+  },
+  "operations": {"tts_requests": 2, "voice_design_requests": 0, "new_audio_downloads": 1, "existing_audio_modified": false, "scene_modified": false, "production_code_modified": false, "local_audition_script": "qa/doomsday_orc_audition.py"}
+}

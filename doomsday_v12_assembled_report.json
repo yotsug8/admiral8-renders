@@ -1,0 +1,41 @@
+{
+  "status": "reviewed_full_assembly_not_final_artistic_approval",
+  "video": "doomsday_v12_assembled.mp4",
+  "sha256": "fcf90d90696614b86dd97eeace0c5b43c72d644577b5357f46aca786d19876a7",
+  "frames": 420,
+  "decoded_frames": 420,
+  "fps": 30,
+  "duration_seconds": 14,
+  "size": [
+    1280,
+    720
+  ],
+  "takeoff_seconds": 8.5,
+  "contact_seconds": 9.3,
+  "contact_closeup_seconds": 9.366666666666667,
+  "audio": {
+    "codec": "AAC",
+    "lufs": -14.01,
+    "true_peak_dbtp": -2.39,
+    "offset_samples": 0,
+    "tail_events_preserved": 6,
+    "heard": false,
+    "main_dialogue_language": "ru",
+    "battle_cry_language": "en"
+  },
+  "geometry": {
+    "attack_frames_checked": 58,
+    "intro_tail_samples": 33,
+    "revised_tail_samples": 31,
+    "action_framing_frames": 44,
+    "minimum_action_margin": 0.05282,
+    "limits": "Sparse intro/tail checks; closing left-finger contact at attack local17 remains a documented exception. Ambiguous inside samples concern hair. Wrist binding does not certify finger-pad clearance."
+  },
+  "review": "Whole-film seconds sheet, dense attack and tail sequences, full-size shot extremes and independently reviewed camera patches. No continuous real-time viewing or audio listening claimed.",
+  "remaining_artistic_limits": [
+    "Close high-contrast rocky background limits depth",
+    "Contact filaments remain graphic in appearance",
+    "Full physical and artistic quality is not certified by geometry checks"
+  ],
+  "checks": "tools/check.py: 18 passed, 0 skipped"
+}

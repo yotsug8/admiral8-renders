@@ -1,0 +1,46 @@
+{
+  "video": "doomsday_revision_alive.mp4",
+  "sha256": "55deb61421264b708482fe49c120e7450f10a1fe310287e2d5f3a8ddd158d770",
+  "source_commit": "befd68868e1c619db801c941ad0e00099f6fe768",
+  "duration_s": 14,
+  "fps": 30,
+  "size": [
+    1280,
+    720
+  ],
+  "decoded_frames": 420,
+  "changes": [
+    "Lowered free left arm before pickup",
+    "Single impact load without repeated rocking",
+    "Defender assessment and head/staff reaction visible in their shot",
+    "World-space ground texture variation",
+    "Takeoff dust and grains; local impact sparks and thinner arcs"
+  ],
+  "voice": {
+    "identity": "Deep Russian Narrator library replacement; not original Axe",
+    "source": "https://fish.audio/m/36a360d037ca4c0eac4838aa3147d9ff/",
+    "language": "ru",
+    "asr_text_match": 1.0,
+    "subjective_listening": false,
+    "native_battle_cry": "Original retained English game battle cry"
+  },
+  "audio": {
+    "lufs": -14.03,
+    "true_peak_dbtp": -3.58,
+    "offset_samples": 0,
+    "events_preserved": 6
+  },
+  "checks": {
+    "project": 18,
+    "reference_regressions": 8,
+    "free_arm_frames": 248,
+    "post_contact_finger_frames": 141
+  },
+  "visual_review": "Whole-length second sheet, dense attack/defender/ending sequences and individual material probes; not continuous audiovisual playback",
+  "limits": [
+    "Restrained opening performance",
+    "Shallow rocky environment",
+    "Small procedural dust; stylized angular electric paths",
+    "Not an approved artistic final"
+  ]
+}

@@ -307,6 +307,36 @@ def audit():
     if not report['passed']: raise ValueError('Core motion audit failed; inspect audit.json before rendering')
 
 
+def collar_review():
+    """Inspect flagged surfaces without treating an entire body mesh as skin."""
+    from mathutils.bvhtree import BVHTree
+    from study_head_target import surfaces, gpu_guard
+    sc=bpy.context.scene
+    checked=json.loads((OUT/'audit.json').read_text())
+    pair,row=next((k,v) for k,v in checked['new_hair_collar_contact_candidates'].items()
+                  if 'upper' in k and 'neck' in k)
+    sc.frame_set(row['frame']);g=surfaces();names=pair.split(' | ')
+    report=dict(frame=row['frame'],scene_sha256=hashlib.sha256((OUT/'blocking.blend').read_bytes()).hexdigest(),surfaces=[])
+    for i,name in enumerate(names):
+        other=g[names[1-i]];tree=BVHTree.FromPolygons(other['points'],other['polygons'])
+        ids=sorted({v for hit in row['polygon_pairs'] for v in g[name]['polygons'][hit[i]]})
+        distances=[tree.find_nearest(g[name]['points'][v])[3] for v in ids]
+        report['surfaces'].append(dict(name=name,vertices=len(ids),
+            nearest_surface_distance_median=float(np.median(distances)),
+            nearest_surface_distance_max=max(distances),
+            coincident_vertices_1e_5=sum(d<1e-5 for d in distances)))
+    report['limits']='Nearest distances and BVH overlap do not measure penetration depth or visibility. Base-only view is diagnostic, never the delivered scene.'
+    dump('collar_review.json',report)
+    gpu_guard();cam=bpy.data.objects['face_check'];sc.camera=cam
+    sc.render.resolution_x=sc.render.resolution_y=640;cam.data.ortho_scale=1.65
+    target=Vector((-.5,0,4.15))
+    for name,pos in [('front',(9,-4,5)),('side',(1,9,5)),('back',(-9,1,5)),('base_only',(9,-4,5))]:
+        if name=='base_only':bpy.data.objects[names[1]].hide_render=True
+        cam.location=pos;aimed(cam,target)
+        sc.render.filepath=str(OUT/f'collar_{name}.png');bpy.ops.render.render(write_still=True)
+    # No save: diagnostic visibility/camera changes must not alter the study.
+
+
 if __name__=='__main__':
     mode=sys.argv[sys.argv.index('--')+1]
     if mode=='build': build()
@@ -314,6 +344,7 @@ if __name__=='__main__':
         bpy.ops.wm.open_mainfile(filepath=str(OUT/'blocking.blend'),use_scripts=False)
         if mode=='keys': keys()
         elif mode=='audit': audit()
+        elif mode=='collar': collar_review()
         elif mode=='render':
             from study_head_target import gpu_guard
             checked=json.loads((OUT/'audit.json').read_text())

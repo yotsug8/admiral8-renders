@@ -1,0 +1,21 @@
+{
+  "frame": 81,
+  "scene_sha256": "3f7284780945fa30eb225ace67a89c3007ae0e411de02bdc05d44ebc579efaff",
+  "surfaces": [
+    {
+      "name": "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0",
+      "vertices": 53,
+      "nearest_surface_distance_median": 0.01452595740556717,
+      "nearest_surface_distance_max": 0.12818753719329834,
+      "coincident_vertices_1e_5": 0
+    },
+    {
+      "name": "models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck",
+      "vertices": 47,
+      "nearest_surface_distance_median": 0.0035075214691460133,
+      "nearest_surface_distance_max": 0.023193560540676117,
+      "coincident_vertices_1e_5": 0
+    }
+  ],
+  "limits": "Nearest distances and BVH overlap do not measure penetration depth or visibility. Base-only view is diagnostic, never the delivered scene."
+}

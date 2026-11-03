@@ -18,16 +18,20 @@ def sheet(frames, indices, fps, output):
     """Read only selected frames; keep no duplicate full-size image files."""
     if not indices:
         return None
-    cell_w, cell_h, columns = 144, 278, 6
+    with Image.open(frames[indices[0]]) as source:
+        aspect = source.height / source.width
+    cell_w, columns = 240, 4
+    thumb_w, thumb_h = 228, round(228 * aspect)
+    cell_h = thumb_h + 26
     canvas = Image.new('RGB', (columns * cell_w, math.ceil(len(indices) / columns) * cell_h), '#181818')
     draw = ImageDraw.Draw(canvas)
     for slot, index in enumerate(indices):
         x, y = slot % columns * cell_w, slot // columns * cell_h
         with Image.open(frames[index]) as source:
             thumb = source.convert('RGB')
-            thumb.thumbnail((132, 242), Image.Resampling.LANCZOS)
+            thumb.thumbnail((thumb_w, thumb_h), Image.Resampling.LANCZOS)
         canvas.paste(thumb, (x + (cell_w - thumb.width) // 2, y))
-        draw.text((x + 5, y + 245), f'{index / fps:.2f}s / {frames[index].stem}', fill='white')
+        draw.text((x + 5, y + thumb_h + 5), f'{index / fps:.2f}s / {frames[index].stem}', fill='white')
     canvas.save(output, quality=91)
     return output.name
 
@@ -98,8 +102,9 @@ def assemble(args):
     if jump:
         sheets.append(sheet(frames, jump, args.fps, prefix.with_name(prefix.name + '_jump.jpg')))
     if args.allow_short_test:
-        sheets.append(sheet(frames, list(range(len(frames))), args.fps,
-                            prefix.with_name(prefix.name + '_test_frames.jpg')))
+        for start in range(0, len(frames), 20):
+            sheets.append(sheet(frames, list(range(start, min(start + 20, len(frames)))), args.fps,
+                                prefix.with_name(prefix.name + f'_test_frames_{start:03}.jpg')))
     report = {'frames': len(frames), 'fps': args.fps, 'duration_seconds': duration,
               'dimensions': list(size), 'decoded_frames': decoded[-1],
               'mode': 'short_technical_test' if args.allow_short_test else ('motion' if args.fps == 15 else 'draft'),

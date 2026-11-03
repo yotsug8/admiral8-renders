@@ -27,6 +27,23 @@ def _space(main, side):
     return main.matrix_world @ main.pose.bones[name].matrix @ main.data.bones[name].matrix_local.inverted()
 
 
+def palm_axes(main, side):
+    """Fixed wrist-local axes from rest palm landmarks, not the elbow plane."""
+    rest = main.data.bones
+    wrist = rest['wrist_' + side]
+    index = rest['index_0_' + side].head_local
+    middle = rest['mid_0_' + side].head_local
+    forward = ((index + middle) * .5 - wrist.head_local).normalized()
+    across = index - middle
+    across -= forward * across.dot(forward)
+    if across.length < 1e-6:
+        raise ValueError('Palm landmarks do not define a transverse wrist axis.')
+    across.normalize()
+    normal = forward.cross(across).normalized()
+    inverse = wrist.matrix_local.to_3x3().inverted()
+    return (inverse @ across).normalized(), (inverse @ normal).normalized()
+
+
 def create_controls(main, side='L'):
     if side != 'L':
         raise ValueError('Эта минимальная проба проверяется только на L, не универсальный rig.')
@@ -68,10 +85,14 @@ def create_controls(main, side='L'):
     control['side'] = side
     control['forearm_roll'] = 0.0
     control['hand_flex'] = 0.0
+    control['hand_deviation'] = 0.0
+    control['wrist_axis_mode'] = 'PALM'
     control.id_properties_ui('forearm_roll').update(min=-3.141593, max=3.141593,
                                                    description='Осевое вращение предплечья и наследуемой кисти, радианы')
     control.id_properties_ui('hand_flex').update(min=-.6, max=.6,
-                                               description='Небольшое сгибание кисти относительно плоскости локтя, радианы')
+                                               description='Сгибание вокруг поперечной оси ладони, радианы')
+    control.id_properties_ui('hand_deviation').update(min=-.45, max=.45,
+                                                    description='Боковое отклонение кисти в плоскости ладони, радианы')
     pose = _snapshot(main)
     shoulder = control.matrix_world @ h
     total = (control.matrix_world.to_3x3() @ (k-h)).length + (control.matrix_world.to_3x3() @ (w-k)).length
@@ -137,10 +158,19 @@ def apply_controls(control, keyframe=False):
     roll_transform = Matrix.Translation(elbow) @ roll @ Matrix.Translation(-elbow)
     result['elbow_' + side] = roll_transform @ result['elbow_' + side]
     result['wrist_' + side] = roll_transform @ result['wrist_' + side]
-    hinge_normal = evaluated.matrix_world.to_3x3() @ evaluated.pose.bones['lower'].z_axis
-    flex_axis = roll.to_3x3() @ hinge_normal.normalized()
+    if control.get('wrist_axis_mode', 'LEGACY_ELBOW') == 'PALM':
+        across, normal = palm_axes(main, side)
+        wrist_rotation = result['wrist_' + side].to_3x3()
+        flex_axis = (wrist_rotation @ across).normalized()
+        deviation_axis = (wrist_rotation @ normal).normalized()
+        deviation = Matrix.Rotation(float(control.get('hand_deviation', 0.0)), 4, deviation_axis)
+    else:
+        # Preserve old negative trials: their hand_flex meant elbow-plane rotation.
+        hinge_normal = evaluated.matrix_world.to_3x3() @ evaluated.pose.bones['lower'].z_axis
+        flex_axis = roll.to_3x3() @ hinge_normal.normalized()
+        deviation = Matrix.Identity(4)
     flex = (Matrix.Translation(wrist)
-            @ Matrix.Rotation(float(control['hand_flex']), 4, flex_axis)
+            @ Matrix.Rotation(float(control['hand_flex']), 4, flex_axis) @ deviation
             @ Matrix.Translation(-wrist))
     result['wrist_' + side] = flex @ result['wrist_' + side]
     # Preserve local finger pose, not the old world orientation of the hand.

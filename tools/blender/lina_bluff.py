@@ -20,22 +20,32 @@ from contact_reaction import _curves
 from study_face_hold import head_object
 from study_head_target import gpu_guard
 from face import unfold
+from workshop_materials import apply_verified
 
-OUT = ROOT / '_game/study/lina_bluff'
+OUT = ROOT / '_game/study/lina_bluff/v2'
 COUNT = 180
 # frame, retreat, torso/head pitch, left/right hand offset from chest, palm stop, face.
 BEATS = [
  (0,.35,-10,25,(.56,-.72,.22),(-.48,-.77,.08),0,'worry'),
- (18,.32,-4,12,(.60,-.40,-.15),(-.55,-.50,-.20),0,'collect'),
- (38,.20,2,2,(.65,-.95,.40),(-.48,-.77,.08),1,'brave'),
- (65,.10,4,-3,(.65,-1.02,.40),(-.48,-.77,.08),1,'brave'),
+ (18,.32,-8,12,(.60,-.40,-.28),(-.55,-.50,-.20),0,'collect'),
+ (38,-.10,10,-6,(.65,-1.12,.48),(-.72,-.65,-.12),1,'brave'),
+ (52,-.18,7,-3,(.72,-1.00,.43),(-.65,-.65,-.16),1,'brave'),
+ (65,-.10,4,-3,(.65,-1.02,.40),(-.48,-.77,.08),1,'brave'),
  (82,.10,3,15,(.65,-1.02,.40),(-.48,-.77,.08),1,'notice'),
- (94,.46,-12,28,(.53,-.62,.23),(-.43,-.70,.08),.15,'alarm'),
- (108,.52,-9,24,(.55,-.65,.25),(-.45,-.68,.05),.1,'worry'),
- (132,.43,-4,8,(.65,-.83,.35),(-.45,-.65,.00),.85,'forced'),
- (158,.46,-5,7,(.65,-.85,.35),(-.45,-.65,.00),.85,'forced'),
- (179,.46,-5,9,(.65,-.85,.35),(-.45,-.65,.00),.85,'forced'),
+ (94,.78,-18,30,(.49,-.57,.18),(-.43,-.70,.17),.15,'alarm'),
+ (108,.92,-12,24,(.55,-.65,.25),(-.45,-.68,.10),.1,'worry'),
+ (120,.88,-7,15,(.75,-.58,.02),(-.60,-.66,-.13),.25,'collect'),
+ (140,.68,4,5,(.76,-1.04,.35),(-.65,-.65,-.16),.9,'forced'),
+ (158,.70,2,8,(.70,-.93,.33),(-.55,-.70,-.06),.85,'forced'),
+ (179,.72,1,12,(.66,-.86,.30),(-.48,-.72,.04),.8,'worry'),
 ]
+# Whole-body intention: gather, press forward, flinch away, try once more.
+# Lina is levitating in this staging; the trailing legs follow acceleration.
+BODY = {
+ 0:(0,0,0),18:(-9,-.04,3),38:(10,.10,-5),52:(8,.04,-2),65:(5,0,0),
+ 82:(5,0,0),94:(-13,.12,8),108:(-10,.04,5),120:(-8,0,2),
+ 140:(9,.08,-4),158:(6,.03,-1),179:(3,0,0),
+}
 FACES = {
  'worry':{'innerBrowRaiser':.8,'upperLidRaiser':.4,'jawOpen':.25,'lipCornerDepressor':.4},
  'collect':{'innerBrowRaiser':.35,'lipPressor':.3,'jawOpen':.05},
@@ -49,6 +59,7 @@ FACES = {
 def build():
  OUT.mkdir(parents=True,exist_ok=True)
  bpy.ops.wm.open_mainfile(filepath=str(SOURCE),use_scripts=False)
+ materials=apply_verified(ROOT/'_game/models/workshop',['lina'])
  sc=bpy.context.scene;sc.frame_set(0);root=bpy.data.objects['lina_root'];face=head_object()
  arm=next(m.object for m in face.modifiers if m.type=='ARMATURE')
  for obj in [root,*root.children_recursive]:
@@ -94,12 +105,16 @@ def build():
  for frame,back,pitch,hp,left,right,stop,expression in BEATS:
   for b in arm.pose.bones:b.matrix_basis=rest[b.name]
   d={name:m.copy() for name,m in base.items()}
-  for m in d.values():m.translation+=Vector((0,back,0))
+  yaw,lift,trail=BODY[frame]
+  for m in d.values():m.translation+=Vector((0,back,lift))
+  rotate(d,'Root_0',(0,0,1),yaw)
   rotate(d,'Spine_0',(1,0,0),pitch*.55);rotate(d,'Spine_1',(1,0,0),pitch*.45)
   rotate(d,'Head_0',(1,0,0),hp)
+  rotate(d,'Head_0',(0,0,1),-yaw)
+  for side,factor in [('L',1),('R',.7)]:rotate(d,'thigh_'+side,(1,0,0),trail*factor)
   chest=d['Spine_1'].translation.copy()
   hand(d,'L',chest+Vector(left));hand(d,'R',chest+Vector(right));palm_stop(d,stop)
-  lag={82:0,94:-4,108:4,132:0}.get(frame,0)
+  lag={38:-3,52:2,82:0,94:-6,108:4,140:-3,158:2}.get(frame,0)
   for name in ('hair_L','hair_R','hair_back'):rotate(d,name,(1,0,0),lag)
   for b in arm.pose.bones:
    b.rotation_mode='QUATERNION';b.matrix=inverse@d[b.name];bpy.context.view_layer.update()
@@ -134,7 +149,7 @@ def build():
  sc.render.use_overwrite=True;sc.eevee.taa_render_samples=16;sc.render.use_motion_blur=False;sc.render.use_compositing=False
  sc.frame_set(0);bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'scene.blend'))
  (OUT/'recipe.json').write_text(json.dumps(dict(source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-  scene_sha256=hashlib.sha256((OUT/'scene.blend').read_bytes()).hexdigest(),beats=BEATS,faces=FACES,
+  scene_sha256=hashlib.sha256((OUT/'scene.blend').read_bytes()).hexdigest(),beats=BEATS,body=BODY,faces=FACES,materials=materials,
   intention='Try to stop the threat confidently; recoil betrays fear; resume a weaker confident gesture',
   status='Unaccepted acting transfer; inspect hands, shoulders, gaze and whole performance'),indent=2),encoding='utf-8')
 
@@ -143,12 +158,12 @@ def main(mode):
  if mode=='build':build();return
  bpy.ops.wm.open_mainfile(filepath=str(OUT/'scene.blend'),use_scripts=False);gpu_guard();sc=bpy.context.scene
  if mode=='probe':
-  for f in (0,38,65,94,132):
+  for f in (0,38,65,94,140):
    sc.frame_set(f);sc.render.filepath=str(OUT/f'pose_{f}.png');bpy.ops.render.render(write_still=True)
  elif mode=='review':
-  sc.timeline_markers.clear();cam=sc.camera;cam.location=(8,0,5);target=Vector((0,.3,3.6))
-  cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.ortho_scale=6
-  for f in (38,94,132):
+  sc.timeline_markers.clear();cam=sc.camera;cam.location=(8,.4,5);target=Vector((0,.4,3.6))
+  cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.ortho_scale=8
+  for f in (38,94,140):
    sc.frame_set(f);sc.render.filepath=str(OUT/f'side_{f}.png');bpy.ops.render.render(write_still=True)
  elif mode=='render':
   sc.render.filepath=str(OUT/'frames/frame_');bpy.ops.render.render(animation=True)

@@ -30,12 +30,23 @@ MAP={
         'rubick_shoulder':('rubick_shoulder','rubick_shoulder'),
         'rubick_staff':('rubick_weapon','rubick_staff'),
     },
+    'lina':{
+        'lina_base':('base/__lina_base','lina_base'),
+        'lina_base_dress':('lina_belt','lina_base_dress'),
+        'lina_hair':('lina_head','lina_hair'),
+        'lina_jewelry':('lina_neck','lina_jewelry'),
+        'lina_sleeve':('lina_arms','lina_sleeve'),
+    },
 }
 
 
-def prepare(out):
-    out.mkdir(parents=True,exist_ok=True);report={'archives':{},'materials':{}}
-    for hero,mapping in MAP.items():
+def prepare(out,heroes=('axe','rubick'),game_dir=None):
+    out.mkdir(parents=True,exist_ok=True)
+    manifest=out/'textures.json'
+    report=json.loads(manifest.read_text(encoding='utf-8')) if manifest.exists() else {'archives':{},'materials':{}}
+    game_dir=game_dir or ROOT/'_game/models/render'
+    for hero in heroes:
+        mapping=MAP[hero]
         url=f'https://media.steampowered.com/apps/dota2/workshop/{hero}.zip?v=11161272'
         archive=out/f'{hero}.zip'
         if not archive.exists():
@@ -52,7 +63,7 @@ def prepare(out):
                     member=f'materials/{stem}_{kind}.tga'
                     with z.open(member) as stream:
                         source=Image.open(stream);source.load();source=source.convert('RGB')
-                    originals=sorted((ROOT/'_game/models/render').glob(f'{game}_{kind}_*.png'))
+                    originals=sorted(game_dir.glob(f'{game}_{kind}_*.png'))
                     if len(originals)!=1:raise ValueError(f'Ambiguous game texture {game}/{kind}: {originals}')
                     with Image.open(originals[0]) as image:original=image.convert('RGB')
                     a=np.asarray(source.resize(original.size,Image.Resampling.LANCZOS)).astype(float)
@@ -76,4 +87,6 @@ def prepare(out):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--out',type=Path,default=ROOT/'_game/models/workshop')
-    prepare(parser.parse_args().out.resolve())
+    parser.add_argument('--heroes',nargs='+',choices=sorted(MAP),default=['axe','rubick'])
+    parser.add_argument('--game-dir',type=Path,help='Original exported textures for layout comparison')
+    args=parser.parse_args();prepare(args.out.resolve(),args.heroes,args.game_dir)

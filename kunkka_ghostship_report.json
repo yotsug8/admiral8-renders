@@ -1,0 +1,31 @@
+{
+  "status": "direction_preview_not_approved",
+  "video": {
+    "frames": 240,
+    "fps": 30.0,
+    "size": [
+      540,
+      960
+    ],
+    "max_mean_error_255": 1.3080787037037036,
+    "min_mean_255": 63.01050925925926,
+    "sha256": "f8a14799faa040e36cc9e138e1d0723f21034d3404462acd56bec525be4f8621",
+    "passed": true,
+    "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
+  },
+  "geometry": {
+    "passed": true,
+    "frames": 240,
+    "max_landmark_step": 0.5405381233067434,
+    "errors": [],
+    "ship_hero_x_clearance": 3.1455664711476627,
+    "scope": "Finite joints and adjacent displacement; camera landmarks before bow wipe. Initial-pose X corridor only, not whole-motion mesh collision, skin or aesthetic certification."
+  },
+  "limitations": [
+    "No sound, wake or spray yet",
+    "No full skin collision certification",
+    "Camera and all frame sheets reviewed; real-time artistic acceptance pending"
+  ],
+  "scene_sha256": "06de4b6676c43b1695b27931da6d59f5cc955c381bcc05acdff9bfcb67ef5b02",
+  "builder": "tools/blender/kunkka_ghostship.py"
+}

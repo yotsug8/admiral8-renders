@@ -20,34 +20,35 @@ sys.path.insert(0, str(ROOT / 'tools/blender'))
 from contact_reaction import _curves
 from study_face_hold import coords, head_object
 
-OUT = ROOT / '_game/study/lina_threat'
+OUT = ROOT / '_game/study/lina_threat/reaction_v2'
 SOURCE = ROOT / '_game/study/face_hold/face_hold.blend'
 COUNT = 180
 # Frame, travel X, rise, torso pitch/yaw, head pitch/yaw, expression.
 # Forward is world +X; this is Lina's original hovering stance, not a walk.
 POSES = [
-    (0, 0, 0, 3, -5, -3, 0, 'smug'),
-    (22, .10, .05, 7,-8,-3,0, 'smug'),
-    (43, .14,.08, 5,-6,-2,0, 'smug'),
-    (59, .14,.08, 5,-6,5,0, 'notice'),
-    (75, .10,.10, 0,-3,-7,0, 'alarm'),
-    (94,-.18,.12,-10,0,-5,0, 'alarm'),
-    (115,-.37,.09,-8,0,-3,0, 'worry'),
-    (139,-.75,.04,-4,5,0,5, 'worry'),
+    (0, 0, 0, 1, -8, 6, -3, 'smug'),
+    (18, .10, .05, 8,-12,3,-3, 'smug'),
+    (37, .18,.10, 8,-10,-3,0, 'smug'),
+    (55, .18,.10, 4,-6,12,0, 'notice'),
+    (63, -.05,.14,-8,-3,24,0, 'alarm'),
+    (72,-.30,.18,-16,0,33,0, 'alarm'),
+    (86,-.38,.12,-11,0,28,0, 'alarm'),
+    (107,-.50,.09,-8,0,20,0, 'worry'),
+    (131,-.85,.04,-4,5,0,5, 'worry'),
     (179,-1.65,.02,-4,5,0,5, 'worry'),
 ]
 FACES = {
     'smug': {'lipCornerPuller_L': .27, 'outerBrowRaiser_R': .22, 'squint': .13},
     'notice': {'innerBrowRaiser': .22, 'outerBrowRaiser': .12, 'lipPressor': .12},
     'alarm': {'innerBrowRaiser': .48, 'outerBrowRaiser': .32, 'upperLidRaiser': .28,
-              'jawOpen': .15, 'lipStretcher': .13},
+              'jawOpen': .24, 'lipStretcher': .13},
     'worry': {'innerBrowRaiser': .43, 'browLowerer': .15, 'lipPressor': .23},
 }
-# Authored forearm rotations around the actual exported elbow, not a generic
-# hand target that forces this low-resolution shoulder into an extreme twist.
-FOREARMS = {0:(-25,5),22:(-40,10),43:(-40,10),59:(-40,10),75:(-35,5),
-            94:(-22,-8),115:(-18,-10),139:(-8,-18),179:(0,-25)}
-ESCAPE = {115:(0,-15),139:(-.45,-65),179:(-1.3,-130)}
+# Flex in the source upper-arm/forearm plane; world-X rotation also twisted
+# the sleeve and made the old apparent flexion limit misleading.
+FOREARMS = {0:(10,0),18:(22,15),37:(30,22),55:(30,22),63:(55,28),
+            72:(65,35),86:(60,32),107:(48,25),131:(52,15),179:(45,5)}
+ESCAPE = {107:(0,-15),131:(-.45,-65),179:(-1.3,-130)}
 
 
 def dump(name, data):
@@ -95,28 +96,37 @@ def build():
         b = arm.pose.bones[name]; p = desired[name].translation
         t = Matrix.Translation(p) @ Euler(tuple(math.radians(v) for v in xyz)).to_matrix().to_4x4() @ Matrix.Translation(-p)
         for child in [b, *b.children_recursive]: desired[child.name] = t @ desired[child.name]
+    def flex_elbow(desired, side, degrees):
+        from mathutils import Quaternion
+        name='elbow_'+side; b=arm.pose.bones[name]
+        p=desired[name].translation
+        upper=p-desired['bicep_'+side].translation
+        fore=desired['wrist_'+side].translation-p
+        axis=upper.cross(fore).normalized()
+        t=Matrix.Translation(p) @ Quaternion(axis,math.radians(degrees)).to_matrix().to_4x4() @ Matrix.Translation(-p)
+        for child in [b,*b.children_recursive]: desired[child.name]=t @ desired[child.name]
     expected = {}; previous_q = {}
     for f, x, z, pitch, yaw, hp, hy, emotion in POSES:
         for b in arm.pose.bones: b.matrix_basis = rest[b.name]
         d = {n: m.copy() for n,m in base.items()}
         y,turn=ESCAPE.get(f,(0,0))
         for m in d.values(): m.translation += Vector((x,y,z))
-        rotate(d,'Root_0',(0,-7 if f in (94,115) else -3 if f>=139 else 0,0))
+        rotate(d,'Root_0',(0,-8 if 63<=f<=107 else -3 if f>=131 else 0,0))
         rotate(d,'Spine_0',(0,pitch*.55,yaw*.55))
         rotate(d,'Spine_1',(0,pitch*.45,yaw*.45))
         rotate(d,'Head_0',(0,hp*.6,hy*.6))
         rotate(d,'Head_1',(0,hp*.4,hy*.4))
         # Original airborne legs trail the torso; never claim planted-foot QA.
-        lag = -6 if f >= 94 else 0
+        lag = -9 if f >= 63 else 0
         for side in ('L','R'): rotate(d,'thigh_'+side,(0,lag,0))
         er,el=FOREARMS[f]
-        rotate(d,'elbow_R',(er,0,0))
-        rotate(d,'elbow_L',(el,0,0))
-        if f>=94:
-            rotate(d,'bicep_R',(-5,0,-4))
-            rotate(d,'bicep_L',(5,0,4))
+        flex_elbow(d,'R',er)
+        flex_elbow(d,'L',el)
+        if 63<=f<=107:
+            rotate(d,'bicep_R',(-10,-8,10))
+            rotate(d,'bicep_L',(5,-5,-5))
         for name in ('hair_L','hair_R','hair_back'):
-            rotate(d,name,(0,4 if f in (94,115) else 0,0))
+            rotate(d,name,(0,4 if 63<=f<=86 else 0,0))
         # The decision ends in a turn toward the escape path, not a statue
         # translating backwards forever. Turn the complete posed rig together.
         rotate(d,'Root_0',(0,0,turn))
@@ -158,7 +168,7 @@ def build():
     if not len(proof.polygons): raise ValueError('Threat silhouette has no visible surface')
     shadow.to_mesh_clear()
     curve.materials.append(material('shadow',(.018,.014,.025)))
-    for f,x in [(0,11),(43,11),(63,5.3),(94,2.8),(179,2.3)]:
+    for f,x in [(0,11),(37,11),(55,5.3),(72,2.8),(179,2.3)]:
         shadow.location=(x,0,.018); shadow.keyframe_insert('location',frame=f)
     # One visible intention: the fire grows in her open palm, then dies when
     # she notices the approaching hand. Keep the effect subordinate to acting.
@@ -179,7 +189,7 @@ def build():
         links.new(coord.outputs['Generated'],xyz.inputs[0]);links.new(xyz.outputs['Z'],ramp.inputs[0])
         links.new(ramp.outputs[0],p.inputs['Base Color']);links.new(ramp.outputs[0],p.inputs['Emission Color'])
         for poly in m.polygons: poly.use_smooth=True
-    flame_levels=[(0,.25),(22,.85),(43,1),(59,.9),(75,.15),(83,0),(179,0)]
+    flame_levels=[(0,.15),(18,.7),(37,1),(55,.9),(63,.15),(69,0),(179,0)]
     for f in range(COUNT):
         sc.frame_set(f);bpy.context.view_layer.update()
         fire.location=(arm.matrix_world@arm.pose.bones['wrist_L'].matrix).translation+Vector((.06,.21,.24))
@@ -213,7 +223,7 @@ def build():
             if area.type=='VIEW_3D':
                 area.spaces.active.region_3d.view_perspective='CAMERA'
                 area.spaces.active.region_3d.view_camera_zoom=0
-                area.spaces.active.shading.type='MATERIAL'
+                area.spaces.active.shading.type='SOLID'
     sc.frame_set(0);bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'blocking.blend'))
     dump('build.json',dict(source_sha256=source_hash,source_unchanged=hashlib.sha256(SOURCE.read_bytes()).hexdigest()==source_hash,
                            source=str(SOURCE.relative_to(ROOT)),frames=COUNT,poses=POSES,limits=sc['limits']))
@@ -222,7 +232,7 @@ def build():
 def keys():
     from study_head_target import gpu_guard
     gpu_guard();sc=bpy.context.scene
-    for camera,frames in [('story',(0,43,75,94,139,179)),('side_check',(43,94)),('face_check',(43,75,94))]:
+    for camera,frames in [('story',(0,37,55,72,107,131,179)),('side_check',(37,72)),('face_check',(37,55,72))]:
         sc.camera=bpy.data.objects[camera]
         for f in frames:
             sc.frame_set(f);sc.render.filepath=str(OUT/'keys'/f'{camera}_{f:03}.png');bpy.ops.render.render(write_still=True)

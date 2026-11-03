@@ -1,60 +1,64 @@
 {
-  "status": "working_blocking_not_accepted_final",
+  "status": "working_reaction_v2_not_accepted_final",
   "source": "_game\\study\\face_hold\\face_hold.blend",
   "source_sha256": "1f780ed8c12e03e46383d3feb1d096af7e78a89539cca65076829fa871bc0101",
   "core_audit": {
     "frames": 180,
     "source_unchanged": true,
     "native_key_replay_max_error": 0.0,
-    "scene_sha256": "a70f283ace34074b75365823cd0e155ce984acf8a7561dd2347a63fb91fdfefc",
-    "max_joint_rotation_degrees_per_frame": 2.4476266770478072,
-    "max_joint_travel_per_frame": 0.10016836621481823,
-    "lowest_surface": 0.6485050530132562,
+    "scene_sha256": "3f7284780945fa30eb225ace67a89c3007ae0e411de02bdc05d44ebc579efaff",
+    "max_joint_rotation_degrees_per_frame": 9.113022805738602,
+    "max_joint_travel_per_frame": 0.18431906086423927,
+    "lowest_surface": 0.6493048280891821,
     "meshes": {
       "models\\heroes\\lina\\lina.vmdl_c.lina_base_lower_lod0": {
-        "max_edge_ratio": 1.3517512639771805,
+        "max_edge_ratio": 1.5360275698085106,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 102
+        "worst_frame": 163
       },
       "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0": {
-        "max_edge_ratio": 1.600092408033993,
+        "max_edge_ratio": 2.4372008860233807,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 2
+        "worst_frame": 107
       },
       "models\\heroes\\lina\\lina_arms.vmdl_c.lina_arms": {
-        "max_edge_ratio": 1.6832195427756496,
+        "max_edge_ratio": 1.791129688716353,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 27
+        "worst_frame": 72
       },
       "models\\heroes\\lina\\lina_belt.vmdl_c.lina_belt": {
-        "max_edge_ratio": 1.136571954632036,
+        "max_edge_ratio": 1.2037445359858567,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 150
+        "worst_frame": 131
       },
       "models\\heroes\\lina\\lina_head.vmdl_c.lina_head": {
-        "max_edge_ratio": 1.1215707749558135,
+        "max_edge_ratio": 1.2405408770805657,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 110
+        "worst_frame": 72
       },
       "models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": {
-        "max_edge_ratio": 1.0749003227771332,
+        "max_edge_ratio": 1.1284963560001595,
         "max_stretched_edges": 0,
         "max_contracted_triangles": 0,
-        "worst_frame": 75
+        "worst_frame": 72
       }
     },
     "geometry_flags": [],
     "clipped_frames": [],
     "new_hair_collar_contact_candidates": {
       "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0 | models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": {
-        "frame": 75,
-        "count": 27,
+        "frame": 81,
+        "count": 53,
         "polygon_pairs": [
+          [
+            1080,
+            179
+          ],
           [
             1080,
             180
@@ -76,110 +80,212 @@
             179
           ],
           [
-            1085,
-            180
-          ],
-          [
-            1088,
-            194
-          ],
-          [
-            1094,
-            166
-          ],
-          [
-            1095,
-            159
-          ],
-          [
-            1095,
+            1093,
             161
           ],
           [
-            1097,
-            148
-          ],
-          [
-            1097,
+            1096,
             159
           ],
           [
-            1097,
-            162
+            1130,
+            196
           ],
           [
-            1099,
-            148
+            1130,
+            215
           ],
           [
-            1099,
-            159
+            1131,
+            215
           ],
           [
-            1099,
-            162
+            1138,
+            221
           ],
           [
-            1134,
-            224
+            1142,
+            220
           ],
           [
-            1134,
-            226
+            1150,
+            207
           ],
           [
-            1135,
-            224
+            1184,
+            215
           ],
           [
-            1139,
-            224
+            1185,
+            215
           ],
           [
-            1139,
-            226
+            1326,
+            185
           ],
           [
-            1148,
-            166
+            1328,
+            185
           ],
           [
-            1148,
+            1984,
+            294
+          ],
+          [
+            1984,
+            377
+          ],
+          [
+            1987,
+            294
+          ],
+          [
+            1987,
+            377
+          ],
+          [
+            1989,
+            294
+          ],
+          [
+            1989,
+            377
+          ],
+          [
+            2011,
+            165
+          ],
+          [
+            2012,
+            247
+          ],
+          [
+            2014,
+            165
+          ],
+          [
+            2014,
+            244
+          ],
+          [
+            2014,
             246
           ],
           [
-            1149,
-            207
+            2014,
+            247
           ],
           [
-            1149,
-            209
+            2015,
+            244
           ],
           [
-            1151,
-            207
+            2015,
+            246
           ],
           [
-            1153,
-            207
+            2015,
+            247
+          ],
+          [
+            2016,
+            165
+          ],
+          [
+            2016,
+            166
+          ],
+          [
+            2016,
+            167
+          ],
+          [
+            2336,
+            167
+          ],
+          [
+            2341,
+            164
+          ],
+          [
+            2341,
+            167
+          ],
+          [
+            2341,
+            168
+          ],
+          [
+            2342,
+            164
+          ],
+          [
+            2343,
+            163
+          ],
+          [
+            2343,
+            165
+          ],
+          [
+            2344,
+            163
+          ],
+          [
+            2345,
+            163
+          ],
+          [
+            2345,
+            164
+          ],
+          [
+            2346,
+            164
+          ],
+          [
+            2418,
+            265
+          ],
+          [
+            2418,
+            341
+          ],
+          [
+            2422,
+            265
+          ],
+          [
+            2422,
+            341
+          ],
+          [
+            2424,
+            265
+          ],
+          [
+            2424,
+            341
+          ]
+        ]
+      },
+      "models\\heroes\\lina\\lina_head.vmdl_c.lina_head | models\\heroes\\lina\\lina_neck.vmdl_c.lina_neck": {
+        "frame": 0,
+        "count": 1,
+        "polygon_pairs": [
+          [
+            232,
+            360
           ]
         ]
       },
       "models\\heroes\\lina\\lina.vmdl_c.lina_base_upper_lod0 | models\\heroes\\lina\\lina_head.vmdl_c.lina_head": {
-        "frame": 73,
-        "count": 3,
+        "frame": 59,
+        "count": 1,
         "polygon_pairs": [
           [
-            936,
-            217
-          ],
-          [
-            936,
-            219
-          ],
-          [
-            937,
-            217
+            1179,
+            504
           ]
         ]
       }
@@ -187,27 +293,27 @@
     "passed": true,
     "limits": "Pass covers surface deformation, framing and continuity. Hair/collar BVH contacts are separate candidates needing inspection, not a full self-intersection or artistic quality verdict."
   },
-  "video_export": {
+  "encoded_video": {
     "frames": 180,
     "fps": 30.0,
     "size": [
       360,
       480
     ],
-    "max_mean_error_255": 1.262662037037037,
-    "min_mean_255": 106.90796296296297,
-    "sha256": "28f965ca3665c4741ea1884c7593c6753196985a42e2f88c6865127d934968df",
+    "max_mean_error_255": 1.2655787037037036,
+    "min_mean_255": 106.86108796296297,
+    "sha256": "a81c10b2aa2ee2d4d8919ed983e539552ff299a76245b411984b839682425c7e",
     "passed": true,
     "scope": "Encoding and frame correspondence only; sheets require separate visual review. No audio."
   },
-  "visual_review": {
-    "sequence_stride_frames": 6,
-    "turn_every_frame": [
-      135,
-      149
-    ],
-    "other_views": "extreme poses and facial closeups",
-    "continuous_realtime_review": false
+  "review": {
+    "scope": "Whole sequence sampled every 6 frames; reaction 60-74 and exit 105-149 inspected frame by frame. Reaction pose from story, side and face cameras. Continuous real-time playback not confirmed.",
+    "remaining": [
+      "Hair and collar contact candidates require classification",
+      "Eye fixation not calibrated",
+      "Fingers, legs and secondary action remain restrained",
+      "No final environment or sound"
+    ]
   },
-  "next": "Stronger prepared/protective pose contrast, attention and reaction timing; resolve hair/collar contact candidates before acceptance."
+  "render_manifest_sha256": "4e50ac2ae26d2b44558830c6ab0e19c42d3cbb7cb103a3324599a98053ba4b0f"
 }

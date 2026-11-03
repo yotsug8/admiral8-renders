@@ -1,0 +1,15 @@
+{
+  "frames": 180,
+  "fps": 30,
+  "duration": 6,
+  "max_mean_pixel_error": 1.3475231481481482,
+  "scene_sha256": "cbe94fe57b3f0c7f454ba5d28e872aea9ecb163d7ff1002810edb2b6ceaa678e",
+  "video_sha256": "83c79918b7e5eda860ce5e6fdde55bef2457a97e5583af2d2b7d226d902304d2",
+  "artistic_accepted": false,
+  "status": "Working preview, not accepted finished animation",
+  "limits": [
+    "No audio",
+    "Eye fixation and full skin/contact assessment remain open",
+    "Frame sheets reviewed; real-time continuous viewing not confirmed"
+  ]
+}

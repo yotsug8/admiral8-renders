@@ -1,0 +1,136 @@
+{
+  "file": "fleet_battle_v2.mp4",
+  "sha256": "06e72682e9bd1f06a947cc73ee0e0e9c99e70a2bbd5311f353a50720230fb845",
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "duration_s": 18.0,
+  "decoded_frames": 540,
+  "black_frames": [],
+  "largest_uncut_changes": [
+    [
+      410,
+      39.23118209838867
+    ],
+    [
+      411,
+      39.02949523925781
+    ],
+    [
+      408,
+      38.940670013427734
+    ],
+    [
+      409,
+      38.13695526123047
+    ],
+    [
+      407,
+      35.8911018371582
+    ],
+    [
+      412,
+      35.74124526977539
+    ],
+    [
+      405,
+      35.01359176635742
+    ],
+    [
+      406,
+      33.80352020263672
+    ],
+    [
+      413,
+      32.73633575439453
+    ],
+    [
+      404,
+      28.976224899291992
+    ]
+  ],
+  "checks": {
+    "resolution": true,
+    "fps": true,
+    "duration": true,
+    "frames": true,
+    "no_black_frames": true
+  },
+  "passed": true,
+  "scope": "Full decode and image statistics, not artistic or anatomical certification.",
+  "version": 2,
+  "audio": {
+    "lufs": -13.99,
+    "true_peak_dbtp": -3.66,
+    "decoded_samples": 864256,
+    "checks": {
+      "loudness": true,
+      "true_peak": true,
+      "no_clipping": true,
+      "duration": true,
+      "video_frames": true,
+      "video_fps": true
+    },
+    "passed": true
+  },
+  "audio_heard": false,
+  "video_mode": "stream_copy",
+  "tail_extension_s": 0.0,
+  "placement_and_neck": {
+    "scene_sha256": "1b21aef9e202550adf2a5748a0bf45605e7e85f5f21f1751adaab1fa52d15670",
+    "checked_frames": 540,
+    "actors": 14,
+    "max_angular_step": {
+      "frame": 286,
+      "actor": "Captain06_kunkka_placement",
+      "angle_deg": 21.930026462523855,
+      "distance": 0.0
+    },
+    "max_position_step": {
+      "frame": 5,
+      "actor": "Captain12_kunkka_placement",
+      "angle_deg": 0.0,
+      "distance": 0.38104342017878207
+    },
+    "failures": [],
+    "passed": true,
+    "lowest_cleaver": {
+      "frame": 320,
+      "point": [
+        3.58687686920166,
+        2.5638303756713867,
+        0.10977351665496826
+      ]
+    },
+    "lowest_fall_surface": {
+      "frame": 499,
+      "object": "Giant_models\\heroes\\pudge\\belt.vmdl_c.belt_model",
+      "point": [
+        2.021878957748413,
+        9.370356559753418,
+        0.024999618530273438
+      ]
+    },
+    "max_giant_support_step": {
+      "frame": 480,
+      "distance": 0.17469590814278307
+    },
+    "max_neck_gap": {
+      "frame": 53,
+      "gap": 3.0203999467391446e-06
+    },
+    "scope": "Placement continuity, split neck seam, cleaver/ground during counterattack and evaluated giant meshes/ground during fall. Does not certify self-intersections, actor contacts, framing, sound or acting."
+  },
+  "artistic_acceptance": "pending_user_review",
+  "visual_review": "Keyframes throughout all thirteen shots, cut boundaries, dense hit sequence and both sides of the neck. No claim of exhaustive self-collision or perceptual audio review.",
+  "project_checks": "18/18 passed",
+  "limitations": [
+    "Оценка движения выполнена по временным последовательностям кадров и проверкам геометрии, без непрерывного видеопросмотра инструментом.",
+    "Звук не прослушан: только синхрон событий и измерения.",
+    "Не сертифицированы все самопересечения кожи/одежды, новую лицевую игру не добавляли.",
+    "Готовность к полному рендеру не означает пользовательскую художественную приёмку."
+  ],
+  "sails": "Opaque sails render on both sides. Full-size corrected wide and passing-ship shots reviewed; combat frame 315 unchanged pixel-for-pixel."
+}

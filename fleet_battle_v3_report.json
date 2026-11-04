@@ -1,0 +1,154 @@
+{
+  "file": "fleet_battle_v3.mp4",
+  "sha256": "ff54948c2a489470cc33d3796fb94e93c92881863ce110cae1f07cab4e4a9027",
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "duration_s": 18.0,
+  "decoded_frames": 540,
+  "black_frames": [],
+  "largest_uncut_changes": [
+    [
+      119,
+      29.24765396118164
+    ],
+    [
+      120,
+      27.746429443359375
+    ],
+    [
+      411,
+      27.647314071655273
+    ],
+    [
+      121,
+      27.232757568359375
+    ],
+    [
+      409,
+      26.87410545349121
+    ],
+    [
+      407,
+      26.867252349853516
+    ],
+    [
+      123,
+      26.774229049682617
+    ],
+    [
+      410,
+      26.62456703186035
+    ],
+    [
+      412,
+      26.62350845336914
+    ],
+    [
+      408,
+      26.603755950927734
+    ]
+  ],
+  "checks": {
+    "resolution": true,
+    "fps": true,
+    "duration": true,
+    "frames": true,
+    "no_black_frames": true
+  },
+  "passed": true,
+  "scope": "Full decode and image statistics, not artistic or anatomical certification.",
+  "version": 3,
+  "audio": {
+    "lufs": -14.01,
+    "true_peak_dbtp": -3.5,
+    "decoded_samples": 864256,
+    "checks": {
+      "loudness": true,
+      "true_peak": true,
+      "no_clipping": true,
+      "duration": true,
+      "video_frames": true,
+      "video_fps": true
+    },
+    "passed": true
+  },
+  "audio_heard": false,
+  "video_mode": "stream_copy",
+  "tail_extension_s": 0.0,
+  "placement_and_neck": {
+    "scene_sha256": "d3e3737cfc9691b77d74c486b85e7ea8bf382c8d91b948ad4a6074f0020c1fc1",
+    "checked_frames": 540,
+    "actors": 14,
+    "max_angular_step": {
+      "frame": 286,
+      "actor": "Captain06_kunkka_placement",
+      "angle_deg": 21.930026462523855,
+      "distance": 0.0
+    },
+    "max_position_step": {
+      "frame": 303,
+      "actor": "Captain05_kunkka_placement",
+      "angle_deg": 1.2869236461245868,
+      "distance": 0.4893139675601727
+    },
+    "failures": [],
+    "passed": true,
+    "lowest_cleaver": {
+      "frame": 320,
+      "point": [
+        3.58687686920166,
+        2.5638303756713867,
+        0.10977351665496826
+      ]
+    },
+    "lowest_fall_surface": {
+      "frame": 480,
+      "object": "Giant_models\\heroes\\pudge\\belt.vmdl_c.belt_model",
+      "point": [
+        0.42551106214523315,
+        18.625965118408203,
+        -0.00825587846338749
+      ]
+    },
+    "max_giant_support_step": {
+      "frame": 429,
+      "distance": 0.0
+    },
+    "max_neck_gap": {
+      "frame": 485,
+      "gap": 3.932551670838996e-06
+    },
+    "scope": "Placement continuity, split neck seam, cleaver/ground during counterattack and evaluated giant meshes/ground during fall. Does not certify self-intersections, actor contacts, framing, sound or acting.",
+    "geometry_checked_scene_sha256": "079d680f5d0859775bece851eff2cf9c248b0cf6b82a45ce08adab6657088faa",
+    "camera_only_inheritance": "Only unanimated camera 03 changed; active during frames105–164. Stills105,150,164 reviewed. Other objects, actions, materials and lights untouched."
+  },
+  "artistic_acceptance": "pending_user_review",
+  "visual_review": {
+    "reviewed": true,
+    "file_sha256": "ff54948c2a489470cc33d3796fb94e93c92881863ce110cae1f07cab4e4a9027",
+    "frame_sources": 40,
+    "method": "All-shot and cut contact sheets from full-resolution render; dense motion sequences reviewed earlier. Full final MP4 decoded. Not continuous perceptual playback.",
+    "observations": [
+      "Faces and hands readable with separate fill; foliage cards now cut out; terrain has grouped forest and distant relief.",
+      "Hull contact and water shadows improved; original coarse ship ornaments and painted sail atlas remain visible.",
+      "Threat shot end was occluded by a passing sail at164. Camera moved ahead of traffic;105,150,164 and all updated full-resolution shot samples reviewed. Only affected chunks rerendered.",
+      "Counterattack shows an escaping captain. Ghost outer silhouette is stronger. Backward fall proceeds into a grounded, heel-relaxed final pose; nearby captains brace.",
+      "No black frames in decoded export. Full sound tails retained; soundtrack not heard."
+    ],
+    "limitations": [
+      "Game asset detail is not cinematic asset replacement.",
+      "Image sequences and limited geometric checks do not certify every skin contact or complete acting quality.",
+      "Artistic acceptance remains pending."
+    ]
+  },
+  "project_checks": "18/18 passed",
+  "limitations": [
+    "Review uses timed image sequences and geometry measurements, not continuous perceptual video playback or audio listening.",
+    "Original ship atlas remains 512x512 and game geometry remains coarse in places. This is not a high-resolution asset replacement.",
+    "Water shadow reduction is art direction for an opaque EEVEE sea, not underwater light simulation.",
+    "No claim of exhaustive skin/cloth self-collision testing, every contact, or user artistic acceptance."
+  ]
+}

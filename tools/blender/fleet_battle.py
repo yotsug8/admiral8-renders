@@ -533,6 +533,9 @@ def build():
     from fleet_coast import environment as coast_environment
     coast_environment()
     effects(boats)
+    # The opaque source sail is a single surface. Keep its reverse side visible;
+    # ghost copies have their own deliberately translucent materials.
+    bpy.data.materials['ghostship_base'].use_backface_culling=False
     # Existing, verified Blender 5 compositor: emission-only local bloom.
     from doomsday_atmosphere import glow
     glow(sc)

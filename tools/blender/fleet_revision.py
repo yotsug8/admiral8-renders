@@ -226,6 +226,16 @@ def repair_dust_volumes():
         tree.nodes.remove(volume)
 
 
+def threat_camera_clearance():
+    """Keep the threat camera ahead of approaching sails through the cut."""
+    from mathutils import Vector
+    camera = bpy.data.objects['03_Giant_threat']
+    assert camera.animation_data is None
+    camera.location = (8,-1,2.6)
+    camera.rotation_euler = (Vector((0,12,5.2))-camera.location).to_track_quat('-Z','Y').to_euler()
+    camera.data.lens = 28
+
+
 def build():
     from fleet_look import apply as look
     from fleet_fall import apply as fall
@@ -236,6 +246,7 @@ def build():
     counterattack_exchange()
     fall()
     staging_updates()
+    threat_camera_clearance()
     repair_dust_volumes()
     defeat_expression()
     scene = bpy.context.scene

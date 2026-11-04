@@ -659,26 +659,56 @@ def render(percent=100, frame_range=None):
         raise RuntimeError('Set FFMPEG to an installed executable, or configure local runtime.json')
     label='motion' if percent<100 else 'fleet_battle_silent'
     if frame_range is not None:label+=f'_{frame_range[0]:04d}_{frame_range[1]:04d}'
-    output=OUT/(label+'.mp4');log=(OUT/(label+'_encode.log')).open('wb')
-    proc=subprocess.Popen([ffmpeg,'-y','-v','error','-f','image2pipe','-framerate',str(FPS),'-vcodec','png','-i','-',
-         '-an','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(output)],stdin=subprocess.PIPE,stderr=log)
+    output=OUT/(label+'.mp4')
+    # Completed one-second chunks survive interruption. Never reuse a partial encode
+    # or chunks from another scene, renderer revision, Blender version or resolution.
+    identity=dict(scene=hashlib.sha256((OUT/'scene.blend').read_bytes()).hexdigest(),
+                  renderer=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                  blender=bpy.app.version_string,percent=percent,fps=FPS)
+    cache_key=hashlib.sha256(json.dumps(identity,sort_keys=True).encode()).hexdigest()[:20]
+    chunks=OUT/'render_chunks'/cache_key;chunks.mkdir(parents=True,exist_ok=True)
     qa=OUT/('motion_qa' if percent<100 else 'qa_frames');qa.mkdir(exist_ok=True);temp=OUT/'frame_current.png'
-    try:
-        for frame in (range(frame_range[0],frame_range[1]+1) if frame_range is not None else range(COUNT)):
-            sc.frame_set(frame);bpy.ops.render.render()
-            bpy.data.images['Render Result'].save_render(str(temp),scene=sc)
-            proc.stdin.write(temp.read_bytes())
-            cuts={m.frame for m in sc.timeline_markers if m.camera}
-            if frame%15==0 or frame in cuts or frame+1 in cuts or frame==COUNT-1 or (percent<100 and 240<=frame<=353 and frame%3==0):
-                sc.render.image_settings.file_format='JPEG';sc.render.image_settings.quality=94
-                bpy.data.images['Render Result'].save_render(str(qa/f'frame_{frame:04d}.jpg'),scene=sc)
-                sc.render.image_settings.file_format='PNG'
-            print('FINAL_FRAME',frame,flush=True)
-        proc.stdin.close()
-        if proc.wait()!=0:raise RuntimeError('FFmpeg encoding failed; see encode.log')
-    except BaseException:
-        proc.kill();proc.wait();raise
-    finally:log.close()
+    first,last=frame_range if frame_range is not None else (0,COUNT-1)
+    completed=[]
+    for start in range(first,last+1,FPS):
+        stop=min(start+FPS,last+1)
+        chunk=chunks/f'{start:04d}_{stop-1:04d}.mp4';receipt=chunk.with_suffix('.json')
+        if chunk.is_file() and receipt.is_file():
+            saved=json.loads(receipt.read_text())
+            if saved.get('frames')==stop-start and saved.get('sha256')==hashlib.sha256(chunk.read_bytes()).hexdigest():
+                completed.append(chunk);print('REUSED_FRAMES',start,stop-1,flush=True);continue
+        partial=chunk.with_suffix('.partial.mp4')
+        with (OUT/(label+'_encode.log')).open('ab') as log:
+            proc=subprocess.Popen([ffmpeg,'-y','-v','error','-f','image2pipe','-framerate',str(FPS),'-vcodec','png','-i','-',
+                 '-an','-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p','-movflags','+faststart',str(partial)],stdin=subprocess.PIPE,stderr=log)
+            try:
+                for frame in range(start,stop):
+                    sc.frame_set(frame);bpy.ops.render.render()
+                    bpy.data.images['Render Result'].save_render(str(temp),scene=sc)
+                    proc.stdin.write(temp.read_bytes())
+                    cuts={m.frame for m in sc.timeline_markers if m.camera}
+                    if frame%15==0 or frame in cuts or frame+1 in cuts or frame==COUNT-1 or (percent<100 and 240<=frame<=353 and frame%3==0):
+                        sc.render.image_settings.file_format='JPEG';sc.render.image_settings.quality=94
+                        bpy.data.images['Render Result'].save_render(str(qa/f'frame_{frame:04d}.jpg'),scene=sc)
+                        sc.render.image_settings.file_format='PNG'
+                    print('FINAL_FRAME',frame,flush=True)
+                proc.stdin.close()
+                if proc.wait()!=0:raise RuntimeError('FFmpeg encoding failed; see encode.log')
+            except BaseException:
+                proc.kill();proc.wait();raise
+        decoded=subprocess.run([ffmpeg,'-v','error','-xerror','-i',str(partial),'-map','0:v:0','-f','null','-',
+                                '-progress','pipe:1'],capture_output=True,text=True,check=True)
+        counts=[int(line.split('=')[1]) for line in decoded.stdout.splitlines() if line.startswith('frame=')]
+        if not counts or counts[-1]!=stop-start:raise RuntimeError('Incomplete render chunk')
+        partial.replace(chunk)
+        receipt.write_text(json.dumps(dict(frames=stop-start,sha256=hashlib.sha256(chunk.read_bytes()).hexdigest()))+'\n')
+        completed.append(chunk);print('SAVED_FRAMES',start,stop-1,flush=True)
+    concat=chunks/(label+'_concat.txt')
+    concat.write_text(''.join("file '"+p.name+"'\n" for p in completed),encoding='utf-8')
+    assembled=OUT/(label+'.partial.mp4')
+    subprocess.run([ffmpeg,'-y','-v','error','-f','concat','-safe','1','-i',str(concat),
+                    '-c','copy','-movflags','+faststart',str(assembled)],check=True)
+    assembled.replace(output)
     temp.unlink(missing_ok=True)
     print('FINAL_RENDER_COMPLETE',output,flush=True)
 

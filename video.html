@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<script src="scene_resources.js"></script>
+<link rel="stylesheet" href="scene.css">
+<link rel="stylesheet" href="subtitles.css">
+<script src="vendor/gsap/gsap.min.js"></script>
+<script src="vendor/gsap/SplitText.min.js"></script>
+<script src="vendor/gsap/CustomEase.min.js"></script>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
+<script type="module">
+  // 3D-модели героев (scene.js, тип model): three.js и загрузчик glTF
+  import * as THREE from "three";
+  import { GLTFLoader } from "./vendor/three/addons/loaders/GLTFLoader.js";
+  import { prepareDotaMap } from "./dota_map.js";
+  window.T3 = { THREE, GLTFLoader, prepareDotaMap };
+</script>
+<script src="vendor/lottie/lottie_light.min.js"></script>
+<script src="scene_lottie.js"></script>
+<script src="scene.js"></script>
+<style>
+/* Шрифты лежат в репозитории (fonts/), интернет при рендере не нужен */
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-cyrillic-900-normal.woff2) format("woff2"); }
+@font-face { font-family: Unbounded; font-weight: 900; src: url(fonts/unbounded-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-cyrillic-800-normal.woff2) format("woff2"); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(fonts/manrope-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+@font-face { font-family: Manrope; font-weight: 600; src: url(fonts/manrope-cyrillic-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Manrope; font-weight: 600; src: url(fonts/manrope-latin-600-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+
+/* Тёмная инфографика: графит, жёлтый акцент, белый текст, жёсткие тени.
+   Безопасная зона TikTok: x 60–940, y 150–1560 */
+:root { --bg: #15171c; --ink: #f4f4f2; --acc: #ffd23f; --dark: #0d0e12; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+#stage { position: absolute; inset: 0; overflow: hidden; color: var(--ink); font-family: Manrope, sans-serif; }
+#dots { position: absolute; inset: -40px; background-image: radial-gradient(rgba(255,255,255,.06) 2px, transparent 2.5px); background-size: 36px 36px; }
+
+#progress { position: absolute; left: 60px; width: 880px; top: 168px; height: 8px; display: flex; gap: 10px; }
+.pg { flex: 1; border-radius: 4px; background: rgba(255,255,255,.15); overflow: hidden; }
+.pg i { display: block; height: 100%; width: 0; background: var(--ink); }
+#wm { position: absolute; left: 62px; top: 190px; font: 600 26px Manrope; color: rgba(244,244,242,.35); }
+
+.seg { position: absolute; inset: 0; visibility: hidden; }
+.head { position: absolute; left: 60px; width: 880px; top: 245px; font: 900 84px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.head .ln { display: block; overflow: hidden; padding-bottom: 4px; }
+.head .ln span { display: inline-block; }
+.y { color: var(--acc); }
+
+.hero { position: absolute; transform-origin: 50% 100%; }
+.big { position: absolute; left: 60px; font: 900 170px/1 Unbounded; letter-spacing: -.04em; white-space: nowrap; }
+.lab { position: absolute; left: 64px; font: 800 36px/1.22 Manrope; color: var(--ink); }
+.pill { position: absolute; left: 60px; padding: 12px 24px; border-radius: 14px; background: var(--ink); color: var(--dark);
+  font: 800 32px Manrope; box-shadow: 8px 8px 0 var(--acc); white-space: nowrap; }
+
+/* «Плашка»: жёлтый прямоугольник с жёсткой тенью, герой выходит за край */
+.block { position: absolute; border-radius: 28px; background: var(--acc); box-shadow: 16px 16px 0 var(--ink); }
+/* «Диагональ»: косая полоса, два героя, траектория хука */
+.band { position: absolute; left: -60px; width: 1200px; height: 380px; background: var(--acc); transform-origin: 0 50%; }
+svg.path { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+/* «Сетка» */
+.grid { position: absolute; left: 60px; width: 880px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.tile { height: 102px; border-radius: 16px; background: var(--ink); display: flex; align-items: center; justify-content: center;
+  box-shadow: 6px 6px 0 var(--acc); }
+.tile img { width: 104px; height: 76px; object-fit: cover; border-radius: 8px; }
+
+
+.cards { position: absolute; left: 60px; width: 880px; top: 470px; display: flex; gap: 26px; }
+.card { flex: 1; height: 700px; border-radius: 28px; position: relative; overflow: hidden; }
+.card.c0, .card.c2 { background: var(--acc); color: var(--dark); box-shadow: 12px 12px 0 var(--ink); }
+.card.c1 { background: var(--ink); color: var(--dark); box-shadow: 12px 12px 0 var(--acc); }
+.card b { position: absolute; left: 22px; top: 12px; font: 900 110px/1 Unbounded; }
+.card img { position: absolute; left: 50%; bottom: 0; height: 560px; max-width: none; transform: translateX(-50%); }
+
+/* «Таймер» */
+.clock { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 190px/1 Unbounded; letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums; }
+.vs { position: absolute; left: 60px; width: 880px; display: flex; justify-content: space-between; align-items: center; }
+.tcard { position: relative; width: 390px; height: 330px; border-radius: 28px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 18px; font: 900 40px Unbounded; color: var(--dark); }
+.tcard.a { background: var(--acc); box-shadow: 14px 14px 0 var(--ink); }
+.tcard.b { background: var(--ink); box-shadow: 14px 14px 0 var(--acc); }
+.tlogo { width: 200px; height: 200px; border-radius: 24px; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+.tlogo img { max-width: 160px; max-height: 170px; }
+.win { position: absolute; top: -22px; right: -14px; padding: 8px 18px; border-radius: 12px; background: #2fd36b; color: var(--dark);
+  font: 800 28px Manrope; transform: rotate(6deg); box-shadow: 5px 5px 0 var(--dark); }
+.tcard span { text-align: center; padding: 0 18px; line-height: 1.05; }
+.vs i { font: 800 34px Manrope; color: rgba(244,244,242,.6); font-style: normal; }
+.row { position: absolute; left: 60px; width: 880px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.row img { width: 92px; height: 68px; object-fit: cover; border-radius: 8px; box-shadow: 4px 4px 0 var(--acc); }
+/* «Шкала» */
+.gauge { position: absolute; left: 60px; top: 480px; width: 150px; height: 480px; border-radius: 24px; background: rgba(255,255,255,.08);
+  overflow: hidden; box-shadow: inset 0 0 0 3px rgba(255,255,255,.12); }
+.gauge i { position: absolute; left: 0; right: 0; bottom: 0; background: #ff5a4e; border-radius: 0 0 24px 24px; }
+.gauge .mark { position: absolute; left: 0; right: 0; height: 3px; background: var(--ink); opacity: .7; }
+.chips { position: absolute; left: 60px; top: 1150px; width: 880px; display: flex; flex-direction: column; gap: 16px; }
+.abil { display: inline-flex; gap: 8px; margin-left: 16px; vertical-align: middle; }
+.abil img { width: 50px; height: 50px; border-radius: 10px; box-shadow: 4px 4px 0 var(--dark); }
+.chip2 { align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: var(--ink); color: var(--dark); font: 800 34px Manrope; box-shadow: 6px 6px 0 var(--acc); }
+.note { position: absolute; left: 60px; width: 880px; font: 600 30px Manrope; color: rgba(244,244,242,.55); text-align: center; }
+
+/* Переход: жёлтая шторка с тёмной кромкой */
+#wipe { position: absolute; top: 0; left: 0; width: 1500px; height: 1920px; background: var(--acc); transform: translateX(-1600px); }
+#wipe:before { content: ""; position: absolute; right: -60px; top: 0; width: 60px; height: 100%; background: var(--dark); }
+
+/* ---------- Массивный стиль: толстые обводки, «наклейки», крупнее мелкий текст ---------- */
+.pill { font-size: 38px; padding: 12px 26px; border: 5px solid var(--dark); }
+.chip2 { font-size: 36px; padding: 8px 22px; border: 5px solid var(--dark); display: inline-flex; align-items: center; }
+.tcard, .card { border: 6px solid var(--dark); }
+.tlogo { box-shadow: inset 0 0 0 5px rgba(255,255,255,.14); }
+.win { font-size: 32px; border: 4px solid var(--dark); }
+.vs i { font-size: 44px; }
+.row img { width: 104px; height: 76px; border: 4px solid var(--ink); border-radius: 12px; box-shadow: 6px 6px 0 var(--acc); }
+.abil img { width: 56px; height: 56px; border: 3px solid var(--dark); }
+.gauge { box-shadow: none; border: 6px solid var(--ink); }
+.note { font-size: 32px; }
+/* Герои — как наклейки: белая обводка по контуру */
+.hero, .card img { filter: drop-shadow(5px 0 0 var(--ink)) drop-shadow(-5px 0 0 var(--ink)) drop-shadow(0 5px 0 var(--ink)) drop-shadow(0 -5px 0 var(--ink)); }
+.card img[src*="/item_"] { filter: none; border: 5px solid var(--dark); }
+.evlogo { position: absolute; filter: drop-shadow(6px 6px 0 rgba(0,0,0,.5)); }
+
+/* Финальные карточки: картинка + тёмная плашка с цифрой факта */
+.card img { bottom: 0; height: 600px; }
+.card img.icon { width: 84%; height: auto; bottom: 220px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); filter: none; }
+.card img.logo { width: 86%; height: auto; max-height: 340px; object-fit: contain; bottom: 180px; filter: drop-shadow(8px 8px 0 var(--dark)); }
+.cstat { position: absolute; left: 0; right: 0; bottom: 0; height: 160px; background: var(--dark); color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-top: 6px solid var(--dark); }
+.cstat strong { font: 900 46px/1 Unbounded; color: var(--acc); white-space: nowrap; letter-spacing: -.03em; }
+.cstat small { font: 800 26px/1.1 Manrope; color: var(--ink); text-align: center; padding: 0 10px; }
+.card b { z-index: 3; left: 16px; top: 16px; padding: 6px 18px 10px; border-radius: 18px; background: var(--dark); color: var(--acc); font-size: 72px; }
+/* Фон карточек: косые полосы — карточки не выглядят пустыми */
+.card.c0, .card.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); }
+.card.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); }
+/* ===== Тема «b»: сетка вместо точек, белая шторка, заголовок с жёлтой чертой ===== */
+body.tb #dots { background-image: linear-gradient(rgba(255,255,255,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.05) 2px, transparent 2px);
+  background-size: 72px 72px; }
+body.tb #wipe { background: var(--ink); }
+body.tb .head { padding-left: 30px; border-left: 14px solid var(--acc); }
+body.tb .pg i { background: var(--acc); }
+/* Финал «follow»: крупное «Подпишись», подкол, круглая кнопка «+» с ником */
+.fw { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 96px/1 Unbounded; color: var(--acc); text-transform: uppercase; white-space: nowrap;
+  letter-spacing: -.03em; top: 640px; }
+.fsub { position: absolute; left: 60px; width: 880px; text-align: center; top: 800px; font: 800 46px/1.2 Manrope; color: var(--ink); }
+.fbtn { position: absolute; left: 400px; top: 960px; width: 200px; height: 200px; border-radius: 50%; background: #ff5a4e; border: 10px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--dark); display: flex; align-items: center; justify-content: center; }
+.fbtn svg { width: 110px; height: 110px; }
+.fnick { position: absolute; left: 60px; width: 880px; text-align: center; top: 1200px; font: 800 44px Manrope; color: rgba(244,244,242,.75); }
+/* Хук-список: три вопроса строками */
+.hrow { position: absolute; left: 60px; width: 880px; height: 210px; border-radius: 30px; background: var(--dark); border: 6px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; align-items: center; gap: 26px; padding: 0 28px; opacity: 0; }
+.hrow .ic { width: 170px; height: 150px; border-radius: 22px; background: var(--ink); flex: none; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.hrow .ic img { width: 150px; }
+.hrow .ic img.hico { width: auto; max-width: 166px; max-height: 146px; }
+.hrow b { font: 900 46px/1.1 Unbounded; color: var(--ink); text-transform: uppercase; letter-spacing: -.02em; }
+.hrow i { position: absolute; left: -22px; top: -26px; width: 64px; height: 64px; border-radius: 50%; background: var(--acc); color: var(--dark);
+  font: 900 36px/64px Unbounded; text-align: center; font-style: normal; border: 5px solid var(--dark); }
+/* «Досмотр»: подносы с предметами, лента, штампы решений */
+.tray { position: absolute; width: 410px; height: 380px; border-radius: 30px; background: #2a2e37; border: 6px solid var(--ink);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; flex-direction: column; align-items: center; padding-top: 34px; opacity: 0; }
+.tray img { width: 200px; height: 146px; border-radius: 18px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
+.tray .nm { margin-top: 26px; font: 900 44px/1 Unbounded; color: var(--ink); text-transform: uppercase; }
+.tray .why { margin-top: 12px; font: 800 30px/1.15 Manrope; color: rgba(244,244,242,.75); text-align: center; padding: 0 20px; }
+.verd { position: absolute; right: -18px; top: 18px; padding: 6px 18px 10px; border-radius: 16px; border: 7px solid; font: 900 34px/1 Unbounded;
+  background: var(--dark); white-space: nowrap; opacity: 0; }
+.verd.no { color: #ff5a4e; border-color: #ff5a4e; } .verd.ok { color: #2fd36b; border-color: #2fd36b; } .verd.limit { color: var(--acc); border-color: var(--acc); }
+.belt { position: absolute; left: 0; width: 1080px; height: 54px; background: repeating-linear-gradient(90deg, #3a3f4a 0 40px, #2a2e37 40px 80px);
+  border-top: 6px solid var(--ink); border-bottom: 6px solid var(--ink); }
+/* «Дом»: крыша и три этажа-квартиры */
+/* «Дом»: рисованный SVG-дом (кирпич, черепица, труба с дымом), жильцы в окнах, подписи — облачка справа */
+.hw { position: absolute; inset: 0; transform-origin: 315px 1430px; }
+.hw svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+.hwin { position: absolute; width: 214px; height: 174px; overflow: hidden; }
+.hwin img { position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); max-width: 190px; max-height: 168px; }
+.bub { position: absolute; left: 600px; width: 340px; padding: 18px 20px 20px; border-radius: 26px; background: var(--ink); color: var(--dark);
+  border: 6px solid var(--dark); box-shadow: 10px 10px 0 var(--acc); opacity: 0; }
+.bub:before { content: ""; position: absolute; left: -34px; top: 46px; border: 18px solid transparent; border-right: 22px solid var(--dark); }
+.bub:after { content: ""; position: absolute; left: -22px; top: 50px; border: 14px solid transparent; border-right: 18px solid var(--ink); }
+.bub b { display: inline-block; padding: 4px 14px 8px; border-radius: 12px; font: 900 34px/1 Unbounded; text-transform: uppercase; border: 4px solid var(--dark); }
+.bub b.cg { background: #2fd36b; } .bub b.cr { background: #ff5a4e; } .bub b.cy { background: var(--acc); }   /* не .y — это класс жёлтого текста */
+.bub div { margin-top: 12px; font: 800 34px/1.15 Manrope; }
+.puff { position: absolute; border-radius: 50%; background: rgba(220,220,220,.55); }
+/* «Сутки»: циферблат день/ночь, подпись, плитки дней */
+.dial { position: absolute; left: 290px; top: 470px; width: 500px; height: 500px; border-radius: 50%; border: 10px solid var(--ink);
+  background: conic-gradient(var(--acc) 0 180deg, #24305e 180deg 360deg); box-shadow: 16px 16px 0 var(--dark); }
+.dial .hand { position: absolute; left: 50%; top: 50%; width: 14px; height: 210px; margin-left: -7px; border-radius: 7px; background: var(--ink);
+  transform-origin: 50% 0; border: 4px solid var(--dark); }
+.dial .hub { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px; border-radius: 50%; background: var(--dark); border: 6px solid var(--ink); }
+.dial .sun, .dial .moon { position: absolute; width: 90px; height: 90px; border-radius: 50%; }
+.dial .sun { left: 330px; top: 200px; background: #fff3b0; border: 6px solid var(--dark); }
+.dial .moon { left: 60px; top: 200px; background: #f4f4f2; box-shadow: inset -26px 0 0 #24305e; border: 6px solid var(--dark); }
+.daylab { position: absolute; left: 60px; width: 880px; text-align: center; font: 900 64px/1.05 Unbounded; color: var(--acc); text-transform: uppercase; opacity: 0; }
+.daytile { position: absolute; width: 200px; height: 190px; border-radius: 24px; background: var(--ink); border: 6px solid var(--dark); box-shadow: 8px 8px 0 var(--acc);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; opacity: 0; color: var(--dark); }
+.daytile .sm { display: flex; gap: 10px; }
+.daytile .sm u { width: 50px; height: 50px; border-radius: 50%; background: var(--acc); border: 4px solid var(--dark); }
+.daytile .sm s { width: 50px; height: 50px; border-radius: 50%; background: #f4f4f2; box-shadow: inset -16px 0 0 #24305e; border: 4px solid var(--dark); }
+.daytile b { font: 900 34px/1 Unbounded; }
+/* «Zzz» над карточкой команды */
+.zzz { position: absolute; font: 900 58px/1 Unbounded; color: var(--acc); -webkit-text-stroke: 5px var(--dark); paint-order: stroke fill; text-shadow: 6px 6px 0 var(--dark); }
+/* Подпись на наклейке хука */
+.stk .cap { position: absolute; left: 12px; right: 12px; top: 18px; padding: 6px 4px 10px; border-radius: 14px; background: var(--dark); color: var(--acc);
+  font: 900 36px/1.1 Unbounded; text-align: center; letter-spacing: -.02em; }
+.stk img.logo { height: auto; width: 84%; left: 50%; bottom: 42%; transform: translate(-50%, 50%); object-fit: contain; filter: drop-shadow(6px 6px 0 var(--dark)); }
+/* Иконки в плашках — без искажения пропорций (предметы не квадратные) */
+.abil img { width: auto; }
+/* «Ловушка»: панель скрытых данных, сканер, штамп БАН, логотип и счётчик */
+.panel { position: absolute; left: 60px; top: 480px; width: 880px; height: 420px; border-radius: 28px; background: var(--dark);
+  border: 6px solid var(--ink); box-shadow: 14px 14px 0 var(--acc); overflow: hidden; padding: 34px 40px; }
+.panel .tag { display: inline-block; padding: 6px 18px; border-radius: 10px; background: var(--acc); color: var(--dark); font: 900 30px Unbounded; }
+.panel .bar { height: 34px; border-radius: 9px; background: rgba(244,244,242,.16); margin-top: 26px; }
+.panel .bar.h { background: repeating-linear-gradient(90deg, rgba(255,210,63,.55) 0 22px, rgba(255,210,63,.15) 22px 34px); }
+.scan { position: absolute; left: 0; right: 0; height: 90px; background: linear-gradient(180deg, transparent, rgba(255,90,78,.55), transparent); }
+.reader { position: absolute; right: 36px; top: 30px; padding: 8px 20px; border-radius: 12px; background: #ff5a4e; color: var(--dark);
+  font: 800 34px Manrope; border: 5px solid var(--dark); }
+.stamp { position: absolute; left: 290px; top: 610px; width: 500px; padding: 6px 0 14px; text-align: center; border: 14px solid #ff5a4e; border-radius: 26px;
+  color: #ff5a4e; font: 900 150px/1 Unbounded; letter-spacing: -.02em; background: rgba(13,14,18,.82); }
+.plate { position: absolute; left: 60px; top: 950px; width: 320px; height: 250px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
+  box-shadow: 12px 12px 0 var(--acc); display: flex; align-items: center; justify-content: center; }
+.plate img { width: 250px; image-rendering: auto; }
+/* «Дальность»: линейка, клик, место приземления, карточка игрока */
+.ruler { position: absolute; left: 100px; top: 1052px; width: 840px; height: 14px; border-radius: 7px; background: rgba(244,244,242,.25); }
+.ruler i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; background: var(--ink); }
+.tick { position: absolute; top: 980px; width: 10px; height: 100px; border-radius: 5px; background: var(--acc); border: 3px solid var(--dark); }
+.tlab { position: absolute; top: 1090px; padding: 6px 18px; border-radius: 12px; font: 900 54px Unbounded; border: 5px solid var(--dark); white-space: nowrap; }
+.tlab.w { background: var(--ink); color: var(--dark); box-shadow: 6px 6px 0 var(--acc); }
+.tlab.r { background: #ff5a4e; color: var(--dark); box-shadow: 6px 6px 0 var(--ink); }
+.cursor { position: absolute; top: 1018px; width: 82px; height: 82px; border-radius: 50%; border: 8px solid #ff5a4e; }
+.cursor:after { content: ""; position: absolute; left: 25px; top: 25px; width: 16px; height: 16px; border-radius: 50%; background: #ff5a4e; }
+.landicon { position: absolute; top: 960px; width: 132px; height: 96px; border-radius: 14px; border: 5px solid var(--dark); box-shadow: 7px 7px 0 var(--ink); }
+.gapbar { position: absolute; top: 1048px; height: 22px; border-radius: 6px; background: repeating-linear-gradient(-45deg, #ff5a4e 0 12px, #b8352c 12px 24px); }
+.pcard { position: absolute; left: 60px; top: 1200px; width: 880px; height: 200px; border-radius: 28px; background: var(--acc); border: 6px solid var(--dark);
+  box-shadow: 12px 12px 0 var(--ink); display: flex; align-items: center; gap: 22px; padding: 0 28px; color: var(--dark); }
+.pcard .lg { width: 140px; height: 140px; border-radius: 22px; background: var(--dark); display: flex; align-items: center; justify-content: center; flex: none; }
+.pcard .lg img { max-width: 112px; max-height: 112px; }
+.pcard b { display: block; font: 900 58px/1 Unbounded; }
+.pcard small { display: block; font: 800 34px/1.2 Manrope; margin-top: 8px; }
+/* «Патчноут»: номер патча, лист со смайликами, расшифровка */
+.ver { position: absolute; left: 80px; top: 480px; padding: 8px 30px 14px; border-radius: 24px; background: var(--acc); color: var(--dark);
+  border: 6px solid var(--dark); box-shadow: 12px 12px 0 var(--ink); font: 900 110px/1 Unbounded; transform: rotate(-3deg); }
+.paper { position: absolute; left: 60px; top: 670px; width: 880px; height: 400px; border-radius: 28px; background: var(--ink); border: 6px solid var(--dark);
+  box-shadow: 14px 14px 0 var(--acc); padding: 30px 40px; color: var(--dark); }
+.paper .er { font: 80px/1.15 "Noto Color Emoji", sans-serif; white-space: nowrap; text-align: center; word-spacing: 36px; }
+.paper small { position: absolute; right: 30px; bottom: 18px; font: 800 30px Manrope; color: rgba(13,14,18,.55); }
+.decode { position: absolute; left: 60px; top: 1120px; width: 880px; padding: 18px 26px; border-radius: 24px; background: var(--dark); border: 6px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--acc); display: flex; align-items: center; gap: 24px; font: 800 36px/1.2 Manrope; color: var(--ink); }
+.decode img { width: 118px; height: 86px; border-radius: 12px; border: 4px solid var(--ink); flex: none; }
+/* Хук: три наклейки-превью фактов под заголовком */
+.stk { position: absolute; width: 250px; height: 560px; border-radius: 28px; border: 6px solid var(--dark); overflow: hidden; opacity: 0; }
+.stk.c0, .stk.c2 { background: repeating-linear-gradient(-45deg, var(--acc) 0 26px, #f5c62e 26px 52px); box-shadow: 12px 12px 0 var(--ink); }
+.stk.c1 { background: repeating-linear-gradient(-45deg, var(--ink) 0 26px, #e4e4e0 26px 52px); box-shadow: 12px 12px 0 var(--acc); }
+.stk img { position: absolute; left: 4%; bottom: 0; width: 92%; height: 96%; object-fit: contain; object-position: 50% 100%;
+  filter: drop-shadow(4px 0 0 var(--ink)) drop-shadow(-4px 0 0 var(--ink)) drop-shadow(0 4px 0 var(--ink)) drop-shadow(0 -4px 0 var(--ink)); }
+.stk img.icon { height: auto; width: 82%; left: 50%; bottom: 50%; transform: translate(-50%, 50%); border-radius: 14px; border: 5px solid var(--dark);
+  box-shadow: 8px 8px 0 var(--dark); filter: none; }
+/* ===== Тема «c» — Сонар: тёмная бирюза, мятный неон, оранжевый для тревоги, радар на фоне, переход кольцом ===== */
+body.tc { --bg: #031417; --ink: #d8fff4; --acc: #3ef0c0; --dark: #010809; --hot: #ff6b3d; --card: #072a2c; --line: rgba(62,240,192,.35); }
+body.tc #dots { background-image: repeating-radial-gradient(circle at 540px 940px, transparent 0 118px, rgba(62,240,192,.10) 118px 121px); background-size: auto; inset: 0; }
+#sweep { position: absolute; left: 540px; top: 940px; width: 1500px; height: 1500px; margin: -750px; border-radius: 50%; display: none;
+  background: conic-gradient(from 0deg, rgba(62,240,192,.22), rgba(62,240,192,0) 50deg, transparent 360deg); }
+#scan { position: absolute; inset: 0; display: none; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(0,0,0,.18) 0 2px, transparent 2px 5px); }
+body.tc #sweep { display: block; will-change: transform; }
+body.tc #wipe { display: none; }
+#ring { position: absolute; inset: 0; background: var(--acc); display: none; }
+#ring i { position: absolute; left: 540px; top: 940px; border-radius: 50%; border: 18px solid var(--ink); transform: translate(-50%, -50%); }
+body.tc #ring { display: block; }
+body.tc .head { text-shadow: 0 0 26px rgba(62,240,192,.45); }
+body.tc .pg { background: rgba(62,240,192,.15); }
+body.tc .pg i { background: var(--acc); box-shadow: 0 0 12px var(--acc); }
+body.tc .fw { text-shadow: 0 0 30px rgba(62,240,192,.6); }
+body.tc .fbtn { box-shadow: 0 0 40px rgba(255,107,61,.6); background: var(--hot); }
+/* Отдельные слои для всего, что двигается каждый кадр: браузер не перерисовывает их заново (рендер быстрее ~на треть) */
+#dots, #sweep, #ring, #wipe, .nc, .head .ln span, .hbadge { will-change: transform; }
+/* Анимированный герой: холст с кадрами, мятное свечение по контуру */
+canvas.anim { position: absolute; will-change: transform; }   /* свечение и тень запечены в кадры */
+/* Неоновая карточка */
+.nc { position: absolute; border-radius: 26px; background: var(--card); border: 4px solid var(--line); box-shadow: 0 0 0 1px rgba(62,240,192,.1), 0 18px 40px rgba(0,0,0,.45); }
+.nc.on { border-color: var(--acc); box-shadow: 0 0 30px rgba(62,240,192,.45); }
+.nc.hot { border-color: var(--hot); box-shadow: 0 0 30px rgba(255,107,61,.5); }
+.ico { border-radius: 18px; border: 4px solid var(--acc); box-shadow: 0 0 20px rgba(62,240,192,.5); }
+/* Хук «hero»: значки фактов справа от героя */
+.hbadge { position: absolute; left: 540px; width: 400px; height: 236px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; opacity: 0; }
+.hbadge img { width: 132px; height: 132px; }
+.hbadge b { font: 900 34px/1.05 Unbounded; text-transform: uppercase; text-align: center; letter-spacing: -.02em; }
+/* «Шторм»: радар с героем, вспышки торрентов, лента патчей */
+/* «Сайленс»: слот способности, источник сайленса, плашки */
+.src { position: absolute; width: 120px; height: 120px; border-radius: 20px; border: 5px solid #b46cff; box-shadow: 0 0 30px rgba(180,108,255,.8); opacity: 0; }
+.vbadge { display: inline-block; padding: 4px 12px 6px; border-radius: 10px; background: var(--acc); color: var(--dark); font: 900 28px Unbounded; margin-right: 6px; }
+/* «Повышение»: дерево талантов, карточка аганима, корабли */
+.tree { left: 60px; top: 500px; width: 880px; height: 470px; padding: 26px 30px; }
+/* ===== Тема «k» — Адмирал (под Кунку): ночное море, морская карта, компас, волны внизу; переход — волной Торрента ===== */
+body.tk { --bg: #061627; --ink: #eef6fb; --acc: #5fd4c4; --hot: #ff4d5e; --dark: #020a14; --card: #0d2a47; --line: rgba(238,246,251,.22); }
+body.tk #dots { inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.35), transparent 70%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px);
+  background-size: auto, 120px 120px, 120px 120px; background-position: 0 0, 0 0, 0 0; }
+#compass, #waves, #tide { display: none; position: absolute; pointer-events: none; }
+body.tk #compass, body.tk #waves, body.tk #tide { display: block; }
+body.tk #wipe, body.tk #ring, body.tk #sweep { display: none; }
+#compass { left: 470px; top: 980px; width: 900px; height: 900px; opacity: .07; will-change: transform; }
+#waves { left: 0; top: 1640px; width: 1080px; height: 280px; overflow: hidden; }
+#waves svg { position: absolute; left: 0; width: 2160px; height: 280px; will-change: transform; }
+#tide { left: 0; top: 0; width: 1080px; height: 2500px; will-change: transform; }
+#tide .body { position: absolute; left: 0; right: 0; top: 140px; bottom: 140px; background: linear-gradient(180deg, #2a8fa0, #145273 45%, #0b3150); }
+#tide svg { position: absolute; left: 0; width: 2160px; height: 150px; }
+body.tk .head .y { color: var(--acc); }
+body.tk .pg { background: rgba(238,246,251,.14); } body.tk .pg i { background: var(--acc); }
+body.tk .nc { background: linear-gradient(180deg, #11355a, #0a2340); border: 4px solid var(--line); box-shadow: 0 12px 0 rgba(2,10,20,.65); }
+body.tk .nc.on { border-color: var(--acc); box-shadow: 0 12px 0 rgba(2,10,20,.65), 0 0 26px rgba(95,212,196,.35); }
+body.tk .nc.hot { border-color: var(--hot); box-shadow: 0 12px 0 rgba(2,10,20,.65), 0 0 26px rgba(255,77,94,.35); }
+body.tk .ico { border-color: var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+body.tk .pl .v { background: var(--ink); color: #0a2340; border: none; border-left: 12px solid var(--hot); border-radius: 8px; }
+body.tk .pl .ics s { color: var(--ink); }
+body.tk .fw { color: var(--ink); text-shadow: 0 8px 0 rgba(2,10,20,.8); top: 640px; font-size: 92px; line-height: 1.02; }
+body.tk .fw br + * , body.tk .fw { white-space: normal; }
+body.tk .fsub { top: 860px; }
+body.tk .fbtn { top: 990px; }
+body.tk .fnick { top: 1230px; }
+body.tk .fbtn { background: var(--hot); box-shadow: 0 10px 0 rgba(2,10,20,.7); }
+/* Финал «flag»: «Подпишись» на развевающемся сигнальном флаге, без кнопки и подписей */
+.flag { position: absolute; left: 90px; top: 760px; width: 820px; height: 250px; transform-origin: 0 50%; }
+.flag svg { position: absolute; inset: 0; overflow: visible; }
+.flag b { position: absolute; left: 70px; right: 20px; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
+  font: 900 92px/1 Unbounded; color: #0a2340; text-transform: uppercase; letter-spacing: -.03em; }
+.pole { position: absolute; left: 70px; top: 700px; width: 18px; height: 820px; border-radius: 9px; background: linear-gradient(90deg, #c9d3dc, #8794a1); }
+.pole:before { content: ""; position: absolute; left: -9px; top: -24px; width: 36px; height: 36px; border-radius: 50%; background: #eef6fb; }
+.fnick2 { position: absolute; left: 60px; width: 880px; text-align: center; top: 1090px; font: 800 44px Manrope; color: rgba(238,246,251,.8); }
+/* Финал «big»: огромное «ПОДПИШИСЬ» по буквам на волнах, герой сверху, иконки способностей покачиваются над водой */
+.bigw { position: absolute; left: 60px; width: 880px; top: 1010px; display: flex; justify-content: center; font: 900 102px/1 Unbounded;
+  text-transform: uppercase; letter-spacing: -.04em; color: var(--ink); }
+.bigw span { display: inline-block; text-shadow: 0 10px 0 #0a2340, 0 0 40px rgba(95,212,196,.45); -webkit-text-stroke: 4px #0a2340; paint-order: stroke fill; }
+.nick3 { position: absolute; left: 60px; width: 880px; top: 1170px; text-align: center; font: 800 46px Manrope; color: var(--acc); }
+.float { position: absolute; width: 112px; height: 112px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 10px 0 rgba(2,10,20,.6); }
+/* ===== «Хронология 2»: шапка-табличка патча, канат с причалами, крупная карточка активного изменения, остальные — полосками.
+   Новое — без неона: плотные цвета, бумага, жёсткие тени, штампы, текстуры ===== */
+body.tk { --paper: #efe6d2; --navy: #0a2340; --red: #d9443b; }
+.grain { position: absolute; inset: 0; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' seed='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); opacity: .35; mix-blend-mode: overlay; display: none; will-change: transform; }
+body.tk .grain { display: block; }
+body.tk #dots { background-image: radial-gradient(ellipse at 50% 30%, rgba(40,90,140,.35), transparent 70%), radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.45) 100%),
+  linear-gradient(rgba(238,246,251,.045) 2px, transparent 2px), linear-gradient(90deg, rgba(238,246,251,.045) 2px, transparent 2px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.25 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+  background-size: auto, auto, 120px 120px, 120px 120px, 600px 600px; }
+.hc { position: absolute; left: 60px; top: 220px; }
+.hc .pre { display: inline-block; padding: 8px 18px 10px; background: var(--red); color: var(--paper); font: 900 30px/1 Unbounded; border-radius: 8px 8px 0 0; }
+.hc .main { display: flex; align-items: flex-end; gap: 18px; padding: 16px 26px 20px; border: 3px solid var(--line); border-radius: 0 16px 16px 16px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='8' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, rgba(2,10,20,.55), rgba(2,10,20,.7)); }
+.hc .main b { font: 900 108px/0.95 Unbounded; color: var(--acc); }
+.hc .main i { font: 900 60px/1 Unbounded; font-style: normal; opacity: .4; padding-bottom: 6px; }
+.rope { position: absolute; left: 60px; top: 500px; width: 880px; height: 120px; }
+.rope:before { content: ""; position: absolute; left: 0; right: 0; top: 52px; height: 8px; border-radius: 4px; background: repeating-linear-gradient(60deg, #c9b48a 0 10px, #8f7a52 10px 20px); }
+.pier { position: absolute; top: 24px; width: 128px; margin-left: -64px; }
+.pier .pl2 { position: relative; padding: 10px 0 12px; text-align: center; font: 900 30px/1 Unbounded; border: 3px solid var(--line); border-radius: 10px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #2a4b6d, #10304f); }
+.pier .pl2:before, .pier .pl2:after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 2px; background: rgba(238,246,251,.45); }
+.pier .pl2:before { left: 8px; } .pier .pl2:after { right: 8px; }
+.pier.past .pl2 { color: var(--acc); border-color: rgba(95,212,196,.5); } .pier.fut { opacity: .45; }
+.nowm { position: absolute; top: 0; width: 150px; margin-left: -75px; }
+.nowm .pl2 { position: relative; padding: 14px 0 16px; text-align: center; font: 900 36px/1 Unbounded; color: var(--paper); border: 4px solid var(--navy); border-radius: 10px;
+  box-shadow: 6px 6px 0 var(--navy); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='60'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.25' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 0  0 0 0 .45 0'/></filter><rect width='300' height='60' filter='url(%23w)'/></svg>"), linear-gradient(180deg, #e2564c, #b8352d); }
+.nowm .rib { margin: -4px auto 0; width: 130px; padding: 4px 0 8px; text-align: center; background: var(--paper); color: var(--navy); font: 900 20px/1 Unbounded; letter-spacing: .08em;
+  clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%, 8% 50%); }
+.nowm .knot { position: absolute; left: 50%; top: -14px; width: 18px; height: 18px; margin-left: -9px; background: #c9b48a; border: 3px solid var(--navy); transform: rotate(45deg); }
+/* полоска */
+.sc { position: absolute; left: 60px; width: 880px; height: 92px; display: flex; align-items: center; gap: 18px; padding: 0 24px 0 0; border: 3px solid var(--line);
+  border-radius: 16px; overflow: hidden; font: 900 32px Unbounded; text-transform: uppercase; white-space: nowrap;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #13406a, #0a2340); }
+.sc .tab { align-self: stretch; width: 16px; background: var(--acc); flex: none; }
+.sc img { width: 64px; height: 64px; border-radius: 12px; border: 2px solid var(--ink); flex: none; }
+.sc .vv { padding: 5px 12px 7px; background: var(--ink); color: var(--navy); border-radius: 8px; font-size: 26px; flex: none; }
+.sc em { margin-left: auto; font: 900 22px Unbounded; font-style: normal; padding: 5px 12px 7px; border-radius: 8px; border: 3px solid currentColor; }
+.sc.dead { border-color: rgba(217,68,59,.6); } .sc.dead .tab { background: var(--red); } .sc.dead em { color: var(--red); } .sc.dead img { filter: grayscale(1) brightness(.6); }
+/* крупная карточка: шапка + тело */
+.mc { position: absolute; left: 60px; width: 880px; }
+.mc .cap { display: flex; align-items: center; gap: 14px; height: 74px; padding: 0 22px; background-color: var(--acc); color: var(--navy); border-radius: 22px 22px 0 0;
+  font: 900 34px/1 Unbounded; text-transform: uppercase; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.3 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); }
+.mc .cap .vv { padding: 6px 14px 8px; background: var(--navy); color: var(--ink); border-radius: 8px; }
+.mc .cap .kind { margin-left: auto; font-size: 26px; padding: 6px 14px 8px; border: 3px solid currentColor; border-radius: 8px; }
+.mc .body { position: relative; padding: 28px 36px 34px; border: 5px solid var(--acc); border-top: none; border-radius: 0 0 22px 22px; box-shadow: 0 14px 0 rgba(2,10,20,.65);
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, rgba(0,0,0,.08) 0 2px, transparent 2px 6px),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #13406a, #0a2340); }
+.mc .body:before, .mc .body:after { content: ""; position: absolute; bottom: 12px; width: 12px; height: 12px; border-radius: 3px; background: rgba(238,246,251,.4); }
+.mc .body:before { left: 12px; } .mc .body:after { right: 12px; }
+.mc .ics { display: flex; align-items: center; gap: 16px; }
+.mc .ics .ab { width: 176px; height: 176px; border-radius: 22px; border: 4px solid var(--ink); box-shadow: 0 8px 0 rgba(2,10,20,.6); }
+.mc .ics .it { width: 123px; height: 90px; border-radius: 14px; border: 3px solid var(--ink); }
+.mc .ics s { font: 900 54px Unbounded; text-decoration: none; }
+.mc b.t { display: block; margin-top: 22px; font: 900 52px/1.04 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.mc .sub { display: block; margin-top: 12px; font: 800 34px/1.18 Manrope; opacity: .85; }
+.mc.del .cap { background-color: var(--red); color: var(--paper); } .mc.del .cap .vv { background: var(--paper); color: var(--navy); }
+.mc.del .body { border-color: var(--red); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.025) 0 2px, transparent 2px 6px), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' seed='5' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), linear-gradient(180deg, #3a1d2a, #1c0f1b); }
+.mc.del .ics .ab { filter: grayscale(1) brightness(.55); }
+.rstamp { position: absolute; right: 44px; top: 50px; padding: 10px 22px 14px; border: 6px solid var(--red); outline: 3px solid var(--red); outline-offset: 5px;
+  color: var(--red); font: 900 52px/1 Unbounded; background: rgba(10,35,64,.6); -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='3' seed='6' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"); -webkit-mask-size: 300px 300px; }
+/* «изменили»: бумажная карточка было | стало */
+.mc.chg .cap { background-color: var(--navy); color: var(--paper); border: 4px solid var(--paper); border-bottom: none; border-radius: 18px 18px 0 0; }
+.mc.chg .cap .vv { background: var(--red); color: var(--paper); }
+.mc.chg .body { display: grid; grid-template-columns: 1fr 64px 1fr; color: var(--navy); border: 4px solid var(--paper); border-radius: 0 0 18px 18px; padding: 26px 28px 30px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.02 0.6' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .22 0'/></filter><rect width='400' height='400' filter='url(%23f)'/></svg>"), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' seed='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>"), repeating-linear-gradient(180deg, transparent 0 42px, rgba(10,35,64,.08) 42px 44px), var(--paper);
+  box-shadow: inset 0 0 60px rgba(120,90,40,.35), 10px 12px 0 var(--navy); }
+.mc.chg .body:before, .mc.chg .body:after { background: rgba(10,35,64,.35); }
+.half { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; min-width: 0; }
+.half .h { padding: 4px 12px 7px; border-radius: 6px; font: 900 24px/1 Unbounded; letter-spacing: .06em; background: var(--navy); color: var(--paper); }
+.half.new .h { background: var(--red); }
+.half img { width: 150px; height: 150px; border-radius: 16px; border: 4px solid var(--navy); box-shadow: 6px 6px 0 rgba(10,35,64,.35); }
+.half img.it { width: 123px; height: 90px; }
+.half b { font: 900 36px/1.05 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.half span { font: 800 29px/1.15 Manrope; opacity: .8; }
+.half.old img { filter: grayscale(.6); } .half.old b, .half.old span { opacity: .55; }
+.mc.chg .arr { align-self: center; justify-self: center; font: 900 56px Unbounded; color: var(--red); }
+/* «Хронология патчей»: карточки изменений по порядку, у каждой версия, иконки «было → стало», метка */
+.pl { position: absolute; left: 60px; width: 880px; display: flex; align-items: center; gap: 26px; padding: 0 30px; opacity: 0; }
+.pl .v { display: inline-block; padding: 6px 16px 9px; border-radius: 12px; background: var(--dark); border: 3px solid var(--line);
+  font: 900 34px/1 Unbounded; color: var(--acc); margin-bottom: 12px; }
+.pl .ics { flex: none; display: flex; align-items: center; gap: 10px; position: relative; }
+.pl .ics img { border-radius: 14px; border: 3px solid var(--ink); }
+.pl .ics img.ab { width: 128px; height: 128px; }   /* родной размер иконки Valve, без растягивания */
+.pl .ics img.it { width: 88px; height: 64px; border-radius: 10px; }
+.pl .ics s { font: 900 40px/1 Unbounded; color: var(--acc); text-decoration: none; }
+.pl .tx { flex: 1; min-width: 0; }
+.pl .tx b { display: block; font: 900 40px/1.08 Unbounded; text-transform: uppercase; letter-spacing: -.02em; }
+.pl .tx span { display: block; margin-top: 10px; font: 800 32px/1.15 Manrope; opacity: .8; }
+.pl .tag { position: absolute; right: -10px; top: -18px; padding: 4px 14px 7px; border-radius: 10px; font: 900 26px/1 Unbounded; color: var(--dark); background: var(--acc); }
+.pl .tag.remove { background: var(--hot); } .pl .tag.change { background: var(--ink); }
+.pl .burst { position: absolute; left: 50%; top: 50%; border-radius: 50%; border: 6px solid var(--acc); transform: translate(-50%, -50%); opacity: 0; }
+/* Эффекты во весь экран под событие карточки */
+.flash { position: absolute; inset: 0; background: var(--hot); opacity: 0; }
+.pl .x { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg); padding: 2px 12px 6px; border: 6px solid var(--hot); border-radius: 12px;
+  color: var(--hot); background: rgba(1,8,9,.9); font: 900 34px/1 Unbounded; opacity: 0; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="dots"></div>
+  <div id="sweep"></div>
+  <svg id="compass" viewBox="-100 -100 200 200"></svg>
+  <div id="waves"></div>
+  <div id="segs"></div>
+  <div id="scan"></div>
+  <div class="grain"></div>
+  <div id="subs"></div>
+  <div id="progress"></div>
+  <div id="wm"></div>
+  <div id="badge" style="display:none;position:absolute;left:60px;right:140px;top:96px;text-align:center;padding:10px 20px 14px;border-radius:16px;background:#ff4d5e;color:#fff;font:900 40px/1.1 Unbounded;box-shadow:0 8px 0 rgba(2,10,20,.6)"></div>
+  <div id="wipe"></div>
+  <div id="tflash" style="position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none"></div>
+  <div id="tide"><svg class="top" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg><div class="body"></div><svg class="bot" viewBox="0 0 2160 150" preserveAspectRatio="none"></svg></div>
+  <div id="ring"><i></i></div>
+</div>
+<div id="preload" style="display:none"></div>
+<script>
+// ---------- утилиты ----------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const eOut = t => 1 - Math.pow(1 - clamp(t), 3);
+const eInOut = t => { t = clamp(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const eBack = t => { t = clamp(t); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const $ = (tag, cls, parent, css) => { const e = document.createElement(tag); if (cls) e.className = cls; if (css) e.style.cssText = css; if (parent) parent.appendChild(e); return e; };
+const WIPE = 0.32;                    // половина длительности шторки, сек
+let D, SEGS = [];
+
+// complete бывает true и у битого img; ожидание должно завершаться ошибкой с адресом.
+function waitForImage(im, label = "Изображение") {
+  const src = im.currentSrc || im.getAttribute("src") || "[пустой src]";
+  return new Promise((resolve, reject) => {
+    const finish = error => {
+      clearTimeout(timer);
+      im.removeEventListener("load", loaded);
+      im.removeEventListener("error", failed);
+      if (error) reject(new Error(`${label}: ${src} — ${error}`));
+      else resolve();
+    };
+    const loaded = () => finish(im.naturalWidth > 0 && im.naturalHeight > 0
+      ? null : "изображение не декодировано");
+    const failed = () => finish("не удалось загрузить или декодировать изображение");
+    const timer = setTimeout(() => finish("таймаут загрузки 30000 мс"), 30000);
+    im.addEventListener("load", loaded);
+    im.addEventListener("error", failed);
+    if (im.complete) loaded();
+  });
+}
+
+// Заголовок: строки выезжают из-под маски. «|» — перенос, *слово* — жёлтым
+function headline(parent, text) {
+  const h = $("div", "head", parent);
+  return text.split("|").map(line => {
+    const sp = $("span", null, $("span", "ln", h));
+    sp.innerHTML = line.replace(/\*(.+?)\*/g, '<b class="y" style="font-weight:900">$1</b>');
+    return sp;
+  });
+}
+
+// Вписываем героя в рамку w×h, низом на линию bottom, центр по cx
+function placeHero(im, cx, bottom, w, h) {
+  const k = Math.min(w / im.naturalWidth, h / im.naturalHeight);
+  const W = im.naturalWidth * k, H = im.naturalHeight * k;
+  im.style.width = W + "px"; im.style.height = H + "px";
+  im.style.left = (cx - W / 2) + "px"; im.style.top = (bottom - H) + "px";
+}
+
+// Анимированный герой: кадры рисуются на холсте в родной частоте; картинки грузятся в скрытый #preload
+function makeAnim(parent, anim) {
+  const pre = document.getElementById("preload"), frames = Array.isArray(anim) ? anim : anim.frames;
+  return { cv: $("canvas", "anim", parent), fps: anim.fps || 15, imgs: frames.map(src => { const im = $("img", null, pre); im.src = src; return im; }) };
+}
+function placeAnim(A, cx, bottom, w, h) {
+  if (!A || !A.imgs.length) return;
+  const im = A.imgs[0], k = Math.min(w / im.naturalWidth, h / im.naturalHeight);
+  const W = Math.round(im.naturalWidth * k), H = Math.round(im.naturalHeight * k);
+  A.cv.width = W; A.cv.height = H;
+  A.cv.style.left = (cx - W / 2) + "px"; A.cv.style.top = (bottom - H) + "px";
+}
+function drawAnim(A, t) {
+  if (!A || !A.imgs.length || !A.cv.width) return;
+  // Между соседними кадрами — плавное наложение: исходник 24 к/с, видео 30 к/с, без него движение дёргается
+  const f = Math.max(0, t) * A.fps, i = Math.floor(f), a = f - i, n = A.imgs.length, c = A.cv.getContext("2d");
+  c.clearRect(0, 0, A.cv.width, A.cv.height);
+  // Честное смешивание двух кадров: (1−a)·A + a·B через сложение («lighter»). Обычное наложение
+  // удваивало полупрозрачное свечение, и оно мигало
+  c.globalCompositeOperation = "lighter";
+  c.globalAlpha = 1 - a; c.drawImage(A.imgs[i % n], 0, 0, A.cv.width, A.cv.height);
+  if (a > 0.001) { c.globalAlpha = a; c.drawImage(A.imgs[(i + 1) % n], 0, 0, A.cv.width, A.cv.height); }
+  c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
+}
+
+// ---------- построение ----------
+// Морская тема: волны (период 360 px — сдвиг по кругу без скачка), компас, гребни волны-перехода
+const wavePath = (amp, y0, h, per = 360) => { let d = `M0 ${y0}`; for (let x = 0; x < 2160; x += per) d += ` q${per / 4} ${-amp} ${per / 2} 0 t${per / 2} 0`; return d + ` V${h} H0 Z`; };
+function buildSea() {
+  const w = document.getElementById("waves");
+  w.innerHTML = [["#0e3a5c", 34, 90, .9], ["#12507a", 26, 140, .9], ["#1b6f93", 20, 190, .95]].map(([c, a, y, o]) =>
+    `<svg viewBox="0 0 2160 280" preserveAspectRatio="none" style="opacity:${o}"><path d="${wavePath(a, y, 280)}" fill="${c}"/>
+     <path d="${wavePath(a, y, 280).split(" V")[0]}" fill="none" stroke="rgba(238,246,251,.35)" stroke-width="4"/></svg>`).join("");
+  const c = document.getElementById("compass");
+  c.innerHTML = `<circle r="96" fill="none" stroke="#eef6fb" stroke-width="2"/><circle r="80" fill="none" stroke="#eef6fb" stroke-width="1" stroke-dasharray="2 4"/>
+    <path d="M0 -92 L10 -10 L0 0 L-10 -10 Z M0 92 L10 10 L0 0 L-10 10 Z M-92 0 L-10 -10 L0 0 L-10 10 Z M92 0 L10 -10 L0 0 L10 10 Z" fill="#eef6fb"/>
+    <path d="M-50 -50 L-6 -6 L0 0 L-6 6 Z M50 50 L6 6 L0 0 L6 -6 Z M50 -50 L6 -6 L0 0 L-6 -6 Z M-50 50 L-6 6 L0 0 L6 6 Z" fill="#eef6fb" opacity=".6"/>
+    <text y="-104" text-anchor="middle" font-size="14" font-family="Unbounded" fill="#eef6fb">N</text>`;
+  const crest = (flip) => `<path d="${wavePath(40, 60, 150)}" fill="${flip ? "#0b3150" : "#2a8fa0"}" ${flip ? 'transform="scale(1,-1) translate(0,-150)"' : ""}/>
+    <path d="${wavePath(40, 60, 150).split(" V")[0]}" fill="none" stroke="#eef6fb" stroke-width="10" ${flip ? 'transform="scale(1,-1) translate(0,-150)"' : ""}/>`;
+  document.querySelector("#tide .top").innerHTML = crest(false);
+  document.querySelector("#tide .bot").innerHTML = crest(true);
+  document.querySelector("#tide .bot").style.bottom = "0";
+}
+
+// Подписи раскладок: *слово* — акцентом, как в заголовках; остальное — обычный текст (без HTML)
+function accText(el, txt) {
+  el.innerHTML = String(txt || "").replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]).replace(/\*(.+?)\*/g, '<span class="y">$1</span>');
+}
+async function init(data) {
+  D = data;
+  if (data.show_header !== false) document.getElementById("wm").textContent = data.watermark;
+  if (data.badge) { const b = document.getElementById("badge"); b.textContent = data.badge; b.style.display = "block"; }   // прослушка голосов
+  if (data.theme) document.body.classList.add("t" + data.theme);      // вариант оформления выпуска
+  if (data.theme === "k") buildSea();
+  if (data.subs_style) document.body.classList.add("subs-" + data.subs_style);   // box, slam, line (scene.css)
+  const prog = document.getElementById("progress");
+  if (data.show_header !== false)
+    data.segs.filter(s => !s.outro && !s.hook).forEach(() => $("i", null, $("div", "pg", prog)));
+  const host = document.getElementById("segs");
+  data.segs.forEach(s => {
+    const el = $("div", "seg", host);
+    const g = { s, el, parts: {} };
+    const P = g.parts, v = s.visual || {};
+    if (s.scene) {
+      SCN.build(g);                                   // универсальная сцена из JSON (scene.js)
+    } else if (s.hook && s.style === "hero") {
+      // Хук: анимированный герой слева, значки фактов справа загораются по меткам
+      P.lines = headline(el, s.headline);
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      P.badges = s.images.map((src, k) => {
+        const b = $("div", "hbadge nc", el, `top:${520 + k * 262}px`);
+        $("img", "ico", b).src = src;
+        $("b", null, b).textContent = (s.labels || [])[k] || "";
+        return b;
+      });
+    } else if (s.hook && s.style === "list") {
+      // Хук-список: три вопроса строками, у каждой иконка
+      P.lines = headline(el, s.headline);
+      P.rows = s.images.map((src, k) => {
+        const r = $("div", "hrow", el, `top:${560 + k * 260}px`);
+        $("i", null, r).textContent = k + 1;
+        const ic = $("div", "ic", r), im = $("img", null, ic); im.src = src;
+        if (!/\/item_|\/abilities\//.test(src)) im.className = "hico";   // герой в строке — не «.hero», чтобы аудит не считал строку надписью на герое
+        $("b", null, r).textContent = (s.labels || [])[k] || "";
+        return r;
+      });
+    } else if (s.hook) {
+      P.lines = headline(el, s.headline);
+      // Три наклейки лесенкой: появляются, когда диктор называет факт
+      const pos = [[78, 640, -4], [378, 780, 4], [678, 680, -3]];
+      P.stk = s.images.map((src, k) => {
+        const c = $("div", "stk c" + k, el, `left:${pos[k][0]}px;top:${pos[k][1]}px`);
+        c.dataset.rot = pos[k][2];
+        const im = $("img", null, c); im.src = src;
+        if (src.includes("/item_") || src.includes("/abilities/")) im.className = "icon";
+        else if (/\/(teams|orgs|events)\//.test(src)) im.className = "logo";
+        if (s.labels && s.labels[k]) $("div", "cap", c).textContent = s.labels[k];
+        return c;
+      });
+    } else if (s.outro && s.style === "big") {
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      const w = $("div", "bigw", el);
+      P.letters = [...s.question.replace(/\*/g, "")].map(ch => { const sp = $("span", null, w); sp.textContent = ch; return sp; });
+      P.nick = $("div", "nick3", el); P.nick.textContent = s.watermark;
+      P.floats = (s.floats || []).map((src, k, a) => { const im = $("img", "float", el, `left:${540 + (k - (a.length - 1) / 2) * 140 - 56}px;top:1300px`); im.src = src; return im; });
+      P.lines = [];
+    } else if (s.outro && s.style === "flag") {
+      P.pole = $("div", "pole", el);
+      P.flag = $("div", "flag", el);
+      P.flagSvg = P.flag.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+      P.flagSvg.setAttribute("viewBox", "0 0 820 250");
+      $("b", null, P.flag).textContent = s.question.replace(/\*/g, "");
+      P.fnick = $("div", "fnick2", el); P.fnick.textContent = s.watermark;
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      P.lines = [];
+    } else if (s.outro && s.style === "follow") {
+      // Финал без карточек: слово, подкол, кнопка подписки с ником
+      P.fw = $("div", "fw", el); P.fw.innerHTML = s.question.replace(/\*/g, "").replace(/\|/g, "<br>");   // «|» — перенос строки
+      P.fsub = $("div", "fsub", el); P.fsub.textContent = s.cta;
+      P.fbtn = $("div", "fbtn", el);
+      P.fbtn.innerHTML = `<svg viewBox="0 0 100 100"><path class="plus" d="M50 18 V82 M18 50 H82" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path class="tick" d="M22 52 L42 72 L80 30" stroke="#f4f4f2" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0"/></svg>`;
+      P.fnick = $("div", "fnick", el); P.fnick.textContent = s.watermark;
+      P.anim = s.anim ? makeAnim(el, s.anim) : null;
+      P.lines = [];                                   // заголовка нет, но draw() должен отработать
+    } else if (s.outro) {
+      P.lines = headline(el, s.question);
+      const cards = $("div", "cards", el);
+      P.cards = s.thumbs.map((src, k) => {
+        const c = $("div", "card c" + k, cards);
+        $("b", null, c).textContent = k + 1;
+        if (src) {
+          const im = $("img", null, c); im.src = src;
+          // Иконки и логотипы — по ширине карточки, над плашкой с цифрой
+          if (src.includes("/item_")) im.className = "icon";
+          else if (/\/(teams|orgs|events|ui)\//.test(src)) im.className = "logo";
+        }
+        // Плашка с главной цифрой факта
+        const st = (s.stats || [])[k];
+        if (st) { const b = $("div", "cstat", c); $("strong", null, b).textContent = st[0]; $("small", null, b).textContent = st[1]; }
+        return c;
+      });
+      P.cta = $("div", "lab", el, "top:1230px;left:60px;width:880px;text-align:center;font:900 50px/1.15 Unbounded;text-transform:uppercase");
+      P.cta.textContent = s.cta;
+    } else if (s.layout === "duo") {
+      P.lines = headline(el, s.headline);
+      P.band = $("div", "band", el, "top:700px");
+      P.heroes = v.heroes.map(src => { const im = $("img", "hero", el); im.src = src; return im; });
+      el.insertAdjacentHTML("beforeend", `<svg class="path" viewBox="0 0 1080 1920"><defs><marker id="ah${data.segs.indexOf(s)}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#f4f4f2"/></marker></defs>
+        <path d="M 330 830 C 470 600, 640 600, 760 760" fill="none" stroke="#f4f4f2" stroke-width="10" stroke-linecap="round" stroke-dasharray="1 26" marker-end="url(#ah${data.segs.indexOf(s)})"/></svg>`);
+      P.hookSvg = el.querySelector("svg.path");
+      if (v.arc === false) P.hookSvg.style.display = "none";
+      P.pill = $("div", "pill", el, "top:1270px"); accText(P.pill, v.caption);
+    } else if (s.layout === "block") {
+      P.lines = headline(el, s.headline);
+      P.block = $("div", "block", el, "left:300px;top:560px;width:600px;height:520px");
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      P.big = $("div", "big", el, "top:1120px"); P.big.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:1300px;width:860px;font-size:38px"); accText(P.lab, v.label);
+    } else if (s.layout === "grid") {
+      P.lines = headline(el, s.headline);
+      P.big = $("div", "big y", el, "top:480px;font-size:118px"); P.big.textContent = v.number;
+      const grid = $("div", "grid", el, "top:660px");
+      P.tiles = Array.from({ length: v.icons.count }, () => { const t = $("div", "tile", grid); $("img", null, t).src = v.icons.src; return t; });
+      if (v.heroes) { P.hero = $("img", "hero", el); P.hero.src = v.heroes[0]; }
+      const rows = Math.ceil(v.icons.count / 6), gridBottom = 660 + rows * 118 - 16;
+      P.lab = v.heroes ? $("div", "lab", el, "left:520px;top:1120px;width:420px;font:900 46px/1.15 Unbounded")
+                       : $("div", "lab", el, `left:60px;top:${gridBottom + 44}px;width:880px;text-align:center;font:900 46px/1.15 Unbounded`);
+      accText(P.lab, v.label);
+    } else if (s.layout === "timer") {
+      P.lines = headline(el, s.headline);
+      P.clock = $("div", "clock", el, "top:470px");
+      const vs = $("div", "vs", el, "top:720px");
+      P.teams = v.teams.map((t, k) => {
+        if (k) $("i", null, vs).textContent = "vs";
+        const d = $("div", "tcard " + (k ? "b" : "a"), vs);
+        const logo = (v.team_logos || [])[k];
+        if (logo) { const box = $("div", "tlogo", d); $("img", null, box).src = logo; }
+        $("span", null, d).textContent = t;
+        if (v.winner === k) $("div", "win", d).textContent = "победа";
+        return d;
+      });
+      P.vs = vs;
+      P.win = el.querySelector(".win");
+      const row = $("div", "row", el, "top:1112px;width:720px;left:150px");
+      P.icons = v.icons ? Array.from({ length: v.icons.count }, () => { const im = $("img", null, row); im.src = v.icons.src; return im; }) : [];   // иконки — по желанию
+      if (v.zzz != null) {            // «Zzz» над карточкой команды: игрок уснул
+        P.zzz = ["Z", "z", "Z"].map((ch, k) => { const z = $("div", "zzz", el); z.textContent = ch; z.dataset.k = k; return z; });
+        P.zzzTeam = v.zzz;
+      }
+      // Без иконок подпись встаёт сразу под карточками команд, крупнее
+      P.lab = v.icons ? $("div", "lab", el, "top:1318px;width:880px;text-align:center;font-size:40px")
+                      : $("div", "lab", el, "top:1130px;left:60px;width:880px;text-align:center;font-size:46px");
+      accText(P.lab, v.label);
+      if (v.event_logo) {        // логотип турнира вместо текстовой плашки
+        P.pill = $("img", "evlogo", el, "top:236px;left:668px;height:112px;transform-origin:50% 50%"); P.pill.src = v.event_logo;
+        P.pill.dataset.static = "1";
+      } else { P.pill = $("div", "pill", el, "top:1385px;left:50%;transform:translateX(-50%)"); accText(P.pill, v.caption); }
+    } else if (s.layout === "gauge") {
+      P.lines = headline(el, s.headline);
+      const gg = $("div", "gauge", el); P.fill = $("i", null, gg);
+      $("div", "mark", gg, "bottom:50%");                       // отметка 50%
+      P.gnum = $("div", "big", el, "top:1000px;left:60px;font-size:110px;color:#ff5a4e"); P.gnum.textContent = v.number;
+      P.lab = $("div", "lab", el, "top:996px;left:430px;width:510px;font-size:33px"); accText(P.lab, v.label);
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      const ch = $("div", "chips", el);
+      P.chips = (v.chips || []).map(t => { const c = $("div", "chip2", ch); c.textContent = t; return c; });
+      if (v.ability_icons && P.chips.length) {
+        // Иконки способностей — отдельной строкой под последней плашкой
+        const last = P.chips[P.chips.length - 1], row = $("div", "abil", last);
+        v.ability_icons.forEach(src => { $("img", null, row).src = src; });
+      }
+    } else if (s.layout === "xray") {
+      P.lines = headline(el, s.headline);
+      P.belt = $("div", "belt", el, "top:1300px");
+      const pos = [[60, 470], [520, 470], [60, 880], [520, 880]];
+      P.trays = v.items.map((src, k) => {
+        const t = $("div", "tray", el, `left:${pos[k][0]}px;top:${pos[k][1]}px`);
+        $("img", null, t).src = src;
+        $("div", "nm", t).textContent = (v.names || [])[k] || "";
+        $("div", "why", t).textContent = (v.notes || [])[k] || "";
+        const vd = $("div", "verd " + ((v.kinds || [])[k] || "ok"), t); vd.textContent = (v.verdicts || [])[k] || "";
+        return t;
+      });
+    } else if (s.layout === "house") {
+      P.lines = headline(el, s.headline);
+      // Дом рисуем одним SVG: стена в кирпич, крыша-черепица, труба, три окна со шторами, дверь с крыльцом
+      P.hw = $("div", "hw", el);
+      const WY = [650, 890, 1130];                     // верх окон по этажам
+      const winSvg = WY.map(y => `
+        <rect x="100" y="${y - 12}" width="250" height="206" rx="10" fill="#f4f4f2" stroke="#0d0e12" stroke-width="6"/>
+        <rect x="118" y="${y + 6}" width="214" height="170" fill="#ffe58a"/>
+        <path d="M118 ${y + 6} h40 q-10 60 0 170 h-40 z" fill="#e0574a"/>
+        <path d="M332 ${y + 6} h-40 q10 60 0 170 h40 z" fill="#e0574a"/>
+        <rect x="88" y="${y + 190}" width="274" height="20" rx="4" fill="#f4f4f2" stroke="#0d0e12" stroke-width="5"/>`).join("");
+      P.hw.innerHTML = `<svg viewBox="0 0 1080 1920">
+        <defs><pattern id="brick" width="60" height="34" patternUnits="userSpaceOnUse">
+          <rect width="60" height="34" fill="#a5523c"/><path d="M0 0.5 H60 M0 17 H60 M30 0 V17 M0 17 V34 M60 17 V34" stroke="#7b3a2a" stroke-width="3"/></pattern>
+        <pattern id="tile" width="44" height="30" patternUnits="userSpaceOnUse">
+          <rect width="44" height="30" fill="#3b4a6b"/><path d="M0 30 q22 -22 44 0" fill="none" stroke="#25304a" stroke-width="4"/></pattern></defs>
+        <rect x="430" y="470" width="66" height="120" fill="#7b3a2a" stroke="#0d0e12" stroke-width="6"/>
+        <rect x="420" y="462" width="86" height="22" fill="#5a2a1e" stroke="#0d0e12" stroke-width="6"/>
+        <rect x="70" y="610" width="490" height="820" fill="url(#brick)" stroke="#0d0e12" stroke-width="8"/>
+        <path d="M36 622 L315 476 L594 622 Z" fill="url(#tile)" stroke="#0d0e12" stroke-width="8" stroke-linejoin="round"/>
+        ${winSvg}
+        <rect x="392" y="1240" width="132" height="190" rx="10" fill="#5b3a22" stroke="#0d0e12" stroke-width="6"/>
+        <circle cx="500" cy="1340" r="8" fill="#ffd23f" stroke="#0d0e12" stroke-width="3"/>
+        <rect x="372" y="1430" width="172" height="22" fill="#9aa0ab" stroke="#0d0e12" stroke-width="5"/>
+        <rect x="40" y="1446" width="560" height="14" fill="#0d0e12"/>
+      </svg>`;
+      // Жильцы в окнах
+      P.wins = v.heroes.map((src, k) => {
+        const w = $("div", "hwin", P.hw, `left:118px;top:${WY[k] + 6}px`); const im = $("img", null, w); im.src = src; return w;
+      });
+      // Мины у двери (иконка способности последнего жильца)
+      const last = (v.ability_icons || [])[v.heroes.length - 1];
+      P.mines = last ? [0, 1].map(k => { const m = $("img", null, P.hw, `position:absolute;left:${398 + k * 66}px;top:1372px;width:58px;height:58px;border-radius:12px;border:4px solid #0d0e12;opacity:0`); m.src = last; return m; }) : [];
+      // Подписи-облачка справа от окон
+      P.bubs = v.heroes.map((_, k) => {
+        const b = $("div", "bub", el, `top:${WY[k] + 10}px`);
+        $("b", "c" + ((v.colors || [])[k] || "y"), b).textContent = (v.tags || [])[k] || "";
+        $("div", null, b).textContent = (v.notes || [])[k] || "";
+        return b;
+      });
+
+    } else if (s.layout === "dayclock") {
+      P.lines = headline(el, s.headline);
+      P.dial = $("div", "dial", el);
+      $("div", "sun", P.dial); $("div", "moon", P.dial);
+      P.hand = $("div", "hand", P.dial); $("div", "hub", P.dial);
+      P.dlab = $("div", "daylab", el, "top:1010px"); accText(P.dlab, v.label);
+      P.tiles = Array.from({ length: v.days || 4 }, (_, k) => {
+        const t = $("div", "daytile", el, `left:${60 + k * 230}px;top:1130px`);
+        const sm = $("div", "sm", t); $("u", null, sm); $("s", null, sm);
+        $("b", null, t).textContent = `день ${k + 1}`;
+        return t;
+      });
+    } else if (s.layout === "trap") {
+      P.lines = headline(el, s.headline);
+      P.panel = $("div", "panel", el);
+      $("div", "tag", P.panel).textContent = "скрытые данные";
+      [1, 0.8, 1, 0.6, 0.9].forEach((w, k) => { $("div", "bar" + (k % 2 ? "" : " h"), P.panel, `width:${w * 100}%`); });
+      P.scan = $("div", "scan", P.panel);
+      P.reader = $("div", "reader", P.panel); P.reader.textContent = "видят только читы";
+      P.plate = $("div", "plate", el); $("img", null, P.plate).src = v.logo;
+      P.big = $("div", "big y", el, "left:420px;top:975px;font-size:100px"); P.big.textContent = v.number;
+      P.lab = $("div", "lab", el, "left:424px;top:1100px;width:520px;font-size:40px"); accText(P.lab, v.label);
+      P.stamp = $("div", "stamp", el); P.stamp.textContent = "БАН";
+    } else if (s.layout === "range") {
+      P.lines = headline(el, s.headline);
+      P.hero = $("img", "hero", el); P.hero.src = v.heroes[0];
+      // Шкала 0…1500 единиц на 840 px; клик — за пределом 1200
+      const X = u => 100 + u / 1500 * 840;
+      P.X = X; P.clickU = Math.min(1450, v.max * 1.2);
+      P.ruler = $("div", "ruler", el); P.fillR = $("i", null, P.ruler);
+      P.tick = $("div", "tick", el, `left:${X(v.max) - 5}px`);
+      P.tmax = $("div", "tlab w", el); P.tmax.textContent = v.max;
+      P.cursor = $("div", "cursor", el, `left:${X(P.clickU) - 41}px`);
+      P.gap = $("div", "gapbar", el, `left:${X(v.land)}px;width:${X(v.max) - X(v.land)}px`);
+      P.licon = $("img", "landicon", el, `left:${X(v.land) - 66}px`); P.licon.src = v.icon;
+      P.tland = $("div", "tlab r", el); P.tland.textContent = v.land;
+      const pl = v.player || {};
+      P.pcard = $("div", "pcard", el);
+      (pl.logos || []).forEach(src => { $("img", null, $("div", "lg", P.pcard)).src = src; });
+      const tx = $("div", null, P.pcard); $("b", null, tx).textContent = pl.name || ""; $("small", null, tx).textContent = pl.caption || "";
+    } else if (s.layout === "notes") {
+      P.lines = headline(el, s.headline);
+      P.ver = $("div", "ver", el); P.ver.textContent = v.version;
+      P.paper = $("div", "paper", el);
+      P.rows = (v.emoji || []).map(r => { const d = $("div", "er", P.paper); d.textContent = r; return d; });
+      $("small", null, P.paper).textContent = v.emoji_note || "";
+      P.decode = $("div", "decode", el);
+      $("img", null, P.decode).src = v.icon; $("span", null, P.decode).textContent = v.decoded || "";
+    } else if (s.layout === "chronicle") {
+      // Шапка-табличка патча
+      P.lines = [];
+      P.hc = $("div", "hc", el); P.hc.innerHTML = `<div class="pre">патч</div><div class="main"><b></b><i></i></div>`;
+      P.anim = v.anim ? makeAnim(el, v.anim) : null;
+      // Канат с причалами по всем патчам выпуска; табличка «сейчас» переезжает
+      const rope = $("div", "rope", el), rv = v.route || [], step = rv.length > 1 ? 728 / (rv.length - 1) : 0;
+      P.rx = rv.map((_, k) => 76 + k * step);
+      P.piers = rv.map((ver, k) => { const d = $("div", "pier fut", rope, `left:${P.rx[k]}px`); $("div", "pl2", d).textContent = ver; return d; });
+      P.nowm = $("div", "nowm", rope); P.nowm.innerHTML = `<div class="knot"></div><div class="pl2"></div><div class="rib">СЕЙЧАС</div>`;
+      const ref = key => v.refs[key], icon = key => `<img class="${/\/item_/.test(ref(key)) ? "it" : "ab"}" src="${ref(key)}">`;
+      const KIND = { add: "добавили", remove: "удалили", change: "изменили" };
+      P.items = v.entries.map(e => {
+        const sc = $("div", "sc" + (e.kind === "remove" ? " dead" : ""), el);
+        sc.innerHTML = `<div class="tab"></div><img src="${ref(e.strip_icon || e.icons[e.icons.length - 1])}"><div class="vv">${e.ver}</div>${e.title}${e.kind === "remove" ? "<em>удалён</em>" : ""}`;
+        const mc = $("div", "mc " + ({ remove: "del", change: "chg" }[e.kind] || ""), el);
+        let body;
+        if (e.kind === "change") {
+          const half = (h, cls, x) => `<div class="half ${cls}"><div class="h">${h}</div>${icon(x.icon)}<b>${x.title}</b><span>${x.sub || ""}</span></div>`;
+          body = half("БЫЛО", "old", e.before) + `<div class="arr">→</div>` + half("СТАЛО", "new", e.after);
+        } else {
+          body = `<div class="ics">${e.icons.map(icon).join("<s>→</s>")}</div><b class="t">${e.title}</b><span class="sub">${e.sub || ""}</span>` +
+                 (e.kind === "remove" ? `<div class="rstamp">УДАЛЁН</div>` : "");
+        }
+        mc.innerHTML = `<div class="cap"><span class="vv">${e.ver}</span>изменение<span class="kind">${KIND[e.kind || "add"]}</span></div><div class="body">${body}</div>`;
+        return { sc, mc, e };
+      });
+    } else if (s.layout === "mosaic") {
+      P.lines = headline(el, s.headline);
+      el.querySelector(".head").style.fontSize = "70px";
+      P.big = $("div", "big y", el, "top:420px;font-size:110px"); P.big.textContent = v.number;
+      P.cv = $("canvas", null, el, "position:absolute;left:30px;top:600px");
+      P.cv.width = 1000; P.cv.height = 730;
+      // Лупа: показывает крупно, что силуэт выложен именно Танго
+      P.lens = $("canvas", null, el, "position:absolute;width:300px;height:300px;border-radius:50%;border:8px solid #ffd23f;box-shadow:12px 12px 0 #f4f4f2;background:#15171c;opacity:0");
+      P.lens.width = 300; P.lens.height = 300;
+      P.hero = $("img", null, null); P.hero.src = v.heroes[0];
+      P.icon = $("img", null, null); P.icon.src = v.icons.src;
+      P.pill = $("div", "pill", el, "top:1352px;left:50%;transform:translateX(-50%)"); accText(P.pill, v.caption);
+      P.note = $("div", "note", el, "top:540px;text-align:left"); P.note.textContent = v.note || "";
+    }
+    SEGS.push(g);
+  });
+  await Promise.all([waitForSceneStyles(), ...[...document.images].map(im => waitForImage(im))]);
+  const MOS = [];
+  // Раскладка героев по реальным пропорциям картинок
+  SEGS.forEach(g => {
+    const P = g.parts, s = g.s;
+    if (s.layout === "duo") { placeHero(P.heroes[0], 300, 1200, 440, 640); placeHero(P.heroes[1], 720, 1200, 420, 600); }
+    // Верх героя не выше нижней строки заголовка (+20px)
+    const hd = g.el.querySelector(".head");                // в финале «follow» заголовка нет
+    const headBottom = hd ? hd.getBoundingClientRect().bottom + 20 : 0;
+    if (s.layout === "block") placeHero(P.hero, 540, 1080, 740, 1080 - headBottom - 60);   // запас под наезд камеры
+    if (s.layout === "grid" && P.hero) placeHero(P.hero, 270, 1380, 420, 380);
+    if (s.layout === "gauge") placeHero(P.hero, 590, 960, 680, 960 - headBottom);
+    if (s.layout === "mosaic") MOS.push(buildMosaic(g));
+    if (s.hook && s.style === "hero") placeAnim(P.anim, 230, 1420, 640, 1420 - headBottom - 30);
+    if (s.outro && s.style === "follow") placeAnim(P.anim, 540, 610, 520, 360);
+    if (s.outro && s.style === "flag") placeAnim(P.anim, 700, 1480, 480, 400);
+    if (s.outro && s.style === "big") placeAnim(P.anim, 560, 960, 760, 960 - 230);
+    if (s.layout === "chronicle") { placeAnim(P.anim, 830, 490, 300, 340); P.items.forEach(it => { it.H = it.mc.offsetHeight; }); }
+    if (s.layout === "range") {
+      placeHero(P.hero, 300, 1040, 540, 1040 - headBottom - 20);
+      // Подписи над/под шкалой — по центру своих отметок
+      const cx = (el, x) => { el.style.left = (x - el.offsetWidth / 2) + "px"; };
+      cx(P.tmax, P.X(s.visual.max)); P.tmax.style.top = "1100px";
+      cx(P.tland, P.X(s.visual.land)); P.tland.style.top = "1100px";
+      P.tmax.style.top = "850px";                                           // 1200 — над отметкой
+      P.tland.style.left = (P.X(s.visual.land) - P.tland.offsetWidth - 14) + "px";   // 960 — левее
+    }
+  });
+  await Promise.all(MOS);
+  for (const g of SEGS) if (g.s.scene) await SCN.load(g);      // 3D-модели грузятся асинхронно
+  SEGS.forEach((g, k) => { if (g.s.scene) SCN.timeline(g, k === 0); });
+  return true;
+}
+
+// ---------- кадр в момент t ----------
+function seek(t) {
+  const segs = D.segs;
+  let i = 0; while (i + 1 < segs.length && segs[i + 1].start <= t) i++;
+  const lt = t - segs[i].start;
+
+  const TK = document.body.classList.contains("tk");
+  // Сдвиг узора по кругу: в старых темах шаг 36 px совпадает с узором; в теме k фон неподвижен (иначе «скачет»)
+  if (!TK) document.getElementById("dots").style.transform = `translate(${(t * 6) % 36}px, ${(t * 4) % 36}px)`;
+  const fi = segs.slice(0, i + 1).filter(s => !s.hook && !s.outro).length - 1;   // номер факта
+  document.querySelectorAll(".pg i").forEach((bar, k) => {
+    bar.style.width = (segs[i].outro || k < fi ? 100 : k === fi && !segs[i].hook ? clamp(lt / segs[i].dur) * 100 : 0) + "%";
+  });
+  SEGS.forEach((g, k) => {
+    g.el.style.visibility = k === i ? "visible" : "hidden";
+    // Descendant media may set visibility:visible; display hides the whole old segment.
+    g.el.style.display = k === i ? "" : "none";
+  });
+  draw(SEGS[i], lt);
+
+  // Шторка: заезжает слева, на стыке закрывает экран, уезжает вправо
+  let x = -1600;
+  if (!D.transition) segs.forEach((s, k) => {
+    if (!k) return;
+    const d = t - s.start;
+    if (Math.abs(d) < WIPE) x = -1600 + eInOut((d + WIPE) / (2 * WIPE)) * 2800;
+  });
+  document.getElementById("wipe").style.transform = `translateX(${x}px)`;
+  document.getElementById("tide").style.visibility = "hidden";
+  document.getElementById("ring").style.visibility = "hidden";
+  if (TK && !D.transition) {
+    document.querySelectorAll("#waves svg").forEach((sv, k) => { sv.style.transform = `translateX(${-((t * (30 + k * 18)) % 360)}px)`; });
+    document.getElementById("compass").style.transform = `rotate(${t * 2}deg)`;
+    // Переход: волна поднимается снизу, накрывает экран и уходит вверх
+    const tide = document.getElementById("tide"), W2 = WIPE * 1.25;
+    let st = null;
+    segs.forEach((s, k) => { if (k && Math.abs(t - s.start) < W2) st = t - s.start; });
+    tide.style.visibility = st === null ? "hidden" : "visible";
+    if (st !== null) {
+      const e = eInOut((st + W2) / (2 * W2));
+      tide.style.transform = `translateY(${1920 - e * (1920 + 2500)}px)`;
+      tide.querySelectorAll("svg").forEach(sv => { sv.style.transform = `translateX(${-((t * 300) % 360)}px)`; });
+    }
+  }
+  if (document.body.classList.contains("tc") && !D.transition) {
+    document.getElementById("sweep").style.transform = `rotate(${t * 45}deg)`;
+    SEGS[i].el.style.transformOrigin = "540px 940px";
+    SEGS[i].el.style.transform = `scale(${1 + 0.025 * clamp(lt / segs[i].dur)})`;
+    // Переход: мятный круг заливает экран из центра, затем раскрывается дырой
+    const ring = document.getElementById("ring"), edge = ring.firstChild, W2 = WIPE * 1.1;
+    let st = null;
+    segs.forEach((s, k) => { if (k && Math.abs(t - s.start) < W2) st = t - s.start; });
+    ring.style.visibility = st === null ? "hidden" : "visible";
+    if (st !== null) {
+      const e = st < 0 ? eInOut((st + W2) / W2) : eInOut(st / W2), R = e * 1250;
+      if (st < 0) { ring.style.clipPath = `circle(${R}px at 540px 940px)`; ring.style.webkitMaskImage = "none"; edge.style.width = edge.style.height = 2 * R + "px"; }
+      else { ring.style.clipPath = "none"; ring.style.webkitMaskImage = `radial-gradient(circle at 540px 940px, transparent ${R}px, #000 ${R + 2}px)`;
+             edge.style.width = edge.style.height = 2 * (R + 18) + "px"; }
+    }
+  }
+  if (D.transition) transit(t, i);
+  drawSubs(segs[i].outro ? null : segs[i].words, lt);       // в финале текст уже крупно на экране
+}
+
+// ---------- переходы между сегментами (поле transition выпуска) ----------
+// Закон вектора: уходящий и входящий кадры движутся в одну сторону с одной скоростью, стык — прямо в движении, без наложения
+const TW = 0.28;
+const eIn4 = x => Math.pow(clamp(x), 4), eOut4 = x => 1 - Math.pow(1 - clamp(x), 4);
+function transit(t, i) {
+  const segs = D.segs, fl = document.getElementById("tflash");
+  SEGS.forEach(g => { g.el.style.transform = ""; g.el.style.filter = ""; g.el.style.opacity = ""; });
+  fl.style.opacity = 0;
+  const dOut = i + 1 < segs.length ? segs[i + 1].start - t : 99;   // до следующего стыка
+  const dIn = t - segs[i].start;                                     // после прошлого стыка
+  const el = SEGS[i].el, kind = D.transition;
+  if (i > 0 && dIn < TW) {                // входящий: подхватывает движение с середины пути
+    const r = 1 - eOut4(dIn / TW);        // power4.out: стартовая скорость = конечной скорости уходящего (power4.in)
+    if (kind === "push") { el.style.transform = `translateX(${r * 1080}px)`; el.style.filter = `blur(${r * 18}px)`; }
+    if (kind === "zoom") { el.style.transform = `scale(${1 - r * 0.6})`; el.style.filter = `blur(${r * 14}px)`; }
+    if (kind === "flash") { el.style.transform = `scale(${1 + r * 0.12})`; fl.style.opacity = r * 2; }
+  } else if (dOut < TW) {                 // уходящий: разгон до самого стыка
+    const r = eIn4(1 - dOut / TW);        // power4.in: разгон, на стыке — максимальная скорость
+    if (kind === "push") { el.style.transform = `translateX(${-r * 1080}px)`; el.style.filter = `blur(${r * 18}px)`; }
+    if (kind === "zoom") { el.style.transform = `scale(${1 + r * 0.8})`; el.style.filter = `blur(${r * 14}px)`; el.style.opacity = 1 - r * 0.3; }
+    if (kind === "flash") { el.style.transform = `scale(${1 + r * 0.1})`; fl.style.opacity = r * 2; }
+  }
+}
+
+function draw(g, lt) {
+  const P = g.parts, s = g.s;
+  if (s.scene) { SCN.draw(g, lt); return; }
+  if (!P.lines) return;
+  const hl = g === SEGS[0] ? lt + 0.7 : lt;        // первый кадр = обложка: заголовок уже на месте
+  P.lines.forEach((sp, j) => { const k = eOut((hl - 0.12 - j * 0.09) / 0.45); sp.style.transform = `translateY(${(1 - k) * 110}%)`; });
+  if (s.hook && P.badges) {
+    if (P.anim) { const e = eBack((lt - 0.1) / 0.6); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateX(${(1 - e) * -220}px)`; drawAnim(P.anim, lt); }
+    const at = s.at || [];
+    P.badges.forEach((b, k) => {
+      const t0 = at[k] != null ? at[k] : 0.5 + k * 0.7, e = eBack((lt - t0 + 0.05) / 0.45);
+      const nxt = at[k + 1] != null ? at[k + 1] : 1e9, hit = clamp(1 - (lt - t0) / 0.3) * (lt >= t0 ? 1 : 0);
+      b.style.opacity = clamp(e * 2);
+      b.style.transform = `translateX(${(1 - e) * 140}px) scale(${(0.85 + 0.15 * e) * (1 + 0.06 * hit)})`;
+      b.classList.toggle("on", lt >= t0 && lt < nxt);
+    });
+    return;
+  }
+  if (s.hook && P.rows) {
+    P.rows.forEach((r, k) => {
+      const t0 = (s.at && s.at[k] != null) ? s.at[k] : 0.4 + k * 0.6, e = eBack((lt - t0 + 0.05) / 0.45);
+      r.style.opacity = clamp(e * 2); r.style.transform = `translateY(${(1 - e) * 90}px) rotate(${(k - 1) * 1.2}deg)`;      // всплывают снизу, не вылезая за края
+    });
+    return;
+  }
+  if (s.hook) {
+    P.stk.forEach((c, k) => {
+      const t0 = (s.at && s.at[k] != null) ? s.at[k] : 0.4 + k * 0.5;
+      const e = eBack((lt - t0 + 0.05) / 0.45);
+      c.style.opacity = clamp(e * 2);
+      c.style.transform = `translateY(${(1 - e) * 220}px) rotate(${c.dataset.rot * (0.4 + 0.6 * e) + 0.6 * Math.sin(lt * 2 + k)}deg) scale(${0.85 + 0.15 * e})`;
+    });
+    return;
+  }
+  if (s.outro && P.letters) {
+    if (P.anim) { const e = eBack((lt - 0.05) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 120}px)`; drawAnim(P.anim, lt); }
+    // Буквы выныривают по очереди и качаются, как на волнах
+    P.letters.forEach((sp, k) => {
+      const e = eBack((lt - 0.15 - k * 0.05) / 0.45);
+      sp.style.opacity = clamp(e * 2);
+      sp.style.transform = `translateY(${(1 - e) * 140 + Math.sin(lt * 3 - k * 0.6) * 9}px) rotate(${Math.sin(lt * 3 - k * 0.6 + 1) * 3}deg)`;
+    });
+    P.nick.style.opacity = clamp((lt - 0.7) / 0.4);
+    P.floats.forEach((im, k) => {
+      const e = eBack((lt - 0.5 - k * 0.08) / 0.45);
+      im.style.opacity = clamp(e * 2);
+      im.style.transform = `translateY(${(1 - e) * 120 + Math.sin(lt * 2.4 + k * 1.1) * 12}px) rotate(${Math.sin(lt * 2 + k) * 6}deg)`;
+    });
+    return;
+  }
+  if (s.outro && P.flag) {
+    // Флаг поднимается по флагштоку и развевается: волна бежит по полотнищу
+    const up = eOut((lt - 0.05) / 0.6);
+    P.flag.style.transform = `translateY(${(1 - up) * 500}px)`; P.flag.style.opacity = clamp(up * 3);
+    const pts = [], W = 820, H = 250, A = 14;
+    for (let x = 0; x <= W; x += 20) pts.push([x, A * Math.sin(x / 120 - lt * 5) * (x / W)]);
+    const top = pts.map(([x, y]) => `${x},${y + 8}`).join(" "), bot = pts.slice().reverse().map(([x, y]) => `${x},${y + H - 8}`).join(" ");
+    P.flagSvg.innerHTML = `<polygon points="${top} ${bot}" fill="#eef6fb"/><polygon points="${pts.map(([x, y]) => `${x},${y + 8}`).filter((_, k) => k <= 3).join(" ")} ${pts.filter((_, k) => k <= 3).reverse().map(([x, y]) => `${x},${y + H - 8}`).join(" ")}" fill="#ff4d5e"/>`;
+    P.flag.querySelector("b").style.transform = `translateY(${A * 0.5 * Math.sin(410 / 120 - lt * 5) * 0.5}px)`;
+    P.fnick.style.opacity = clamp((lt - 0.6) / 0.4);
+    if (P.anim) { const e = eBack((lt - 0.2) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 80}px)`; drawAnim(P.anim, lt); }
+    return;
+  }
+  if (s.outro && P.fw) {
+    const a = eBack((lt - 0.1) / 0.5); P.fw.style.opacity = clamp(a * 2); P.fw.style.transform = `scale(${0.85 + 0.15 * a})`;
+    const b = eOut((lt - 0.7) / 0.4); P.fsub.style.opacity = b; P.fsub.style.transform = `translateY(${(1 - b) * 20}px)`;
+    const c = eBack((lt - 1.0) / 0.45); P.fbtn.style.opacity = clamp(c * 2);
+    // Одно мягкое «нажатие»: кнопка проседает, плюс сменяется галочкой, кнопка зеленеет
+    const tP = 1.9, pr = clamp((lt - tP) / 0.18), up = clamp((lt - tP - 0.18) / 0.25);
+    P.fbtn.style.transform = `scale(${(0.8 + 0.2 * c) * (1 - 0.1 * pr + 0.1 * up)})`;
+    const done = lt > tP + 0.18;
+    P.fbtn.style.background = done ? "#2fd36b" : "#ff5a4e";
+    P.fbtn.querySelector(".plus").setAttribute("opacity", done ? 0 : 1); P.fbtn.querySelector(".tick").setAttribute("opacity", done ? 1 : 0);
+    P.fnick.style.opacity = clamp((lt - 1.2) / 0.4);
+    if (P.anim) { const e = eBack((lt - 0.05) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 80}px)`; drawAnim(P.anim, lt); }
+    return;
+  }
+  if (s.outro) {
+    P.cards.forEach((c, k) => { const e = eBack((lt - 0.3 - k * 0.12) / 0.5); c.style.transform = `translateY(${(1 - e) * 260}px) rotate(${(1 - e) * (k - 1) * 8}deg)`; c.style.opacity = clamp(e * 2); });
+    const e = eOut((lt - 0.9) / 0.4); P.cta.style.opacity = e; P.cta.style.transform = `translateY(${(1 - e) * 30}px)`;
+    return;
+  }
+  if (s.layout === "duo") {
+    P.band.style.transform = `rotate(-7deg) scaleX(${eOut((lt - 0.2) / 0.5)})`;
+    P.heroes.forEach((im, j) => {
+      const e = eBack((lt - 0.35 - j * 0.15) / 0.55);
+      im.style.transform = `translateX(${(1 - e) * (j ? 300 : -300)}px) scale(${(0.8 + 0.2 * e) * (1 + 0.02 * Math.sin(lt * 1.6 + j))})`;
+      im.style.opacity = clamp(e * 2);
+    });
+    // Траектория хука проявляется слева направо, пунктир «бежит»
+    const e = eOut((lt - cueAt(s.visual, "hook", 1.1)) / 0.8);
+    P.hookSvg.style.clipPath = `inset(0 ${1080 - (300 + 520 * e)}px 0 0)`;
+    P.hookSvg.style.opacity = e > 0 ? 1 : 0;
+    P.hookSvg.querySelector("path:not([d^='M0'])").style.strokeDashoffset = -lt * 40;
+    const ep = eBack((lt - cueAt(s.visual, "pill", 1.4)) / 0.4);
+    P.pill.style.transform = `translateY(${(1 - ep) * 40}px) rotate(${(1 - ep) * -4}deg)`; P.pill.style.opacity = clamp(ep * 2);
+  }
+  if (s.layout === "block") {
+    const kb = eBack((lt - 0.2) / 0.5);
+    P.block.style.transform = `scale(${kb}) rotate(${(1 - kb) * -6}deg)`;
+    const kh = eBack((lt - 0.45) / 0.55);
+    P.hero.style.transform = `translateY(${(1 - kh) * 200}px) scale(${(0.9 + 0.1 * kh) * (1 + 0.004 * lt)})`;
+    P.hero.style.opacity = clamp(kh * 2);
+    countUp(P.big, s.visual.number, lt, cueAt(s.visual, "number", 0.9));
+    const kl = eOut((lt - cueAt(s.visual, "label", 1.3)) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateY(${(1 - kl) * 20}px)`;
+  }
+  drawExtra(g, lt);
+  if (s.layout === "grid") {
+    countUp(P.big, s.visual.number, lt, 0.4);
+    const n = P.tiles.length, t0 = cueAt(s.visual, "icons", 0.9), step = Math.min(0.11, (s.dur - 3.5) / n);
+    P.tiles.forEach((tl, m) => {
+      const e = eBack((lt - t0 - m * step) / 0.3);
+      tl.style.transform = `scale(${e}) rotate(${(1 - e) * (m % 2 ? 14 : -14)}deg)`; tl.style.opacity = clamp(e * 2);
+    });
+    if (P.hero) { const kh = eBack((lt - t0 - n * step) / 0.5); P.hero.style.transform = `translateY(${(1 - kh) * 160}px)`; P.hero.style.opacity = clamp(kh * 2); }
+    const kl = eOut((lt - cueAt(s.visual, "label", t0 + 0.2 + n * step)) / 0.4); P.lab.style.opacity = kl; P.lab.style.transform = `translateX(${(1 - kl) * 40}px)`;
+  }
+}
+
+// Мозаика: вписываем героя в холст, подбираем размер клетки, чтобы клеток внутри силуэта было ровно target
+async function buildMosaic(g) {
+  const P = g.parts, target = g.s.visual.icons.count, W = P.cv.width, H = P.cv.height;
+  await Promise.all([waitForImage(P.hero, "Мозаика hero"), waitForImage(P.icon, "Мозаика icon")]);
+  const k = Math.min(W / P.hero.naturalWidth, H / P.hero.naturalHeight);
+  const w = P.hero.naturalWidth * k, h = P.hero.naturalHeight * k, x0 = (W - w) / 2, y0 = H - h;
+  const off = document.createElement("canvas"); off.width = W; off.height = H;
+  const c = off.getContext("2d"); c.drawImage(P.hero, x0, y0, w, h);
+  const A = c.getImageData(0, 0, W, H).data;
+  const cells = cell => { const pts = [];
+    for (let y = cell / 2; y < H; y += cell) for (let x = cell / 2; x < W; x += cell)
+      if (A[(Math.floor(y) * W + Math.floor(x)) * 4 + 3] > 120) pts.push([x, y]);
+    return pts; };
+  // Бинарный поиск размера клетки под нужное число Танго
+  let lo = 1, hi = 60, pts = [];
+  for (let it = 0; it < 30; it++) { const mid = (lo + hi) / 2; pts = cells(mid); if (pts.length > target) lo = mid; else hi = mid; }
+  pts = cells(lo); P.cell = lo;
+  pts.sort((a, b) => (b[1] - a[1]) || (a[0] - b[0]));     // снизу вверх
+  P.pts = pts.slice(0, target);
+  let sx = 0, sy = 0; P.pts.forEach(([x, y]) => { sx += x; sy += y; });
+  P.lensAt = [sx / P.pts.length, sy / P.pts.length + 40];
+  P.lensPos = [Math.min(750, P.lensAt[0] + 230), Math.max(160, P.lensAt[1] - 170)];
+  P.silhouette = off;
+  P.ctx = P.cv.getContext("2d");
+}
+
+// Момент, когда диктор произносит слово-метку (cues в выпуске), иначе запасное время
+const cueAt = (v, key, def) => (v && v.at && v.at[key] != null ? v.at[key] : def);
+
+function drawExtra(g, lt) {
+  const P = g.parts, s = g.s, v = s.visual, C = (k, d) => cueAt(v, k, d);
+  if (s.layout === "timer") {
+    const tEnd = C("clock_done", 2.5), e = eOut((lt - 0.3) / Math.max(0.8, tEnd - 0.3)), sec = Math.round(v.timer * e);
+    // Меньше часа — минуты:секунды, иначе часы:минуты:секунды
+    P.clock.textContent = v.timer < 3600 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`
+      : `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+    P.clock.style.color = e >= 1 ? "var(--acc)" : "var(--ink)";
+    P.clock.style.transform = `scale(${1 + (e >= 1 ? 0.06 * Math.max(0, 1 - (lt - tEnd) / 0.3) : 0)})`;
+    const tT = C("teams", 0.8);
+    P.teams.forEach((t, k) => { const q = eBack((lt - tT - k * 0.15) / 0.45); t.style.transform = `translateX(${(1 - q) * (k ? 200 : -200)}px)`; t.style.opacity = clamp(q * 2); });
+    P.vs.querySelectorAll("i").forEach(i => i.style.opacity = clamp((lt - tT - 0.3) / 0.3));
+    if (P.win) { const w = eBack((lt - C("win", 3.6)) / 0.4); P.win.style.opacity = clamp(w * 2); P.win.style.transform = `rotate(6deg) scale(${w})`; }   // «победа» — после таймера
+    const tI = C("icons", 2.6), stI = Math.max(0.05, (C("icons_end", tI + 0.18 * P.icons.length) - tI) / P.icons.length);
+    P.icons.forEach((im, m) => { const q = eBack((lt - tI - m * stI) / 0.3); im.style.transform = `scale(${q}) rotate(${(1 - q) * 30}deg)`; im.style.opacity = clamp(q * 2); });
+    if (P.zzz) {
+      // Буквы всплывают над карточкой уснувшей команды и покачиваются
+      const r = P.teams[P.zzzTeam].getBoundingClientRect(), tZ = C("zzz", 1.5);
+      P.zzz.forEach((z, k) => {
+        const q = eBack((lt - tZ - k * 0.25) / 0.4), sway = Math.sin(lt * 2.4 + k) * 10;
+        z.style.left = (r.left + 268 + k * 34 + sway * 0.4) + "px"; z.style.top = (r.top + 60 - k * 48) + "px";   // над логотипом, справа
+        z.style.opacity = clamp(q * 2); z.style.transform = `scale(${0.6 + 0.4 * q + k * 0.15}) rotate(${-10 + k * 8}deg)`;
+      });
+    }
+    const q = eOut((lt - C("label", 2.8)) / 0.4); P.lab.style.opacity = q;
+    if (P.pill.dataset.static) {        // логотип турнира у заголовка: появляется сразу
+      const p3 = eBack((lt - 0.5) / 0.4); P.pill.style.opacity = clamp(p3 * 2); P.pill.style.transform = `scale(${0.7 + 0.3 * p3}) rotate(${(1 - p3) * -8}deg)`;
+    } else {
+      const p2 = eBack((lt - C("pill", 3.2)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    }
+  }
+  if (s.layout === "xray") {
+    P.belt.style.backgroundPosition = `${-lt * 160}px 0`;              // лента едет
+    P.trays.forEach((t, k) => {
+      const t0 = C("i" + k, 0.6 + k * 1.2), e = eOut((lt - t0 + 0.1) / 0.5);
+      t.style.opacity = clamp(e * 1.5); t.style.transform = `translateY(${(1 - e) * -120}px)`;   // поднос съезжает сверху, не вылезая за края
+      // Штамп решения падает чуть позже и пружинит
+      const vd = t.querySelector(".verd"), q = clamp((lt - t0 - 0.55) / 0.25);
+      vd.style.opacity = q > 0 ? 1 : 0; vd.style.transform = `rotate(${8 - 2 * q}deg) scale(${2 - eOut(q)})`;
+    });
+  }
+  if (s.layout === "house") {
+    const kr = eBack((lt - 0.1) / 0.5);
+    // Дом трясётся целиком, пока говорят про Эрдшейкера (до появления следующего жильца)
+    const tS = C("f" + v.shake, 99) + 0.3, tE = C("f" + (v.shake + 1), 99);
+    const sh = lt > tS && lt < tE ? 1 : 0;
+    P.hw.style.opacity = clamp(kr * 2);
+    P.hw.style.transform = `translateY(${(1 - kr) * 60}px) rotate(${sh * Math.sin(lt * 40) * 0.8}deg) translateX(${sh * Math.sin(lt * 53) * 6}px)`;
+    P.wins.forEach((w, k) => {
+      const t0 = C("f" + k, 0.6 + k * 1.5), e = eBack((lt - t0 + 0.05) / 0.45);
+      w.querySelector("img").style.transform = `translateX(-50%) translateY(${(1 - e) * 180}px)`;     // жилец выглядывает в окно
+      const b = P.bubs[k], q = eBack((lt - t0 - 0.1) / 0.4);
+      b.style.opacity = clamp(q * 2); b.style.transform = `scale(${0.7 + 0.3 * q})`; b.style.transformOrigin = "0 30%";
+    });
+    const tM = C("f" + (P.wins.length - 1), 9);
+    P.mines.forEach((m, k) => { const q = eBack((lt - tM - 0.4 - k * 0.2) / 0.4); m.style.opacity = clamp(q * 2); m.style.transform = `scale(${q}) rotate(${(k ? 10 : -8)}deg)`; });
+
+  }
+  if (s.layout === "dayclock") {
+    const kd = eBack((lt - 0.2) / 0.5); P.dial.style.transform = `scale(${0.7 + 0.3 * kd})`; P.dial.style.opacity = clamp(kd * 2);
+    P.hand.style.transform = `rotate(${180 + lt * 72}deg)`;            // стрелка бежит: оборот за 5 с
+    const kl = eBack((lt - C("label", 2)) / 0.4); P.dlab.style.opacity = clamp(kl * 2); P.dlab.style.transform = `scale(${0.8 + 0.2 * kl})`;
+    const tT = C("days", 4);
+    P.tiles.forEach((t, m) => {
+      const q = eBack((lt - tT - m * 0.18) / 0.4), pre = clamp((lt - 0.8 - m * 0.1) / 0.4);   // сначала бледные заготовки, на метке — яркие
+      t.style.opacity = Math.max(0.28 * pre, clamp(q * 2)); t.style.transform = `scale(${0.92 + 0.08 * q}) rotate(${(m % 2 ? 3 : -3) * (1 - q)}deg)`;
+    });
+  }
+  if (s.layout === "trap") {
+    const kp = eBack((lt - 0.2) / 0.5);
+    P.panel.style.transform = `scale(${0.9 + 0.1 * kp})`; P.panel.style.opacity = clamp(kp * 2);
+    // Полоски данных проявляются, когда диктор говорит про спрятанные данные
+    const tP = Math.min(C("panel", 0.4), 0.4);          // панель сразу заполнена данными — без пустого окна
+    P.panel.querySelectorAll(".bar").forEach((b, m) => { const q = eOut((lt - tP - m * 0.12) / 0.4); b.style.transform = `scaleX(${q})`; b.style.transformOrigin = "0 50%"; });
+    const tR = C("read", 3);
+    P.scan.style.top = (((lt - tR) * 260) % 420 - 90) + "px"; P.scan.style.opacity = lt > tR ? 1 : 0;
+    const kr = eBack((lt - tR) / 0.4); P.reader.style.opacity = clamp(kr * 2); P.reader.style.transform = `scale(${0.7 + 0.3 * kr})`;
+    const kl = eBack((lt - 0.5) / 0.5); P.plate.style.opacity = clamp(kl * 2); P.plate.style.transform = `rotate(${(1 - kl) * -10 - 3}deg)`;
+    countUp(P.big, v.number, lt, C("number", 0.9));
+    const kt = eOut((lt - C("number", 0.9) - 0.3) / 0.4); P.lab.style.opacity = kt;
+    // Штамп БАН падает сверху с отдачей
+    const ks = clamp((lt - C("stamp", 4)) / 0.28);
+    P.stamp.style.opacity = ks > 0 ? 1 : 0;
+    P.stamp.style.transform = `rotate(-12deg) scale(${2.2 - 1.2 * eOut(ks) + 0.06 * Math.sin(clamp((lt - C("stamp", 4) - 0.28) / 0.3) * Math.PI)})`;
+  }
+  if (s.layout === "range") {
+    const kh = eBack((lt - 0.2) / 0.55);
+    P.hero.style.transform = `translateX(${(1 - kh) * -260}px)`; P.hero.style.opacity = clamp(kh * 2);
+    const tR = C("ruler", 1.2), kr = eOut((lt - tR + 0.4) / 0.8);
+    P.fillR.style.width = (kr * (P.X(v.max) - 100)) + "px";
+    P.tick.style.opacity = clamp((lt - tR) / 0.3); P.tmax.style.opacity = clamp((lt - tR) / 0.3);
+    // Клик за пределом дальности — пульсирующий прицел
+    const tC = C("click", 2.5), kc = eBack((lt - tC) / 0.4);
+    P.cursor.style.opacity = clamp(kc * 2); P.cursor.style.transform = `scale(${kc * (1 + 0.08 * Math.sin(lt * 9))})`;
+    // Блинк приземляется на 960, штрафной отрезок краснеет
+    const tL = C("land", 3.8), kL = eBack((lt - tL) / 0.45);
+    P.licon.style.opacity = clamp(kL * 2); P.licon.style.transform = `translateY(${(1 - kL) * -160}px) rotate(${(1 - kL) * 30 - 4}deg)`;
+    P.tland.style.opacity = clamp((lt - tL - 0.2) / 0.3);
+    const kg = eOut((lt - tL - 0.3) / 0.5); P.gap.style.transform = `scaleX(${kg})`; P.gap.style.transformOrigin = "100% 50%";
+    const kp = eBack((lt - C("player", 6)) / 0.5); P.pcard.style.opacity = clamp(kp * 2); P.pcard.style.transform = `translateY(${(1 - kp) * 120}px)`;
+  }
+  if (s.layout === "notes") {
+    const kv = eBack((lt - 0.3) / 0.5); P.ver.style.opacity = clamp(kv * 2); P.ver.style.transform = `rotate(-3deg) scale(${0.6 + 0.4 * kv})`;
+    const kp = eOut((lt - 0.5) / 0.5); P.paper.style.opacity = kp; P.paper.style.transform = `translateY(${(1 - kp) * 80}px)`;
+    const tE = Math.min(C("emoji", 0.9), 0.9);          // лист сразу со смайликами — без пустой бумаги
+    P.rows.forEach((r, m) => { const q = eBack((lt - tE - m * 0.3) / 0.35); r.style.opacity = clamp(q * 2); r.style.transform = `translateX(${(1 - q) * -60}px)`; });
+    P.paper.querySelector("small").style.opacity = clamp((lt - tE - 1) / 0.4);
+    const kd = eBack((lt - C("decode", 5)) / 0.5); P.decode.style.opacity = clamp(kd * 2); P.decode.style.transform = `translateY(${(1 - kd) * 60}px)`;
+  }
+  if (s.layout === "gauge") {
+    const kh = eBack((lt - 0.3) / 0.6);
+    P.hero.style.transform = `translateX(${(1 - kh) * 300}px)`; P.hero.style.opacity = clamp(kh * 2);
+    const tN = C("number", 0.8), e = eOut((lt - tN) / 1.0);
+    P.fill.style.height = (parseFloat(v.number) * e) + "%";
+    countUp(P.gnum, v.number, lt, tN);
+    const q = eOut((lt - C("label", tN + 0.7)) / 0.4); P.lab.style.opacity = q;
+    const tC = C("chips", v.chips_at || 4);
+    P.chips.forEach((c, m) => { const k = eBack((lt - tC - m * 0.35) / 0.4); c.style.transform = `translateX(${(1 - k) * 120}px)`; c.style.opacity = clamp(k * 2); });
+  }
+  if (s.layout === "chronicle") {
+    if (P.anim) { const e = eBack((lt - 0.1) / 0.5); P.anim.cv.style.opacity = clamp(e * 2); P.anim.cv.style.transform = `translateY(${(1 - e) * 60}px)`; drawAnim(P.anim, lt); }
+    const n = P.items.length, at = P.items.map((_, k) => C("e" + k, 0.6 + k * 1.6));
+    let ci = -1; at.forEach((t0, k) => { if (lt >= t0 - 0.15) ci = k; });
+    const p = ci >= 0 ? eInOut((lt - at[ci] + 0.15) / 0.45) : 1;          // ход смены активной карточки
+    // Высоты: активная — крупная карточка, остальные — полоски; плавно между прошлой и новой активной
+    const SH = 92, GAP = 20, TOP = 640;
+    const hAt = (k, a) => k === a ? P.items[k].H : SH;
+    let y = TOP;
+    P.items.forEach((it, k) => {
+      const h = ci >= 0 ? hAt(k, ci - 1) * (1 - p) + hAt(k, ci) * p : SH;
+      const big = k === ci ? p : k === ci - 1 ? 1 - p : 0;              // насколько элемент сейчас «карточка»
+      const appear = eOut((lt - 0.25 - k * 0.08) / 0.4);
+      it.sc.style.top = y + "px"; it.mc.style.top = y + "px";
+      it.sc.style.opacity = (1 - big) * appear * (k < ci ? 0.6 : k > ci ? 0.35 : 1);
+      const tag = it.sc.querySelector("em"); if (tag) tag.style.opacity = k <= ci ? 1 : 0;      // «удалён» — только после того, как об этом сказали
+      it.mc.style.opacity = big;
+      it.mc.style.transform = `scale(${0.96 + 0.04 * big})`; it.mc.style.transformOrigin = "50% 0";
+      it.mc.style.display = big > 0.01 ? "" : "none";     // не visibility: явное «visible» у потомка пробивало скрытие сегмента
+      // Штамп «удалён» падает через полсекунды
+      const st = it.mc.querySelector(".rstamp");
+      if (st) { const q = clamp((lt - at[k] - 0.5) / 0.25); st.style.opacity = k === ci && q > 0 ? 1 : 0; st.style.transform = `rotate(-9deg) scale(${2 - eOut(q)})`; }
+      y += h + GAP;
+    });
+    // Шапка: текущий патч крупно
+    const cur = ci >= 0 ? P.items[ci].e.ver : P.items[0].e.ver, last = P.items[n - 1].e.ver;
+    P.hc.querySelector("b").textContent = cur;
+    P.hc.querySelector("i").textContent = cur !== last ? "→ " + last : "";
+    const kh = eBack((lt - 0.05) / 0.45); P.hc.style.opacity = clamp(kh * 2); P.hc.style.transform = `translateY(${(1 - kh) * -30}px)`;
+    // Канат: пройденные, текущий, будущие; табличка «сейчас» переезжает
+    const rv = v.route || [], ri = rv.indexOf(cur), prevV = ci > 0 ? P.items[ci - 1].e.ver : cur, rp = rv.indexOf(prevV);
+    const x = P.rx[rp] + (P.rx[ri] - P.rx[rp]) * p;
+    P.piers.forEach((pr, k) => { pr.className = "pier " + (k < ri ? "past" : k === ri ? "past" : "fut"); pr.style.opacity = k === ri ? 0 : ""; });
+    P.nowm.style.left = x + "px"; P.nowm.querySelector(".pl2").textContent = cur;
+  }
+  if (s.layout === "mosaic" && P.pts) {
+    const tF = C("fill", 0.9), tFe = C("fill_end", s.dur - 3.6);
+    const n = P.pts.length, e = eInOut((lt - tF) / Math.max(1.5, tFe - tF)), shown = Math.round(n * e);
+    const ctx = P.ctx, c = P.cell;
+    ctx.clearRect(0, 0, P.cv.width, P.cv.height);
+    ctx.globalAlpha = 0.35; ctx.drawImage(P.silhouette, 0, 0); ctx.globalAlpha = 1;   // контур, который заполняется
+    for (let m = 0; m < shown; m++) { const [x, y] = P.pts[m]; ctx.drawImage(P.icon, x - c * 0.6, y - c * 0.45, c * 1.2, c * 0.9); }
+    // Сквозь Танго проступает сам Пудж — чтобы силуэт читался как герой, а не пятно
+    ctx.globalCompositeOperation = "source-atop"; ctx.globalAlpha = 0.45;
+    ctx.drawImage(P.silhouette, 0, 0);
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+    // Лупа над животом Пуджа: увеличение ×7, иконки перерисовываются крупно (не растягиваются)
+    const la = eBack((e - 0.6) / 0.12);          // лупа — когда Танго уже дошли до живота, иначе пустой круг
+    if (la > 0) {
+      const Z = 7, cx = P.lensAt[0], cy = P.lensAt[1], half = 150 / Z;
+      const lc = P.lens.getContext("2d");
+      lc.clearRect(0, 0, 300, 300); lc.save(); lc.beginPath(); lc.arc(150, 150, 150, 0, Math.PI * 2); lc.clip();
+      lc.fillStyle = "#15171c"; lc.fillRect(0, 0, 300, 300);
+      for (let m = 0; m < shown; m++) {
+        const [x, y] = P.pts[m];
+        if (Math.abs(x - cx) > half + c || Math.abs(y - cy) > half + c) continue;
+        lc.drawImage(P.icon, (x - cx) * Z + 150 - c * 0.6 * Z, (y - cy) * Z + 150 - c * 0.45 * Z, c * 1.2 * Z, c * 0.9 * Z);
+      }
+      lc.restore();
+      P.lens.style.left = (30 + P.lensPos[0] - 150) + "px"; P.lens.style.top = (600 + P.lensPos[1] - 150) + "px";
+      P.lens.style.opacity = clamp(la * 2); P.lens.style.transform = `scale(${0.5 + 0.5 * la})`;
+    }
+    // Счётчик идёт ровно по числу выложенных Танго
+    P.big.style.opacity = clamp((lt - 0.6) / 0.3);
+    P.big.textContent = String(shown).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009") + " Танго";
+    const p2 = eBack((lt - C("pill", tFe + 0.4)) / 0.4); P.pill.style.opacity = clamp(p2 * 2); P.pill.style.transform = `translateX(-50%) scale(${0.8 + 0.2 * p2})`;
+    P.note.style.opacity = clamp((lt - C("note", tFe + 0.8)) / 0.4);
+  }
+}
+
+// Число набегает от нуля; запятая, % и слова после числа сохраняются
+function countUp(el, text, lt, t0) {
+  const m = text.match(/^(\d+)(?:,(\d+))?(.*)$/);
+  const e = eOut((lt - t0) / 1.0);
+  el.style.opacity = clamp((lt - t0) / 0.2);
+  el.style.transform = `translateY(${(1 - eBack((lt - t0) / 0.5)) * 40}px)`;
+  if (!m) { el.textContent = text; return; }
+  const dec = m[2] ? m[2].length : 0;
+  const fmt = x => { const [a, b] = x.split("."); return a.replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009") + (b ? "," + b : ""); };
+  el.textContent = fmt(e >= 1 ? m[1] + (dec ? "." + m[2] : "") :
+    (parseFloat(m[1] + (dec ? "." + m[2] : "")) * e).toFixed(dec)) + m[3];
+}
+
+// Субтитры: до 3 слов, новая группа на паузе; одно активное слово на жёлтой плашке
+function drawSubs(words, lt) {
+  const box = document.getElementById("subs");
+  if (D.subs_style === "none") { box.innerHTML = ""; return; }   // ролик без субтитров
+  if (!words || !words.length) { box.innerHTML = ""; return; }
+  const groups = []; let cur = [];
+  const maxW = D.subs_style === "slam" ? 1 : 3;              // «slam» — одно слово крупно
+  words.forEach(w => { if (cur.length && (cur.length >= maxW || w[1] - cur[cur.length - 1][2] > 0.2)) { groups.push(cur); cur = []; } cur.push(w); });
+  if (cur.length) groups.push(cur);
+  let g = null; groups.forEach(gr => { if (gr[0][1] - 0.05 <= lt) g = gr; });
+  if (!g || lt > g[g.length - 1][2] + 0.6) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div id="subsin">` + g.map((w, j) => {
+    const nxt = j + 1 < g.length ? g[j + 1][1] : w[2] + 0.3;
+    return `<span class="${w[1] <= lt && lt < nxt ? "on" : ""}">${w[0]}</span>`;
+  }).join("") + `</div>`;
+  const inner = document.getElementById("subsin");
+  const fit = Math.min(1, 720 / inner.offsetWidth);       // длинная строка ужимается в поля
+  box.style.transform = D.subs_style === "slam" ? `scale(${fit * (1.35 - 0.35 * eOut((lt - g[0][1] + 0.05) / 0.12))})` : `scale(${fit})`;
+}
+
+// Проверка раскладки: выход за безопасную зону и наложение текстов
+function audit() {
+  const bad = [];
+  const seg = SEGS.find(g => g.el.style.visibility === "visible");
+  if (!seg) return bad;
+  const R = e => e.getBoundingClientRect();
+  // Keep the settled-opacity policy, but include opacity/display of every ancestor.
+  // visibility is inherited and can be overridden by a child, so inspect its computed value.
+  const vis = e => {
+    if (!e.isConnected || !e.getClientRects().length || getComputedStyle(e).visibility !== "visible") return false;
+    let opacity = 1;
+    for (let node = e; node; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.display === "none" || (node !== e && style.contentVisibility === "hidden")) return false;
+      opacity *= Number(style.opacity);
+      if (opacity <= .95) return false;
+    }
+    return true;
+  };
+  const items = [...seg.el.querySelectorAll(".head .ln, .big, .lab, .pill, .card, .stk, .tile, .clock, .tcard, .chip2, .note, .panel, .plate, .pcard, .ver, .paper, .decode, .tlab, .tray, .bub, .dial, .daytile, .daylab, .hrow, .fw, .fsub, .fbtn, .fnick, .hbadge, .pchip, .slot, .sline, .tree, .agh, .sea, .pl, .flag b, .fnick2, .bigw, .nick3, .hc, .sc, .mc, .pier, .nowm, .sx .ln > span, .chip, .stamp2, .num, .card2, .pic, .vidbox, .lotbox, .modelbox, .animbox, img.hero"), ...document.querySelectorAll("#subs span")];
+  // A stage canvas may deliberately fill the frame; its 3D actors need a geometry audit.
+  const stages = new Set((seg.sc?.stages || []).map(s => s.box));
+  items.filter(vis).forEach(e => {
+    const r = R(e);
+    if (!stages.has(e) && r.width && r.height && (r.left < 60 - .01 || r.right > 940 + .01 || r.top < 150 - .01 || r.bottom > 1560 + .01))
+      bad.push(`за зоной: «${e.textContent.trim().slice(0, 20) || e.className}» [${r.left | 0},${r.top | 0},${r.right | 0},${r.bottom | 0}]`);
+  });
+  const texts = [...seg.el.querySelectorAll(".head .ln > span, .big, .lab, .pill, .clock, .vs, .chip2, .note, .evlogo, .pcard, .decode, .tlab, .ver, .daylab, .hrow, .bub, .hbadge, .pchip, .sline, .slot, .agh, .pl .tx, .cnt, .hc, .sc, .mc, .sx .ln > span, .chip, .num")].filter(vis);   // текст сцены — по строкам, а не по рамке
+  // Субтитры: прямоугольник по видимым словам
+  const sw = [...document.querySelectorAll("#subs span")].filter(e => e.textContent.trim() && vis(e));
+  if (sw.length) { const rs = sw.map(R); texts.push({ textContent: "субтитры", getBoundingClientRect: () => ({
+    left: Math.min(...rs.map(r => r.left)), right: Math.max(...rs.map(r => r.right)), top: Math.min(...rs.map(r => r.top)), bottom: Math.max(...rs.map(r => r.bottom)) }) }); }
+  for (let a = 0; a < texts.length; a++) for (let b = a + 1; b < texts.length; b++) {
+    const A = R(texts[a]), B = R(texts[b]);
+    if (A.left < B.right && B.left < A.right && A.top < B.bottom - 4 && B.top < A.bottom - 4)
+      bad.push(`наложение: «${texts[a].textContent.trim().slice(0, 16)}» и «${texts[b].textContent.trim().slice(0, 16)}»`);
+  }
+  // Надписи не должны лежать поверх героев
+  seg.el.querySelectorAll("img.hero").forEach(im => {
+    if (!vis(im)) return;
+    const r = R(im);
+    texts.forEach(t => { const A = t.getBoundingClientRect();
+      if (A.left < r.right - 10 && r.left + 10 < A.right && A.top < r.bottom - 10 && r.top + 10 < A.bottom)
+        bad.push(`надпись на герое: «${t.textContent.trim().slice(0, 16)}»`); });
+  });
+  // Надписи не должны лежать поверх клипов и мемов (картинка клипа — главное в момент врезки)
+  seg.el.querySelectorAll(".vidbox").forEach(v => {
+    if (!vis(v)) return;
+    const r = R(v);
+    texts.forEach(t => { const A = t.getBoundingClientRect();
+      if (A.left < r.right - 10 && r.left + 10 < A.right && A.top < r.bottom - 10 && r.top + 10 < A.bottom)
+        bad.push(`надпись на клипе: «${t.textContent.trim().slice(0, 16)}»`); });
+  });
+  // Герои не должны залезать на заголовок
+  const head = seg.el.querySelector(".head");
+  if (head) {
+    const H = R(head);
+    seg.el.querySelectorAll("img.hero").forEach(im => {
+      if (!vis(im)) return;
+      const r = R(im);
+      if (r.top < H.bottom - 6 && r.left < H.right && H.left < r.right) bad.push(`герой залезает на заголовок: верх ${r.top | 0}, заголовок до ${H.bottom | 0}`);
+    });
+  }
+  return bad;
+}
+</script>
+</body>
+</html>

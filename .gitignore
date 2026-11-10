@@ -1,0 +1,24 @@
+cache/
+out/
+_fv_work/
+__pycache__/
+*.mp4
+qa/
+_game/
+node_modules/
+.venv/
+.codex-remote-attachments/
+
+# Файлы игровых звуков — только локально
+assets/snd/
+
+# Локальные результаты и кэш инструментов
+.ruff_cache/
+*.pyc
+*.blend1
+
+# Секреты и локальные журналы не публиковать
+.env
+.env.*
+!.env.example
+*.log

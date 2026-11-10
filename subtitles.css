@@ -1,0 +1,29 @@
+/* Shared caption layout on the 1080 × 1920 reference canvas. */
+#subs {
+  position: absolute;
+  left: 60px;
+  top: 1468px;
+  width: 880px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  font: 800 56px/1.2 Manrope;
+  color: #fff;
+  transform-origin: 50% 50%;
+}
+#subsin { display: inline-block; }
+#subs span {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 2px 12px;
+  border: 4px solid transparent;
+  border-radius: 12px;
+  text-shadow: 0 2px 5px #11141a, 0 0 2px #11141a;
+}
+#subs span.on {
+  color: #15171c;
+  background: #ffd23f;
+  border-color: #15171c;
+  text-shadow: none;
+}

@@ -1,0 +1,5 @@
+# Bash entry points must run after a fresh checkout on Windows as well.
+*.sh text eol=lf
+
+# Keep the supplied specification byte-for-byte on Windows too.
+docs/MASTER_SPECIFICATION.md text eol=lf

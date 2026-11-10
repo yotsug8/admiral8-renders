@@ -1,0 +1,46 @@
+{
+  "_prompt": "Покажи, как один и тот же путь можно пройти равномерно или с плавным разгоном и торможением.",
+  "sapi_voice": "Pavel",
+  "show_header": false,
+  "pad": 0,
+  "parts": [
+    {
+      "voice": "Один путь, разный темп. Верхний маркер движется ровно. Нижний разгоняется и тормозит. Оба финишируют одновременно.",
+      "scene": {
+        "camera": false,
+        "bg": {"grad": ["#0c222d", "#101a2b", "#101929", "#0a1121"]},
+        "cues": {"start": "верхний"},
+        "items": [
+          {
+            "type": "text", "id": "title", "text": "ОДИН ПУТЬ|ДВА ТЕМПА",
+            "x": 105, "y": 265, "w": 775, "size": 83, "color": "#f7f1dd"
+          },
+          {
+            "type": "panel", "id": "upper", "x": 95, "y": 595, "w": 820, "h": 245,
+            "radius": 29, "bg": "#19354a",
+            "items": [
+              {"type": "text", "text": "Равномерно", "x": 53, "y": 26, "w": 675, "font": "body", "size": 46, "color": "#d9f2ff"},
+              {"type": "panel", "x": 90, "y": 164, "w": 635, "h": 6, "radius": 3, "bg": "#6e9bb6"},
+              {"type": "panel", "x": 721, "y": 137, "w": 8, "h": 61, "radius": 4, "bg": "#7daac3"},
+              {"type": "panel", "id": "linear", "x": 58, "y": 135, "w": 64, "h": 64, "radius": 32, "bg": "#7cdcff"}
+            ]
+          },
+          {
+            "type": "panel", "id": "lower", "x": 95, "y": 900, "w": 820, "h": 245,
+            "radius": 29, "bg": "#332b3c",
+            "items": [
+              {"type": "text", "text": "Разгон и торможение", "x": 53, "y": 26, "w": 675, "font": "body", "size": 46, "color": "#ffebcc"},
+              {"type": "panel", "x": 90, "y": 164, "w": 635, "h": 6, "radius": 3, "bg": "#ac827d"},
+              {"type": "panel", "x": 721, "y": 137, "w": 8, "h": 61, "radius": 4, "bg": "#c08d83"},
+              {"type": "panel", "id": "eased", "x": 58, "y": 135, "w": 64, "h": 64, "radius": 32, "bg": "#ffc987"}
+            ]
+          }
+        ],
+        "fx": [
+          {"target": "linear", "fx": "move", "at": "start", "x": 635, "dur": 5.24, "ease": "none"},
+          {"target": "eased", "fx": "move", "at": "start", "x": 635, "dur": 5.24, "ease": "sine.inOut"}
+        ]
+      }
+    }
+  ]
+}

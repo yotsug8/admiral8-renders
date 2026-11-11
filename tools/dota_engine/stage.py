@@ -284,7 +284,7 @@ class Stage:
         n = int(round(self.dur * fps))
         P = {k: self.pts(k) for k in self.actors}
         d = {"fps": fps, "frames": n, "dur": self.dur, "actors": {}, "camera": [], "fx": [], "focus": list(focus)}
-        if map:                                            # кусок настоящей карты (tools/map_crop.mjs), путь от _game
+        if map:                                            # подготовленный GLB настоящей карты, путь от _game
             d["map"] = map
         d.update(extra)                                    # для Blender: shots — планы, voices — реплики, faces — эмоции (render_scene.py)
         for k, a in self.actors.items():

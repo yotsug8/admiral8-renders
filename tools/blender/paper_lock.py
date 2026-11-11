@@ -11,7 +11,6 @@ import wave
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
-from mathutils import Vector
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

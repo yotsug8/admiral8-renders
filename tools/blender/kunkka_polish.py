@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Vector, Matrix, Quaternion, Euler
+from mathutils import Vector, Matrix, Euler
 from mathutils.bvhtree import BVHTree
 
 

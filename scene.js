@@ -1,7 +1,7 @@
 // Универсальные сцены: сегмент описывается в JSON списком элементов и таймлайном эффектов.
 // Движение — на GSAP: у каждой сцены свой таймлайн на паузе, рендер перематывает его в нужное время кадра.
 // Справка по полям — SCENES.md.
-gsap.registerPlugin(SplitText, CustomEase);
+gsap.registerPlugin(SplitText);
 gsap.ticker.lagSmoothing(0);
 
 const SCN = (() => {
@@ -205,7 +205,7 @@ const SCN = (() => {
     return els.flatMap(e => { if (!e._split) e._split = new SplitText(e.querySelectorAll("em").length && e.dataset.split !== "all" ? e.querySelectorAll("em") : e, { type: "words,chars" }); return e._split.chars; });   // words — чтобы слово не рвалось при переносе
   }
 
-  // ---------- 3D-модели героев: GLB из файлов игры (tools/dota_export.py), части привязываются к скелету героя ----------
+  // ---------- 3D-модели героев: GLB из файлов игры (экспорт через Source2Viewer), части привязываются к скелету героя ----------
   // Герой из набора GLB (база + части): части привязываются к скелету героя по именам костей
   function resource(label, start) {
     return new Promise((resolve, reject) => {
@@ -313,7 +313,7 @@ const SCN = (() => {
     const lvl = (it.water && it.water.level) ?? 0;
     let map = null;
     if (it.map) {
-      // Кусок настоящей карты (tools/map_crop.mjs): рельеф, деревья, камни, вода — с материалами как в игре
+      // Кусок настоящей карты (локальная подготовка GLB): рельеф, деревья, камни, вода — с материалами как в игре
       const url = D.http + `_game/maps/${it.map}.glb`;
       const gm = await gltf(`Карта ${url}`, (loader, ok, fail) => loader.load(url, ok, undefined, fail));
       sc.add(gm.scene);

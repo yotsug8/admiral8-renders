@@ -7,7 +7,7 @@
 #
 # Сценарий (пример — skits/kryuk.txt):
 #   название: kryuk
-#   карта: radiant_field                         кусок карты _game/maps/<имя>.glb (tools/map_crop.mjs); без неё — плоско
+#   карта: radiant_field                         кусок карты _game/maps/<имя>.glb (локальная подготовка GLB); без неё — плоско
 #   герой pudge -4250 -3220                      актёр = герой в точке карты; «герой pudge2 pudge x y» — второй такой же
 #   герой sniper -3350 -3220 стойка sniper_idle_aggressive
 #   голос sniper sapi=Pavel fish=<id модели fish.audio> edge=ru-RU-DmitryNeural
@@ -742,7 +742,7 @@ def main():
         dota(sc, st, talk, info, folder, SH)
     if "--plan" in flags:
         return
-    if "--blend" in flags:                                # сцена в Blender для ручной правки (docs/ANIMATION.md, «Руками в Blender»)
+    if "--blend" in flags:                                # сцена в Blender для ручной правки (правила постановки — AGENTS.md)
         blend = os.path.join(folder, sc["name"] + ".blend")
         subprocess.run([BLENDER, "-b", "--factory-startup", "--python-exit-code", "1",
                         "-P", os.path.join(REPO, "tools", "blender", "render_scene.py"), "--",

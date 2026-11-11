@@ -32,7 +32,7 @@ PICK = None if len(args) < 3 or args[2] in ("all", "") else [int(x) for x in arg
 HALF = len(args) > 3 and args[3] == "half"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RND = os.path.join(REPO, "_game", "models", "render")
-RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (tools/blender/hq_textures.py; исходные текстуры — по умолчанию)
+RND = os.environ.get("A8_RND") or RND                  # A8_RND=…/render_hq — текстуры крупнее (проверить совместимость UV; исходные текстуры — по умолчанию)
 TROUPE = json.load(open(os.path.join(REPO, "_game", "data", "troupe.json"), encoding="utf-8"))
 D = json.load(open(SCENE, encoding="utf-8"))
 if D.get("jumps"):
@@ -53,7 +53,7 @@ sc = bpy.context.scene
 sc.render.fps = FPS                                   # до импорта: анимации glb лягут в кадры 30 в секунду
 
 
-MAP = D.get("map")                                    # кусок настоящей карты (tools/map_crop.mjs) — оси как у выгрузки карты
+MAP = D.get("map")                                    # кусок настоящей карты (локальная подготовка GLB) — оси как у выгрузки карты
 
 
 def W(x, y, z):

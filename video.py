@@ -795,17 +795,17 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
         for h in {a["hero"] for a in node["actors"]}:
             base = gd / h / f"{h}.glb"
             if not base.exists():
-                raise SystemExit(f"нет 3D-модели {base}: сначала tools/dota_export.py model …")
+                raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (docs/SETUP.md)")
             parts = sorted(p for p in (gd / h).glob("*.glb") if p != base and "ward" not in p.stem)
             heroes_glb[h] = [base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]]
         node = dict(node, heroes=heroes_glb)
     if node.get("type") == "model" and node.get("hero"):
-        # 3D-герой из файлов игры: _game/models/<герой>/ (tools/dota_export.py); части — список или "all"
+        # 3D-герой из файлов игры: _game/models/<герой>/ (экспорт через Source2Viewer); части — список или "all"
         import base64
         d = Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "models" / node["hero"]
         base = d / f"{node['hero']}.glb"
         if not base.exists():
-            raise SystemExit(f"нет 3D-модели {base}: сначала tools/dota_export.py model …")
+            raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (docs/SETUP.md)")
         parts = sorted(p for p in d.glob("*.glb") if p != base and "ward" not in p.stem) if node.get("parts", "all") == "all" \
             else [d / f"{p}.glb" for p in node["parts"]]
         node = dict(node, glb=[base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]])

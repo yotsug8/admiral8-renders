@@ -160,7 +160,7 @@ class MediaTimingTests(unittest.TestCase):
             if (parent) parent.appendChild(el); return el;
         }; }''')
         for script in ('vendor/gsap/gsap.min.js', 'vendor/gsap/SplitText.min.js',
-                       'vendor/gsap/CustomEase.min.js', 'scene.js'):
+                       'scene.js'):
             self.page.add_script_tag(path=str(ROOT / script))
 
     def item(self, **options):

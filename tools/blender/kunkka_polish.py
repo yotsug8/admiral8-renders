@@ -99,10 +99,77 @@ def settle_feet(scene, ground):
                 b.keyframe_insert('rotation_quaternion', frame=f)
                 b.keyframe_insert('location', frame=f)
             final = {name: rig.pose.bones[name].matrix_basis.copy() for name in names}
-        scene.frame_set(479)
-        for name, matrix in final.items():
-            b = rig.pose.bones[name]; b.matrix_basis = matrix
-            b.keyframe_insert('rotation_quaternion', frame=479); b.keyframe_insert('location', frame=479)
+        blend_settling(scene, rig, names, cache, final, start, end, ground)
+
+
+def blend_settling(scene, rig, names, cache, final, start, end, ground=None):
+    """Blend toward fixed contact poses; per-frame IK poles can flip near extension."""
+    root = rig.parent
+    assert root is not None and root.parent is None, 'Expected a world-space zombie carrier'
+    root_z = {}
+    for frame in range(start, end+1):
+        scene.frame_set(frame); root_z[frame] = root.location.z
+    if ground is not None:
+        for layer in root.animation_data.action.layers:
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for curve in bag.fcurves:
+                        if curve.data_path == 'location' and curve.array_index == 2:
+                            for index in range(len(curve.keyframe_points)-1,-1,-1):
+                                if start <= curve.keyframe_points[index].co.x <= end:
+                                    curve.keyframe_points.remove(curve.keyframe_points[index])
+    scene.frame_set(start-1)
+    previous = {name: rig.pose.bones[name].rotation_quaternion.copy() for name in names}
+    for f in range(start, end + 1):
+        scene.frame_set(f)
+        u = (f-start)/(end-start); u = u*u*(3-2*u)
+        for name in names:
+            loc, rotation, scale = cache[start][name].decompose()
+            target_loc, target_rotation, _ = final[name].decompose()
+            rotation = rotation.slerp(target_rotation, u)
+            if name in previous:
+                rotation.make_compatible(previous[name])
+            bone = rig.pose.bones[name]
+            bone.location = loc.lerp(target_loc, u)
+            bone.rotation_quaternion = rotation
+            previous[name] = rotation.copy()
+            # Commit before dependency-graph updates: otherwise animated values
+            # can be restored while evaluating the carrier's ground correction.
+            bone.keyframe_insert('location', frame=f)
+            bone.keyframe_insert('rotation_quaternion', frame=f)
+        bpy.context.view_layer.update()
+        if ground is not None:
+            root.location.z = root_z[f]
+            bpy.context.view_layer.update()
+            clearance = []
+            for name in ['ankle_L','ankle_R','wrist_L','wrist_R']:
+                point = (rig.matrix_world @ rig.pose.bones[name].matrix).translation
+                clearance.append(point.z-ground_height(ground,point))
+            root.location.z += max(0,.10-min(clearance))
+            root.keyframe_insert('location',index=2,frame=f)
+    if ground is not None:
+        for layer in root.animation_data.action.layers:
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for curve in bag.fcurves:
+                        if curve.data_path == 'location' and curve.array_index == 2:
+                            for point in curve.keyframe_points:
+                                if start <= point.co.x <= end:
+                                    point.interpolation = 'LINEAR'
+    scene.frame_set(479)
+    for name, matrix in final.items():
+        b = rig.pose.bones[name]; b.matrix_basis = matrix
+        b.rotation_quaternion.make_compatible(previous[name])
+        b.keyframe_insert('rotation_quaternion', frame=479)
+        b.keyframe_insert('location', frame=479)
+    for layer in rig.animation_data.action.layers:
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                for curve in bag.fcurves:
+                    if any(f'pose.bones["{name}"]' in curve.data_path for name in names):
+                        for point in curve.keyframe_points:
+                            if start <= point.co.x <= end:
+                                point.interpolation = 'LINEAR'
 
 
 def falling_helicopter(scene, ground, out):
@@ -335,6 +402,76 @@ def upgrade_zombies(path, out):
     (out/'zombie-upgrade.json').write_text(json.dumps(report, indent=2))
 
 
+def replace_blast_debris(path, ground, out):
+    if path is None:
+        return
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(path))
+    imported = set(bpy.data.objects)-before
+    sources = sorted((o for o in imported if o.type == 'MESH'), key=lambda o:o.name)
+    variants = []
+    for obj in sources:
+        mesh = obj.data.copy()
+        points = [obj.matrix_world @ v.co for v in mesh.vertices]
+        lo = Vector(tuple(min(p[j] for p in points) for j in range(3)))
+        hi = Vector(tuple(max(p[j] for p in points) for j in range(3)))
+        center = (lo+hi)*.5; extent = max(hi-lo)
+        for vertex, point in zip(mesh.vertices, points):
+            vertex.co = (point-center)/extent
+        mesh.materials.clear(); variants.append(mesh)
+    if not variants:
+        raise ValueError('No debris meshes in source')
+    mat = bpy.data.materials.new('V14 / fractured Dota stone'); mat.use_nodes = True
+    nt = mat.node_tree; bsdf = nt.nodes.get('Principled BSDF')
+    bsdf.inputs['Roughness'].default_value = .88
+    texture = nt.nodes.new('ShaderNodeTexImage')
+    texture.image = next(i for i in bpy.data.images if i.name.startswith('dirt_cracked_patchy_00_psd'))
+    texture.projection = 'BOX'; texture.projection_blend = .2
+    coord = nt.nodes.new('ShaderNodeTexCoord')
+    patch = nt.nodes.new('ShaderNodeVectorMath'); patch.operation = 'SCALE'; patch.inputs['Scale'].default_value = .25
+    nt.links.new(coord.outputs['Generated'], patch.inputs[0]); nt.links.new(patch.outputs[0], texture.inputs['Vector'])
+    tint = nt.nodes.new('ShaderNodeMixRGB'); tint.blend_type = 'MULTIPLY'
+    tint.inputs[0].default_value = 1; tint.inputs[2].default_value = (.80,.72,.56,1)
+    nt.links.new(texture.outputs['Color'], tint.inputs[1]); nt.links.new(tint.outputs[0], bsdf.inputs['Base Color'])
+    noise = nt.nodes.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 70
+    bump = nt.nodes.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = .18; bump.inputs['Distance'].default_value = .0005
+    nt.links.new(noise.outputs['Fac'], bump.inputs['Height']); nt.links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    rng = random.Random(1412); report = []
+    particles = sorted((o for o in before if o.name.startswith('Blast debris')), key=lambda o:o.name)
+    for index, obj in enumerate(particles):
+        obj.animation_data_clear(); obj.parent = None
+        obj.data = variants[index % len(variants)].copy(); obj.data.materials.append(mat)
+        size = rng.uniform(.06,.11) if index < 8 else rng.uniform(.022,.045)
+        obj.scale = (size*rng.uniform(.65,1), size*rng.uniform(.5,.85), size*rng.uniform(.3,.6))
+        obj.rotation_mode = 'XYZ'; angle = rng.uniform(0,math.tau)
+        velocity = Vector((math.cos(angle),math.sin(angle),0))*rng.uniform(1.7,4.5)
+        velocity.z = rng.uniform(1.1,3.3)
+        position = Vector((.7,7.3,.24)) + Vector((rng.uniform(-.2,.2),rng.uniform(-.2,.2),0))
+        rotation = Vector(tuple(rng.uniform(-math.pi,math.pi) for _ in range(3)))
+        spin = Vector(tuple(rng.uniform(-12,12) for _ in range(3)))
+        contact = None; asleep = False; dt = 1/120
+        for f in range(480):
+            if f > 268 and not asleep:
+                for _ in range(4):
+                    velocity.z -= 9.81*dt; position += velocity*dt; rotation += spin*dt
+                    matrix = Euler(rotation).to_matrix()
+                    bottom = min((matrix @ Vector(tuple(v.co[j]*obj.scale[j] for j in range(3)))).z for v in obj.data.vertices)
+                    floor = ground_height(ground, position)
+                    if position.z+bottom <= floor+.002:
+                        position.z = floor+.002-bottom
+                        if contact is None: contact = f
+                        velocity.z = abs(velocity.z)*.18
+                        velocity.x *= .48; velocity.y *= .48; spin *= .25
+                        if velocity.length < .12:
+                            velocity = Vector((0,0,0)); spin = Vector((0,0,0)); asleep = True
+            key(obj, f, location=position, rotation_euler=rotation, hide_render=f<268)
+        report.append({'object':obj.name,'vertices':len(obj.data.vertices),'size':size,'contact_frame':contact,'resting':asleep})
+    for obj in imported:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    texture.image.pack()
+    (out/'debris-upgrade.json').write_text(json.dumps({'source':str(path),'particles':report},indent=2))
+
+
 def build(args):
     bpy.ops.wm.open_mainfile(filepath=str(args.source))
     s = bpy.context.scene
@@ -343,6 +480,7 @@ def build(args):
     ground = terrain()
     settle_feet(s, ground)
     falling_helicopter(s, ground, args.out)
+    replace_blast_debris(args.debris_source, ground, args.out)
     # Broad frontal illumination was erasing the surface modelling.
     strengths = {'Faces': 210, 'Sky softbox': 650, 'Map moonlight': 1800,
                  'Far terrain fill': 9000, 'Distant map fill': 2200,
@@ -467,10 +605,16 @@ def render_sequence(args):
             return complete_png(frames/f'f{frame:04d}.png', manifest['size'])
         except (OSError, ValueError):
             return False
-    s.frame_start = next((f for f in range(480) if not complete(f)), 480)
-    s.frame_end = 479; s.frame_step = 1
     s.render.filepath = str(frames / 'f')
-    if s.frame_start < 480:
+    missing = [f for f in range(480) if not complete(f)]
+    ranges = []
+    for f in missing:
+        if ranges and f == ranges[-1][1]+1:
+            ranges[-1][1] = f
+        else:
+            ranges.append([f, f])
+    for start, end in ranges:
+        s.frame_start = start; s.frame_end = end; s.frame_step = 1
         bpy.ops.render.render(animation=True)
 
 
@@ -482,6 +626,7 @@ if __name__ == '__main__':
     parser.add_argument('--render', action='store_true')
     parser.add_argument('--hero-sources', type=Path)
     parser.add_argument('--zombie-source', type=Path)
+    parser.add_argument('--debris-source', type=Path)
     parser.add_argument('--probe-frames', default='0,25,50,100,179,268,275,285,419')
     parser.add_argument('--render-only', action='store_true')
     parser.add_argument('--samples', type=int, default=64)

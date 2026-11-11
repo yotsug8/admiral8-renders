@@ -1,0 +1,29 @@
+{
+  "purpose": "Pinned optional sources for agent-managed Dota extraction and local voice tools; not automatically installed. Validate license and compatibility before use.",
+  "sources": {
+    "SOURCE2VIEWER": [
+      "https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.1/cli-windows-x64.zip",
+      "67aaf8a67a85ca60fd09ff343e62103a4cdf3a2d177fc656231d7d734c5b3aa3"
+    ],
+    "VOICE_RUNTIME": [
+      "https://github.com/ggml-org/llama.cpp/releases/download/b11000/llama-b11000-bin-win-cpu-x64.zip",
+      "b6f6896d2e98c8af9ec89b2e05db05f469f295019a62446aa7472ce2b52abb29"
+    ],
+    "WRITER": [
+      "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/a06e946bb6b655725eafa393f4a9745d460374c9/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597"
+    ],
+    "VOICE_URL": "https://huggingface.co/ggml-org/Qwen3-TTS-12Hz-1.7B-Base-GGUF/resolve/ca27d74bc954b73dadab5b71ca265d87fc861a7c/",
+    "WHISPER_URL": "https://huggingface.co/Systran/faster-whisper-small/resolve/536b0662742c02347bc0e980a01041f333bce120/",
+    "WHISPER_FILES": {
+      "config.json": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828",
+      "model.bin": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+      "tokenizer.json": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab",
+      "vocabulary.txt": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913"
+    },
+    "VOICE_FILES": {
+      "Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf": "8d18c94acb2addd042f97da63c98be144eafa76d0d9495177eab65130cf85129",
+      "mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf": "6fd65188839bcd6ecc91b277ad471e22a0edfada4699a0fe82f1165c18cfcce2"
+    }
+  }
+}

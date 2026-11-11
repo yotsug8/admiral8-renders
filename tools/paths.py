@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+from resource_paths import RESOURCES
 
 REPO = str(Path(__file__).resolve().parents[1])
 
@@ -38,9 +39,9 @@ CONTENT = os.environ.get("DOTA_ADDON_CONTENT", os.path.join(DOTA_ROOT, "content"
 VPK = os.path.join(GAME, "pak01_dir.vpk")
 RC = os.path.join(DOTA_ROOT, "game", "bin", "win64", "resourcecompiler.exe")
 SCENE_TXT = os.path.join(ADDON, "scripts", "a8_scene.txt")             # сцена, которую читает мод
-_STUDIO_S2V = Path(REPO) / "out/studio/resources/source2viewer/Source2Viewer-CLI.exe"
+_LOCAL_S2V = RESOURCES / "source2viewer/Source2Viewer-CLI.exe"
 S2V = (os.environ.get("S2V") or os.environ.get("S2V_CLI") or shutil.which("Source2Viewer-CLI")
-       or (str(_STUDIO_S2V) if _STUDIO_S2V.is_file() else os.path.join(os.path.dirname(REPO), "s2v", "Source2Viewer-CLI.exe")))
+       or (str(_LOCAL_S2V) if _LOCAL_S2V.is_file() else os.path.join(os.path.dirname(REPO), "s2v", "Source2Viewer-CLI.exe")))
 BLENDER_INSTALLS = [library / 'steamapps/common/Blender/blender.exe' for library in LIBRARIES]
 BLENDER_INSTALLS += sorted((Path(os.environ.get('ProgramFiles', r'C:\Program Files')) /
                            'Blender Foundation').glob('Blender */blender.exe'), reverse=True)

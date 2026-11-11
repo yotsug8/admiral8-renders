@@ -16,12 +16,12 @@ import numpy as np
 
 from local_scene_planner import choices, infer, record
 from paths import BLENDER, S2V, VPK
+from resource_paths import RESOURCES
 from render_storage import file_lock
 from scene_revision import write_json
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RESOURCES = ROOT / "out/studio/resources"
 TAVERN = RESOURCES / "sets/tavern-crownfall.glb"
 CROWNFALL_STAGE = "models/events/crownfall/tussle_stage/minifight_tavern.vmdl_c"
 CAST = {

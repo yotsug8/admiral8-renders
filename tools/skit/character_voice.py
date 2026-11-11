@@ -8,10 +8,11 @@ import subprocess
 from tempfile import TemporaryDirectory
 
 from .game_vo import extract
+from resource_paths import RESOURCES
 
 
 ROOT = Path(__file__).resolve().parents[2]
-VOICE_ROOT = ROOT / "out/studio/resources/voice/character"
+VOICE_ROOT = RESOURCES / "voice/character"
 REFERENCES = {"pudge": "pud_rare_01.mp3", "invoker": "invo_rare_01.mp3"}
 MODEL = "Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf"
 PROJECTOR = "mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf"

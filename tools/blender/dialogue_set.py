@@ -1,12 +1,14 @@
 """A reusable interior for dialogue with packed set assets."""
 
 from pathlib import Path
+import os
 
 import bpy
 from mathutils import Vector
 
 
-TAVERN = Path(__file__).resolve().parents[2] / "out/studio/resources/sets/tavern-crownfall.glb"
+RESOURCES = Path(os.environ.get("A8_RESOURCES", Path(__file__).resolve().parents[2] / "cache/resources"))
+TAVERN = RESOURCES / "sets/tavern-crownfall.glb"
 
 
 def surface(name, color):

@@ -29,7 +29,7 @@ def check(mode):
         try:
             importlib.import_module(package)
         except ImportError as exc:
-            raise ValueError(f"Не загружается {package}. Установите зависимости по docs/SETUP.md: {exc}") from exc
+            raise ValueError(f"Не загружается {package}. Установите зависимости по PROJECT_GUIDE.md#setup: {exc}") from exc
     ffmpeg = importlib.import_module("imageio_ffmpeg").get_ffmpeg_exe()
     if mode == "2d":
         ffmpeg = shutil.which("ffmpeg") or ffmpeg

@@ -795,7 +795,7 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
         for h in {a["hero"] for a in node["actors"]}:
             base = gd / h / f"{h}.glb"
             if not base.exists():
-                raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (docs/SETUP.md)")
+                raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (PROJECT_GUIDE.md#setup)")
             parts = sorted(p for p in (gd / h).glob("*.glb") if p != base and "ward" not in p.stem)
             heroes_glb[h] = [base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]]
         node = dict(node, heroes=heroes_glb)
@@ -805,7 +805,7 @@ def resolve_scene(node, heroes, items, *, _stage_actor=False):
         d = Path(os.environ.get("FV_GAME_DIR", HERE / "_game")) / "models" / node["hero"]
         base = d / f"{node['hero']}.glb"
         if not base.exists():
-            raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (docs/SETUP.md)")
+            raise SystemExit(f"нет 3D-модели {base}: экспортируйте GLB через Source2Viewer (PROJECT_GUIDE.md#setup)")
         parts = sorted(p for p in d.glob("*.glb") if p != base and "ward" not in p.stem) if node.get("parts", "all") == "all" \
             else [d / f"{p}.glb" for p in node["parts"]]
         node = dict(node, glb=[base64.b64encode(f.read_bytes()).decode() for f in [base, *parts]])
@@ -847,7 +847,7 @@ def prepare(ep, heroes, items, work_dir=None):
         dur = len(pcm) / SR + pad + (0.6 if i == len(parts) - 1 else 0) + float(f.get("hold", 0))   # в конце чуть дольше пауза; hold — задержать кадр
         seg = dict(start=t, dur=dur, words=[[w, round(a, 3), round(b, 3)] for w, a, b in words], _pcm=pcm)
         if f.get("scene"):
-            # Универсальная сцена (SCENES.md): картинки по ссылкам, анимации героев, метки из озвучки
+            # Универсальная сцена (PROJECT_GUIDE.md#scenes): картинки по ссылкам, анимации героев, метки из озвучки
             sc = resolve_scene(f["scene"], heroes, items)
             if sc.get("cues"):
                 sc["at"] = {k: cue_time(seg["words"], c) for k, c in sc.pop("cues").items()}
@@ -1062,7 +1062,7 @@ def render_frames(segs, total, video_path, qa_path, theme="", opts=None, *, pict
         data = dict(watermark=WATERMARK, show_header=(opts or {}).get("show_header", True),
                     theme=theme,       # theme — вариант оформления выпуска
                     http=http_root, qa_dir=qa_dir,
-                    transition=(opts or {}).get("transition"), subs_style=(opts or {}).get("subs"),   # переход и стиль субтитров (SCENES.md)
+                    transition=(opts or {}).get("transition"), subs_style=(opts or {}).get("subs"),   # переход и стиль субтитров (PROJECT_GUIDE.md#scenes)
                     badge=os.environ.get("FV_BADGE", ""),   # плашка сверху (для прослушки голосов на видео)
                     segs=[{k: v for k, v in s.items() if not k.startswith("_")} for s in segs])
         frames, checks, coverage = _frame_plan(segs, total, bool(os.environ.get("FV_DRAFT")),
@@ -1186,7 +1186,7 @@ def mix_audio(segs, total, wav_path):
             for t0, name in zip(s.get("at") or [], s.get("sfx") or []):
                 if t0 is not None and name:
                     add(s["start"] + t0, sfx(name, 1.4), 0.25)
-    # Звуки сцен (SCENES.md, поле sounds): синтезированные, под событие на экране
+    # Звуки сцен (PROJECT_GUIDE.md#scenes, поле sounds): синтезированные, под событие на экране
     rng = np.random.default_rng(7)
     def tick():
         x = np.sin(2 * np.pi * 1800 * tt(0.05)) * np.exp(-tt(0.05) * 90)

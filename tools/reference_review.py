@@ -16,8 +16,10 @@ def sample_times(duration, count, explicit=None):
         raise ValueError('Video duration must be positive and finite')
     if not 2 <= count <= 24:
         raise ValueError('Sample count must be between 2 and 24')
+    # Include the closing beat without seeking into an audio-only container tail.
+    last = duration - min(.1, duration / 2)
     times = explicit if explicit is not None else [
-        duration * i / count for i in range(count)]
+        last * i / (count - 1) for i in range(count)]
     if not times or len(times) > 24 or any(
             not math.isfinite(t) or t < 0 or t >= duration for t in times):
         raise ValueError('Use 1-24 finite timestamps within the video duration')
@@ -34,7 +36,7 @@ def review(source, label, out, count=12, times=None):
     video = next((s for s in info['streams'] if s['codec_type'] == 'video'), None)
     if video is None:
         raise ValueError('No video stream')
-    duration = float(info['format']['duration'])
+    duration = float(video.get('duration') or info['format']['duration'])
     timestamps = sample_times(duration, count, times)
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)

@@ -7,7 +7,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 AREAS = {
     'render': ['tools/blender/run_render_job.py', 'tools/blender/export_render_job.py',
-               'tools/blender/assemble_shots.py', 'tools/render_storage.py'],
+               'tools/blender/assemble_shots.py', 'tools/render_storage.py', 'tools/media_color.py'],
     'scene': ['tools/scene_request_3d.py', 'tools/scene_revision.py',
               'tools/blender/scene_plan.py', 'tools/blender/contact_metrics.py'],
     'dota': ['tools/dota_engine/project.py', 'tools/dota_engine/hero_parts.py',

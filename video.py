@@ -27,6 +27,7 @@ from bisect import bisect_left
 from collections.abc import Mapping
 from functools import cached_property
 from tools.render_storage import atomic_copy, cached_file, file_lock
+from tools.media_color import SRGB_VIDEO_ARGS
 
 import numpy as np
 from PIL import Image
@@ -930,7 +931,7 @@ def _png_encoder(out_mp4, draft):
     """Close the pipe and reap the encoder on success, failure or interruption."""
     ff = subprocess.Popen([ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "image2pipe", "-c:v", "png",
                            "-framerate", str(FPS // 2 if draft else FPS), "-i", "-", "-c:v", "libx264", "-pix_fmt", "yuv420p",
-                           "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
+                           *SRGB_VIDEO_ARGS, "-crf", "16", "-preset", "veryfast", str(out_mp4)], stdin=subprocess.PIPE)
     try:
         yield ff.stdin
         ff.stdin.close()

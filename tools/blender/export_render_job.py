@@ -14,6 +14,7 @@ import wave
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from render_storage import file_lock
+from media_color import SRGB_VIDEO_ARGS
 from skit.grade import FF, video_timing
 
 AUDIO_RATE = 48_000
@@ -107,7 +108,8 @@ def export(scene, folder, start, stop, wav=None, *, variant=None):
             subprocess.run([FF, '-nostdin', '-v', 'error', '-xerror', '-framerate', str(fps),
                             '-start_number', str(start), '-start_number_range', '1', '-i', pattern,
                             '-frames:v', str(stop - start), '-an', '-c:v', 'libx264', '-crf', '18',
-                            '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(picture)], check=True)
+                            *SRGB_VIDEO_ARGS, '-pix_fmt', 'yuv420p',
+                            '-movflags', '+faststart', str(picture)], check=True)
             if wav is not None:
                 mux_wav(picture, wav, staged, round(duration * AUDIO_RATE), channels)
                 if digest(wav) != wav_hash:

@@ -22,7 +22,7 @@ class EntrypointTests(unittest.TestCase):
             'tools.skit.skit', 'tools.skit.grade', 'tools.dota_engine.troupe',
             'tools.dota_engine.ground_map', 'tools.dota_engine.stage',
             'tools.dota_engine.hero_parts', 'tools.blender.run_render_job',
-            'tools.blender.export_render_job',
+            'tools.blender.export_render_job', 'tools.blender_bridge', 'tools.skit.rhubarb',
         ]
         env = os.environ.copy()
         env.pop('PYTHONPATH', None)
@@ -35,7 +35,7 @@ class EntrypointTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_direct_cli_help_remains_available(self):
-        for name in ['quickstart', 'dialogue_request', 'blender/run_render_job', 'check']:
+        for name in ['quickstart', 'dialogue_request', 'blender/run_render_job', 'check', 'blender_bridge', 'skit/rhubarb']:
             with self.subTest(tool=name):
                 result = subprocess.run(
                     [sys.executable, '-B', str(ROOT / 'tools' / (name + '.py')), '--help'],

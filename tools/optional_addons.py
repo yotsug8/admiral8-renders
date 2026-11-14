@@ -27,7 +27,7 @@ def install(name):
     destination.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=destination.parent, prefix='.addon-') as temporary:
         stage = Path(temporary)
-        archive = stage / (name + '.zip')
+        archive = stage / spec.get('filename', name + '.zip')
         with urllib.request.urlopen(spec['url'], timeout=60) as source, archive.open('wb') as target:
             shutil.copyfileobj(source, target)
         if hashlib.sha256(archive.read_bytes()).hexdigest() != spec['sha256']:

@@ -168,6 +168,34 @@ def fix_prop(mat, v):
 
 
 
+def water_material(mat, v):
+    """Renderable Cycles water on the original map mesh; not Source 2 shader parity."""
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    surface = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    tint = v.get('VectorParams', {}).get('g_vLowEndSurfaceColor', (.18, .27, .24))
+    surface.inputs['Base Color'].default_value = (*[srgb2lin(c) for c in tint[:3]], 1)
+    surface.inputs['Roughness'].default_value = .12
+    surface.inputs['IOR'].default_value = 1.333
+    surface.inputs['Transmission Weight'].default_value = .45
+    nt.links.new(surface.outputs['BSDF'], out.inputs['Surface'])
+    geo = nt.nodes.new('ShaderNodeNewGeometry')
+    noise = nt.nodes.new('ShaderNodeTexNoise')
+    noise.noise_dimensions = '4D'
+    noise.inputs['Scale'].default_value = 3.0
+    noise.inputs['Detail'].default_value = 3.0
+    noise.inputs['W'].driver_add('default_value').driver.expression = 'frame / 90.0'
+    nt.links.new(geo.outputs['Position'], noise.inputs['Vector'])
+    bump = nt.nodes.new('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = .3
+    bump.inputs['Distance'].default_value = .045
+    nt.links.new(noise.outputs['Fac'], bump.inputs['Height'])
+    nt.links.new(bump.outputs['Normal'], surface.inputs['Normal'])
+    mat['_water'] = 1
+
+
 def hide_mat(mat):
     """Материал невидим (и без тени)."""
     mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
@@ -209,14 +237,14 @@ def load(glb, tex_dir, ground_z=None):
         elif re.search(r"tree_(magical|blossoms)", v.get("Name", "")):
             hide_mat(mat)                              # варианты листвы (события, сезоны): в выгрузке все сразу поверх обычной, в игре — нет
         elif sh == "water_dota.vfx":
-            mat["_water"] = 1
+            water_material(mat, v)
         elif v:
             fix_prop(mat, v)
     for o in objs:
         if o.type != "MESH":
             continue
         names = [ms.material.name for ms in o.material_slots if ms.material]
-        if any(bpy.data.materials[n].get("_water") for n in names) or any(n.startswith(("tools", "black")) for n in names):
+        if any(n.startswith(("tools", "black")) for n in names):
             o.hide_render = True; o.hide_viewport = True
         elif any(re.search(r"tree_(magical|blossoms)", n) for n in names):   # вариант дерева целиком: прозрачной была только
             o.hide_render = True; o.hide_viewport = True                     # листва, голый ствол торчал чёрным столбом

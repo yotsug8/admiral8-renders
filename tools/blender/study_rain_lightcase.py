@@ -123,7 +123,7 @@ def build(out, *, save=True, source=SOURCE, poses=POSES, wrist_clearance=None, p
     # cannot accidentally mix with the source rig's demonstration action.
     for ob in bpy.data.objects:
         if ob.animation_data and ob.animation_data.action:ob.animation_data.action=None
-    p=actor.p;rest=actor.rest
+    p=actor.p
     for name in actor.names:
         # Rain drives several control modes from this native custom property.
         # Writing rotation_mode alone is reverted at the next depsgraph update.

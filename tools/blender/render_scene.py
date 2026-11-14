@@ -81,8 +81,11 @@ for kv in filter(None, os.environ.get("A8_HERO", "").split(";")):
 
 
 def fix_hero_mats(objs):
-    """Материалы героев из выгрузки S2V: прозрачность и металличность там взяты из маски доты (detailmask) — кожа
-    просвечивала (дыра под шеей Пуджа) и блестела как металл. Непрозрачно, не металл, матовость кожи."""
+    """Preserve imported surface maps; apply only explicit, per-material corrections.
+
+    A bad skin mask must not flatten every metal, fabric and hair material.
+    scene.material_overrides maps exact material names to Principled scalar inputs.
+    """
     for o in objs:
         for ms in getattr(o, "material_slots", []):
             m = ms.material
@@ -91,7 +94,12 @@ def fix_hero_mats(objs):
             b = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
             if not b:
                 continue
-            for name, val in (("Alpha", 1.0), ("Metallic", 0.0), ("Roughness", 0.62), ("Emission Strength", 0.0)):
+            overrides = D.get("material_overrides", {}).get(m.name, {})
+            for name, val in overrides.items():
+                if name not in ("Alpha", "Metallic", "Roughness", "Emission Strength"):
+                    raise ValueError(f"Unsupported material correction: {m.name}: {name}")
+                if isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(val) or val < 0 or (name != "Emission Strength" and val > 1):
+                    raise ValueError(f"Invalid material correction: {m.name}: {name}={val!r}")
                 for l in list(b.inputs[name].links):
                     m.node_tree.links.remove(l)
                 b.inputs[name].default_value = val

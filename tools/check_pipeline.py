@@ -126,7 +126,7 @@ def sequence_edits(out, report):
 
 def verify_sequence(movies):
     import numpy as np
-    from blender.assemble_shots import FF, cut_mp4_timing, decode_pcm, picture_hashes, same_audio
+    from blender.assemble_shots import cut_mp4_timing, decode_pcm, picture_hashes, same_audio
     from blender.export_render_job import AUDIO_RATE
 
     probe = os.environ.get("FFPROBE") or shutil.which("ffprobe")

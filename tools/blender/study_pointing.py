@@ -56,7 +56,7 @@ def setup(sign,engine='cycles'):
     obj=lift.sphere('Target',.085,gold);obj.location=target(sign)
     post=lift.rod('Target post',.018,gold)
     lift.orient(post,Vector((sign*1.12,.55,.02)),target(sign))
-    finger=lift.rod('Index cue',.018,bpy.data.materials['Ivory mannequin'])
+    lift.rod('Index cue',.018,bpy.data.materials['Ivory mannequin'])
     # Mirror only the camera for the right gesture; keep every authored pose.
     sc.camera.location=(-sign*2.6,6.5,2.6)
     sc.camera.rotation_euler=(Vector((0,.2,.86))-sc.camera.location).to_track_quat('-Z','Y').to_euler()

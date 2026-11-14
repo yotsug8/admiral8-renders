@@ -18,7 +18,7 @@ AREAS = {
     '2d': ['video.py', 'video.html', 'scene.js', 'scene_resources.js', 'scene_lottie.js'],
     'setup': ['requirements.txt', 'tools/paths.py', 'tools/resource_paths.py', 'tools/quickstart.py',
               'tools/project_workspace.py', 'tools/optional_addons.py'],
-    'qa': ['tools/check.py', 'tools/check_pipeline.py', 'tools/reference_review.py'],
+    'qa': ['tools/check.py', 'tools/check_pipeline.py', 'tools/reference_review.py', 'tools/workspace_hygiene.py'],
 }
 
 

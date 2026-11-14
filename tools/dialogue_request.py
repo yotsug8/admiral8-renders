@@ -14,11 +14,15 @@ import wave
 
 import numpy as np
 
-from local_scene_planner import choices, infer, record
-from paths import BLENDER, S2V, VPK
-from resource_paths import RESOURCES
-from render_storage import file_lock
-from scene_revision import write_json
+# The CLI and package entry points share one canonical module namespace.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.local_scene_planner import choices, infer, record
+from tools.paths import BLENDER, S2V, VPK
+from tools.resource_paths import RESOURCES
+from tools.render_storage import file_lock
+from tools.scene_revision import write_json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -119,8 +123,8 @@ def plan_request(request, runtime, model, reference=None):
 
 
 def synthesize(out, lines, duration):
-    from skit.character_voice import align, generate, voice_reference
-    from skit.voices import _ff, _pcm
+    from tools.skit.character_voice import align, generate, voice_reference
+    from tools.skit.voices import _ff, _pcm
 
     references = {hero: voice_reference(hero) for hero in dict.fromkeys(line["who"] for line in lines)}
     paths = {line["name"]: out / (line["name"] + ".wav") for line in lines}
@@ -172,13 +176,11 @@ def prepare_tavern():
 
 
 def build_dialogue(out, plan, reference, *, prepare_only=False):
-    sys.path.insert(0, str(ROOT / "tools/blender"))
-    from run_render_job import FF, run_job
-    from skit import skit
-    from skit.hero_render import export
-    from hero_parts import hero_model
+    from tools.blender.run_render_job import FF, run_job
+    from tools.skit import skit
+    from tools.skit.hero_render import export
+    from tools.dota_engine.hero_parts import hero_model
 
-    sys.path.insert(0, str(ROOT))
     from video import loudnorm
 
     if not Path(VPK).is_file() or not shutil.which(S2V):

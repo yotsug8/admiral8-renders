@@ -4,40 +4,19 @@
 # Выпуски без нужных ресурсов пропускаются. Код 1 — ошибки, 2 — неполная проверка/блокировка.
 import argparse
 import glob, json, os, re, subprocess, sys
-from contextlib import contextmanager
+if __package__:
+    from .render_storage import file_lock
+else:
+    from render_storage import file_lock
 
 REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 BAD = re.compile(r"⚠|НЕ НАЙДЕНО|Traceback|Error|ПРОВЕРКА|ВНИМАНИЕ|JS-ошибка")
 
 
-@contextmanager
 def exclusive_check(path=None):
     """Protect shared QA/cache outputs; OS releases the lock on process exit."""
     path = path or os.path.join(REPO, 'qa', 'check.lock')
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    with open(path, 'a+b') as lock:
-        if os.name == 'nt':
-            import msvcrt
-            lock.seek(0, os.SEEK_END)
-            if lock.tell() == 0:
-                lock.write(b'0')
-                lock.flush()
-            lock.seek(0)
-            acquire = lambda: msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
-            release = lambda: msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
-        else:
-            import fcntl
-            acquire = lambda: fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            release = lambda: fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
-        try:
-            acquire()
-        except OSError as exc:
-            raise RuntimeError('Check lock unavailable: another check may be running; do not delete its lock file') from exc
-        try:
-            yield
-        finally:
-            lock.seek(0)
-            release()
+    return file_lock(path)
 
 
 def run(cmd, env):

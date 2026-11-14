@@ -17,8 +17,8 @@ import time
 def file_lock(path, timeout=0):
     """Hold an OS lock; fail fast by default, or poll until timeout seconds.
 
-    Like check.exclusive_check, use msvcrt's first byte on Windows and flock
-    elsewhere. Never unlink the lock file: the OS releases it on process exit.
+    Use msvcrt's first byte on Windows and flock elsewhere. Never unlink the
+    lock file: the OS releases it on process exit.
     Locks are not reentrant. Parent directories are created as needed.
     """
     if not math.isfinite(timeout) or timeout < 0:

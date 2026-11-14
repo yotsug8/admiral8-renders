@@ -10,11 +10,12 @@ import sys
 from tempfile import TemporaryDirectory
 import wave
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from export_render_job import AUDIO_RATE, digest, export, read_wav
-from paths import BLENDER
-from render_storage import file_lock
-from skit.grade import FF, video_timing
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.blender.export_render_job import AUDIO_RATE, digest, export, read_wav
+from tools.paths import BLENDER
+from tools.render_storage import file_lock
+from tools.skit.grade import FF, video_timing
 
 REQUIRED = {'schema_version', 'scene', 'out', 'frames', 'size', 'fps'}
 OPTIONAL = {'wav', 'camera'}
@@ -160,7 +161,7 @@ def join_project_audio(jobs, destination):
 
 
 def run_project(config):
-    from assemble_shots import assemble
+    from tools.blender.assemble_shots import assemble
 
     config = config.resolve(strict=True)
     data = json.loads(config.read_text(encoding='utf-8-sig'))
@@ -231,7 +232,7 @@ def run_project(config):
 
 
 def run_revision(config):
-    from assemble_shots import replace_frames
+    from tools.blender.assemble_shots import replace_frames
 
     config = config.resolve(strict=True)
     data = json.loads(config.read_text(encoding='utf-8-sig'))

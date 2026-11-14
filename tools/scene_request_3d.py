@@ -10,9 +10,13 @@ import subprocess
 import sys
 from tempfile import TemporaryDirectory
 
-from render_storage import file_lock
-from paths import BLENDER
-from scene_revision import SECONDS, digest, write_json
+# The CLI and package entry points share one canonical module namespace.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.render_storage import file_lock
+from tools.paths import BLENDER
+from tools.scene_revision import SECONDS, digest, write_json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,7 +75,7 @@ def cut_plan(request, base):
         return None
     if base is None:
         raise ValueError('Для удаления отрезка укажите исходный MP4 через --base')
-    from blender.assemble_shots import cut_mp4_timing
+    from tools.blender.assemble_shots import cut_mp4_timing
 
     fingerprint = digest(base)
     timing = cut_mp4_timing(base)
@@ -90,7 +94,7 @@ def cut_plan(request, base):
 
 
 def revise_cut(out, base, plan, timing):
-    from blender.assemble_shots import cut_frames
+    from tools.blender.assemble_shots import cut_frames
 
     with file_lock(out.with_name(out.name + '.text-edit.lock')):
         if out.exists():
@@ -325,7 +329,7 @@ def sequence_revision_plan(request, base):
     if chained and (not isinstance(project.get("plan_sha256"), list) or len(project["plan_sha256"]) != len(shots)):
         raise ValueError("В ревизии не хватает контрольных сумм планов сцен")
 
-    from blender.assemble_shots import picture_hashes, video_timing
+    from tools.blender.assemble_shots import picture_hashes, video_timing
 
     fingerprint = digest(base)
     if chained and project.get("movie_sha256") != fingerprint:
@@ -444,7 +448,7 @@ def render_planned(out, base, plan, insert, hashes, edited_plan, source):
 
 
 def render_duration(out, base, plan, insert, hashes, edited_plan, history):
-    from blender.assemble_shots import assemble, picture_hashes, replace_scene_audio
+    from tools.blender.assemble_shots import assemble, picture_hashes, replace_scene_audio
 
     plan_path = out / "scene-plan.json"
     write_json(plan_path, edited_plan)
@@ -478,8 +482,8 @@ def render_duration(out, base, plan, insert, hashes, edited_plan, history):
 
 
 def render_scene_mute(out, base, plan, hashes):
-    from blender.assemble_shots import picture_hashes, replace_scene_audio, video_timing
-    from blender.export_render_job import AUDIO_RATE, mux_wav, read_wav
+    from tools.blender.assemble_shots import picture_hashes, replace_scene_audio, video_timing
+    from tools.blender.export_render_job import AUDIO_RATE, mux_wav, read_wav
 
     write_json(out / "plan.json", plan)
     original = out / "base.mp4"
@@ -499,7 +503,7 @@ def render_scene_mute(out, base, plan, hashes):
 
 
 def render_scene_swap(out, base, plan, hashes, history):
-    from blender.assemble_shots import assemble, picture_hashes, reorder_scene_audio
+    from tools.blender.assemble_shots import assemble, picture_hashes, reorder_scene_audio
 
     write_json(out / "plan.json", plan)
     original = out / "base.mp4"
@@ -555,7 +559,7 @@ def write_sequence_manifest(out, movie, count, parent_hash):
 
 
 def render_sequence_format(out, base, plan, hashes, history):
-    from blender.assemble_shots import assemble, keep_project_audio
+    from tools.blender.assemble_shots import assemble, keep_project_audio
 
     write_json(out / "plan.json", plan)
     original = out / "base.mp4"

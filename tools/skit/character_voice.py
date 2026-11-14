@@ -7,8 +7,14 @@ import re
 import subprocess
 from tempfile import TemporaryDirectory
 
-from .game_vo import extract
-from resource_paths import RESOURCES
+if __package__ and __package__.startswith('tools.'):
+    from .game_vo import extract
+    from ..resource_paths import RESOURCES
+else:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from tools.skit.game_vo import extract
+    from tools.resource_paths import RESOURCES
 
 
 ROOT = Path(__file__).resolve().parents[2]

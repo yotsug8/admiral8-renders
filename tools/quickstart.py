@@ -9,8 +9,12 @@ import subprocess
 import sys
 from tempfile import TemporaryDirectory
 
-from paths import BLENDER
-from scene_revision import DRAFT_FPS, plan_revision, write_json, write_preview
+# The CLI and package entry points share one canonical module namespace.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.paths import BLENDER
+from tools.scene_revision import DRAFT_FPS, plan_revision, write_json, write_preview
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -143,7 +147,7 @@ def apply_revision(out, episode, plan, manifest, probe):
 
 
 def run_3d_request(args, out):
-    from scene_request_3d import (build, camera_plan, creation_plan, cut_plan, dolly_plan, light_plan,
+    from tools.scene_request_3d import (build, camera_plan, creation_plan, cut_plan, dolly_plan, light_plan,
                                   revise, revise_cut, revise_planned, revision_plan, sequence_revision_plan)
 
     base = args.base.resolve() if args.base else None
@@ -182,7 +186,7 @@ def run_3d_request(args, out):
 
 
 def build_local_sequence(snapshot, staged, builder):
-    from run_render_job import build_job, read_job
+    from tools.blender.run_render_job import build_job, read_job
 
     plan = json.loads(snapshot.read_text(encoding="utf-8"))
     if (not isinstance(plan, dict) or plan.get("schema_version") != 1
@@ -211,8 +215,8 @@ def build_local_sequence(snapshot, staged, builder):
 
 
 def run_local_3d(args, out):
-    from render_storage import file_lock
-    from scene_revision import digest
+    from tools.render_storage import file_lock
+    from tools.scene_revision import digest
 
     plan_path, receipt_path = out / "plan.json", out / "local_job.json"
     scene_folder = out / "scene"
@@ -226,12 +230,12 @@ def run_local_3d(args, out):
         else:
             if out.exists():
                 raise ValueError("Выберите новую папку или используйте --resume")
-            from local_scene_planner import plan_request
+            from tools.local_scene_planner import plan_request
 
             source = args.source.resolve(strict=True) if args.source else None
             request = args.request
             if args.reference_look:
-                from dialogue_request import LANDSCAPE, PORTRAIT
+                from tools.dialogue_request import LANDSCAPE, PORTRAIT
 
                 look = json.loads(args.reference_look.read_text(encoding="utf-8"))
                 if look.get("aspect") and not (LANDSCAPE.search(request) or PORTRAIT.search(request)):
@@ -257,8 +261,7 @@ def run_local_3d(args, out):
 
         check("3d")
         builder = ROOT / "tools" / "blender" / LOCAL_BUILDERS[receipt["profile"]]
-        sys.path.insert(0, str(builder.parent))
-        from run_render_job import build_job, read_job, run_job, run_project
+        from tools.blender.run_render_job import build_job, read_job, run_job, run_project
 
         fingerprint = digest(plan_path)
         snapshot_name = "input_plan.json"
@@ -299,7 +302,7 @@ def main():
     options.add_argument("--out", type=Path, help="Новая папка для результата")
     parser.add_argument("--scene", type=Path, help="Свой JSON-сценарий для черновика 2D без озвучки")
     parser.add_argument("--local-voice", action="store_true", help="Озвучить полный черновик через Windows SAPI")
-    parser.add_argument("--full", action="store_true", help="Экспортировать 2D в 1080×1920 при 30 кадрах/с")
+    parser.add_argument("--full", action="store_true", help="Экспортировать 2D в 1080x1920 при 30 кадрах/с")
     parser.add_argument("--frames", metavar="НАЧАЛО:КОНЕЦ", help="Собрать немую вставку из своего сценария")
     parser.add_argument("--request", help="Создание 3D или правка предпросмотра по тексту")
     parser.add_argument("--base", type=Path, help="Исходный preview.mp4 для текстовой правки")

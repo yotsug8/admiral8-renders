@@ -6,7 +6,10 @@ import os
 from pathlib import Path
 import re
 import shutil
-from resource_paths import RESOURCES
+if __package__:
+    from .resource_paths import RESOURCES
+else:
+    from resource_paths import RESOURCES
 
 REPO = str(Path(__file__).resolve().parents[1])
 

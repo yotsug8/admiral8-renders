@@ -15,12 +15,15 @@
 # z абсолютный (так стоят в реке). Точки можно задавать и на карте: world=[(x, y), ...].
 # Движение по пути: path(точки, скорость) — положение, поворот по ходу; скорость бега — anims.stride.
 # Частицы: st.fx(t, "particles/...vpcf", at=(x, y) или at="актёр", z=0, dur=0).
-import math, os
-from project import Cam, overlap
+import math, os, sys
+from pathlib import Path
+
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.dota_engine.project import Cam, overlap
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-import sys; sys.path.insert(0, os.path.join(HERE, ".."))
-from paths import SCENE_TXT as OUT                 # пути к игре — tools/paths.py
+from tools.paths import SCENE_TXT as OUT                 # пути к игре — tools/paths.py
 MID = 80                                   # середина фигуры над её точкой
 # Рамка стоящего Пуджа с крюком и тесаком (75, -25, 190): полуширина, низ, верх — сверено со снимками игры.
 
@@ -87,7 +90,7 @@ class Stage:
         if z is None:
             z = 0 if self.ground else -45
         if hero:
-            from hero_parts import hero_model
+            from tools.dota_engine.hero_parts import hero_model
             if model is None:
                 model, parts = hero_model(hero)
             self.heroes.append("npc_dota_hero_" + hero)
@@ -304,7 +307,7 @@ class Stage:
     def frame_map(self, out, cols=6, rows=2):
         """Картинка композиции по расчёту: рамки фигур в кадре в разные секунды."""
         from PIL import Image, ImageDraw
-        from project import EDGE
+        from tools.dota_engine.project import EDGE
         W, H = 180, 240; m = cols * rows
         img = Image.new("RGB", (W * cols, H * rows + 16), (24, 26, 30)); d = ImageDraw.Draw(img)
         for i in range(m):

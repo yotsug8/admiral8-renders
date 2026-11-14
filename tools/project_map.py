@@ -1,6 +1,7 @@
 """Print a compact, live source index; no model, network or dependencies required."""
 import argparse
 import ast
+import os
 from pathlib import Path
 import subprocess
 
@@ -15,14 +16,29 @@ AREAS = {
     'audio': ['tools/skit/mix.py', 'tools/skit/voices.py', 'tools/skit/character_voice.py',
               'tools/dialogue_request.py'],
     '2d': ['video.py', 'video.html', 'scene.js', 'scene_resources.js', 'scene_lottie.js'],
-    'setup': ['requirements.txt', 'tools/paths.py', 'tools/resource_paths.py', 'tools/quickstart.py'],
+    'setup': ['requirements.txt', 'tools/paths.py', 'tools/resource_paths.py', 'tools/quickstart.py',
+              'tools/project_workspace.py', 'tools/optional_addons.py'],
     'qa': ['tools/check.py', 'tools/check_pipeline.py', 'tools/reference_review.py'],
 }
 
 
 def tracked_files():
-    result = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT)
-    return sorted(p for p in result.decode('utf-8').split('\0') if p and (ROOT / p).is_file())
+    try:
+        top = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=ROOT,
+                                      stderr=subprocess.DEVNULL, text=True).strip()
+        if Path(top).resolve() == ROOT.resolve():
+            result = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT)
+            return sorted(p for p in result.decode('utf-8').split('\0') if p and (ROOT / p).is_file())
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    # A clean release archive has no .git; do not traverse local production data.
+    excluded = {'out', 'qa', 'cache', '_game', '_fv_work', 'node_modules', '__pycache__'}
+    files = []
+    for folder, directories, names in os.walk(ROOT):
+        directories[:] = [name for name in directories if not name.startswith('.') and name not in excluded]
+        files.extend((Path(folder) / name).relative_to(ROOT).as_posix() for name in names
+                     if not name.startswith('.') and not name.endswith(('.pyc', '.log')))
+    return sorted(files)
 
 
 def describe(path):

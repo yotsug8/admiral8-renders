@@ -25,5 +25,17 @@
       "Qwen3-TTS-12Hz-1.7B-Base-Q4_K_M.gguf": "8d18c94acb2addd042f97da63c98be144eafa76d0d9495177eab65130cf85129",
       "mmproj-Qwen3-TTS-12Hz-1.7B-Base-Q8_0.gguf": "6fd65188839bcd6ecc91b277ad471e22a0edfada4699a0fe82f1165c18cfcce2"
     }
+  },
+  "blender_addons": {
+    "retarget": {
+      "version": "5.2.0",
+      "url": "https://github.com/KBSBAUDRICE/Retarget/releases/download/v5.2.0/retarget.zip",
+      "sha256": "521ec8ff5c2373893ea8022b3f71d27ed191fb73f3a5634cac31585e0dcb7af3",
+      "source": "https://github.com/KBSBAUDRICE/Retarget",
+      "license": "GPL-3.0-or-later",
+      "blender_min": "5.0.0",
+      "purpose": "Rig mapping, animation retargeting and curve tools",
+      "verification": "Registration and action-range operator tested on Blender 5.3; Dota rig transfer not yet verified"
+    }
   }
 }

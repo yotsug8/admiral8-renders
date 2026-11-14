@@ -1,16 +1,22 @@
-# Цветокоррекция по образцу: картинка подгоняется под эталонные примеры (_game/study/examples) по цифрам в Lab —
+# Цветокоррекция по выбранным примерам из общей библиотеки, по числам в Lab —
 # кривая яркости (процентили), сила цвета в тенях, полутонах и светах, теплота полутонов. Одна кривая на весь ролик
 # (без мигания): строится по кадрам ролика, применяется к каждому кадру.
-#   py -3.11 tools/skit/grade.py target                     цель из примеров → _game/study/grade_target.json
+#   py -3.11 tools/skit/grade.py target example-A1.mp4      цель из выбранных примеров
 #   py -3.11 tools/skit/grade.py <видео> <выход.mp4>        прогнать ролик (для проверки; в сведении — GRADE=match в mix.py)
-import glob, hashlib, json, math, os, shutil, subprocess, sys, tempfile
+import hashlib, json, math, os, shutil, subprocess, sys, tempfile
 from fractions import Fraction
 from pathlib import Path
 import numpy as np
 import imageio_ffmpeg
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
-TARGET = os.path.join(REPO, "_game", "study", "grade_target.json")
+if __package__ and __package__.startswith('tools.'):
+    from tools.resource_paths import RESOURCES
+else:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from resource_paths import RESOURCES
+REFERENCES = RESOURCES / 'references'
+TARGET = str(REFERENCES / 'grade-target.json')
 FF = imageio_ffmpeg.get_ffmpeg_exe()
 PCT = [1, 5, 15, 25, 40, 50, 60, 75, 85, 95, 99]
 M = np.array([[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]])
@@ -49,16 +55,21 @@ def measure(frames):
             "b_mid": float(L[..., 2][band(30, 70)].mean())}
 
 
-def target():
-    """Цель — медиана по всем цветным примерам (у каждого свой свет, медиана — «как они в среднем»)."""
-    ms = [measure(sample(p)) for p in sorted(glob.glob(os.path.join(REPO, "_game", "study", "examples", "*.mp4")))]
+def target(paths):
+    """Measure only explicitly selected, artistically compatible references."""
+    if not paths:
+        raise ValueError('Select reference filenames from the shared library; do not average the whole catalog')
+    files = [Path(p) if Path(p).is_absolute() else REFERENCES / p for p in paths]
+    ms = [measure(sample(str(p.resolve(strict=True)))) for p in files]
     ms = [m for m in ms if m["L"][5] > 35 and m["C"][1] > 15]       # дневные цветные (сцены дневные); молочность была не от них,
                                                                      # а от низкого контраста и поднятых теней — теперь контраст свой
     if not ms:
         raise ValueError('No suitable grade target examples')
     t = {"L": np.median([m["L"] for m in ms], 0).tolist(), "C": np.median([m["C"] for m in ms], 0).tolist(),
          "b_mid": float(np.median([m["b_mid"] for m in ms])), "n": len(ms)}
-    json.dump(t, open(TARGET, "w"), indent=1)
+    Path(TARGET).parent.mkdir(parents=True, exist_ok=True)
+    with open(TARGET, 'w', encoding='utf-8') as output:
+        json.dump(t, output, indent=1)
     return t
 
 
@@ -256,8 +267,8 @@ def transcode(source, output, transform, *, timing=None, audio=None, preset='slo
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
-    if sys.argv[1:] == ["target"]:
-        print(target()); return
+    if sys.argv[1:2] == ["target"]:
+        print(target(sys.argv[2:])); return
     src, out = sys.argv[1:3]
     timing = video_timing(src)
     g = Grade(sample(src)); print(g.info)

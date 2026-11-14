@@ -13,7 +13,7 @@ import sys
 import bpy
 from mathutils import Vector
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'tools/blender'))
 from study_rain_partner import Performer, SOURCE, duplicate_rain
 from prepare_study_scene import localize_widget_meshes
 

@@ -7,6 +7,7 @@ No scene preparation, animation edits, or implicit frame-rate conversion.
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import struct
 import sys
@@ -15,6 +16,35 @@ import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from render_storage import cached_file, file_lock
+
+
+def configure_device(scene):
+    """Select available Cycles hardware in this process, without saving preferences."""
+    if scene.render.engine != 'CYCLES':
+        return scene.render.engine
+    requested = os.environ.get('A8_CYCLES_DEVICE', 'AUTO').upper()
+    if requested not in {'AUTO', 'CPU', 'OPTIX', 'CUDA', 'HIP', 'ONEAPI', 'METAL'}:
+        raise ValueError('Unknown A8_CYCLES_DEVICE: ' + requested)
+    if requested == 'CPU' or (requested == 'AUTO' and scene.cycles.device == 'CPU'):
+        scene.cycles.device = 'CPU'
+        return 'CPU'
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    for backend in (['OPTIX', 'CUDA', 'HIP', 'ONEAPI', 'METAL'] if requested == 'AUTO' else [requested]):
+        try:
+            prefs.compute_device_type = backend
+            prefs.get_devices()
+        except (TypeError, RuntimeError):
+            continue
+        devices = [d for d in prefs.devices if d.type == backend]
+        if devices:
+            for device in prefs.devices:
+                device.use = device.type == backend
+            scene.cycles.device = 'GPU'
+            return backend + ':' + ','.join(sorted(d.name for d in devices))
+    if requested != 'AUTO':
+        raise ValueError('Requested Cycles device unavailable: ' + requested)
+    scene.cycles.device = 'CPU'
+    return 'CPU'
 
 
 def digest(path):
@@ -55,7 +85,7 @@ def resume(scene, args, frames, report):
     source = Path(bpy.data.filepath)
     identity = dict(schema=1, source=digest(source), renderer=digest(Path(__file__).resolve()),
                     build=bpy.app.build_hash.decode('ascii'), scene=scene.name,
-                    size=args.size, fps=args.fps, camera=args.camera)
+                    size=args.size, fps=args.fps, camera=args.camera, device=args.device)
     args.out.mkdir(parents=True, exist_ok=True)
     manifest = args.out / 'render_job.json'
     with file_lock(args.out / 'render.lock'):
@@ -106,6 +136,8 @@ def main():
     args = parser.parse_args(sys.argv[sys.argv.index('--')+1:])
     args.out = args.out.resolve()
     scene = bpy.context.scene
+    args.device = configure_device(scene)
+    print('Render device: ' + args.device, flush=True)
     if args.camera:
         camera = scene.objects.get(args.camera)
         if camera is None or camera.type != 'CAMERA':
@@ -132,7 +164,7 @@ def main():
     scene.render.image_settings.file_format = 'PNG'
     scene.render.use_file_extension = True
     report = dict(scene=Path(bpy.data.filepath).name, frames=frames, fps=args.fps,
-                  size=args.size, blender=bpy.app.version_string,
+                  size=args.size, blender=bpy.app.version_string, device=args.device,
                   limitations='Prepared scene required; rendering is not visual acceptance.')
     if args.resume:
         resume(scene, args, frames, report)

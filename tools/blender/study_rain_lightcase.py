@@ -235,7 +235,7 @@ def build(out, *, save=True, source=SOURCE, poses=POSES, wrist_clearance=None, p
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--out',required=True);ap.add_argument('--frames',default='0,38,64,82,106,148,209');ap.add_argument('--render',action='store_true');ap.add_argument('--load',action='store_true');ap.add_argument('--check-only',action='store_true');ap.add_argument('--preview',action='store_true');args=ap.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
     out=Path(args.out).resolve()
-    if not out.is_relative_to(ROOT/'_game/study'):raise ValueError('Output outside study directory')
+    if not out.is_relative_to(ROOT/'out/study'):raise ValueError('Study output must be inside out/study')
     out.mkdir(parents=True,exist_ok=True)
     if args.load:
         bpy.ops.wm.open_mainfile(filepath=str(out/'lightcase.blend'),use_scripts=False);scene=bpy.context.scene;rig=bpy.data.objects['RIG-rain'];case=bpy.data.objects['Light case']

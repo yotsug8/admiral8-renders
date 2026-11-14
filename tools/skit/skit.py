@@ -3,7 +3,7 @@
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt --plan     только голоса и scene.json (без Blender)
 #   py -3.11 tools/skit/skit.py skits/kryuk.txt --all      весь ролик: кадры → mp4 → голоса и звуки действий (mix.py, GRADE)
 #   ... --dota                                             ещё и сцена для движка доты (scripts/a8_scene.txt) с анимациями разговора
-# Всё складывается в _game/skits/<название>/. Сначала пробы — полный рендер только после «ок» (~2,5 с на кадр).
+# Ролики складываются в out/skits/<название>/, проверки SKIT_FAKE — в qa/skits/<название>/. Сначала пробы — полный рендер после «ок».
 #
 # Сценарий (пример — skits/kryuk.txt):
 #   название: kryuk
@@ -728,8 +728,9 @@ def main():
     if not args:
         raise SystemExit(__doc__ if __doc__ else "py -3.11 tools/skit/skit.py <сценарий.txt> [--plan | --all] [--dota]")
     sc = parse(args[0])
-    folder = os.path.join(REPO, "_game", "skits", *(["_check"] if os.environ.get("SKIT_FAKE") else []), sc["name"])   # проверка (гул) — отдельно:
-                                                          # иначе check.py подменял настоящие голоса гулом, и они переозвучивались
+    # Synthetic test audio must never overwrite production voices or pollute the asset library.
+    output_area = "qa" if os.environ.get("SKIT_FAKE") else "out"
+    folder = os.path.join(REPO, output_area, "skits", sc["name"])
     n = {}
     for ev in sc["events"]:                               # имена реплик: pudge1, pudge2, sniper1…
         if ev["kind"] == "line":

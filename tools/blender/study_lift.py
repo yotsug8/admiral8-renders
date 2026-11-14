@@ -1,7 +1,7 @@
 """Procedural two-hand lift study. Run inside Blender 5.2; no external assets.
 
 blender -b --factory-startup --python-exit-code 2 -P tools/blender/study_lift.py --
-  --out _game/study/foundations/lift_weight --mode block
+  --out out/study/foundations/lift_weight --mode block
 Modes: block (validate + key poses), render (validate + all frames), verify
 (reload and validate), review (reload, negative tests, decoded movie sheets).
 Output directory must be new except verify/review. Movies are encoded only

@@ -282,7 +282,7 @@ def main():
     lead_in = APPROACH_FRAMES if args.approach else 0
     count = COUNT + lead_in
     out=Path(args.out).resolve()
-    if not out.is_relative_to(ROOT/'_game/study'): raise ValueError('Output outside study folder')
+    if not out.is_relative_to(ROOT/'out/study'): raise ValueError('Study output must be inside out/study')
     frames=list(range(count)) if args.render else [int(x) for x in args.frames.split(',')]
     if not frames or any(f<0 or f>=count for f in frames): raise ValueError('Frames outside scene')
     if args.save_scene and frames != list(range(frames[0],frames[-1]+1)):

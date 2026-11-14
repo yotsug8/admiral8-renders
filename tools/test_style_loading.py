@@ -145,6 +145,9 @@ class StyleLoadingTests(unittest.TestCase):
         for kind in ('image', 'font'):
             with self.subTest(kind=kind):
                 self.reload()
+                # Finish unrelated real font I/O before advancing the virtual clock.
+                # Otherwise a cold browser can time out a valid bundled font first.
+                self.page.evaluate('Promise.all([...document.fonts].map(font => font.load()))')
                 self.page.clock.install()
                 if kind == 'image':
                     self.page.add_style_tag(content='.fixture {background-image:url("/__styles__/stall.png")}')

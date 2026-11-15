@@ -43,11 +43,38 @@ def title(width, height, lines):
 
 def signature(width, height):
     """Black-backed logo layer for screen compositing; opacity is applied by the editor."""
+    if width <= 0 or height <= 0:
+        raise ValueError('Canvas dimensions must be positive')
     image = Image.new('RGB', (width, height), 'black')
     with Image.open(ROOT / BRAND['logo']) as source:
         logo = source.convert('RGB')
-        target_width = round(width * BRAND['signature_width'])
+        target_width = round(min(width, height) * BRAND['signature_width'])
         logo = logo.resize((target_width, round(target_width * logo.height / logo.width)),
                            Image.Resampling.LANCZOS)
-    image.paste(logo, (round(width * BRAND['signature_position'][0]), round(height * BRAND['signature_position'][1])))
+    x = round(width * BRAND['signature_position'][0])
+    y = round(height * BRAND['signature_position'][1])
+    if x < 0 or y < 0 or x + logo.width > width or y + logo.height > height:
+        raise ValueError('Logo does not fit this aspect ratio; adjust brand placement or size')
+    image.paste(logo, (x, y))
     return image
+
+
+def main():
+    """Export the reusable layer without silently replacing another asset."""
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--width', type=int, required=True)
+    parser.add_argument('--height', type=int, required=True)
+    parser.add_argument('--out', type=Path, required=True)
+    args = parser.parse_args()
+    layer = signature(args.width, args.height)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open('xb') as target:
+        layer.save(target, format='PNG')
+    print(args.out.resolve())
+    print(f"FFmpeg blend=all_mode={BRAND['signature_blend']}:all_opacity={BRAND['signature_opacity']}")
+    print('This is a black-backed screen layer, not an RGBA overlay. Keep RGB until final video range conversion.')
+
+
+if __name__ == '__main__':
+    main()

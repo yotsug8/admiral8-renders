@@ -4,6 +4,11 @@ import json
 from pathlib import Path
 import re
 
+try:
+    from .review_gate import initial_requirements
+except ImportError:  # Direct CLI invocation.
+    from review_gate import initial_requirements
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,8 +27,9 @@ def create(parent, name, prompt):
         'schema_version': 1, 'id': name, 'prompt': prompt.strip(), 'status': 'planning',
         'brief': {}, 'shots': [], 'assets': [], 'decisions': [], 'feedback': [],
         'checks': [], 'deliverables': [], 'next_step': 'Read PROJECT_GUIDE.md and prepare the brief',
-        'requirements': [],
-        'review': {'guide_sha256': None, 'reviewed_at': None, 'coverage_note': '', 'artifacts': []},
+        'requirements': initial_requirements(),
+        'review': {'guide_sha256': None, 'reviewed_at': None, 'coverage_note': '',
+                   'artifacts': [], 'observations': {}, 'defects': []},
     }
     (folder / 'project.json').write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
     return folder

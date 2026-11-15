@@ -18,6 +18,18 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Coverage categories from PROJECT_GUIDE.md#quality-standard, not quality scores.
+DOMAINS = ('story', 'acting', 'camera', 'motion_contacts', 'assets_environment',
+           'materials', 'light_color_depth', 'effects', 'audio', 'export',
+           'references', 'branding')
+
+
+def initial_requirements():
+    return [{'id': domain, 'domain': domain,
+             'source': 'PROJECT_GUIDE.md#quality-standard', 'criterion': '',
+             'status': 'not_tested', 'method': '', 'evidence_files': []}
+            for domain in DOMAINS]
+
 
 def sha256(path):
     digest = hashlib.sha256()
@@ -38,7 +50,7 @@ def guide_anchors(text):
     return anchors
 
 
-def validate(project_file, guide=None):
+def validate(project_file, guide=None, stage='final'):
     """Return all metadata errors without editing the project or its evidence."""
     project_file = Path(project_file).resolve()
     guide = Path(guide) if guide is not None else ROOT / 'PROJECT_GUIDE.md'
@@ -51,6 +63,18 @@ def validate(project_file, guide=None):
     if not isinstance(project, dict):
         return ['Project must be a JSON object']
     anchors = guide_anchors(guide_text)
+
+    requirements = project.get('requirements')
+    if not isinstance(requirements, list):
+        requirements = []
+    covered = {r.get('domain') for r in requirements if isinstance(r, dict)
+               and isinstance(r.get('domain'), str)}
+    for domain in DOMAINS:
+        if domain not in covered:
+            errors.append(f'coverage: missing domain {domain}')
+    for index, requirement in enumerate(requirements):
+        if isinstance(requirement, dict) and requirement.get('domain') not in DOMAINS:
+            errors.append(f'requirements[{index}]: unknown domain')
 
     def text(value):
         return isinstance(value, str) and bool(value.strip())
@@ -68,7 +92,11 @@ def validate(project_file, guide=None):
         if path.is_absolute() or win.drive or win.root or ':' in relative or '..' in win.parts:
             errors.append(f'{label}: path must stay inside the work directory')
             return
-        target = (project_file.parent / path).resolve()
+        try:
+            target = (project_file.parent / path).resolve()
+        except (OSError, RuntimeError, ValueError) as exc:
+            errors.append(f'{label}: cannot resolve file path: {exc}')
+            return
         if not target.is_relative_to(project_file.parent):
             errors.append(f'{label}: path resolves outside the work directory')
             return
@@ -83,6 +111,31 @@ def validate(project_file, guide=None):
                 errors.append(f'{label}: stale or changed file: {relative}')
         except OSError as exc:
             errors.append(f'{label}: cannot read {relative}: {exc}')
+
+    if stage == 'plan':
+        identifiers = set()
+        for index, requirement in enumerate(requirements):
+            if not isinstance(requirement, dict):
+                errors.append(f'requirements[{index}]: expected an object')
+                continue
+            identifier = requirement.get('id')
+            if not text(identifier) or identifier in identifiers:
+                errors.append(f'requirements[{index}]: id must be nonempty and unique')
+            else:
+                identifiers.add(identifier)
+            if not text(requirement.get('criterion')):
+                errors.append(f'requirements[{index}]: concrete criterion is required')
+            source = requirement.get('source', '')
+            if not isinstance(source, str) or not source.startswith('PROJECT_GUIDE.md#') or source.split('#', 1)[1] not in anchors:
+                errors.append(f'requirements[{index}]: valid guide source required')
+            if requirement.get('status') == 'not_applicable' and not text(requirement.get('reason')):
+                errors.append(f'requirements[{index}]: not_applicable requires a reason')
+        brief, shots = project.get('brief'), project.get('shots')
+        if not isinstance(brief, dict) or not brief:
+            errors.append('plan: brief must be a nonempty object')
+        if not isinstance(shots, list) or not shots or any(not isinstance(shot, dict) or not shot for shot in shots):
+            errors.append('plan: shots must be a nonempty list of shot objects')
+        return errors
 
     review = project.get('review')
     if not isinstance(review, dict):
@@ -100,17 +153,50 @@ def validate(project_file, guide=None):
         errors.append('review: reviewed_at must be an ISO timestamp with timezone')
     artifacts = review.get('artifacts')
     roles = set()
+    revision = {}
     if not isinstance(artifacts, list) or not artifacts:
         errors.append('review: current video and source artifacts are required')
     else:
         for index, record in enumerate(artifacts):
             if isinstance(record, dict) and text(record.get('role')):
+                if record['role'] in roles:
+                    errors.append(f'artifacts[{index}]: duplicate role')
                 roles.add(record['role'])
+                revision[record['role']] = record.get('sha256')
             else:
                 errors.append(f'artifacts[{index}]: role is required')
             file_record(record, f'artifacts[{index}]')
         if not {'video', 'source'}.issubset(roles):
             errors.append('review: artifacts must include both video and source roles')
+
+    expected_revision = {role: revision.get(role) for role in ('video', 'source')}
+    observations = review.get('observations', {})
+    if not isinstance(observations, dict):
+        observations = {}
+    for name, allowed in [('motion', {'continuous_full_speed'}),
+                          ('audio', {'listened', 'no_audio_stream'})]:
+        observation = observations.get(name, {})
+        if not isinstance(observation, dict):
+            observation = {}
+        mode = observation.get('mode')
+        if not isinstance(mode, str) or mode not in allowed:
+            errors.append(f'{name}: actual full playback/listening required; samples or metrics are insufficient')
+        if observation.get('revision') != expected_revision:
+            errors.append(f'{name}: observation is not bound to current video/source')
+        if not text(observation.get('note')):
+            errors.append(f'{name}: observation note is required')
+        file_record(observation.get('evidence'), f'{name}.evidence')
+    defects = review.get('defects')
+    if not isinstance(defects, list):
+        errors.append('review: explicit defects list required (empty only after inspection)')
+    else:
+        for index, defect in enumerate(defects):
+            if not isinstance(defect, dict) or defect.get('status') != 'verified_fixed':
+                errors.append(f'defects[{index}]: unresolved defect; retaining a version does not certify quality')
+                continue
+            if not text(defect.get('description')) or defect.get('revision') != expected_revision:
+                errors.append(f'defects[{index}]: description and current revision required')
+            file_record(defect.get('evidence'), f'defects[{index}].evidence')
 
     requirements = project.get('requirements')
     if not isinstance(requirements, list) or not requirements:
@@ -138,6 +224,8 @@ def validate(project_file, guide=None):
             if not text(requirement.get('reason')):
                 errors.append(f'{label}: not_applicable requires a reason')
         elif status == 'verified':
+            if requirement.get('revision') != expected_revision:
+                errors.append(f'{label}: verification is not bound to current video/source')
             if not text(requirement.get('method')):
                 errors.append(f'{label}: verified requires a verification method')
             evidence = requirement.get('evidence_files')
@@ -188,9 +276,12 @@ def main(argv=None):
     parser.add_argument('project', type=Path, help='Path to the work project.json')
     parser.add_argument('--mark-ready', action='store_true',
                         help='Atomically set ready_for_user_review only after validation passes')
+    parser.add_argument('--stage', choices=('plan', 'final'), default='final')
     args = parser.parse_args(argv)
-    errors = mark_ready(args.project) if args.mark_ready else validate(args.project)
-    print(json.dumps({'status': 'blocked' if errors else 'metadata_ready', 'errors': errors,
+    if args.mark_ready and args.stage != 'final':
+        parser.error('--mark-ready requires --stage final')
+    errors = mark_ready(args.project) if args.mark_ready else validate(args.project, stage=args.stage)
+    print(json.dumps({'status': 'blocked' if errors else ('plan_ready' if args.stage == 'plan' else 'metadata_ready'), 'errors': errors,
                      'limits': 'Checks current review records and hashes only; does not certify artistic quality or completeness of instruction coverage.'},
                     ensure_ascii=True, indent=2))
     return 1 if errors else 0

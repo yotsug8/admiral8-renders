@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "display_name": "AdmiraL 8",
+  "handle": "@admiral8dota",
+  "title_font": "unbounded",
+  "colors": {
+    "paper": [
+      255,
+      248,
+      234,
+      255
+    ],
+    "accent": [
+      255,
+      213,
+      114,
+      255
+    ],
+    "error": [
+      255,
+      143,
+      131,
+      255
+    ],
+    "outline": [
+      22,
+      12,
+      35,
+      255
+    ]
+  },
+  "signature_opacity": 0.38,
+  "logo": "assets/creator/wordmark.png",
+  "signature_width": 0.25,
+  "signature_blend": "screen",
+  "signature_position": [
+    0.035,
+    0.88
+  ]
+}

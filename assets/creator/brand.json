@@ -2,7 +2,8 @@
   "schema_version": 1,
   "display_name": "AdmiraL 8",
   "handle": "@admiral8dota",
-  "title_font": "unbounded",
+  "title_font": "manrope",
+  "title_weight": 600,
   "colors": {
     "paper": [
       255,

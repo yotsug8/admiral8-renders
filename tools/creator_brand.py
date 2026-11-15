@@ -1,4 +1,4 @@
-"""Small creator signature and outlined titles, using the repository's licensed fonts."""
+"""Small creator signature and restrained titles using licensed fonts."""
 import json
 from itertools import groupby
 from pathlib import Path
@@ -18,7 +18,7 @@ def title(width, height, lines):
     for text, fraction, color in lines:
         size = width * fraction
         fonts = {key: ImageFont.truetype(str(ROOT / 'fonts' /
-                 f"{BRAND['title_font']}-{script}-900-normal.woff2"), round(size * SS))
+                 f"{BRAND['title_font']}-{script}-{BRAND['title_weight']}-normal.woff2"), round(size * SS))
                  for key, script in [(True, 'cyrillic'), (False, 'latin')]}
         runs = [(key, ''.join(chars)) for key, chars in
                 groupby(text, key=lambda c: 0x400 <= ord(c) <= 0x52f)]
@@ -26,16 +26,13 @@ def title(width, height, lines):
         if advance > width * SS * .9:
             raise ValueError('Title is too wide: shorten or reduce its font size')
         x = (width * SS - advance) / 2
-        stroke = max(2, round(width * .0037 * SS))
         for key, chunk in runs:
             font = fonts[key]
             top = font.getbbox(chunk)[1]
             draw.text((x + SS, y * SS - top + 2 * SS), chunk, font=font,
-                      fill=(17, 9, 29, 230), stroke_width=stroke + SS,
-                      stroke_fill=(17, 9, 29, 210))
+                      fill=(10, 15, 20, 130))
             draw.text((x, y * SS - top), chunk, font=font,
-                      fill=tuple(BRAND['colors'][color]), stroke_width=stroke,
-                      stroke_fill=tuple(BRAND['colors']['outline']))
+                      fill=tuple(BRAND['colors'][color]))
             x += font.getlength(chunk)
         y += size * .92 + height * .009
     return image.resize((width, height), Image.Resampling.LANCZOS)
